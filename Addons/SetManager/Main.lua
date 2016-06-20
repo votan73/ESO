@@ -14,29 +14,31 @@ local am = GetAnimationManager()
 local wm = GetWindowManager()
 local em = GetEventManager()
 
-local function InitializeSlots()
+local function InitializeSlots(parent)
 	local slots =
 	{
-		[EQUIP_SLOT_HEAD] = SetManager_CharacterEquipmentSlotsHead,
-		[EQUIP_SLOT_NECK] = SetManager_CharacterEquipmentSlotsNeck,
-		[EQUIP_SLOT_CHEST] = SetManager_CharacterEquipmentSlotsChest,
-		[EQUIP_SLOT_SHOULDERS] = SetManager_CharacterEquipmentSlotsShoulder,
-		[EQUIP_SLOT_MAIN_HAND] = SetManager_CharacterEquipmentSlotsMainHand,
-		[EQUIP_SLOT_OFF_HAND] = SetManager_CharacterEquipmentSlotsOffHand,
-		[EQUIP_SLOT_POISON] = SetManager_CharacterEquipmentSlotsPoison,
-		[EQUIP_SLOT_WAIST] = SetManager_CharacterEquipmentSlotsBelt,
-		[EQUIP_SLOT_LEGS] = SetManager_CharacterEquipmentSlotsLeg,
-		[EQUIP_SLOT_FEET] = SetManager_CharacterEquipmentSlotsFoot,
-		[EQUIP_SLOT_COSTUME] = SetManager_CharacterEquipmentSlotsCostume,
-		[EQUIP_SLOT_RING1] = SetManager_CharacterEquipmentSlotsRing1,
-		[EQUIP_SLOT_RING2] = SetManager_CharacterEquipmentSlotsRing2,
-		[EQUIP_SLOT_HAND] = SetManager_CharacterEquipmentSlotsGlove,
-		[EQUIP_SLOT_BACKUP_MAIN] = SetManager_CharacterEquipmentSlotsBackupMain,
-		[EQUIP_SLOT_BACKUP_OFF] = SetManager_CharacterEquipmentSlotsBackupOff,
-		[EQUIP_SLOT_BACKUP_POISON] = SetManager_CharacterEquipmentSlotsBackupPoison,
+		[EQUIP_SLOT_HEAD] = parent:GetNamedChild("EquipmentSlotsHead"),
+		[EQUIP_SLOT_NECK] = parent:GetNamedChild("EquipmentSlotsNeck"),
+		[EQUIP_SLOT_CHEST] = parent:GetNamedChild("EquipmentSlotsChest"),
+		[EQUIP_SLOT_SHOULDERS] = parent:GetNamedChild("EquipmentSlotsShoulder"),
+		[EQUIP_SLOT_MAIN_HAND] = parent:GetNamedChild("EquipmentSlotsMainHand"),
+		[EQUIP_SLOT_OFF_HAND] = parent:GetNamedChild("EquipmentSlotsOffHand"),
+		[EQUIP_SLOT_POISON] = parent:GetNamedChild("EquipmentSlotsPoison"),
+		[EQUIP_SLOT_WAIST] = parent:GetNamedChild("EquipmentSlotsBelt"),
+		[EQUIP_SLOT_LEGS] = parent:GetNamedChild("EquipmentSlotsLeg"),
+		[EQUIP_SLOT_FEET] = parent:GetNamedChild("EquipmentSlotsFoot"),
+		[EQUIP_SLOT_COSTUME] = parent:GetNamedChild("EquipmentSlotsCostume"),
+		[EQUIP_SLOT_RING1] = parent:GetNamedChild("EquipmentSlotsRing1"),
+		[EQUIP_SLOT_RING2] = parent:GetNamedChild("EquipmentSlotsRing2"),
+		[EQUIP_SLOT_HAND] = parent:GetNamedChild("EquipmentSlotsGlove"),
+		[EQUIP_SLOT_BACKUP_MAIN] = parent:GetNamedChild("EquipmentSlotsBackupMain"),
+		[EQUIP_SLOT_BACKUP_OFF] = parent:GetNamedChild("EquipmentSlotsBackupOff"),
+		[EQUIP_SLOT_BACKUP_POISON] = parent:GetNamedChild("EquipmentSlotsBackupPoison"),
 	}
 
-	addon.slots = slots
+	parent.slots = slots
+
+	parent:GetNamedChild("PaperDoll"):SetTexture(GetUnitSilhouetteTexture("player"))
 
 	local ZO_Character_GetEmptyEquipSlotTexture = ZO_Character_GetEmptyEquipSlotTexture
 	for slotId, slotControl in pairs(slots) do
@@ -47,8 +49,6 @@ end
 
 local function PlayerActivated()
 	em:UnregisterForEvent(addon.name, EVENT_PLAYER_ACTIVATED)
-	SetManager_CharacterPaperDoll:SetTexture(GetUnitSilhouetteTexture("player"))
-	InitializeSlots()
 	-- RefreshWornInventory()
 	-- RefreshBackUpWeaponSlotStates()
 end
@@ -84,6 +84,7 @@ function addon:InitWindow()
 	control:SetAnchor(BOTTOMLEFT, ZO_SharedWideLeftPanelBackground, BOTTOMLEFT, 0, -30)
 
 	addon.windowSet = control
+	InitializeSlots(control)
 	SETMANAGER_CHARACTER_FRAGMENT = ZO_FadeSceneFragment:New(addon.windowSet, false, 0)
 	STATS_SCENE:AddFragment(THIN_LEFT_PANEL_BG_FRAGMENT)
 	STATS_SCENE:AddFragment(SETMANAGER_CHARACTER_FRAGMENT)
