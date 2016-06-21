@@ -10,7 +10,7 @@ local addon = {
 	},
 }
 
-local am = GetAnimationManager()
+--local am = GetAnimationManager()
 local wm = GetWindowManager()
 local em = GetEventManager()
 local LMM2
@@ -52,29 +52,6 @@ local function PlayerActivated()
 	em:UnregisterForEvent(addon.name, EVENT_PLAYER_ACTIVATED)
 	-- RefreshWornInventory()
 	-- RefreshBackUpWeaponSlotStates()
-end
-
-local function PlayerDeactivated()
-	local function ScanInventory(bagId, list)
-		list = list or { }
-
-		local slotIndex = ZO_GetNextBagSlotIndex(bagId, nil)
-		local IsEquipable, GetItemLink, GetItemLinkSetInfo = IsEquipable, GetItemLink, GetItemLinkSetInfo
-		while slotIndex do
-			if IsEquipable(bagId, slotIndex) then
-				local itemLink = GetItemLink(bagId, slotIndex)
-				local hasSet = GetItemLinkSetInfo(itemLink, false)
-				if hasSet then
-					list[#list + 1] = itemLink
-				end
-			end
-			slotIndex = ZO_GetNextBagSlotIndex(bagId, slotIndex)
-		end
-
-		return list
-	end
-	addon.account.sets = ScanInventory(BAG_BANK)
-	addon.player.sets = ScanInventory(BAG_WORN, ScanInventory(BAG_BAGBACK))
 end
 
 function addon:InitWindow()
@@ -136,7 +113,6 @@ function addon:InitWindow()
 	LMM2:AddMenuItem(descriptor, sceneName, categoryLayoutInfo, nil)
 
 	em:RegisterForEvent(addon.name, EVENT_PLAYER_ACTIVATED, PlayerActivated)
-	em:RegisterForEvent(addon.name, EVENT_PLAYER_DEACTIVATED, PlayerDeactivated)
 end
 
 local function OnAddonLoaded(event, name)
@@ -147,6 +123,7 @@ local function OnAddonLoaded(event, name)
 	addon.account = ZO_SavedVars:NewAccountWide("SetManager_Data", 1, nil, addon.accountDefaults, nil)
 
 	addon:InitWindow()
+	addon:InitInventoryScan()
 end
 
 em:RegisterForEvent(addon.name, EVENT_ADD_ON_LOADED, OnAddonLoaded)
