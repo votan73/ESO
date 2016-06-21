@@ -10,7 +10,7 @@ local addon = {
 	},
 }
 
---local am = GetAnimationManager()
+-- local am = GetAnimationManager()
 local wm = GetWindowManager()
 local em = GetEventManager()
 local LMM2
@@ -82,6 +82,7 @@ function addon:InitWindow()
 	SETMANAGER_SCENE:AddFragment(SETMANAGER_CHARACTER_FRAGMENT)
 	SETMANAGER_SCENE:AddFragment(RIGHT_PANEL_BG_FRAGMENT)
 	SETMANAGER_SCENE:AddFragment(FRAME_EMOTE_FRAGMENT_JOURNAL)
+	SETMANAGER_SCENE:AddFragment(CHARACTER_WINDOW_SOUNDS)
 	-- SETMANAGER_SCENE:AddFragment(ZO_WindowSoundFragment:New(SOUNDS.ALCHEMY_OPENED, SOUNDS.ALCHEMY_CLOSED))
 
 	SCENE_MANAGER:AddSceneGroup("SetManagerSceneGroup", ZO_SceneGroup:New(descriptor))
