@@ -116,6 +116,10 @@ function addon:InitWindow()
 	em:RegisterForEvent(addon.name, EVENT_PLAYER_ACTIVATED, PlayerActivated)
 end
 
+function addon:ToggleEditorScene()
+	self.LMM2:SelectMenuItem(self.name)
+end
+
 local function OnAddonLoaded(event, name)
 	if name ~= addon.name then return end
 	em:UnregisterForEvent(addon.name, EVENT_ADD_ON_LOADED)
