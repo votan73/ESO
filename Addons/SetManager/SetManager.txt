@@ -9,6 +9,7 @@
 
 ## Libraries:
 libs/LibStub/LibStub.lua
+libs/LibMainMenu-2.0/LibMainMenu-2.0.lua
 
 lang/strings.lua
 lang/$(language).lua
