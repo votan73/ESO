@@ -2,6 +2,7 @@ local addon = {
 	name = "SetManager",
 	playerDefaults =
 	{
+		crafting = { },
 		sets = { }
 	},
 	accountDefaults =
@@ -16,6 +17,8 @@ local em = GetEventManager()
 local LMM2
 
 local function InitializeSlots(parent)
+	if parent.slots then return end
+
 	local slots =
 	{
 		[EQUIP_SLOT_HEAD] = parent:GetNamedChild("EquipmentSlotsHead"),
@@ -54,15 +57,98 @@ local function PlayerActivated()
 	-- RefreshBackUpWeaponSlotStates()
 end
 
+
 function addon:InitWindow()
+	local function InitSetScrollList(scrollListControl, listContainer, listSlotTemplate)
+
+		local function SetupFunction(control, data, selected, selectedDuringRebuild, enabled)
+			InitializeSlots(control)
+
+			-- 		if self:IsInvalidMode() then return end
+
+			-- 		SetupSharedSlot(control, SLOT_TYPE_SMITHING_TRAIT, listContainer, self.traitList)
+			-- 		ZO_ItemSlot_SetAlwaysShowStackCount(control, data.traitType ~= ITEM_TRAIT_TYPE_NONE)
+
+			-- 		control.traitIndex = data.traitIndex
+			-- 		control.traitType = data.traitType
+			-- 		local stackCount = GetCurrentSmithingTraitItemCount(data.traitIndex)
+			-- 		local hasEnoughInInventory = stackCount > 0
+			-- 		local isTraitKnown = false
+			-- 		if self:IsCraftableWithoutTrait() then
+			-- 			local patternIndex, materialIndex, materialQty, styleIndex = self:GetAllNonTraitCraftingParameters()
+			-- 			isTraitKnown = IsSmithingTraitKnownForResult(patternIndex, materialIndex, materialQty, styleIndex, data.traitIndex)
+			-- 		end
+			-- 		local usable = data.traitType == ITEM_TRAIT_TYPE_NONE or(hasEnoughInInventory and isTraitKnown)
+
+			-- 		ZO_ItemSlot_SetupSlot(control, stackCount, data.icon, usable, not enabled)
+
+			-- 		if selected then
+			-- 			SetHighlightColor(highlightTexture, usable)
+
+			-- 			self:SetLabelHidden(listContainer.extraInfoLabel, usable or data.traitType == ITEM_TRAIT_TYPE_NONE)
+			-- 			if usable then
+			-- 				self.isTraitUsable = USABILITY_TYPE_USABLE
+			-- 			else
+			-- 				self.isTraitUsable = USABILITY_TYPE_VALID_BUT_MISSING_REQUIREMENT
+			-- 				if not isTraitKnown then
+			-- 					listContainer.extraInfoLabel:SetText(GetString(SI_SMITHING_TRAIT_MUST_BE_RESEARCHED))
+			-- 				elseif not hasEnoughInInventory then
+			-- 					self:SetLabelHidden(listContainer.extraInfoLabel, true)
+			-- 				end
+			-- 			end
+
+			-- 			if not data.localizedName then
+			-- 				if data.traitType == ITEM_TRAIT_TYPE_NONE then
+			-- 					data.localizedName = GetString("SI_ITEMTRAITTYPE", data.traitType)
+			-- 				else
+			-- 					data.localizedName = self:GetPlatformFormattedTextString(SI_SMITHING_TRAIT_DESCRIPTION, data.name, GetString("SI_ITEMTRAITTYPE", data.traitType))
+			-- 				end
+			-- 			end
+
+			-- 			listContainer.selectedLabel:SetText(data.localizedName)
+
+			-- 			if not selectedDuringRebuild then
+			-- 				self:RefreshVisiblePatterns()
+			-- 			end
+			-- 		end
+		end
+
+		local function EqualityFunction(leftData, rightData)
+			return leftData == rightData
+		end
+
+		local function OnHorizonalScrollListShown(list)
+			--    local listContainer = list:GetControl():GetParent()
+			--    listContainer.selectedLabel:SetHidden(false)
+		end
+
+		local function OnHorizonalScrollListCleared(list)
+		end
+		local scroll = listContainer:GetNamedChild("Scroll")
+		scroll:SetFadeGradient(1, 1, 0, 64)
+		scroll:SetFadeGradient(2, -1, 0, 64)
+		return scrollListControl:New(listContainer, listSlotTemplate, 1, SetupFunction, EqualityFunction, OnHorizonalScrollListShown, OnHorizonalScrollListCleared)
+	end
+
 	local control
 
-	control = CreateControlFromVirtual("SetManager_Character", nil, "SetManager_Character_Template")
-	control:SetAnchor(TOPLEFT, ZO_SharedWideLeftPanelBackground, TOPLEFT, 0, -40)
-	control:SetAnchor(BOTTOMLEFT, ZO_SharedWideLeftPanelBackground, BOTTOMLEFT, 0, -30)
-
+	control = SetManagerTopLevel
+	control:SetHidden(true)
 	addon.windowSet = control
-	InitializeSlots(control)
+
+	-- control = CreateControlFromVirtual("$(parent)_Character", addon.windowSet, "SetManager_Character_Template")
+	-- control:SetAnchor(TOPLEFT, ZO_SharedWideRightBackground, TOPLEFT, 0, -40)
+	-- control:SetAnchor(BOTTOMLEFT, ZO_SharedWideRightBackground, BOTTOMLEFT, 0, -30)
+	-- control:SetHidden(false)
+	-- InitializeSlots(control)
+	self.scrollListSet = InitSetScrollList(ZO_HorizontalScrollList, SetManagerTopLevelSetTemplateList, "SetManager_Character_Template")
+	self.scrollListSet:SetScaleExtents(0.6, 1)
+
+	self.scrollListSet:AddEntry( { })
+	self.scrollListSet:AddEntry( { })
+	self.scrollListSet:AddEntry( { })
+	self.scrollListSet:Commit()
+
 	SETMANAGER_CHARACTER_FRAGMENT = ZO_FadeSceneFragment:New(addon.windowSet, false, 0)
 
 	local descriptor = addon.name
@@ -79,8 +165,9 @@ function addon:InitWindow()
 	SETMANAGER_SCENE:AddFragmentGroup(FRAGMENT_GROUP.MOUSE_DRIVEN_UI_WINDOW)
 	SETMANAGER_SCENE:AddFragmentGroup(FRAGMENT_GROUP.FRAME_TARGET_STANDARD_RIGHT_PANEL)
 	SETMANAGER_SCENE:AddFragment(THIN_LEFT_PANEL_BG_FRAGMENT)
+	SETMANAGER_SCENE:AddFragment(CHARACTER_WINDOW_FRAGMENT)
 	SETMANAGER_SCENE:AddFragment(SETMANAGER_CHARACTER_FRAGMENT)
-	SETMANAGER_SCENE:AddFragment(RIGHT_PANEL_BG_FRAGMENT)
+	SETMANAGER_SCENE:AddFragment(WIDE_RIGHT_BG_FRAGMENT)
 	SETMANAGER_SCENE:AddFragment(FRAME_EMOTE_FRAGMENT_JOURNAL)
 	SETMANAGER_SCENE:AddFragment(CHARACTER_WINDOW_SOUNDS)
 	-- SETMANAGER_SCENE:AddFragment(ZO_WindowSoundFragment:New(SOUNDS.ALCHEMY_OPENED, SOUNDS.ALCHEMY_CLOSED))
@@ -129,6 +216,22 @@ local function OnAddonLoaded(event, name)
 
 	addon:InitWindow()
 	addon:InitInventoryScan()
+
+	addon.debugstart = GetGameTimeMilliseconds()
+	local format, createLink = zo_strformat, string.format
+	local GetItemLinkSetInfo = GetItemLinkSetInfo
+	local list = { }
+	for itemId = 29500, 90000 do
+		local itemLink = createLink("|H1:item:%i:304:50:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h", itemId)
+		local hasSet, setName = GetItemLinkSetInfo(itemLink, false)
+		if hasSet then
+			local parts = list[setName] or { }
+			parts[#parts + 1] = itemId
+			list[setName] = parts
+		end
+	end
+	addon.sets = list
+	addon.debugend = GetGameTimeMilliseconds()
 end
 
 em:RegisterForEvent(addon.name, EVENT_ADD_ON_LOADED, OnAddonLoaded)

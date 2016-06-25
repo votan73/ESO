@@ -1,19 +1,16 @@
 <GuiXml>
   <Controls>
-    <TopLevelControl name="SetManager_Character_Template" mouseEnabled="true" hidden="true" virtual="true">
-      <Dimensions x="190" />
+    <Control name="SetManager_Character_Template" mouseEnabled="true" hidden="true" virtual="true">
+      <Dimensions x="160" y="532"/>
+      <Anchor point="CENTER" />
 
       <OnInitialized>
         --ZO_Character_Initialize(self)
       </OnInitialized>
 
       <Controls>
-        <Label name="$(parent)Title" font="ZoFontHeader4" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_SELECTED" modifyTextType="UPPERCASE" text="SI_CHARACTER_EQUIP_TITLE">
-          <Anchor point="TOPLEFT" offsetX="14" offsetY="26" />
-        </Label>
-
         <Texture name="$(parent)ApparelSection" inherits="ZO_CharacterSheetDivider">
-          <Anchor point="TOPLEFT" offsetY="63" />
+          <Anchor point="TOPLEFT" offsetY="5" />
           <OnInitialized>
             self:GetNamedChild("Text"):SetText(GetString("SI_EQUIPSLOTVISUALCATEGORY", EQUIP_SLOT_VISUAL_CATEGORY_APPAREL))
           </OnInitialized>
@@ -24,7 +21,7 @@
         </Label>
 
         <Button name="$(parent)EquipmentSlotsHead" inherits="ZO_InventoryEquippedSlot">
-          <Anchor point="TOP" relativePoint="TOPLEFT" offsetX="87" offsetY="100" />
+          <Anchor point="TOP" relativePoint="TOPLEFT" offsetX="87" offsetY="45" />
         </Button>
 
         <Texture name="$(parent)PaperDoll">
@@ -34,7 +31,7 @@
 
         <!-- left side -->
         <Button name="$(parent)EquipmentSlotsShoulder" inherits="ZO_InventoryEquippedSlot">
-          <Anchor point="TOPLEFT" offsetX="10" offsetY="156" />
+          <Anchor point="TOPLEFT" offsetX="10" offsetY="101" />
         </Button>
         <Button name="$(parent)EquipmentSlotsGlove" inherits="ZO_InventoryEquippedSlot">
           <Anchor point="TOP" relativeTo="$(parent)EquipmentSlotsShoulder" relativePoint="BOTTOM" offsetY="10" />
@@ -45,7 +42,7 @@
 
         <!-- right side -->
         <Button name="$(parent)EquipmentSlotsChest" inherits="ZO_InventoryEquippedSlot">
-          <Anchor point="TOPLEFT" offsetX="124" offsetY="156" />
+          <Anchor point="TOPLEFT" offsetX="124" offsetY="101" />
         </Button>
         <Button name="$(parent)EquipmentSlotsBelt" inherits="ZO_InventoryEquippedSlot">
           <Anchor point="TOP" relativeTo="$(parent)EquipmentSlotsChest" relativePoint="BOTTOM" offsetY="10" />
@@ -113,6 +110,26 @@
           <Anchor point="LEFT" relativeTo="$(parent)EquipmentSlotsPoison" relativePoint="BOTTOMRIGHT" offsetX="3" />
         </Button>-->
       </Controls>
+    </Control>
+    <TopLevelControl name="SetManagerTopLevel" mouseEnabled="true" hidden="true" allowBringToTop="false">
+      <Anchor point="TOPLEFT" relativeTo="ZO_SharedWideRightBackground" offsetY="20" />
+      <Anchor point="BOTTOMRIGHT" relativeTo="ZO_SharedWideRightBackground" offsetY="-30" />
+
+      <Controls>
+        <Control name="$(parent)SetTemplate" >
+          <Anchor point="TOPLEFT" offsetX="12" />
+          <Anchor point="BOTTOMLEFT" offsetX="12" />
+          <Dimensions x="273" />
+
+          <Controls>
+            <Control name="$(parent)List" inherits="ZO_HorizontalScrollListTemplate">
+              <Dimensions x="273" y="532" />
+              <Anchor point="CENTER" />
+            </Control>
+          </Controls>
+        </Control>
+      </Controls>
     </TopLevelControl>
   </Controls>
+
 </GuiXml>

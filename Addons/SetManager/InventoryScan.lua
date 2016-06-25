@@ -21,8 +21,38 @@ function addon:InitInventoryScan()
 
 			return list
 		end
+		local function ScanCrafting()
+			local result = { }
+
+			-- 		local styles = { }
+			-- 		result.styles = styles
+			-- 		local GetSmithingStyleItemInfo = GetSmithingStyleItemInfo
+			-- 		for styleIndex = 1, GetNumSmithingStyleItems() do
+			-- 			local name, icon, sellPrice, meetsUsageRequirement, itemStyle, quality = GetSmithingStyleItemInfo(styleIndex)
+			-- 			if meetsUsageRequirement then
+			-- 				styles[#styles + 1] = itemStyle
+			-- 			end
+			-- 		end
+
+			-- 		local traits = { }
+			-- 		result.traits = traits
+			-- 		local GetSmithingTraitItemInfo = GetSmithingTraitItemInfo
+			-- 		for traitIndex = 1, GetNumSmithingTraitItems() do
+			-- 			local traitType, name, icon, sellPrice, meetsUsageRequirement, itemStyle, quality = GetSmithingTraitItemInfo(traitIndex)
+			-- 			if traitType then
+			-- 				if meetsUsageRequirement and traitType ~= ITEM_TRAIT_TYPE_NONE then
+			-- 					traits[#traits + 1] = traitType
+			-- 				end
+			-- 			end
+			-- 		end
+
+			return result
+		end
 		addon.account.sets = ScanInventory(BAG_BANK)
-		addon.player.sets = ScanInventory(BAG_WORN, ScanInventory(BAG_BAGBACK))
+		-- addon.player.sets = ScanInventory(BAG_WORN, ScanInventory(BAG_BAGBACK))
+		addon.player.sets = ScanInventory(BAG_BAGBACK)
+		addon.player.crafting = ScanCrafting()
 	end
+
 	em:RegisterForEvent(addon.name, EVENT_PLAYER_DEACTIVATED, PlayerDeactivated)
 end
