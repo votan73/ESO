@@ -15,6 +15,7 @@ local addon = {
 local wm = GetWindowManager()
 local em = GetEventManager()
 local LMM2
+local ROW_TYPE_ID = 1
 
 local function InitializeSlots(parent)
 	if parent.slots then return end
@@ -57,6 +58,81 @@ local function PlayerActivated()
 	-- RefreshBackUpWeaponSlotStates()
 end
 
+local function HideRowHighlight(rowControl, hidden)
+	if not rowControl then return end
+	if not ZO_ScrollList_GetData(rowControl) then return end
+
+	local highlight = rowControl:GetNamedChild("Highlight")
+
+	if highlight then
+		if not highlight.animation then
+			highlight.animation = ANIMATION_MANAGER:CreateTimelineFromVirtual("ShowOnMouseOverLabelAnimation", highlight)
+		end
+
+		if highlight.animation:IsPlaying() then
+			highlight.animation:Stop()
+		end
+		if hidden then
+			highlight.animation:PlayBackward()
+			ClearTooltip(ItemTooltip)
+		else
+			highlight.animation:PlayForward()
+
+			InitializeTooltip(ItemTooltip, rowControl, TOPRIGHT, 0, -104, TOPLEFT)
+			local rowData = ZO_ScrollList_GetData(rowControl)
+		end
+	end
+end
+
+function addon:InitItemList()
+	local function onMouseEnter(rowControl)
+		HideRowHighlight(rowControl, false)
+	end
+	local function onMouseExit(rowControl)
+		HideRowHighlight(rowControl, true)
+	end
+	local function onMouseDoubleClick(rowControl)
+	end
+
+	local function setupDataRow(rowControl, rowData, scrollList)
+		local icon = rowControl:GetNamedChild("Texture")
+		local nameLabel = rowControl:GetNamedChild("Name")
+
+		icon:SetTexture(rowData.icon)
+		nameLabel:SetText(zo_strformat(rowData.name))
+
+		rowControl:SetHandler("OnMouseEnter", onMouseEnter)
+		rowControl:SetHandler("OnMouseExit", onMouseExit)
+		rowControl:SetHandler("OnMouseDoubleClick", onMouseDoubleClick)
+	end
+	self.ItemList = SetManagerTopLevelItemList
+	ZO_ScrollList_AddDataType(self.ItemList, ROW_TYPE_ID, "SetManagerItemListRow", 32, setupDataRow)
+end
+
+function addon:InitSetsList()
+	local function onMouseEnter(rowControl)
+		HideRowHighlight(rowControl, false)
+	end
+	local function onMouseExit(rowControl)
+		HideRowHighlight(rowControl, true)
+	end
+	local function onMouseDoubleClick(rowControl)
+	end
+
+	local function setupDataRow(rowControl, rowData, scrollList)
+		local icon = rowControl:GetNamedChild("Texture")
+		local nameLabel = rowControl:GetNamedChild("Name")
+
+		icon:SetTexture(rowData.icon)
+		nameLabel:SetText(zo_strformat(rowData.name))
+
+		rowControl:SetHandler("OnMouseEnter", onMouseEnter)
+		rowControl:SetHandler("OnMouseExit", onMouseExit)
+		rowControl:SetHandler("OnMouseDoubleClick", onMouseDoubleClick)
+	end
+	self.SetsList = SetManagerTopLevelSetsList
+	ZO_ScrollList_AddDataType(self.SetsList, ROW_TYPE_ID, "SetManagerSetsListRow", 32, setupDataRow)
+end
 
 function addon:InitWindow()
 	local function InitSetScrollList(scrollListControl, listContainer, listSlotTemplate)
@@ -136,14 +212,14 @@ function addon:InitWindow()
 	control:SetHidden(true)
 	addon.windowSet = control
 
-	-- control = CreateControlFromVirtual("$(parent)_Character", addon.windowSet, "SetManager_Character_Template")
-	-- control:SetAnchor(TOPLEFT, ZO_SharedWideRightBackground, TOPLEFT, 0, -40)
-	-- control:SetAnchor(BOTTOMLEFT, ZO_SharedWideRightBackground, BOTTOMLEFT, 0, -30)
-	-- control:SetHidden(false)
-	-- InitializeSlots(control)
 	self.scrollListSet = InitSetScrollList(ZO_HorizontalScrollList, SetManagerTopLevelSetTemplateList, "SetManager_Character_Template")
 	self.scrollListSet:SetScaleExtents(0.6, 1)
 
+	self:InitItemList()
+	self:InitSetsList()
+
+	-- Demo fake
+	self.scrollListSet:Clear()
 	self.scrollListSet:AddEntry( { })
 	self.scrollListSet:AddEntry( { })
 	self.scrollListSet:AddEntry( { })
