@@ -293,21 +293,21 @@ local function OnAddonLoaded(event, name)
 	addon:InitWindow()
 	addon:InitInventoryScan()
 
-	addon.debugstart = GetGameTimeMilliseconds()
-	local format, createLink = zo_strformat, string.format
-	local GetItemLinkSetInfo = GetItemLinkSetInfo
-	local list = { }
-	for itemId = 29500, 90000 do
-		local itemLink = createLink("|H1:item:%i:304:50:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h", itemId)
-		local hasSet, setName = GetItemLinkSetInfo(itemLink, false)
-		if hasSet then
-			local parts = list[setName] or { }
-			parts[#parts + 1] = itemId
-			list[setName] = parts
-		end
-	end
-	addon.sets = list
-	addon.debugend = GetGameTimeMilliseconds()
+	-- addon.debugstart = GetGameTimeMilliseconds()
+	-- local format, createLink = zo_strformat, string.format
+	-- local GetItemLinkSetInfo = GetItemLinkSetInfo
+	-- local list = { }
+	-- for itemId = 29500, 90000 do
+	-- 	local itemLink = createLink("|H1:item:%i:304:50:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h", itemId)
+	-- 	local hasSet, setName = GetItemLinkSetInfo(itemLink, false)
+	-- 	if hasSet then
+	-- 		local parts = list[setName] or { }
+	-- 		parts[#parts + 1] = itemId
+	-- 		list[setName] = parts
+	-- 	end
+	-- end
+	-- addon.account.all = list
+	-- addon.debugend = GetGameTimeMilliseconds()
 end
 
 em:RegisterForEvent(addon.name, EVENT_ADD_ON_LOADED, OnAddonLoaded)
