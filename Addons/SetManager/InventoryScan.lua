@@ -51,7 +51,9 @@ function addon:InitInventoryScan()
 		addon.account.sets = ScanInventory(BAG_BANK)
 		-- addon.player.sets = ScanInventory(BAG_WORN, ScanInventory(BAG_BAGBACK))
 		addon.player.sets = ScanInventory(BAG_BAGBACK)
+		-- TODO: scan all other player's sets
 		addon.player.crafting = ScanCrafting()
+		addon:DoCompleteProcess()
 	end
 
 	em:RegisterForEvent(addon.name, EVENT_PLAYER_DEACTIVATED, PlayerDeactivated)

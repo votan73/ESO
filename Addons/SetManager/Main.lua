@@ -250,6 +250,7 @@ function addon:InitWindow()
 
 	SCENE_MANAGER:AddSceneGroup("SetManagerSceneGroup", ZO_SceneGroup:New(descriptor))
 
+  SLASH_COMMANDS["/setm"] = function (...) addon:cmdSetManager(...) end
 	LMM2 = LibStub("LibMainMenu-2.0")
 	LMM2:Init()
 	self.LMM2 = LMM2
@@ -308,6 +309,31 @@ local function OnAddonLoaded(event, name)
 	-- end
 	-- addon.account.all = list
 	-- addon.debugend = GetGameTimeMilliseconds()
+end
+
+function addon:cmdSetManager(text)
+  d("execute /setm")
+  if (text == "dump") then
+    self:dumpItems(5, true)
+  elseif (text == "reset") then
+    d("check")
+    addon:DoCompleteProcess()
+  elseif (text == "boni") then
+    d("boni")
+    addon:dumpBoni()
+  else
+    d("use check|dump")
+  end
+end
+
+function addon:dumpItems(minNum,unbound)
+  if (addon.sets ~= nil) then
+    for set,info in pairs(addon.sets) do
+      self:dumpSetInfo(set, info)
+    end
+  else
+    d("No sets stored")
+  end
 end
 
 em:RegisterForEvent(addon.name, EVENT_ADD_ON_LOADED, OnAddonLoaded)
