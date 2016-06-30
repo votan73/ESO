@@ -16,6 +16,7 @@ lang/$(language).lua
 
 Controls.xml
 Main.lua
+Sets.lua
 ProcessSets.lua
 InventoryScan.lua
 

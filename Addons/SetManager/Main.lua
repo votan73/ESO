@@ -74,12 +74,9 @@ local function HideRowHighlight(rowControl, hidden)
 		end
 		if hidden then
 			highlight.animation:PlayBackward()
-			ClearTooltip(ItemTooltip)
+			ClearTooltip(ItemTooltip, rowControl)
 		else
 			highlight.animation:PlayForward()
-
-			InitializeTooltip(ItemTooltip, rowControl, TOPRIGHT, 0, -104, TOPLEFT)
-			local rowData = ZO_ScrollList_GetData(rowControl)
 		end
 	end
 end
@@ -112,6 +109,11 @@ end
 function addon:InitSetsList()
 	local function onMouseEnter(rowControl)
 		HideRowHighlight(rowControl, false)
+		InitializeTooltip(ItemTooltip, rowControl, TOPRIGHT, 0, -104, TOPLEFT)
+		local rowData = ZO_ScrollList_GetData(rowControl)
+		--ItemTooltip:ClearLines()
+		--ToDo: Nice formatting of SetBonusInfo
+		ItemTooltip:SetLink(rowData.itemLink)
 	end
 	local function onMouseExit(rowControl)
 		HideRowHighlight(rowControl, true)
@@ -123,15 +125,17 @@ function addon:InitSetsList()
 		local icon = rowControl:GetNamedChild("Texture")
 		local nameLabel = rowControl:GetNamedChild("Name")
 
-		icon:SetTexture(rowData.icon)
-		nameLabel:SetText(zo_strformat(rowData.name))
+		-- icon:SetTexture(rowData.icon)
+		nameLabel:SetText(zo_strformat("<<C:1>>", rowData.name))
 
 		rowControl:SetHandler("OnMouseEnter", onMouseEnter)
 		rowControl:SetHandler("OnMouseExit", onMouseExit)
 		rowControl:SetHandler("OnMouseDoubleClick", onMouseDoubleClick)
 	end
 	self.SetsList = SetManagerTopLevelSetsList
-	ZO_ScrollList_AddDataType(self.SetsList, ROW_TYPE_ID, "SetManagerSetsListRow", 32, setupDataRow)
+	self.SetsList.dirty = true
+
+	ZO_ScrollList_AddDataType(self.SetsList, ROW_TYPE_ID, "SetManagerSetsListRow", 48, setupDataRow)
 end
 
 function addon:InitWindow()
@@ -231,13 +235,6 @@ function addon:InitWindow()
 	local sceneName = addon.name
 	SETMANAGER_SCENE = ZO_Scene:New(sceneName, SCENE_MANAGER)
 
-	SETMANAGER_CHARACTER_FRAGMENT:RegisterCallback("StateChange", function(oldState, newState)
-		if newState == SCENE_FRAGMENT_SHOWING then
-		elseif newState == SCENE_FRAGMENT_SHOWN then
-		elseif newState == SCENE_FRAGMENT_HIDING then
-		elseif newState == SCENE_FRAGMENT_HIDDEN then
-		end
-	end )
 	SETMANAGER_SCENE:AddFragmentGroup(FRAGMENT_GROUP.MOUSE_DRIVEN_UI_WINDOW)
 	SETMANAGER_SCENE:AddFragmentGroup(FRAGMENT_GROUP.FRAME_TARGET_STANDARD_RIGHT_PANEL)
 	SETMANAGER_SCENE:AddFragment(THIN_LEFT_PANEL_BG_FRAGMENT)
@@ -250,7 +247,7 @@ function addon:InitWindow()
 
 	SCENE_MANAGER:AddSceneGroup("SetManagerSceneGroup", ZO_SceneGroup:New(descriptor))
 
-  SLASH_COMMANDS["/setm"] = function (...) addon:cmdSetManager(...) end
+	SLASH_COMMANDS["/setm"] = function(...) addon:cmdSetManager(...) end
 	LMM2 = LibStub("LibMainMenu-2.0")
 	LMM2:Init()
 	self.LMM2 = LMM2
@@ -280,8 +277,41 @@ function addon:InitWindow()
 	em:RegisterForEvent(addon.name, EVENT_PLAYER_ACTIVATED, PlayerActivated)
 end
 
-function addon:ToggleEditorScene()
-	self.LMM2:SelectMenuItem(self.name)
+function addon:FillSetsList()
+	local scrollList = self.SetsList
+	local dataList = ZO_ScrollList_GetDataList(scrollList)
+
+	ZO_ScrollList_Clear(scrollList)
+
+	local format, createLink = zo_strformat, string.format
+	local GetItemLinkSetInfo = GetItemLinkSetInfo
+
+	local sets = self.allSets
+	for itemId, items in pairs(sets) do
+		local itemLink = createLink("|H1:item:%i:304:50:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h", itemId)
+		local _, name = GetItemLinkSetInfo(itemLink, false)
+
+		local rowData = { name = name, itemLink = itemLink, items = items }
+		dataList[#dataList + 1] = ZO_ScrollList_CreateDataEntry(ROW_TYPE_ID, rowData, 1)
+	end
+
+	table.sort(dataList, function(a, b) return a.data.name < b.data.name end)
+
+	ZO_ScrollList_Commit(scrollList)
+	scrollList.dirty = false
+end
+
+function addon:InitSetManager()
+	SETMANAGER_CHARACTER_FRAGMENT:RegisterCallback("StateChange", function(oldState, newState)
+		if newState == SCENE_FRAGMENT_SHOWING then
+			if self.SetsList.dirty then
+				self:FillSetsList()
+			end
+		elseif newState == SCENE_FRAGMENT_SHOWN then
+		elseif newState == SCENE_FRAGMENT_HIDING then
+		elseif newState == SCENE_FRAGMENT_HIDDEN then
+		end
+	end )
 end
 
 local function OnAddonLoaded(event, name)
@@ -307,33 +337,44 @@ local function OnAddonLoaded(event, name)
 	-- 		list[setName] = parts
 	-- 	end
 	-- end
-	-- addon.account.all = list
+	-- local sets = { }
+	-- for name, items in pairs(list) do
+	-- 	local firstItem = items[1]
+	-- 	sets[firstItem] = items
+	-- end
+	-- addon.account.all = sets
 	-- addon.debugend = GetGameTimeMilliseconds()
+
+	addon:InitSetManager()
+end
+
+function addon:ToggleEditorScene()
+	self.LMM2:SelectMenuItem(self.name)
 end
 
 function addon:cmdSetManager(text)
-  d("execute /setm")
-  if (text == "dump") then
-    self:dumpItems(5, true)
-  elseif (text == "reset") then
-    d("check")
-    addon:DoCompleteProcess()
-  elseif (text == "boni") then
-    d("boni")
-    addon:dumpBoni()
-  else
-    d("use check|dump")
-  end
+	d("execute /setm")
+	if (text == "dump") then
+		self:dumpItems(5, true)
+	elseif (text == "reset") then
+		d("check")
+		addon:DoCompleteProcess()
+	elseif (text == "boni") then
+		d("boni")
+		addon:dumpBoni()
+	else
+		d("use check|dump")
+	end
 end
 
-function addon:dumpItems(minNum,unbound)
-  if (addon.sets ~= nil) then
-    for set,info in pairs(addon.sets) do
-      self:dumpSetInfo(set, info)
-    end
-  else
-    d("No sets stored")
-  end
+function addon:dumpItems(minNum, unbound)
+	if (addon.sets ~= nil) then
+		for set, info in pairs(addon.sets) do
+			self:dumpSetInfo(set, info)
+		end
+	else
+		d("No sets stored")
+	end
 end
 
 em:RegisterForEvent(addon.name, EVENT_ADD_ON_LOADED, OnAddonLoaded)
