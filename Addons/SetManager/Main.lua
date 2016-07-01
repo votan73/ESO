@@ -14,7 +14,7 @@ local addon = {
 -- local am = GetAnimationManager()
 local wm = GetWindowManager()
 local em = GetEventManager()
-local LMM2
+local LMM2 = LibStub("LibMainMenu-2.0")
 local ROW_TYPE_ID = 1
 
 local function InitializeSlots(parent)
@@ -45,10 +45,20 @@ local function InitializeSlots(parent)
 
 	parent:GetNamedChild("PaperDoll"):SetTexture(GetUnitSilhouetteTexture("player"))
 
+	local function onClicked(control)
+		local parent = control:GetParent()
+		for equipSlot, other in pairs(slots) do
+			local selected = other == control
+			other:SetState(selected and BSTATE_PRESSED or BSTATE_NORMAL)
+			if selected then parent.selectedSlot = equipSlot end
+		end
+		if parent.OnSelectedChanged then parent.OnSelectedChanged(parent) end
+	end
 	local ZO_Character_GetEmptyEquipSlotTexture = ZO_Character_GetEmptyEquipSlotTexture
 	for slotId, slotControl in pairs(slots) do
 		local iconControl = slotControl:GetNamedChild("Icon")
 		iconControl:SetTexture(ZO_Character_GetEmptyEquipSlotTexture(slotId))
+		slotControl:SetHandler("OnClicked", onClicked)
 	end
 end
 
@@ -84,35 +94,8 @@ end
 function addon:InitItemList()
 	local function onMouseEnter(rowControl)
 		HideRowHighlight(rowControl, false)
-	end
-	local function onMouseExit(rowControl)
-		HideRowHighlight(rowControl, true)
-	end
-	local function onMouseDoubleClick(rowControl)
-	end
-
-	local function setupDataRow(rowControl, rowData, scrollList)
-		local icon = rowControl:GetNamedChild("Texture")
-		local nameLabel = rowControl:GetNamedChild("Name")
-
-		icon:SetTexture(rowData.icon)
-		nameLabel:SetText(zo_strformat(rowData.name))
-
-		rowControl:SetHandler("OnMouseEnter", onMouseEnter)
-		rowControl:SetHandler("OnMouseExit", onMouseExit)
-		rowControl:SetHandler("OnMouseDoubleClick", onMouseDoubleClick)
-	end
-	self.ItemList = SetManagerTopLevelItemList
-	ZO_ScrollList_AddDataType(self.ItemList, ROW_TYPE_ID, "SetManagerItemListRow", 32, setupDataRow)
-end
-
-function addon:InitSetsList()
-	local function onMouseEnter(rowControl)
-		HideRowHighlight(rowControl, false)
 		InitializeTooltip(ItemTooltip, rowControl, TOPRIGHT, 0, -104, TOPLEFT)
 		local rowData = ZO_ScrollList_GetData(rowControl)
-		--ItemTooltip:ClearLines()
-		--ToDo: Nice formatting of SetBonusInfo
 		ItemTooltip:SetLink(rowData.itemLink)
 	end
 	local function onMouseExit(rowControl)
@@ -125,12 +108,50 @@ function addon:InitSetsList()
 		local icon = rowControl:GetNamedChild("Texture")
 		local nameLabel = rowControl:GetNamedChild("Name")
 
+		local itemName = GetItemLinkName(rowData.itemLink)
+		local iconTexture = GetItemLinkInfo(rowData.itemLink)
+
+		icon:SetTexture(iconTexture)
+		nameLabel:SetText(zo_strformat("<<C:1>>", itemName))
+
+		rowControl:SetHandler("OnMouseEnter", onMouseEnter)
+		rowControl:SetHandler("OnMouseExit", onMouseExit)
+		rowControl:SetHandler("OnMouseDoubleClick", onMouseDoubleClick)
+	end
+	self.ItemList = SetManagerTopLevelItemList
+
+	ZO_ScrollList_AddDataType(self.ItemList, ROW_TYPE_ID, "SetManagerItemListRow", 48, setupDataRow)
+end
+
+function addon:InitSetsList()
+	local function onMouseEnter(rowControl)
+		HideRowHighlight(rowControl, false)
+		InitializeTooltip(ItemTooltip, rowControl, TOPRIGHT, 0, -104, TOPLEFT)
+		local rowData = ZO_ScrollList_GetData(rowControl)
+		-- ItemTooltip:ClearLines()
+		-- ToDo: Nice formatting of SetBonusInfo
+		ItemTooltip:SetLink(rowData.itemLink)
+	end
+	local function onMouseExit(rowControl)
+		HideRowHighlight(rowControl, true)
+	end
+	local function onMouseDoubleClick(rowControl)
+		local rowData = ZO_ScrollList_GetData(rowControl)
+		self.SetsList.selected = rowData.id
+		PlaySound(SOUNDS.DEFAULT_CLICK)
+	end
+
+	local function setupDataRow(rowControl, rowData, scrollList)
+		local icon = rowControl:GetNamedChild("Texture")
+		local nameLabel = rowControl:GetNamedChild("Name")
+
 		-- icon:SetTexture(rowData.icon)
 		nameLabel:SetText(zo_strformat("<<C:1>>", rowData.name))
 
 		rowControl:SetHandler("OnMouseEnter", onMouseEnter)
 		rowControl:SetHandler("OnMouseExit", onMouseExit)
-		rowControl:SetHandler("OnMouseDoubleClick", onMouseDoubleClick)
+		-- rowControl:EnableMouseButton(1, true)
+		rowControl:SetHandler("OnClicked", onMouseDoubleClick)
 	end
 	self.SetsList = SetManagerTopLevelSetsList
 	self.SetsList.dirty = true
@@ -140,9 +161,15 @@ end
 
 function addon:InitWindow()
 	local function InitSetScrollList(scrollListControl, listContainer, listSlotTemplate)
+		local function OnSelectedSlotChanged(control)
+			self.selectedSlot = control.selectedSlot
+			self:UpdateItemList()
+			PlaySound(SOUNDS.DEFAULT_CLICK)
+		end
 
 		local function SetupFunction(control, data, selected, selectedDuringRebuild, enabled)
 			InitializeSlots(control)
+			control.OnSelectedChanged = OnSelectedSlotChanged
 
 			-- 		if self:IsInvalidMode() then return end
 
@@ -248,7 +275,6 @@ function addon:InitWindow()
 	SCENE_MANAGER:AddSceneGroup("SetManagerSceneGroup", ZO_SceneGroup:New(descriptor))
 
 	SLASH_COMMANDS["/setm"] = function(...) addon:cmdSetManager(...) end
-	LMM2 = LibStub("LibMainMenu-2.0")
 	LMM2:Init()
 	self.LMM2 = LMM2
 
@@ -277,7 +303,7 @@ function addon:InitWindow()
 	em:RegisterForEvent(addon.name, EVENT_PLAYER_ACTIVATED, PlayerActivated)
 end
 
-function addon:FillSetsList()
+function addon:UpdateSetsList()
 	local scrollList = self.SetsList
 	local dataList = ZO_ScrollList_GetDataList(scrollList)
 
@@ -291,7 +317,7 @@ function addon:FillSetsList()
 		local itemLink = createLink("|H1:item:%i:304:50:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h", itemId)
 		local _, name = GetItemLinkSetInfo(itemLink, false)
 
-		local rowData = { name = name, itemLink = itemLink, items = items }
+		local rowData = { id = itemId, name = name, itemLink = itemLink, items = items }
 		dataList[#dataList + 1] = ZO_ScrollList_CreateDataEntry(ROW_TYPE_ID, rowData, 1)
 	end
 
@@ -301,11 +327,39 @@ function addon:FillSetsList()
 	scrollList.dirty = false
 end
 
+function addon:UpdateItemList()
+	local targetSetId, selectedSlot = self.SetsList.selected, self.selectedSlot
+	if not targetSetId or not selectedSlot then return end
+	local items = self.allSets[targetSetId]
+	if not items then return end
+
+	local scrollList = self.ItemList
+	local dataList = ZO_ScrollList_GetDataList(scrollList)
+
+	ZO_ScrollList_Clear(scrollList)
+
+	local format, createLink = zo_strformat, string.format
+	local GetItemLinkSetInfo, GetItemLinkEquipType = GetItemLinkSetInfo, GetItemLinkEquipType
+
+	local itemLink = createLink("|H1:item:%i:304:50:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h", targetSetId)
+	local _, targetSetName = GetItemLinkSetInfo(itemLink, false)
+	for _, itemId in ipairs(items) do
+		itemLink = createLink("|H1:item:%i:304:50:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h", itemId)
+		local _, name = GetItemLinkSetInfo(itemLink, false)
+		if name == targetSetName then
+			local rowData = { id = itemId, itemLink = itemLink }
+			dataList[#dataList + 1] = ZO_ScrollList_CreateDataEntry(ROW_TYPE_ID, rowData, 1)
+		end
+	end
+	ZO_ScrollList_Commit(scrollList)
+	scrollList.dirty = false
+end
+
 function addon:InitSetManager()
 	SETMANAGER_CHARACTER_FRAGMENT:RegisterCallback("StateChange", function(oldState, newState)
 		if newState == SCENE_FRAGMENT_SHOWING then
 			if self.SetsList.dirty then
-				self:FillSetsList()
+				self:UpdateSetsList()
 			end
 		elseif newState == SCENE_FRAGMENT_SHOWN then
 		elseif newState == SCENE_FRAGMENT_HIDING then

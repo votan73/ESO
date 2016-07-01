@@ -1,6 +1,6 @@
 ## Title: Set Manager
 ## Author: Criscal & votan
-## APIVersion: 100015
+## APIVersion: 100015 100016
 ## Version: 1.0.0
 ## OptionalDependsOn: LibStub LibAddonMenu-2.0
 ## SavedVariables: SetManager_Data
