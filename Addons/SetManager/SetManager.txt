@@ -19,5 +19,6 @@ Main.lua
 Sets.lua
 ProcessSets.lua
 InventoryScan.lua
+ItemLinks.lua
 
 Bindings.xml

@@ -138,6 +138,7 @@ function addon:InitSetsList()
 	local function onMouseDoubleClick(rowControl)
 		local rowData = ZO_ScrollList_GetData(rowControl)
 		self.SetsList.selected = rowData.id
+		self:UpdateItemList()
 		PlaySound(SOUNDS.DEFAULT_CLICK)
 	end
 
@@ -339,18 +340,25 @@ function addon:UpdateItemList()
 	ZO_ScrollList_Clear(scrollList)
 
 	local format, createLink = zo_strformat, string.format
-	local GetItemLinkSetInfo, GetItemLinkEquipType = GetItemLinkSetInfo, GetItemLinkEquipType
+	local GetItemLinkSetInfo, GetItemLinkEquipType, GetItemLinkEquipType, ZO_Character_DoesEquipSlotUseEquipType = GetItemLinkSetInfo, GetItemLinkEquipType, GetItemLinkEquipType, ZO_Character_DoesEquipSlotUseEquipType
 
-	local itemLink = createLink("|H1:item:%i:304:50:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h", targetSetId)
+	local level, champ = 50, 160
+	local subId = self:CreateSubItemId(level, champ, ITEM_QUALITY_MAGIC)
+	local itemLink = createLink("|H1:item:%i:%i:%i:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h", targetSetId, subId, level)
 	local _, targetSetName = GetItemLinkSetInfo(itemLink, false)
-	for _, itemId in ipairs(items) do
-		itemLink = createLink("|H1:item:%i:304:50:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h", itemId)
+	local function add(itemLink)
 		local _, name = GetItemLinkSetInfo(itemLink, false)
 		if name == targetSetName then
-			local rowData = { id = itemId, itemLink = itemLink }
-			dataList[#dataList + 1] = ZO_ScrollList_CreateDataEntry(ROW_TYPE_ID, rowData, 1)
+			local equipType = GetItemLinkEquipType(itemLink)
+			if ZO_Character_DoesEquipSlotUseEquipType(selectedSlot, equipType) then
+				local rowData = { id = itemId, itemLink = itemLink }
+				dataList[#dataList + 1] = ZO_ScrollList_CreateDataEntry(ROW_TYPE_ID, rowData, 1)
+			end
 		end
 	end
+	for _, itemLink in ipairs(self.account.sets) do add(itemLink) end
+	for _, itemLink in ipairs(self.player.sets) do add(itemLink) end
+	for _, itemId in ipairs(items) do add(createLink("|H1:item:%i:%i:%i:0:0:0:0:0:0:0:0:0:0:0:0:2:1:0:0:10000:0|h|h", itemId, subId, level)) end
 	ZO_ScrollList_Commit(scrollList)
 	scrollList.dirty = false
 end
@@ -358,6 +366,8 @@ end
 function addon:InitSetManager()
 	SETMANAGER_CHARACTER_FRAGMENT:RegisterCallback("StateChange", function(oldState, newState)
 		if newState == SCENE_FRAGMENT_SHOWING then
+			-- Just for debug!
+			ItemTooltip.SetLink = PopupTooltip.SetLink
 			if self.SetsList.dirty then
 				self:UpdateSetsList()
 			end
