@@ -358,7 +358,7 @@ function addon:UpdateItemList()
 	end
 	for _, itemLink in ipairs(self.account.sets) do add(itemLink) end
 	for _, itemLink in ipairs(self.player.sets) do add(itemLink) end
-	for _, itemId in ipairs(items) do add(createLink("|H1:item:%i:%i:%i:0:0:0:0:0:0:0:0:0:0:0:0:2:1:0:0:10000:0|h|h", itemId, subId, level)) end
+	for _, itemId in ipairs(items) do add(createLink("|H1:item:%i:%i:%i:0:0:0:0:0:0:0:0:0:0:0:0:2:0:0:0:10000:0|h|h", itemId, subId, level)) end
 	ZO_ScrollList_Commit(scrollList)
 	scrollList.dirty = false
 end
