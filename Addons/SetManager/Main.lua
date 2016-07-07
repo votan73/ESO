@@ -91,6 +91,22 @@ local function HideRowHighlight(rowControl, hidden)
 	end
 end
 
+local function AddLine(tooltip, text, color, alignment)
+	local r, g, b = color:UnpackRGB()
+	tooltip:AddLine(text, "", r, g, b, CENTER, MODIFY_TEXT_TYPE_NONE, alignment, alignment ~= TEXT_ALIGN_LEFT)
+end
+
+local function AddLineCenter(tooltip, text, color)
+	if not color then color = ZO_TOOLTIP_DEFAULT_COLOR end
+	AddLine(tooltip, text, color, TEXT_ALIGN_CENTER)
+end
+
+local function AddLineTitle(tooltip, text, color)
+	if not color then color = ZO_SELECTED_TEXT end
+	local r, g, b = color:UnpackRGB()
+	tooltip:AddLine(text, "ZoFontHeader3", r, g, b, CENTER, MODIFY_TEXT_TYPE_UPPERCASE, TEXT_ALIGN_CENTER, true)
+end
+
 function addon:InitItemList()
 	local function onMouseEnter(rowControl)
 		HideRowHighlight(rowControl, false)
@@ -110,9 +126,11 @@ function addon:InitItemList()
 
 		local itemName = GetItemLinkName(rowData.itemLink)
 		local iconTexture = GetItemLinkInfo(rowData.itemLink)
+		local quality = GetItemLinkQuality(rowData.itemLink)
 
 		icon:SetTexture(iconTexture)
 		nameLabel:SetText(zo_strformat("<<C:1>>", itemName))
+		nameLabel:SetColor(GetItemQualityColor(quality):UnpackRGB())
 
 		rowControl:SetHandler("OnMouseEnter", onMouseEnter)
 		rowControl:SetHandler("OnMouseExit", onMouseExit)
@@ -128,9 +146,24 @@ function addon:InitSetsList()
 		HideRowHighlight(rowControl, false)
 		InitializeTooltip(ItemTooltip, rowControl, TOPRIGHT, 0, -104, TOPLEFT)
 		local rowData = ZO_ScrollList_GetData(rowControl)
-		-- ItemTooltip:ClearLines()
-		-- ToDo: Nice formatting of SetBonusInfo
-		ItemTooltip:SetLink(rowData.itemLink)
+		ItemTooltip:ClearLines()
+
+		local itemLink = rowData.itemLink
+
+		local iconTexture = GetItemLinkInfo(itemLink)
+		ZO_ItemIconTooltip_OnAddGameData(ItemTooltip, TOOLTIP_GAME_DATA_ITEM_ICON, iconTexture)
+			ItemTooltip:AddVerticalPadding(24)
+	
+		local hasSet, setName, numBonuses, _, maxEquipped = GetItemLinkSetInfo(itemLink)
+		if hasSet then
+			AddLineTitle(ItemTooltip, zo_strformat(SI_TOOLTIP_ITEM_NAME, setName))
+			ItemTooltip:AddVerticalPadding(-9)
+			ZO_Tooltip_AddDivider(ItemTooltip)
+			for i = 1, numBonuses do
+				local _, bonusDescription = GetItemLinkSetBonusInfo(itemLink, false, i)
+				AddLineCenter(ItemTooltip, bonusDescription)
+			end
+		end
 	end
 	local function onMouseExit(rowControl)
 		HideRowHighlight(rowControl, true)
@@ -146,7 +179,9 @@ function addon:InitSetsList()
 		local icon = rowControl:GetNamedChild("Texture")
 		local nameLabel = rowControl:GetNamedChild("Name")
 
-		-- icon:SetTexture(rowData.icon)
+		local rowData = ZO_ScrollList_GetData(rowControl)
+		local isCraftable = #rowData.items >= 350
+		icon:SetTexture(isCraftable and "/esoui/art/icons/poi/poi_crafting_complete.dds" or "/esoui/art/icons/mapkey/mapkey_bank.dds")
 		nameLabel:SetText(zo_strformat("<<C:1>>", rowData.name))
 
 		rowControl:SetHandler("OnMouseEnter", onMouseEnter)
@@ -366,8 +401,6 @@ end
 function addon:InitSetManager()
 	SETMANAGER_CHARACTER_FRAGMENT:RegisterCallback("StateChange", function(oldState, newState)
 		if newState == SCENE_FRAGMENT_SHOWING then
-			-- Just for debug!
-			ItemTooltip.SetLink = PopupTooltip.SetLink
 			if self.SetsList.dirty then
 				self:UpdateSetsList()
 			end

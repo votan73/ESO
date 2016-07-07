@@ -160,22 +160,23 @@
           <TextureCoords left="0" right="1" top="0" bottom=".625" />
         </Texture>
 
-        <!--<Texture name="$(parent)Texture" level="3">
+        <Texture name="$(parent)Texture" level="3">
           <Anchor point="TOPLEFT" offsetX="10" offsetY="4" />
           <Dimensions x="40" y="40"/>
-          <Controls>
+          <!--<Controls>
             <Texture name="$(parent)BG" textureFile="EsoUI/Art/Achievements/achievements_iconBG.dds" level="2">
               <AnchorFill />
             </Texture>
             <Texture name="$(parent)Frame" textureFile="EsoUI/Art/ActionBar/abilityFrame64_up.dds" layer="CONTROLS">
               <AnchorFill />
             </Texture>
-          </Controls>
-        </Texture>-->
+          </Controls>-->
+        </Texture>
 
-        <Label name="$(parent)Name" font="ZoFontWinH4" wrapMode="ELLIPSIS" verticalAlignment="CENTER" horizontalAlignment="LEFT">
-          <Anchor point="TOPLEFT" relativeTo="$(parent)" relativePoint="TOPLEFT" offsetX="20" offsetY="4"/>
-          <Anchor point="BOTTOMRIGHT" relativeTo="$(parent)" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="-4"/>
+        <Label name="$(parent)Name" font="ZoFontWinH4" wrapMode="ELLIPSIS" verticalAlignment="CENTER" horizontalAlignment="LEFT" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_NORMAL">
+          <Dimensions y="48"/>
+          <Anchor point="TOPLEFT" relativeTo="$(parent)Texture" relativePoint="TOPRIGHT" offsetX="4" offsetY="-4"/>
+          <Anchor point="TOPRIGHT" relativeTo="$(parent)" relativePoint="TOPRIGHT" offsetX="-4" offsetY="0"/>
         </Label>
       </Controls>
     </Button>
