@@ -6,4 +6,14 @@
       </Action>
     </Category>
   </Layer>
+  <Layer name="SI_KEYBINDINGS_LAYER_SET_MANAGER" allowFallthrough="true">
+    <Category>
+      <!--<Action name="SET_MANAGER_ADD_SET" hideAction="true" rebindable="false" inheritsBindFrom="UI_SHORTCUT_PRIMARY">
+        <Down>d("jo1")</Down>
+      </Action>
+      <Action name="SET_MANAGER_DElETE_SET" hideAction="true" rebindable="false" inheritsBindFrom="UI_SHORTCUT_NEGATIVE">
+        <Down>d("jo2")</Down>
+      </Action>-->
+    </Category>
+  </Layer>
 </Bindings>

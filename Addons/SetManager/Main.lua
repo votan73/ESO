@@ -7,7 +7,8 @@ local addon = {
 	},
 	accountDefaults =
 	{
-		sets = { }
+		sets = { },
+		templates = { },
 	},
 }
 
@@ -17,7 +18,27 @@ local em = GetEventManager()
 local LMM2 = LibStub("LibMainMenu-2.0")
 local ROW_TYPE_ID = 1
 
-local function InitializeSlots(parent)
+local function OnSlotClicked(control)
+	local parent = control:GetParent()
+	for equipSlot, other in pairs(parent.slots) do
+		local selected = other == control
+		other:SetState(selected and BSTATE_PRESSED or BSTATE_NORMAL)
+		if selected then parent.selectedSlot = equipSlot end
+	end
+	if parent.OnSelectedChanged then parent.OnSelectedChanged(parent) end
+end
+
+local function UpdateSlot(self)
+	local iconControl = self:GetNamedChild("Icon")
+	if self.itemLink then
+		local icon = GetItemLinkInfo(self.itemLink)
+		iconControl:SetTexture(icon)
+	else
+		iconControl:SetTexture(ZO_Character_GetEmptyEquipSlotTexture(self.slotId))
+	end
+end
+
+function addon:InitializeSlots(parent)
 	if parent.slots then return end
 
 	local slots =
@@ -45,20 +66,38 @@ local function InitializeSlots(parent)
 
 	parent:GetNamedChild("PaperDoll"):SetTexture(GetUnitSilhouetteTexture("player"))
 
-	local function onClicked(control)
-		local parent = control:GetParent()
-		for equipSlot, other in pairs(slots) do
-			local selected = other == control
-			other:SetState(selected and BSTATE_PRESSED or BSTATE_NORMAL)
-			if selected then parent.selectedSlot = equipSlot end
-		end
-		if parent.OnSelectedChanged then parent.OnSelectedChanged(parent) end
-	end
 	local ZO_Character_GetEmptyEquipSlotTexture = ZO_Character_GetEmptyEquipSlotTexture
 	for slotId, slotControl in pairs(slots) do
-		local iconControl = slotControl:GetNamedChild("Icon")
-		iconControl:SetTexture(ZO_Character_GetEmptyEquipSlotTexture(slotId))
-		slotControl:SetHandler("OnClicked", onClicked)
+		slotControl.slotId = slotId
+		slotControl.Update = UpdateSlot
+		slotControl:SetHandler("OnClicked", OnSlotClicked)
+	end
+end
+
+local function OnSlotEditableClicked(control, button)
+	if button == MOUSE_BUTTON_INDEX_LEFT then
+		OnSlotClicked(control)
+	elseif button == MOUSE_BUTTON_INDEX_RIGHT then
+		local parent = control:GetParent()
+	end
+end
+
+function addon:InitializeEditableSlots(parent)
+	self:InitializeSlots(parent)
+	local edit = parent:GetNamedChild("Name")
+	local function TextChanged(self)
+		parent.templateName = self:GetText()
+		local instructions = self:GetNamedChild("Instructions")
+		instructions:SetHidden(parent.templateName ~= "")
+	end
+	local function TextPressEnter(self)
+		self:LoseFocus()
+		if parent.OnTemplateChanged then parent:OnTemplateChanged() end
+	end
+	edit:SetHandler("OnEnter", TextPressEnter)
+	edit:SetHandler("OnTextChanged", TextChanged)
+	for slotId, slotControl in pairs(parent.slots) do
+		slotControl:SetHandler("OnClicked", OnSlotEditableClicked)
 	end
 end
 
@@ -113,9 +152,13 @@ function addon:InitItemList()
 		InitializeTooltip(ItemTooltip, rowControl, TOPRIGHT, 0, -104, TOPLEFT)
 		local rowData = ZO_ScrollList_GetData(rowControl)
 		ItemTooltip:SetLink(rowData.itemLink)
+		self.ItemList.hovered = ZO_ScrollList_GetData(rowControl)
+		KEYBIND_STRIP:UpdateKeybindButtonGroup(self.keybindStripDescriptorMouseOver)
 	end
 	local function onMouseExit(rowControl)
 		HideRowHighlight(rowControl, true)
+		self.ItemList.hovered = nil
+		KEYBIND_STRIP:UpdateKeybindButtonGroup(self.keybindStripDescriptorMouseOver)
 	end
 	local function onMouseDoubleClick(rowControl)
 	end
@@ -152,8 +195,8 @@ function addon:InitSetsList()
 
 		local iconTexture = GetItemLinkInfo(itemLink)
 		ZO_ItemIconTooltip_OnAddGameData(ItemTooltip, TOOLTIP_GAME_DATA_ITEM_ICON, iconTexture)
-			ItemTooltip:AddVerticalPadding(24)
-	
+		ItemTooltip:AddVerticalPadding(24)
+
 		local hasSet, setName, numBonuses, _, maxEquipped = GetItemLinkSetInfo(itemLink)
 		if hasSet then
 			AddLineTitle(ItemTooltip, zo_strformat(SI_TOOLTIP_ITEM_NAME, setName))
@@ -195,6 +238,12 @@ function addon:InitSetsList()
 	ZO_ScrollList_AddDataType(self.SetsList, ROW_TYPE_ID, "SetManagerSetsListRow", 48, setupDataRow)
 end
 
+local function FakeEquippedItemTooltip(itemLink)
+	-- SetLink uses original functions only. They protected it.
+	-- Rewrite Tooltip???
+	ItemTooltip:SetLink(itemLink, true)
+end
+
 function addon:InitWindow()
 	local function InitSetScrollList(scrollListControl, listContainer, listSlotTemplate)
 		local function OnSelectedSlotChanged(control)
@@ -202,10 +251,38 @@ function addon:InitWindow()
 			self:UpdateItemList()
 			PlaySound(SOUNDS.DEFAULT_CLICK)
 		end
+		local function OnTemplateChanged(self)
+			local rowData = self.data
+			rowData.name = self.templateName
+		end
 
+		local function onMouseEnter(rowControl)
+			if rowControl.itemLink then
+				InitializeTooltip(ItemTooltip, rowControl, TOPRIGHT, 0, -104, TOPLEFT)
+				FakeEquippedItemTooltip(rowControl.itemLink)
+				self.scrollListSet.hoveredSlot = rowControl.slotId
+				KEYBIND_STRIP:UpdateKeybindButtonGroup(self.keybindStripDescriptorMouseOver)
+			end
+		end
+		local function onMouseExit(rowControl)
+			ClearTooltip(ItemTooltip, rowControl)
+			self.scrollListSet.hoveredSlot = nil
+			KEYBIND_STRIP:UpdateKeybindButtonGroup(self.keybindStripDescriptorMouseOver)
+		end
 		local function SetupFunction(control, data, selected, selectedDuringRebuild, enabled)
-			InitializeSlots(control)
+			control.data = data
 			control.OnSelectedChanged = OnSelectedSlotChanged
+			control.OnTemplateChanged = OnTemplateChanged
+
+			local edit = control:GetNamedChild("Name")
+			edit:SetText(data.name)
+
+			for slotId, slotControl in pairs(control.slots) do
+				slotControl.itemLink = data[slotId]
+				slotControl:Update()
+				slotControl:SetHandler("OnMouseEnter", onMouseEnter)
+				slotControl:SetHandler("OnMouseExit", onMouseExit)
+			end
 
 			-- 		if self:IsInvalidMode() then return end
 
@@ -279,17 +356,21 @@ function addon:InitWindow()
 	control:SetHidden(true)
 	addon.windowSet = control
 
-	self.scrollListSet = InitSetScrollList(ZO_HorizontalScrollList, SetManagerTopLevelSetTemplateList, "SetManager_Character_Template")
+	self.scrollListSet = InitSetScrollList(ZO_HorizontalScrollList, SetManagerTopLevelSetTemplateList, "SetManager_Character_Template_Editable")
 	self.scrollListSet:SetScaleExtents(0.6, 1)
 
 	self:InitItemList()
 	self:InitSetsList()
 
-	-- Demo fake
+	local templates = self.account.templates
+	if #templates == 0 then
+		templates[#templates + 1] = { }
+	end
+
 	self.scrollListSet:Clear()
-	self.scrollListSet:AddEntry( { })
-	self.scrollListSet:AddEntry( { })
-	self.scrollListSet:AddEntry( { })
+	for _, template in ipairs(templates) do
+		self.scrollListSet:AddEntry(template)
+	end
 	self.scrollListSet:Commit()
 
 	SETMANAGER_CHARACTER_FRAGMENT = ZO_FadeSceneFragment:New(addon.windowSet, false, 0)
@@ -306,7 +387,6 @@ function addon:InitWindow()
 	SETMANAGER_SCENE:AddFragment(WIDE_RIGHT_BG_FRAGMENT)
 	SETMANAGER_SCENE:AddFragment(FRAME_EMOTE_FRAGMENT_JOURNAL)
 	SETMANAGER_SCENE:AddFragment(CHARACTER_WINDOW_SOUNDS)
-	-- SETMANAGER_SCENE:AddFragment(ZO_WindowSoundFragment:New(SOUNDS.ALCHEMY_OPENED, SOUNDS.ALCHEMY_CLOSED))
 
 	SCENE_MANAGER:AddSceneGroup("SetManagerSceneGroup", ZO_SceneGroup:New(descriptor))
 
@@ -399,13 +479,98 @@ function addon:UpdateItemList()
 end
 
 function addon:InitSetManager()
+	self.keybindStripDescriptor =
+	{
+		alignment = KEYBIND_STRIP_ALIGN_CENTER,
+
+		{
+			name = GetString(SI_BINDING_NAME_SET_MANAGER_ADD_SET),
+			keybind = "UI_SHORTCUT_TERTIARY",
+
+			callback = function()
+				local templates = self.account.templates
+				local template = { }
+				templates[#templates + 1] = template
+
+				self.scrollListSet:AddEntry(template)
+				self.scrollListSet:Commit()
+				self.scrollListSet:SetSelectedDataIndex(#templates)
+				KEYBIND_STRIP:UpdateKeybindButtonGroup(self.keybindStripDescriptor)
+			end,
+
+			visible = function()
+				return true
+			end
+		},
+		{
+			name = GetString(SI_BINDING_NAME_SET_MANAGER_DElETE_SET),
+			keybind = "UI_SHORTCUT_NEGATIVE",
+
+			callback = function()
+				-- Don't ask me, this is what you get.
+				local index = 1 - self.scrollListSet:GetSelectedIndex()
+				if index > 0 then
+					local templates = self.account.templates
+					table.remove(templates, index)
+					table.remove(self.scrollListSet.list, index)
+					self.scrollListSet:Commit()
+					KEYBIND_STRIP:UpdateKeybindButtonGroup(self.keybindStripDescriptor)
+				end
+			end,
+
+			visible = function()
+				return true
+			end,
+
+			enabled = function()
+				return #self.account.templates > 1
+			end
+		},
+	}
+	self.keybindStripDescriptorMouseOver =
+	{
+		alignment = KEYBIND_STRIP_ALIGN_RIGHT,
+
+		{
+			name = function() return self.ItemList.hovered and "Apply" or "Remove" end,
+			keybind = "UI_SHORTCUT_PRIMARY",
+
+			callback = function()
+				local selectedSet = self.scrollListSet:GetSelectedData()
+				if not selectedSet then return end
+				if self.ItemList.hovered then
+					local selectedSlot = self.selectedSlot
+					local hoveredItem = self.ItemList.hovered
+					if not hoveredItem or not selectedSlot then return end
+
+					selectedSet[selectedSlot] = hoveredItem.itemLink
+				elseif self.scrollListSet.hoveredSlot then
+					selectedSet[self.scrollListSet.hoveredSlot] = nil
+				end
+				self.scrollListSet:RefreshVisible()
+			end,
+
+			visible = function()
+				return(self.selectedSlot and self.ItemList.hovered) or(self.scrollListSet.hoveredSlot)
+			end,
+		},
+	}
+
 	SETMANAGER_CHARACTER_FRAGMENT:RegisterCallback("StateChange", function(oldState, newState)
 		if newState == SCENE_FRAGMENT_SHOWING then
+			ZO_Character_SetIsShowingReadOnlyFragment(true)
 			if self.SetsList.dirty then
 				self:UpdateSetsList()
 			end
 		elseif newState == SCENE_FRAGMENT_SHOWN then
+			PushActionLayerByName(GetString(SI_KEYBINDINGS_LAYER_SET_MANAGER))
+			KEYBIND_STRIP:AddKeybindButtonGroup(self.keybindStripDescriptor)
+			KEYBIND_STRIP:AddKeybindButtonGroup(self.keybindStripDescriptorMouseOver)
 		elseif newState == SCENE_FRAGMENT_HIDING then
+			ClearTooltip(ItemTooltip)
+			KEYBIND_STRIP:RemoveKeybindButtonGroup(self.keybindStripDescriptorMouseOver)
+			KEYBIND_STRIP:RemoveKeybindButtonGroup(self.keybindStripDescriptor)
+			RemoveActionLayerByName(GetString(SI_KEYBINDINGS_LAYER_SET_MANAGER))
 		elseif newState == SCENE_FRAGMENT_HIDDEN then
 		end
 	end )

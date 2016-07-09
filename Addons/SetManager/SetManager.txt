@@ -15,6 +15,7 @@ lang/strings.lua
 lang/$(language).lua
 
 Controls.xml
+
 Main.lua
 Sets.lua
 ProcessSets.lua

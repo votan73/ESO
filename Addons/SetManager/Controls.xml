@@ -17,7 +17,7 @@
       <Anchor point="CENTER" />
 
       <OnInitialized>
-        --ZO_Character_Initialize(self)
+        SET_MANAGER:InitializeSlots(self)
       </OnInitialized>
 
       <Controls>
@@ -123,7 +123,27 @@
         </Button>-->
       </Controls>
     </Control>
+    <Control name="SetManager_Character_Template_Editable" inherits="SetManager_Character_Template" virtual="true">
+      <OnInitialized>
+        SET_MANAGER:InitializeEditableSlots(self)
+      </OnInitialized>
+      <Controls>
+        <EditBox name="$(parent)Name" inherits="ZO_DefaultEditForDarkBackdrop" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_NORMAL" maxInputCharacters="64">
+          <Dimensions x="160" y="24"/>
+          <Anchor point="TOPLEFT"  relativeTo="$(parent)EquipmentSlotsBackupMain" relativePoint="BOTTOMLEFT" offsetY="4"/>
+          <Controls>
+            <Label name="$(parent)Instructions" font="ZoFontWinH3" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_DISABLED" text="Enter Name">
+              <AnchorFill />
 
+              <OnInitialized>
+                local anim = ZO_AlphaAnimation:New(self)
+                anim:PingPong(1, 0.4, 1000, LOOP_INDEFINITELY)
+              </OnInitialized>
+            </Label>
+          </Controls>
+        </EditBox>
+      </Controls>
+    </Control>
     <Control name="SetManagerItemListRow" virtual="true" mouseEnabled="true">
       <Dimensions x="300" y="48" />
       <Controls>
