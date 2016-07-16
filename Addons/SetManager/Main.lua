@@ -2,8 +2,8 @@ local addon = {
 	name = "SetManager",
 	playerDefaults =
 	{
-		crafting = { },
-		sets = { }
+		sets = { },
+		worn = { },
 	},
 	accountDefaults =
 	{
@@ -244,7 +244,7 @@ local function FakeEquippedItemTooltip(itemLink)
 	ItemTooltip:SetLink(itemLink, true)
 end
 
-function addon:InitWindow()
+function addon:InitSetScrollList()
 	local function InitSetScrollList(scrollListControl, listContainer, listSlotTemplate)
 		local function OnSelectedSlotChanged(control)
 			self.selectedSlot = control.selectedSlot
@@ -349,30 +349,190 @@ function addon:InitWindow()
 		scroll:SetFadeGradient(2, -1, 0, 64)
 		return scrollListControl:New(listContainer, listSlotTemplate, 1, SetupFunction, EqualityFunction, OnHorizonalScrollListShown, OnHorizonalScrollListCleared)
 	end
-
-	local control
-
-	control = SetManagerTopLevel
-	control:SetHidden(true)
-	addon.windowSet = control
-
 	self.scrollListSet = InitSetScrollList(ZO_HorizontalScrollList, SetManagerTopLevelSetTemplateList, "SetManager_Character_Template_Editable")
 	self.scrollListSet:SetScaleExtents(0.6, 1)
+	self.scrollListSet.dirty = true
+end
 
-	self:InitItemList()
-	self:InitSetsList()
+function addon:UpdateSetsList()
+	local scrollList = self.SetsList
+	local dataList = ZO_ScrollList_GetDataList(scrollList)
 
-	local templates = self.account.templates
-	if #templates == 0 then
-		templates[#templates + 1] = { }
+	ZO_ScrollList_Clear(scrollList)
+
+	local format, createLink = zo_strformat, string.format
+	local GetItemLinkSetInfo = GetItemLinkSetInfo
+
+	local sets = self.allSets
+	for itemId, items in pairs(sets) do
+		local itemLink = createLink("|H1:item:%i:304:50:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h", itemId)
+		local _, name = GetItemLinkSetInfo(itemLink, false)
+
+		local rowData = { id = itemId, name = name, itemLink = itemLink, items = items }
+		dataList[#dataList + 1] = ZO_ScrollList_CreateDataEntry(ROW_TYPE_ID, rowData, 1)
 	end
 
+	table.sort(dataList, function(a, b) return a.data.name < b.data.name end)
+
+	ZO_ScrollList_Commit(scrollList)
+	scrollList.dirty = false
+end
+
+function addon:UpdateItemList()
+	local scrollList = self.ItemList
+
+	ZO_ScrollList_Clear(scrollList)
+	local dataList = ZO_ScrollList_GetDataList(scrollList)
+	self:ApplyFilter(dataList)
+	ZO_ScrollList_Commit(scrollList)
+	scrollList.dirty = false
+end
+
+function addon:UpdateTemplateList()
+	local templates = self.account.templates
 	self.scrollListSet:Clear()
 	for _, template in ipairs(templates) do
 		self.scrollListSet:AddEntry(template)
 	end
 	self.scrollListSet:Commit()
+	self.scrollListSet.dirty = false
+end
 
+do
+	local function FilterByInventory(self, dataList)
+		local selectedSlot = self.selectedSlot
+		if not selectedSlot then return end
+		local GetItemLinkEquipType, ZO_Character_DoesEquipSlotUseEquipType = GetItemLinkEquipType, ZO_Character_DoesEquipSlotUseEquipType
+		local function ItemFilter(itemLink)
+			local equipType = GetItemLinkEquipType(itemLink)
+			if ZO_Character_DoesEquipSlotUseEquipType(selectedSlot, equipType) then
+				local rowData = { id = itemId, itemLink = itemLink }
+				dataList[#dataList + 1] = ZO_ScrollList_CreateDataEntry(ROW_TYPE_ID, rowData, 1)
+			end
+		end
+		for _, itemLink in ipairs(self.account.sets) do ItemFilter(itemLink) end
+		for _, itemLink in ipairs(self.player.sets) do ItemFilter(itemLink) end
+		for _, itemLink in ipairs(self.player.worn) do ItemFilter(itemLink) end
+	end
+
+	local function FilterByCraftableSet(self, dataList)
+		local targetSetId, selectedSlot = self.SetsList.selected, self.selectedSlot
+		if not targetSetId or not selectedSlot then return end
+		local items = self.allSets[targetSetId]
+		if not items then return end
+
+		local format, createLink = zo_strformat, string.format
+		local GetItemLinkSetInfo, GetItemLinkEquipType, GetItemLinkEquipType, ZO_Character_DoesEquipSlotUseEquipType = GetItemLinkSetInfo, GetItemLinkEquipType, GetItemLinkEquipType, ZO_Character_DoesEquipSlotUseEquipType
+
+		local level, champ = 50, 160
+		local subId = self:CreateSubItemId(level, champ, ITEM_QUALITY_MAGIC)
+		local itemLink = createLink("|H1:item:%i:%i:%i:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h", targetSetId, subId, level)
+		local _, targetSetName = GetItemLinkSetInfo(itemLink, false)
+		local function ItemFilter(itemLink)
+			local _, name = GetItemLinkSetInfo(itemLink, false)
+			if name == targetSetName then
+				local equipType = GetItemLinkEquipType(itemLink)
+				if ZO_Character_DoesEquipSlotUseEquipType(selectedSlot, equipType) then
+					local rowData = { id = itemId, itemLink = itemLink }
+					dataList[#dataList + 1] = ZO_ScrollList_CreateDataEntry(ROW_TYPE_ID, rowData, 1)
+				end
+			end
+		end
+		for _, itemId in ipairs(items) do ItemFilter(createLink("|H1:item:%i:%i:%i:0:0:0:0:0:0:0:0:0:0:0:0:2:0:0:0:10000:0|h|h", itemId, subId, level)) end
+	end
+
+	local function FilterBySet(self, dataList)
+		local targetSetId, selectedSlot = self.SetsList.selected, self.selectedSlot
+		if not targetSetId or not selectedSlot then return end
+		local items = self.allSets[targetSetId]
+		if not items then return end
+
+		local format, createLink = zo_strformat, string.format
+		local GetItemLinkSetInfo, GetItemLinkEquipType, GetItemLinkEquipType, ZO_Character_DoesEquipSlotUseEquipType = GetItemLinkSetInfo, GetItemLinkEquipType, GetItemLinkEquipType, ZO_Character_DoesEquipSlotUseEquipType
+
+		local level, champ = 50, 160
+		local subId = self:CreateSubItemId(level, champ, ITEM_QUALITY_MAGIC)
+		local itemLink = createLink("|H1:item:%i:%i:%i:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h", targetSetId, subId, level)
+		local _, targetSetName = GetItemLinkSetInfo(itemLink, false)
+		local function ItemFilter(itemLink)
+			local _, name = GetItemLinkSetInfo(itemLink, false)
+			if name == targetSetName then
+				local equipType = GetItemLinkEquipType(itemLink)
+				if ZO_Character_DoesEquipSlotUseEquipType(selectedSlot, equipType) then
+					local rowData = { id = itemId, itemLink = itemLink }
+					dataList[#dataList + 1] = ZO_ScrollList_CreateDataEntry(ROW_TYPE_ID, rowData, 1)
+				end
+			end
+		end
+		for _, itemId in ipairs(items) do ItemFilter(createLink("|H1:item:%i:%i:%i:0:0:0:0:0:0:0:0:0:0:0:0:2:0:0:0:10000:0|h|h", itemId, subId, level)) end
+	end
+
+	function addon:InitModeBar()
+		self.modeBar = SetManagerTopLevel:GetNamedChild("ModeMenuBar")
+		self.modeBarLabel = self.modeBar:GetNamedChild("Label")
+
+		local function CreateButtonData(name, mode, normal, pressed, highlight, disabled, filterFunc)
+			return {
+				activeTabText = name,
+				categoryName = name,
+
+				descriptor = mode,
+				normal = normal,
+				pressed = pressed,
+				highlight = highlight,
+				disabled = disabled,
+				callback = function(tabData)
+					self.modeBarLabel:SetText(GetString(name))
+					self.ApplyFilter = filterFunc
+					self:UpdateItemList()
+				end,
+			}
+		end
+
+		ZO_MenuBar_AddButton(self.modeBar, CreateButtonData(
+		SI_INVENTORY_MENU_INVENTORY,
+		"INVENTORY",
+		"/esoui/art/inventory/inventory_tabicon_items_up.dds",
+		"/esoui/art/inventory/inventory_tabicon_items_down.dds",
+		"/esoui/art/inventory/inventory_tabicon_items_over.dds",
+		"/esoui/art/inventory/inventory_tabicon_items_disabled.dds",
+		FilterByInventory
+		))
+
+		ZO_MenuBar_AddButton(self.modeBar, CreateButtonData(
+		SI_SMITHING_TAB_CREATION,
+		"CRAFTING",
+		"/esoui/art/crafting/smithing_tabicon_creation_up.dds",
+		"/esoui/art/crafting/smithing_tabicon_creation_down.dds",
+		"/esoui/art/crafting/smithing_tabicon_creation_over.dds",
+		"/esoui/art/crafting/smithing_tabicon_creation_disabled.dds",
+		FilterByCraftableSet
+		))
+
+		ZO_MenuBar_AddButton(self.modeBar, CreateButtonData(
+		SI_TRADING_HOUSE_BUY_ITEM,
+		"BUY",
+		"/esoui/art/vendor/vendor_tabicon_buy_up.dds",
+		"/esoui/art/vendor/vendor_tabicon_buy_down.dds",
+		"/esoui/art/vendor/vendor_tabicon_buy_over.dds",
+		"/esoui/art/vendor/vendor_tabicon_buy_disabled.dds",
+		FilterBySet
+		))
+	end
+end
+
+function addon:InitWindow()
+
+	local control
+
+	control = SetManagerTopLevel
+	control:SetHidden(true)
+	self.windowSet = control
+
+	self:InitModeBar()
+	self:InitSetScrollList()
+	self:InitItemList()
+	self:InitSetsList()
 	SETMANAGER_CHARACTER_FRAGMENT = ZO_FadeSceneFragment:New(addon.windowSet, false, 0)
 
 	local descriptor = addon.name
@@ -417,65 +577,6 @@ function addon:InitWindow()
 	LMM2:AddMenuItem(descriptor, sceneName, categoryLayoutInfo, nil)
 
 	em:RegisterForEvent(addon.name, EVENT_PLAYER_ACTIVATED, PlayerActivated)
-end
-
-function addon:UpdateSetsList()
-	local scrollList = self.SetsList
-	local dataList = ZO_ScrollList_GetDataList(scrollList)
-
-	ZO_ScrollList_Clear(scrollList)
-
-	local format, createLink = zo_strformat, string.format
-	local GetItemLinkSetInfo = GetItemLinkSetInfo
-
-	local sets = self.allSets
-	for itemId, items in pairs(sets) do
-		local itemLink = createLink("|H1:item:%i:304:50:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h", itemId)
-		local _, name = GetItemLinkSetInfo(itemLink, false)
-
-		local rowData = { id = itemId, name = name, itemLink = itemLink, items = items }
-		dataList[#dataList + 1] = ZO_ScrollList_CreateDataEntry(ROW_TYPE_ID, rowData, 1)
-	end
-
-	table.sort(dataList, function(a, b) return a.data.name < b.data.name end)
-
-	ZO_ScrollList_Commit(scrollList)
-	scrollList.dirty = false
-end
-
-function addon:UpdateItemList()
-	local targetSetId, selectedSlot = self.SetsList.selected, self.selectedSlot
-	if not targetSetId or not selectedSlot then return end
-	local items = self.allSets[targetSetId]
-	if not items then return end
-
-	local scrollList = self.ItemList
-	local dataList = ZO_ScrollList_GetDataList(scrollList)
-
-	ZO_ScrollList_Clear(scrollList)
-
-	local format, createLink = zo_strformat, string.format
-	local GetItemLinkSetInfo, GetItemLinkEquipType, GetItemLinkEquipType, ZO_Character_DoesEquipSlotUseEquipType = GetItemLinkSetInfo, GetItemLinkEquipType, GetItemLinkEquipType, ZO_Character_DoesEquipSlotUseEquipType
-
-	local level, champ = 50, 160
-	local subId = self:CreateSubItemId(level, champ, ITEM_QUALITY_MAGIC)
-	local itemLink = createLink("|H1:item:%i:%i:%i:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h", targetSetId, subId, level)
-	local _, targetSetName = GetItemLinkSetInfo(itemLink, false)
-	local function add(itemLink)
-		local _, name = GetItemLinkSetInfo(itemLink, false)
-		if name == targetSetName then
-			local equipType = GetItemLinkEquipType(itemLink)
-			if ZO_Character_DoesEquipSlotUseEquipType(selectedSlot, equipType) then
-				local rowData = { id = itemId, itemLink = itemLink }
-				dataList[#dataList + 1] = ZO_ScrollList_CreateDataEntry(ROW_TYPE_ID, rowData, 1)
-			end
-		end
-	end
-	for _, itemLink in ipairs(self.account.sets) do add(itemLink) end
-	for _, itemLink in ipairs(self.player.sets) do add(itemLink) end
-	for _, itemId in ipairs(items) do add(createLink("|H1:item:%i:%i:%i:0:0:0:0:0:0:0:0:0:0:0:0:2:0:0:0:10000:0|h|h", itemId, subId, level)) end
-	ZO_ScrollList_Commit(scrollList)
-	scrollList.dirty = false
 end
 
 function addon:InitSetManager()
@@ -544,8 +645,13 @@ function addon:InitSetManager()
 					if not hoveredItem or not selectedSlot then return end
 
 					selectedSet[selectedSlot] = hoveredItem.itemLink
+
+					local soundCategory = GetItemSoundCategoryFromLink(hoveredItem.itemLink)
+					PlayItemSound(soundCategory, ITEM_SOUND_ACTION_EQUIP)
 				elseif self.scrollListSet.hoveredSlot then
+					local soundCategory = GetItemSoundCategoryFromLink(selectedSet[self.scrollListSet.hoveredSlot])
 					selectedSet[self.scrollListSet.hoveredSlot] = nil
+					PlayItemSound(soundCategory, ITEM_SOUND_ACTION_UNEQUIP)
 				end
 				self.scrollListSet:RefreshVisible()
 			end,
@@ -562,6 +668,10 @@ function addon:InitSetManager()
 			if self.SetsList.dirty then
 				self:UpdateSetsList()
 			end
+			ZO_MenuBar_SelectDescriptor(self.modeBar, "INVENTORY")
+			if self.scrollListSet.dirty then
+				self:UpdateTemplateList()
+			end
 		elseif newState == SCENE_FRAGMENT_SHOWN then
 			PushActionLayerByName(GetString(SI_KEYBINDINGS_LAYER_SET_MANAGER))
 			KEYBIND_STRIP:AddKeybindButtonGroup(self.keybindStripDescriptor)
@@ -572,6 +682,7 @@ function addon:InitSetManager()
 			KEYBIND_STRIP:RemoveKeybindButtonGroup(self.keybindStripDescriptor)
 			RemoveActionLayerByName(GetString(SI_KEYBINDINGS_LAYER_SET_MANAGER))
 		elseif newState == SCENE_FRAGMENT_HIDDEN then
+			collectgarbage()
 		end
 	end )
 end
@@ -582,6 +693,11 @@ local function OnAddonLoaded(event, name)
 
 	addon.player = ZO_SavedVars:New("SetManager_Data", 1, nil, addon.playerDefaults, nil)
 	addon.account = ZO_SavedVars:NewAccountWide("SetManager_Data", 1, nil, addon.accountDefaults, nil)
+
+	local templates = addon.account.templates
+	if #templates == 0 then
+		templates[#templates + 1] = { }
+	end
 
 	addon:InitWindow()
 	addon:InitInventoryScan()

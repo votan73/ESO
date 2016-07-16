@@ -23,7 +23,7 @@ function addon:InitInventoryScan()
 	end
 	local function ScanBags()
 		addon.account.sets = ScanInventory(BAG_BANK, addon.account.sets)
-		-- addon.player.sets = ScanInventory(BAG_WORN, ScanInventory(BAG_BAGBACK))
+		addon.player.worn = ScanInventory(BAG_WORN, addon.player.worn)
 		addon.player.sets = ScanInventory(BAG_BACKPACK, addon.player.sets)
 	end
 

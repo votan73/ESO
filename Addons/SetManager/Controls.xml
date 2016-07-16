@@ -132,7 +132,7 @@
           <Dimensions x="160" y="24"/>
           <Anchor point="TOPLEFT"  relativeTo="$(parent)EquipmentSlotsBackupMain" relativePoint="BOTTOMLEFT" offsetY="4"/>
           <Controls>
-            <Label name="$(parent)Instructions" font="ZoFontWinH3" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_DISABLED" text="Enter Name">
+            <Label name="$(parent)Instructions" font="ZoFontWinH3" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_DISABLED" text="SI_GAMEPAD_MAIL_SEND_ENTER_NAME">
               <AnchorFill />
 
               <OnInitialized>
@@ -206,10 +206,14 @@
       <Anchor point="BOTTOMRIGHT" relativeTo="ZO_SharedWideRightBackground" offsetY="-30" />
 
       <Controls>
+        <Control name="$(parent)ModeMenu" inherits="ZO_SceneMenu">
+          <Anchor point="TOPRIGHT" relativeTo="ZO_SharedWideRightBackground" offsetX="-40"/>
+          <Dimensions x="550"/>
+        </Control>
         <Control name="$(parent)SetsList" inherits="ZO_ScrollList">
           <Dimensions x="343"/>
-          <Anchor point="TOPLEFT" offsetX="0" offsetY="24" />
-          <Anchor point="BOTTOMLEFT" offsetX="0" offsetY="-24" />
+          <Anchor point="TOPLEFT" offsetX="0" offsetY="32" />
+          <Anchor point="BOTTOMLEFT" offsetX="0" offsetY="0" />
         </Control>
         <Control name="$(parent)SetTemplate" >
           <Dimensions x="273" />
