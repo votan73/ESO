@@ -28,6 +28,7 @@ function addon:CreateSubItemId(level, champ, quality)
 			-- Upper Craglorn
 			subId = 272 + math.floor((champ - 130) / 10) * 18 + quality
 		else
+			champ = math.min(GetChampionPointsPlayerProgressionCap(), champ)
 			subId = 308 + math.floor((champ - 150) / 10) * 58 + quality
 		end
 	end

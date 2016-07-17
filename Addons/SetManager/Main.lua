@@ -354,6 +354,88 @@ function addon:InitSetScrollList()
 	self.scrollListSet.dirty = true
 end
 
+function addon:InitializeStyleList()
+	local function InitializeStyleList(scrollListControl, styleUnknownFont, notEnoughInInventoryFont, listSlotTemplate)
+		local listContainer = SetManagerTopLevelStyleList
+		local highlightTexture = listContainer.highlightTexture
+		listContainer.titleLabel:SetText(GetString(SI_SMITHING_HEADER_STYLE))
+
+		local function SetupFunction(control, data, selected, selectedDuringRebuild, enabled)
+
+			-- SetupSharedSlot(control, SLOT_TYPE_SMITHING_STYLE, listContainer, self.styleList)
+			ZO_ItemSlot_SetAlwaysShowStackCount(control, true)
+
+			control.styleIndex = data.styleIndex
+			local usesUniversalStyleItem = false
+			local stackCount = GetCurrentSmithingStyleItemCount(data.styleIndex)
+			local hasEnoughInInventory = stackCount > 0
+			local universalStyleItemCount = GetCurrentSmithingStyleItemCount(ZO_ADJUSTED_UNIVERSAL_STYLE_ITEM_INDEX)
+			local isStyleKnown = true
+			local usable = true
+			ZO_ItemSlot_SetupSlot(control, stackCount, data.icon, usable, not enabled)
+			local stackCountLabel = GetControl(control, "StackCount")
+			stackCountLabel:SetHidden(usesUniversalStyleItem)
+
+			if selected then
+				HideRowHighlight(highlightTexture, usable)
+
+				-- self:SetLabelHidden(listContainer.extraInfoLabel, true)
+				if not usable then
+					if not isStyleKnown then
+						-- self:SetLabelHidden(listContainer.extraInfoLabel, false)
+						listContainer.extraInfoLabel:SetText(GetString(SI_SMITHING_UNKNOWN_STYLE))
+					elseif not hasEnoughInInventory then
+						-- do nothing, already hidden above
+					end
+				end
+
+				local universalStyleItemCount = GetCurrentSmithingStyleItemCount(ZO_ADJUSTED_UNIVERSAL_STYLE_ITEM_INDEX)
+				self.isStyleUsable = usable and USABILITY_TYPE_USABLE or USABILITY_TYPE_VALID_BUT_MISSING_REQUIREMENT
+
+				if not data.localizedName then
+					if data.itemStyle == ITEMSTYLE_NONE then
+						data.localizedName = GetString("SI_ITEMSTYLE", data.itemStyle)
+					else
+						data.localizedName = zo_strformat(SI_SMITHING_STYLE_DESCRIPTION, data.name, GetString("SI_ITEMSTYLE", data.itemStyle))
+					end
+				end
+
+				listContainer.selectedLabel:SetText(data.localizedName)
+
+				if not selectedDuringRebuild then
+					-- self:RefreshVisiblePatterns()
+				end
+			end
+		end
+
+		local function EqualityFunction(leftData, rightData)
+			return leftData.craftingType == rightData.craftingType and leftData.name == rightData.name
+		end
+
+		local function OnHorizonalScrollListCleared(...)
+			-- self:OnHorizonalScrollListCleared(...)
+		end
+
+		self.styleList = scrollListControl:New(listContainer.listControl, listSlotTemplate, BASE_NUM_ITEMS_IN_LIST, SetupFunction, EqualityFunction, OnHorizonalScrollListShown, OnHorizonalScrollListCleared)
+		self.styleList:SetNoItemText(GetString(SI_SMITHING_NO_STYLE_FOUND))
+
+		self.styleList:SetSelectionHighlightInfo(highlightTexture, highlightTexture and highlightTexture.pulseAnimation)
+		self.styleList:SetScaleExtents(0.6, 1)
+
+		self.styleList:SetOnSelectedDataChangedCallback( function(selectedData, oldData, selectedDuringRebuild)
+			self.styleList.selectedStyle = selectedData
+			addon:UpdateItemList()
+		end )
+
+	end
+	local scrollListControl = ZO_HorizontalScrollList
+	local traitUnknownFont = "ZoFontWinH4"
+	local notEnoughInInventoryFont = "ZoFontHeader4"
+	local listSlotTemplate = "ZO_SmithingListSlot"
+
+	InitializeStyleList(scrollListControl, traitUnknownFont, notEnoughInInventoryFont, listSlotTemplate)
+end
+
 function addon:UpdateSetsList()
 	local scrollList = self.SetsList
 	local dataList = ZO_ScrollList_GetDataList(scrollList)
@@ -398,6 +480,20 @@ function addon:UpdateTemplateList()
 	self.scrollListSet.dirty = false
 end
 
+function addon:UpdateStyleList()
+	self.styleList:Clear()
+
+	local GetSmithingStyleItemInfo = GetSmithingStyleItemInfo
+	for styleIndex = 1, GetNumSmithingStyleItems() do
+		local name, icon, sellPrice, meetsUsageRequirement, itemStyle, quality = GetSmithingStyleItemInfo(styleIndex)
+		if meetsUsageRequirement then
+			self.styleList:AddEntry( { craftingType = 0, styleIndex = styleIndex, name = name, itemStyle = itemStyle, icon = icon, quality = quality })
+		end
+	end
+
+	self.styleList:Commit()
+end
+
 do
 	local function FilterByInventory(self, dataList)
 		local selectedSlot = self.selectedSlot
@@ -424,7 +520,7 @@ do
 		local format, createLink = zo_strformat, string.format
 		local GetItemLinkSetInfo, GetItemLinkEquipType, GetItemLinkEquipType, ZO_Character_DoesEquipSlotUseEquipType = GetItemLinkSetInfo, GetItemLinkEquipType, GetItemLinkEquipType, ZO_Character_DoesEquipSlotUseEquipType
 
-		local level, champ = 50, 160
+		local level, champ = GetUnitLevel("player"), GetUnitChampionPoints("player")
 		local subId = self:CreateSubItemId(level, champ, ITEM_QUALITY_MAGIC)
 		local itemLink = createLink("|H1:item:%i:%i:%i:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h", targetSetId, subId, level)
 		local _, targetSetName = GetItemLinkSetInfo(itemLink, false)
@@ -438,7 +534,8 @@ do
 				end
 			end
 		end
-		for _, itemId in ipairs(items) do ItemFilter(createLink("|H1:item:%i:%i:%i:0:0:0:0:0:0:0:0:0:0:0:0:2:0:0:0:10000:0|h|h", itemId, subId, level)) end
+		local itemStyle = self.styleList.selectedStyle and self.styleList.selectedStyle.itemStyle or 0
+		for _, itemId in ipairs(items) do ItemFilter(createLink("|H1:item:%i:%i:%i:0:0:0:0:0:0:0:0:0:0:0:0:%i:0:0:0:10000:0|h|h", itemId, subId, level, itemStyle)) end
 	end
 
 	local function FilterBySet(self, dataList)
@@ -450,7 +547,7 @@ do
 		local format, createLink = zo_strformat, string.format
 		local GetItemLinkSetInfo, GetItemLinkEquipType, GetItemLinkEquipType, ZO_Character_DoesEquipSlotUseEquipType = GetItemLinkSetInfo, GetItemLinkEquipType, GetItemLinkEquipType, ZO_Character_DoesEquipSlotUseEquipType
 
-		local level, champ = 50, 160
+		local level, champ = GetUnitLevel("player"), GetUnitChampionPoints("player")
 		local subId = self:CreateSubItemId(level, champ, ITEM_QUALITY_MAGIC)
 		local itemLink = createLink("|H1:item:%i:%i:%i:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h", targetSetId, subId, level)
 		local _, targetSetName = GetItemLinkSetInfo(itemLink, false)
@@ -464,7 +561,8 @@ do
 				end
 			end
 		end
-		for _, itemId in ipairs(items) do ItemFilter(createLink("|H1:item:%i:%i:%i:0:0:0:0:0:0:0:0:0:0:0:0:2:0:0:0:10000:0|h|h", itemId, subId, level)) end
+		local itemStyle = addon.styleList.selectedStyle and addon.styleList.selectedStyle.itemStyle or 0
+		for _, itemId in ipairs(items) do ItemFilter(createLink("|H1:item:%i:%i:%i:0:0:0:0:0:0:0:0:0:0:0:0:%i:0:0:0:10000:0|h|h", itemId, subId, level, itemStyle)) end
 	end
 
 	function addon:InitModeBar()
@@ -533,6 +631,7 @@ function addon:InitWindow()
 	self:InitSetScrollList()
 	self:InitItemList()
 	self:InitSetsList()
+	self:InitializeStyleList()
 	SETMANAGER_CHARACTER_FRAGMENT = ZO_FadeSceneFragment:New(addon.windowSet, false, 0)
 
 	local descriptor = addon.name
@@ -669,6 +768,7 @@ function addon:InitSetManager()
 				self:UpdateSetsList()
 			end
 			ZO_MenuBar_SelectDescriptor(self.modeBar, "INVENTORY")
+			self:UpdateStyleList()
 			if self.scrollListSet.dirty then
 				self:UpdateTemplateList()
 			end

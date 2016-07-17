@@ -166,8 +166,9 @@
         </Texture>
 
         <Label name="$(parent)Name" font="ZoFontWinH4" wrapMode="ELLIPSIS" verticalAlignment="CENTER" horizontalAlignment="LEFT">
-          <Anchor point="TOPLEFT" relativeTo="$(parent)Texture" relativePoint="TOPRIGHT" offsetX="5" offsetY="0"/>
-          <Anchor point="BOTTOMRIGHT" relativeTo="$(parent)" relativePoint="BOTTOMRIGHT" offsetX="-5" offsetY="0"/>
+          <Dimensions y="48"/>
+          <Anchor point="TOPLEFT" relativeTo="$(parent)Texture" relativePoint="TOPRIGHT" offsetX="4" offsetY="-4"/>
+          <Anchor point="TOPRIGHT" relativeTo="$(parent)" relativePoint="TOPRIGHT" offsetX="-4" offsetY="0"/>
         </Label>
       </Controls>
     </Control>
@@ -201,6 +202,31 @@
       </Controls>
     </Button>
 
+    <Control name="SetManagerHorizontalScrollList" virtual="true">
+      <OnInitialized>
+        ZO_SmithingHorizontalListTemplate_OnInitialized(self)
+      </OnInitialized>
+
+      <Controls>
+        <Control name="$(parent)List" inherits="ZO_HorizontalScrollListTemplate">
+          <Dimensions x="343" y="64" />
+          <Anchor point="CENTER" />
+        </Control>
+
+        <Label name="$(parent)Title" font="ZoFontWinH3" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_SELECTED" modifyTextType="UPPERCASE">
+          <Anchor point="TOPLEFT" offsetY="8"/>
+        </Label>
+
+        <Label name="$(parent)SelectedLabel" font="ZoFontWinH4" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_NORMAL">
+          <Anchor point="TOP" offsetY="8"/>
+        </Label>
+
+        <Label name="$(parent)ExtraInfoLabel" font="ZoFontWinH4" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_SELECTED" hidden="true">
+          <Anchor point="BOTTOM" offsetY="-8"/>
+        </Label>
+      </Controls>
+    </Control>
+
     <TopLevelControl name="SetManagerTopLevel" mouseEnabled="true" hidden="true" allowBringToTop="false">
       <Anchor point="TOPLEFT" relativeTo="ZO_SharedWideRightBackground" offsetY="20" />
       <Anchor point="BOTTOMRIGHT" relativeTo="ZO_SharedWideRightBackground" offsetY="-30" />
@@ -215,7 +241,7 @@
           <Anchor point="TOPLEFT" offsetX="0" offsetY="32" />
           <Anchor point="BOTTOMLEFT" offsetX="0" offsetY="0" />
         </Control>
-        <Control name="$(parent)SetTemplate" >
+        <Control name="$(parent)SetTemplate">
           <Dimensions x="273" />
           <Anchor point="TOPLEFT" relativeTo="$(parent)SetsList" relativePoint="TOPRIGHT" offsetX="48" />
           <Anchor point="BOTTOMLEFT" relativeTo="$(parent)SetsList" relativePoint="BOTTOMRIGHT" offsetX="48" />
@@ -230,7 +256,16 @@
         <Control name="$(parent)ItemList" inherits="ZO_ScrollList">
           <Dimensions x="343"/>
           <Anchor point="TOPLEFT" relativeTo="$(parent)SetTemplate" relativePoint="TOPRIGHT" offsetX="48" />
-          <Anchor point="BOTTOMLEFT" relativeTo="$(parent)SetTemplate" relativePoint="BOTTOMRIGHT" offsetX="48" />
+          <Anchor point="BOTTOMLEFT" relativeTo="$(parent)SetTemplate" relativePoint="BOTTOMRIGHT" offsetX="48" offsetY="-100" />
+        </Control>
+        <Control name="$(parent)Craft" resizeToFitDescendents="true">
+          <Anchor point="TOP" relativeTo="$(parent)ItemList" relativePoint="BOTTOM" />
+          <Controls>
+            <Control name="$(grandparent)StyleList" inherits="SetManagerHorizontalScrollList">
+              <Dimensions x="343" y="100" />
+              <Anchor point="TOPRIGHT" relativeTo="$(grandparent)ItemList" relativePoint="BOTTOMRIGHT" offsetX="16" offsetY="30" />
+            </Control>
+          </Controls>
         </Control>
       </Controls>
     </TopLevelControl>
