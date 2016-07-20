@@ -443,7 +443,7 @@ function addon:UpdateSetsList()
 	ZO_ScrollList_Clear(scrollList)
 
 	local format, createLink = zo_strformat, string.format
-	local GetItemLinkSetInfo = GetItemLinkSetInfo
+	local GetItemLinkSetInfo, ZO_ScrollList_CreateDataEntry = GetItemLinkSetInfo, ZO_ScrollList_CreateDataEntry
 
 	local sets = self.allSets
 	for itemId, items in pairs(sets) do
@@ -467,6 +467,8 @@ function addon:UpdateItemList()
 	local dataList = ZO_ScrollList_GetDataList(scrollList)
 	self:ApplyFilter(dataList)
 	ZO_ScrollList_Commit(scrollList)
+	SetManagerTopLevelCraft:SetHidden((self.mode == "INVENTORY") or(#dataList == 0))
+
 	scrollList.dirty = false
 end
 
@@ -521,7 +523,8 @@ do
 		local GetItemLinkSetInfo, GetItemLinkEquipType, GetItemLinkEquipType, ZO_Character_DoesEquipSlotUseEquipType = GetItemLinkSetInfo, GetItemLinkEquipType, GetItemLinkEquipType, ZO_Character_DoesEquipSlotUseEquipType
 
 		local level, champ = GetUnitLevel("player"), GetUnitChampionPoints("player")
-		local subId = self:CreateSubItemId(level, champ, ITEM_QUALITY_MAGIC)
+		local quality = ZO_MenuBar_GetSelectedDescriptor(self.qualityBar)
+		local subId = self:CreateSubItemId(level, champ, quality)
 		local itemLink = createLink("|H1:item:%i:%i:%i:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h", targetSetId, subId, level)
 		local _, targetSetName = GetItemLinkSetInfo(itemLink, false)
 		local function ItemFilter(itemLink)
@@ -548,7 +551,8 @@ do
 		local GetItemLinkSetInfo, GetItemLinkEquipType, GetItemLinkEquipType, ZO_Character_DoesEquipSlotUseEquipType = GetItemLinkSetInfo, GetItemLinkEquipType, GetItemLinkEquipType, ZO_Character_DoesEquipSlotUseEquipType
 
 		local level, champ = GetUnitLevel("player"), GetUnitChampionPoints("player")
-		local subId = self:CreateSubItemId(level, champ, ITEM_QUALITY_MAGIC)
+		local quality = ZO_MenuBar_GetSelectedDescriptor(self.qualityBar)
+		local subId = self:CreateSubItemId(level, champ, quality)
 		local itemLink = createLink("|H1:item:%i:%i:%i:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h", targetSetId, subId, level)
 		local _, targetSetName = GetItemLinkSetInfo(itemLink, false)
 		local function ItemFilter(itemLink)
@@ -582,6 +586,7 @@ do
 				callback = function(tabData)
 					self.modeBarLabel:SetText(GetString(name))
 					self.ApplyFilter = filterFunc
+					self.mode = mode
 					self:UpdateItemList()
 				end,
 			}
@@ -619,6 +624,57 @@ do
 	end
 end
 
+do
+	local barData =
+	{
+		initialButtonAnchorPoint = LEFT,
+		buttonTemplate = "ZO_MenuBarTooltipButton",
+		normalSize = 32,
+		downSize = 48,
+		buttonPadding = 0,
+		animationDuration = DEFAULT_SCENE_TRANSITION_TIME,
+	}
+
+	function addon:InitQualityBar()
+		self.qualityBar = SetManagerTopLevelQuality
+		self.qualityBarLabel = self.qualityBar:GetNamedChild("Label")
+
+		ZO_MenuBar_OnInitialized(self.qualityBar)
+
+		local function CreateButtonData(name, mode)
+			return {
+				activeTabText = name,
+				categoryName = name,
+
+				descriptor = mode,
+				normal = "/esoui/art/buttons/gamepad/gp_checkbox_up.dds",
+				pressed = "/esoui/art/buttons/gamepad/gp_checkbox_downover.dds",
+				highlight = "/esoui/art/buttons/gamepad/gp_checkbox_upover.dds",
+				disabled = "/esoui/art/buttons/gamepad/gp_checkbox_disabled.dds",
+				callback = function(tabData)
+					self.qualityBarLabel:SetText(GetString(name))
+					if self.mode then
+						self:UpdateItemList()
+					end
+				end,
+			}
+		end
+		local function AddButton(data)
+			local button = ZO_MenuBar_AddButton(self.qualityBar, data)
+			button:GetNamedChild("Image"):SetColor(GetItemQualityColor(data.descriptor):UnpackRGB())
+		end
+
+		ZO_MenuBar_SetData(self.qualityBar, barData)
+
+		AddButton(CreateButtonData(SI_ITEMQUALITY2, ITEM_QUALITY_MAGIC))
+		AddButton(CreateButtonData(SI_ITEMQUALITY3, ITEM_QUALITY_ARCANE))
+		AddButton(CreateButtonData(SI_ITEMQUALITY4, ITEM_QUALITY_ARTIFACT))
+		AddButton(CreateButtonData(SI_ITEMQUALITY5, ITEM_QUALITY_LEGENDARY))
+		ZO_MenuBar_SelectDescriptor(self.qualityBar, ITEM_QUALITY_MAGIC)
+
+	end
+end
+
 function addon:InitWindow()
 
 	local control
@@ -632,6 +688,7 @@ function addon:InitWindow()
 	self:InitItemList()
 	self:InitSetsList()
 	self:InitializeStyleList()
+	self:InitQualityBar()
 	SETMANAGER_CHARACTER_FRAGMENT = ZO_FadeSceneFragment:New(addon.windowSet, false, 0)
 
 	local descriptor = addon.name
@@ -802,32 +859,55 @@ local function OnAddonLoaded(event, name)
 	addon:InitWindow()
 	addon:InitInventoryScan()
 
-	-- addon.debugstart = GetGameTimeMilliseconds()
-	-- local format, createLink = zo_strformat, string.format
-	-- local GetItemLinkSetInfo = GetItemLinkSetInfo
-	-- local list = { }
-	-- for itemId = 29500, 90000 do
-	-- 	local itemLink = createLink("|H1:item:%i:304:50:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h", itemId)
-	-- 	local hasSet, setName = GetItemLinkSetInfo(itemLink, false)
-	-- 	if hasSet then
-	-- 		local parts = list[setName] or { }
-	-- 		parts[#parts + 1] = itemId
-	-- 		list[setName] = parts
-	-- 	end
-	-- end
-	-- local sets = { }
-	-- for name, items in pairs(list) do
-	-- 	local firstItem = items[1]
-	-- 	sets[firstItem] = items
-	-- end
-	-- addon.account.all = sets
-	-- addon.debugend = GetGameTimeMilliseconds()
+	--addon:ScanSets()
 
 	addon:InitSetManager()
 end
 
 function addon:ToggleEditorScene()
 	self.LMM2:SelectMenuItem(self.name)
+end
+
+function addon:ScanSets()
+	addon.debugstart = GetGameTimeMilliseconds()
+	local format, createLink = zo_strformat, string.format
+	local GetItemLinkSetInfo, GetItemLinkTraitInfo = GetItemLinkSetInfo, GetItemLinkTraitInfo
+	local list = { }
+
+	local identifier = "SET_MANAGER_SCANSETS"
+	local itemId = 29500
+	local GetFrameTimeMilliseconds, GetFramerate, GetGameTimeMilliseconds = GetFrameTimeMilliseconds, GetFramerate, GetGameTimeMilliseconds
+	local function Scan()
+		local start = GetFrameTimeMilliseconds()
+		local spendTime = 500 / GetFramerate()
+		while (GetGameTimeMilliseconds() - start) < spendTime do
+			if itemId <= 90000 then
+				local itemLink = createLink("|H1:item:%i:304:50:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h", itemId)
+				local hasSet, setName = GetItemLinkSetInfo(itemLink, false)
+				if hasSet then
+					local traitType = GetItemLinkTraitInfo(itemLink)
+					if traitType ~= ITEM_TRAIT_TYPE_NONE and traitType ~= ITEM_TRAIT_TYPE_SPECIAL_STAT then
+						local parts = list[setName] or { }
+						parts[#parts + 1] = itemId
+						list[setName] = parts
+					end
+				end
+				itemId = itemId + 1
+			else
+				local sets = { }
+				for name, items in pairs(list) do
+					local firstItem = items[1]
+					sets[firstItem] = items
+				end
+				em:UnregisterForUpdate(identifier)
+				d("done")
+				addon.account.all = sets
+				addon.debugend = GetGameTimeMilliseconds()
+				return
+			end
+		end
+	end
+	em:RegisterForUpdate(identifier, 0, Scan)
 end
 
 function addon:cmdSetManager(text)

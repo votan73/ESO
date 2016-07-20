@@ -255,15 +255,24 @@
         </Control>
         <Control name="$(parent)ItemList" inherits="ZO_ScrollList">
           <Dimensions x="343"/>
-          <Anchor point="TOPLEFT" relativeTo="$(parent)SetTemplate" relativePoint="TOPRIGHT" offsetX="48" />
+          <Anchor point="TOPLEFT" relativeTo="$(parent)SetTemplate" relativePoint="TOPRIGHT" offsetX="48" offsetY="48" />
           <Anchor point="BOTTOMLEFT" relativeTo="$(parent)SetTemplate" relativePoint="BOTTOMRIGHT" offsetX="48" offsetY="-100" />
         </Control>
         <Control name="$(parent)Craft" resizeToFitDescendents="true">
           <Anchor point="TOP" relativeTo="$(parent)ItemList" relativePoint="BOTTOM" />
           <Controls>
+            <Control name="$(grandparent)Quality" inherits="ZO_MenuBarTemplate">
+              <Dimensions x="195" />
+              <Anchor point="BOTTOMRIGHT" relativeTo="$(grandparent)ItemList" relativePoint="TOPRIGHT" offsetY="-8" />
+              <Controls>
+                <Label name="$(parent)Label" font="ZoFontWindowSubtitle" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_SELECTED" modifyTextType="UPPERCASE" excludeFromResizeToFitExtents="true">
+                  <Anchor point="RIGHT" relativePoint="LEFT" offsetX="-25" offsetY="0" />
+                </Label>
+              </Controls>
+            </Control>
             <Control name="$(grandparent)StyleList" inherits="SetManagerHorizontalScrollList">
-              <Dimensions x="343" y="100" />
-              <Anchor point="TOPRIGHT" relativeTo="$(grandparent)ItemList" relativePoint="BOTTOMRIGHT" offsetX="16" offsetY="30" />
+              <Dimensions x="375" y="100" />
+              <Anchor point="TOPRIGHT" relativeTo="$(grandparent)ItemList" relativePoint="BOTTOMRIGHT" offsetX="16"  offsetY="30" />
             </Control>
           </Controls>
         </Control>
