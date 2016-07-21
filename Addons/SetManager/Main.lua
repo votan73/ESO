@@ -4,6 +4,8 @@ local addon = {
 	{
 		sets = { },
 		worn = { },
+		mode = "INVENTORY",
+		quality = ITEM_QUALITY_MAGIC,
 	},
 	accountDefaults =
 	{
@@ -209,11 +211,15 @@ function addon:InitSetsList()
 		end
 	end
 	local function onMouseExit(rowControl)
-		HideRowHighlight(rowControl, true)
+		local rowData = ZO_ScrollList_GetData(rowControl)
+		HideRowHighlight(rowControl, self.SetsList.selected ~= rowData.id)
 	end
+	local selectedRow
 	local function onMouseDoubleClick(rowControl)
 		local rowData = ZO_ScrollList_GetData(rowControl)
 		self.SetsList.selected = rowData.id
+		if selectedRow then ZO_ScrollList_RefreshVisible(self.SetsList, selectedRow) end
+		selectedRow = rowData
 		self:UpdateItemList()
 		PlaySound(SOUNDS.DEFAULT_CLICK)
 	end
@@ -223,7 +229,7 @@ function addon:InitSetsList()
 		local nameLabel = rowControl:GetNamedChild("Name")
 
 		local rowData = ZO_ScrollList_GetData(rowControl)
-		local isCraftable = #rowData.items >= 350
+		local isCraftable = #rowData.items >= 315
 		icon:SetTexture(isCraftable and "/esoui/art/icons/poi/poi_crafting_complete.dds" or "/esoui/art/icons/mapkey/mapkey_bank.dds")
 		nameLabel:SetText(zo_strformat("<<C:1>>", rowData.name))
 
@@ -231,11 +237,13 @@ function addon:InitSetsList()
 		rowControl:SetHandler("OnMouseExit", onMouseExit)
 		-- rowControl:EnableMouseButton(1, true)
 		rowControl:SetHandler("OnClicked", onMouseDoubleClick)
+		onMouseExit(rowControl)
 	end
 	self.SetsList = SetManagerTopLevelSetsList
+	ZO_ScrollList_Initialize(self.SetsList)
 	self.SetsList.dirty = true
 
-	ZO_ScrollList_AddDataType(self.SetsList, ROW_TYPE_ID, "SetManagerSetsListRow", 48, setupDataRow)
+	ZO_ScrollList_AddDataType(self.SetsList, ROW_TYPE_ID, "SetManagerSetsListRow", 48, setupDataRow, setupDataRow)
 end
 
 local function FakeEquippedItemTooltip(itemLink)
@@ -441,6 +449,8 @@ function addon:UpdateSetsList()
 	local dataList = ZO_ScrollList_GetDataList(scrollList)
 
 	ZO_ScrollList_Clear(scrollList)
+	ZO_ScrollList_AddCategory(scrollList, 1)
+	ZO_ScrollList_AddCategory(scrollList, 2)
 
 	local format, createLink = zo_strformat, string.format
 	local GetItemLinkSetInfo, ZO_ScrollList_CreateDataEntry = GetItemLinkSetInfo, ZO_ScrollList_CreateDataEntry
@@ -451,7 +461,8 @@ function addon:UpdateSetsList()
 		local _, name = GetItemLinkSetInfo(itemLink, false)
 
 		local rowData = { id = itemId, name = name, itemLink = itemLink, items = items }
-		dataList[#dataList + 1] = ZO_ScrollList_CreateDataEntry(ROW_TYPE_ID, rowData, 1)
+		local categoryId = #items >= 315 and 2 or 1
+		dataList[#dataList + 1] = ZO_ScrollList_CreateDataEntry(ROW_TYPE_ID, rowData, categoryId)
 	end
 
 	table.sort(dataList, function(a, b) return a.data.name < b.data.name end)
@@ -587,6 +598,12 @@ do
 					self.modeBarLabel:SetText(GetString(name))
 					self.ApplyFilter = filterFunc
 					self.mode = mode
+					self.player.mode = mode
+					if mode == "CRAFTING" then
+						ZO_ScrollList_HideCategory(self.SetsList, 1)
+					else
+						ZO_ScrollList_ShowCategory(self.SetsList, 1)
+					end
 					self:UpdateItemList()
 				end,
 			}
@@ -654,6 +671,7 @@ do
 				callback = function(tabData)
 					self.qualityBarLabel:SetText(GetString(name))
 					if self.mode then
+						self.player.quality = mode
 						self:UpdateItemList()
 					end
 				end,
@@ -670,178 +688,194 @@ do
 		AddButton(CreateButtonData(SI_ITEMQUALITY3, ITEM_QUALITY_ARCANE))
 		AddButton(CreateButtonData(SI_ITEMQUALITY4, ITEM_QUALITY_ARTIFACT))
 		AddButton(CreateButtonData(SI_ITEMQUALITY5, ITEM_QUALITY_LEGENDARY))
-		ZO_MenuBar_SelectDescriptor(self.qualityBar, ITEM_QUALITY_MAGIC)
+
+		ZO_MenuBar_SelectDescriptor(self.qualityBar, self.player.quality)
 
 	end
 end
 
-function addon:InitWindow()
+do
+	local initialized
+	function addon:InitWindow()
+		if initialized then return end
+		initialized = true
 
-	local control
-
-	control = SetManagerTopLevel
-	control:SetHidden(true)
-	self.windowSet = control
-
-	self:InitModeBar()
-	self:InitSetScrollList()
-	self:InitItemList()
-	self:InitSetsList()
-	self:InitializeStyleList()
-	self:InitQualityBar()
-	SETMANAGER_CHARACTER_FRAGMENT = ZO_FadeSceneFragment:New(addon.windowSet, false, 0)
-
-	local descriptor = addon.name
-	local sceneName = addon.name
-	SETMANAGER_SCENE = ZO_Scene:New(sceneName, SCENE_MANAGER)
-
-	SETMANAGER_SCENE:AddFragmentGroup(FRAGMENT_GROUP.MOUSE_DRIVEN_UI_WINDOW)
-	SETMANAGER_SCENE:AddFragmentGroup(FRAGMENT_GROUP.FRAME_TARGET_STANDARD_RIGHT_PANEL)
-	SETMANAGER_SCENE:AddFragment(THIN_LEFT_PANEL_BG_FRAGMENT)
-	SETMANAGER_SCENE:AddFragment(CHARACTER_WINDOW_FRAGMENT)
-	SETMANAGER_SCENE:AddFragment(SETMANAGER_CHARACTER_FRAGMENT)
-	SETMANAGER_SCENE:AddFragment(WIDE_RIGHT_BG_FRAGMENT)
-	SETMANAGER_SCENE:AddFragment(FRAME_EMOTE_FRAGMENT_JOURNAL)
-	SETMANAGER_SCENE:AddFragment(CHARACTER_WINDOW_SOUNDS)
-
-	SCENE_MANAGER:AddSceneGroup("SetManagerSceneGroup", ZO_SceneGroup:New(descriptor))
-
-	SLASH_COMMANDS["/setm"] = function(...) addon:cmdSetManager(...) end
-	LMM2:Init()
-	self.LMM2 = LMM2
-
-	-- Add to main menu
-	local categoryLayoutInfo =
-	{
-		binding = "SET_MANAGER",
-		categoryName = SI_BINDING_NAME_SET_MANAGER,
-		callback = function(buttonData)
-			if not SCENE_MANAGER:IsShowing(sceneName) then
-				SCENE_MANAGER:Show(sceneName)
-			else
-				SCENE_MANAGER:ShowBaseScene()
-			end
-		end,
-		visible = function(buttonData) return true end,
-
-		normal = "esoui/art/crafting/smithing_tabicon_armorset_up.dds",
-		pressed = "esoui/art/crafting/smithing_tabicon_armorset_down.dds",
-		highlight = "esoui/art/crafting/smithing_tabicon_armorset_over.dds",
-		disabled = "esoui/art/crafting/smithing_tabicon_armorset_disabled.dds",
-	}
-
-	LMM2:AddMenuItem(descriptor, sceneName, categoryLayoutInfo, nil)
-
-	em:RegisterForEvent(addon.name, EVENT_PLAYER_ACTIVATED, PlayerActivated)
+		self:InitModeBar()
+		self:InitSetScrollList()
+		self:InitItemList()
+		self:InitSetsList()
+		self:InitializeStyleList()
+		self:InitQualityBar()
+	end
 end
 
-function addon:InitSetManager()
-	self.keybindStripDescriptor =
-	{
-		alignment = KEYBIND_STRIP_ALIGN_CENTER,
+do
+	local function InitKeybindStripDescriptor()
+		local self = addon
 
+		self.keybindStripDescriptor =
 		{
-			name = GetString(SI_BINDING_NAME_SET_MANAGER_ADD_SET),
-			keybind = "UI_SHORTCUT_TERTIARY",
+			alignment = KEYBIND_STRIP_ALIGN_CENTER,
 
-			callback = function()
-				local templates = self.account.templates
-				local template = { }
-				templates[#templates + 1] = template
+			{
+				name = GetString(SI_BINDING_NAME_SET_MANAGER_ADD_SET),
+				keybind = "UI_SHORTCUT_TERTIARY",
 
-				self.scrollListSet:AddEntry(template)
-				self.scrollListSet:Commit()
-				self.scrollListSet:SetSelectedDataIndex(#templates)
-				KEYBIND_STRIP:UpdateKeybindButtonGroup(self.keybindStripDescriptor)
-			end,
-
-			visible = function()
-				return true
-			end
-		},
-		{
-			name = GetString(SI_BINDING_NAME_SET_MANAGER_DElETE_SET),
-			keybind = "UI_SHORTCUT_NEGATIVE",
-
-			callback = function()
-				-- Don't ask me, this is what you get.
-				local index = 1 - self.scrollListSet:GetSelectedIndex()
-				if index > 0 then
+				callback = function()
 					local templates = self.account.templates
-					table.remove(templates, index)
-					table.remove(self.scrollListSet.list, index)
+					local template = { }
+					templates[#templates + 1] = template
+
+					self.scrollListSet:AddEntry(template)
 					self.scrollListSet:Commit()
+					self.scrollListSet:SetSelectedDataIndex(#templates)
 					KEYBIND_STRIP:UpdateKeybindButtonGroup(self.keybindStripDescriptor)
+				end,
+
+				visible = function()
+					return true
 				end
-			end,
+			},
+			{
+				name = GetString(SI_BINDING_NAME_SET_MANAGER_DElETE_SET),
+				keybind = "UI_SHORTCUT_NEGATIVE",
 
-			visible = function()
-				return true
-			end,
+				callback = function()
+					-- Don't ask me, this is what you get.
+					local index = 1 - self.scrollListSet:GetSelectedIndex()
+					if index > 0 then
+						local templates = self.account.templates
+						table.remove(templates, index)
+						table.remove(self.scrollListSet.list, index)
+						self.scrollListSet:Commit()
+						KEYBIND_STRIP:UpdateKeybindButtonGroup(self.keybindStripDescriptor)
+					end
+				end,
 
-			enabled = function()
-				return #self.account.templates > 1
-			end
-		},
-	}
-	self.keybindStripDescriptorMouseOver =
-	{
-		alignment = KEYBIND_STRIP_ALIGN_RIGHT,
+				visible = function()
+					return true
+				end,
 
+				enabled = function()
+					return #self.account.templates > 1
+				end
+			},
+		}
+		self.keybindStripDescriptorMouseOver =
 		{
-			name = function() return self.ItemList.hovered and "Apply" or "Remove" end,
-			keybind = "UI_SHORTCUT_PRIMARY",
+			alignment = KEYBIND_STRIP_ALIGN_RIGHT,
 
-			callback = function()
-				local selectedSet = self.scrollListSet:GetSelectedData()
-				if not selectedSet then return end
-				if self.ItemList.hovered then
-					local selectedSlot = self.selectedSlot
-					local hoveredItem = self.ItemList.hovered
-					if not hoveredItem or not selectedSlot then return end
+			{
+				name = function() return self.ItemList.hovered and "Apply" or "Remove" end,
+				keybind = "UI_SHORTCUT_PRIMARY",
 
-					selectedSet[selectedSlot] = hoveredItem.itemLink
+				callback = function()
+					local selectedSet = self.scrollListSet:GetSelectedData()
+					if not selectedSet then return end
+					if self.ItemList.hovered then
+						local selectedSlot = self.selectedSlot
+						local hoveredItem = self.ItemList.hovered
+						if not hoveredItem or not selectedSlot then return end
 
-					local soundCategory = GetItemSoundCategoryFromLink(hoveredItem.itemLink)
-					PlayItemSound(soundCategory, ITEM_SOUND_ACTION_EQUIP)
-				elseif self.scrollListSet.hoveredSlot then
-					local soundCategory = GetItemSoundCategoryFromLink(selectedSet[self.scrollListSet.hoveredSlot])
-					selectedSet[self.scrollListSet.hoveredSlot] = nil
-					PlayItemSound(soundCategory, ITEM_SOUND_ACTION_UNEQUIP)
+						selectedSet[selectedSlot] = hoveredItem.itemLink
+
+						local soundCategory = GetItemSoundCategoryFromLink(hoveredItem.itemLink)
+						PlayItemSound(soundCategory, ITEM_SOUND_ACTION_EQUIP)
+					elseif self.scrollListSet.hoveredSlot then
+						local soundCategory = GetItemSoundCategoryFromLink(selectedSet[self.scrollListSet.hoveredSlot])
+						selectedSet[self.scrollListSet.hoveredSlot] = nil
+						PlayItemSound(soundCategory, ITEM_SOUND_ACTION_UNEQUIP)
+					end
+					self.scrollListSet:RefreshVisible()
+				end,
+
+				visible = function()
+					return(self.selectedSlot and self.ItemList.hovered) or(self.scrollListSet.hoveredSlot)
+				end,
+			},
+		}
+	end
+
+	function addon:InitSetManager()
+		InitKeybindStripDescriptor()
+
+		local control
+
+		control = SetManagerTopLevel
+		control:SetHidden(true)
+		self.windowSet = control
+		SETMANAGER_CHARACTER_FRAGMENT = ZO_FadeSceneFragment:New(self.windowSet, false, 0)
+
+		local descriptor = self.name
+		local sceneName = self.name
+		SETMANAGER_SCENE = ZO_Scene:New(sceneName, SCENE_MANAGER)
+
+		SETMANAGER_SCENE:AddFragmentGroup(FRAGMENT_GROUP.MOUSE_DRIVEN_UI_WINDOW)
+		SETMANAGER_SCENE:AddFragmentGroup(FRAGMENT_GROUP.FRAME_TARGET_STANDARD_RIGHT_PANEL)
+		SETMANAGER_SCENE:AddFragment(THIN_LEFT_PANEL_BG_FRAGMENT)
+		SETMANAGER_SCENE:AddFragment(CHARACTER_WINDOW_FRAGMENT)
+		SETMANAGER_SCENE:AddFragment(SETMANAGER_CHARACTER_FRAGMENT)
+		SETMANAGER_SCENE:AddFragment(WIDE_RIGHT_BG_FRAGMENT)
+		SETMANAGER_SCENE:AddFragment(FRAME_EMOTE_FRAGMENT_JOURNAL)
+		SETMANAGER_SCENE:AddFragment(CHARACTER_WINDOW_SOUNDS)
+
+		SCENE_MANAGER:AddSceneGroup("SetManagerSceneGroup", ZO_SceneGroup:New(descriptor))
+
+		SLASH_COMMANDS["/setm"] = function(...) addon:cmdSetManager(...) end
+
+		LMM2:Init()
+		self.LMM2 = LMM2
+
+		-- Add to main menu
+		local categoryLayoutInfo =
+		{
+			binding = "SET_MANAGER",
+			categoryName = SI_BINDING_NAME_SET_MANAGER,
+			callback = function(buttonData)
+				if not SCENE_MANAGER:IsShowing(sceneName) then
+					SCENE_MANAGER:Show(sceneName)
+				else
+					SCENE_MANAGER:ShowBaseScene()
 				end
-				self.scrollListSet:RefreshVisible()
 			end,
+			visible = function(buttonData) return true end,
 
-			visible = function()
-				return(self.selectedSlot and self.ItemList.hovered) or(self.scrollListSet.hoveredSlot)
-			end,
-		},
-	}
+			normal = "esoui/art/crafting/smithing_tabicon_armorset_up.dds",
+			pressed = "esoui/art/crafting/smithing_tabicon_armorset_down.dds",
+			highlight = "esoui/art/crafting/smithing_tabicon_armorset_over.dds",
+			disabled = "esoui/art/crafting/smithing_tabicon_armorset_disabled.dds",
+		}
 
-	SETMANAGER_CHARACTER_FRAGMENT:RegisterCallback("StateChange", function(oldState, newState)
-		if newState == SCENE_FRAGMENT_SHOWING then
-			ZO_Character_SetIsShowingReadOnlyFragment(true)
-			if self.SetsList.dirty then
-				self:UpdateSetsList()
+		LMM2:AddMenuItem(descriptor, sceneName, categoryLayoutInfo, nil)
+
+		em:RegisterForEvent(addon.name, EVENT_PLAYER_ACTIVATED, PlayerActivated)
+
+		SETMANAGER_CHARACTER_FRAGMENT:RegisterCallback("StateChange", function(oldState, newState)
+			if newState == SCENE_FRAGMENT_SHOWING then
+				addon:InitWindow()
+				ZO_Character_SetIsShowingReadOnlyFragment(true)
+				if self.SetsList.dirty then
+					self:UpdateSetsList()
+				end
+				ZO_MenuBar_SelectDescriptor(self.modeBar, self.player.mode)
+				self:UpdateStyleList()
+				if self.scrollListSet.dirty then
+					self:UpdateTemplateList()
+				end
+			elseif newState == SCENE_FRAGMENT_SHOWN then
+				PushActionLayerByName(GetString(SI_KEYBINDINGS_LAYER_SET_MANAGER))
+				KEYBIND_STRIP:AddKeybindButtonGroup(self.keybindStripDescriptor)
+				KEYBIND_STRIP:AddKeybindButtonGroup(self.keybindStripDescriptorMouseOver)
+			elseif newState == SCENE_FRAGMENT_HIDING then
+				ClearTooltip(ItemTooltip)
+				KEYBIND_STRIP:RemoveKeybindButtonGroup(self.keybindStripDescriptorMouseOver)
+				KEYBIND_STRIP:RemoveKeybindButtonGroup(self.keybindStripDescriptor)
+				RemoveActionLayerByName(GetString(SI_KEYBINDINGS_LAYER_SET_MANAGER))
+			elseif newState == SCENE_FRAGMENT_HIDDEN then
+				collectgarbage()
 			end
-			ZO_MenuBar_SelectDescriptor(self.modeBar, "INVENTORY")
-			self:UpdateStyleList()
-			if self.scrollListSet.dirty then
-				self:UpdateTemplateList()
-			end
-		elseif newState == SCENE_FRAGMENT_SHOWN then
-			PushActionLayerByName(GetString(SI_KEYBINDINGS_LAYER_SET_MANAGER))
-			KEYBIND_STRIP:AddKeybindButtonGroup(self.keybindStripDescriptor)
-			KEYBIND_STRIP:AddKeybindButtonGroup(self.keybindStripDescriptorMouseOver)
-		elseif newState == SCENE_FRAGMENT_HIDING then
-			ClearTooltip(ItemTooltip)
-			KEYBIND_STRIP:RemoveKeybindButtonGroup(self.keybindStripDescriptorMouseOver)
-			KEYBIND_STRIP:RemoveKeybindButtonGroup(self.keybindStripDescriptor)
-			RemoveActionLayerByName(GetString(SI_KEYBINDINGS_LAYER_SET_MANAGER))
-		elseif newState == SCENE_FRAGMENT_HIDDEN then
-			collectgarbage()
-		end
-	end )
+		end )
+	end
 end
 
 local function OnAddonLoaded(event, name)
@@ -856,12 +890,10 @@ local function OnAddonLoaded(event, name)
 		templates[#templates + 1] = { }
 	end
 
-	addon:InitWindow()
+	addon:InitSetManager()
 	addon:InitInventoryScan()
 
-	--addon:ScanSets()
-
-	addon:InitSetManager()
+	-- addon:ScanSets()
 end
 
 function addon:ToggleEditorScene()
