@@ -12,12 +12,16 @@ local addon = {
 		sets = { },
 		templates = { },
 	},
+	setCategory =
+	{
+		NonCraftable = "NON_CRAFTABLE",
+		Craftable = "CRAFTABLE",
+	}
 }
 
 -- local am = GetAnimationManager()
 local wm = GetWindowManager()
 local em = GetEventManager()
-local LMM2 = LibStub("LibMainMenu-2.0")
 local ROW_TYPE_ID = 1
 
 local function OnSlotClicked(control)
@@ -101,12 +105,6 @@ function addon:InitializeEditableSlots(parent)
 	for slotId, slotControl in pairs(parent.slots) do
 		slotControl:SetHandler("OnClicked", OnSlotEditableClicked)
 	end
-end
-
-local function PlayerActivated()
-	em:UnregisterForEvent(addon.name, EVENT_PLAYER_ACTIVATED)
-	-- RefreshWornInventory()
-	-- RefreshBackUpWeaponSlotStates()
 end
 
 local function HideRowHighlight(rowControl, hidden)
@@ -228,9 +226,18 @@ function addon:InitSetsList()
 		local icon = rowControl:GetNamedChild("Texture")
 		local nameLabel = rowControl:GetNamedChild("Name")
 
-		local rowData = ZO_ScrollList_GetData(rowControl)
-		local isCraftable = #rowData.items >= 315
-		icon:SetTexture(isCraftable and "/esoui/art/icons/poi/poi_crafting_complete.dds" or "/esoui/art/icons/mapkey/mapkey_bank.dds")
+		local setInfo = rowData.setInfo
+		local iconiconTexture
+		if setInfo.isCraftable then
+			iconTexture = "/esoui/art/icons/poi/poi_crafting_complete.dds"
+		elseif setInfo.isMonster then
+			iconTexture = "/esoui/art/icons/servicemappins/servicepin_undaunted.dds"
+		elseif setInfo.isJevelry then
+			iconTexture = "/esoui/art/icons/servicemappins/servicepin_armory.dds"
+		else
+			iconTexture = "/esoui/art/icons/mapkey/mapkey_bank.dds"
+		end
+		icon:SetTexture(iconTexture)
 		nameLabel:SetText(zo_strformat("<<C:1>>", rowData.name))
 
 		rowControl:SetHandler("OnMouseEnter", onMouseEnter)
@@ -252,8 +259,8 @@ local function FakeEquippedItemTooltip(itemLink)
 	ItemTooltip:SetLink(itemLink, true)
 end
 
-function addon:InitSetScrollList()
-	local function InitSetScrollList(scrollListControl, listContainer, listSlotTemplate)
+function addon:InitSetTemplateList()
+	local function InitSetTemplateList(scrollListControl, listContainer, listSlotTemplate)
 		local function OnSelectedSlotChanged(control)
 			self.selectedSlot = control.selectedSlot
 			self:UpdateItemList()
@@ -357,7 +364,7 @@ function addon:InitSetScrollList()
 		scroll:SetFadeGradient(2, -1, 0, 64)
 		return scrollListControl:New(listContainer, listSlotTemplate, 1, SetupFunction, EqualityFunction, OnHorizonalScrollListShown, OnHorizonalScrollListCleared)
 	end
-	self.scrollListSet = InitSetScrollList(ZO_HorizontalScrollList, SetManagerTopLevelSetTemplateList, "SetManager_Character_Template_Editable")
+	self.scrollListSet = InitSetTemplateList(ZO_HorizontalScrollList, SetManagerTopLevelSetTemplateList, "SetManager_Character_Template_Editable")
 	self.scrollListSet:SetScaleExtents(0.6, 1)
 	self.scrollListSet.dirty = true
 end
@@ -392,8 +399,6 @@ function addon:InitializeStyleList()
 					if not isStyleKnown then
 						-- self:SetLabelHidden(listContainer.extraInfoLabel, false)
 						listContainer.extraInfoLabel:SetText(GetString(SI_SMITHING_UNKNOWN_STYLE))
-					elseif not hasEnoughInInventory then
-						-- do nothing, already hidden above
 					end
 				end
 
@@ -449,19 +454,20 @@ function addon:UpdateSetsList()
 	local dataList = ZO_ScrollList_GetDataList(scrollList)
 
 	ZO_ScrollList_Clear(scrollList)
-	ZO_ScrollList_AddCategory(scrollList, 1)
-	ZO_ScrollList_AddCategory(scrollList, 2)
+	for _, categoryId in pairs(self.setCategory) do
+		ZO_ScrollList_AddCategory(scrollList, categoryId)
+	end
 
 	local format, createLink = zo_strformat, string.format
 	local GetItemLinkSetInfo, ZO_ScrollList_CreateDataEntry = GetItemLinkSetInfo, ZO_ScrollList_CreateDataEntry
 
 	local sets = self.allSets
-	for itemId, items in pairs(sets) do
+	for itemId, setInfo in pairs(sets) do
 		local itemLink = createLink("|H1:item:%i:304:50:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h", itemId)
 		local _, name = GetItemLinkSetInfo(itemLink, false)
 
-		local rowData = { id = itemId, name = name, itemLink = itemLink, items = items }
-		local categoryId = #items >= 315 and 2 or 1
+		local rowData = { id = itemId, name = name, itemLink = itemLink, setInfo = setInfo }
+		local categoryId = setInfo.isCraftable and self.setCategory.Craftable or self.setCategory.NonCraftable
 		dataList[#dataList + 1] = ZO_ScrollList_CreateDataEntry(ROW_TYPE_ID, rowData, categoryId)
 	end
 
@@ -478,7 +484,7 @@ function addon:UpdateItemList()
 	local dataList = ZO_ScrollList_GetDataList(scrollList)
 	self:ApplyFilter(dataList)
 	ZO_ScrollList_Commit(scrollList)
-	SetManagerTopLevelCraft:SetHidden((self.mode == "INVENTORY") or(#dataList == 0))
+	SetManagerTopLevelCraft:SetHidden((self.player.mode == "INVENTORY") or(#dataList == 0))
 
 	scrollList.dirty = false
 end
@@ -527,8 +533,8 @@ do
 	local function FilterByCraftableSet(self, dataList)
 		local targetSetId, selectedSlot = self.SetsList.selected, self.selectedSlot
 		if not targetSetId or not selectedSlot then return end
-		local items = self.allSets[targetSetId]
-		if not items then return end
+		local setInfo = self.allSets[targetSetId]
+		if not setInfo then return end
 
 		local format, createLink = zo_strformat, string.format
 		local GetItemLinkSetInfo, GetItemLinkEquipType, GetItemLinkEquipType, ZO_Character_DoesEquipSlotUseEquipType = GetItemLinkSetInfo, GetItemLinkEquipType, GetItemLinkEquipType, ZO_Character_DoesEquipSlotUseEquipType
@@ -549,14 +555,14 @@ do
 			end
 		end
 		local itemStyle = self.styleList.selectedStyle and self.styleList.selectedStyle.itemStyle or 0
-		for _, itemId in ipairs(items) do ItemFilter(createLink("|H1:item:%i:%i:%i:0:0:0:0:0:0:0:0:0:0:0:0:%i:0:0:0:10000:0|h|h", itemId, subId, level, itemStyle)) end
+		for _, itemId in ipairs(setInfo.items) do ItemFilter(createLink("|H1:item:%i:%i:%i:0:0:0:0:0:0:0:0:0:0:0:0:%i:0:0:0:10000:0|h|h", itemId, subId, level, itemStyle)) end
 	end
 
 	local function FilterBySet(self, dataList)
 		local targetSetId, selectedSlot = self.SetsList.selected, self.selectedSlot
 		if not targetSetId or not selectedSlot then return end
-		local items = self.allSets[targetSetId]
-		if not items then return end
+		local setInfo = self.allSets[targetSetId]
+		if not setInfo then return end
 
 		local format, createLink = zo_strformat, string.format
 		local GetItemLinkSetInfo, GetItemLinkEquipType, GetItemLinkEquipType, ZO_Character_DoesEquipSlotUseEquipType = GetItemLinkSetInfo, GetItemLinkEquipType, GetItemLinkEquipType, ZO_Character_DoesEquipSlotUseEquipType
@@ -577,7 +583,7 @@ do
 			end
 		end
 		local itemStyle = addon.styleList.selectedStyle and addon.styleList.selectedStyle.itemStyle or 0
-		for _, itemId in ipairs(items) do ItemFilter(createLink("|H1:item:%i:%i:%i:0:0:0:0:0:0:0:0:0:0:0:0:%i:0:0:0:10000:0|h|h", itemId, subId, level, itemStyle)) end
+		for _, itemId in ipairs(setInfo.items) do ItemFilter(createLink("|H1:item:%i:%i:%i:0:0:0:0:0:0:0:0:0:0:0:0:%i:0:0:0:10000:0|h|h", itemId, subId, level, itemStyle)) end
 	end
 
 	function addon:InitModeBar()
@@ -600,9 +606,9 @@ do
 					self.mode = mode
 					self.player.mode = mode
 					if mode == "CRAFTING" then
-						ZO_ScrollList_HideCategory(self.SetsList, 1)
+						ZO_ScrollList_HideCategory(self.SetsList, self.setCategory.NonCraftable)
 					else
-						ZO_ScrollList_ShowCategory(self.SetsList, 1)
+						ZO_ScrollList_ShowCategory(self.SetsList, self.setCategory.NonCraftable)
 					end
 					self:UpdateItemList()
 				end,
@@ -658,20 +664,20 @@ do
 
 		ZO_MenuBar_OnInitialized(self.qualityBar)
 
-		local function CreateButtonData(name, mode)
+		local function CreateButtonData(name, quality)
 			return {
 				activeTabText = name,
 				categoryName = name,
 
-				descriptor = mode,
+				descriptor = quality,
 				normal = "/esoui/art/buttons/gamepad/gp_checkbox_up.dds",
 				pressed = "/esoui/art/buttons/gamepad/gp_checkbox_downover.dds",
 				highlight = "/esoui/art/buttons/gamepad/gp_checkbox_upover.dds",
 				disabled = "/esoui/art/buttons/gamepad/gp_checkbox_disabled.dds",
 				callback = function(tabData)
 					self.qualityBarLabel:SetText(GetString(name))
-					if self.mode then
-						self.player.quality = mode
+					if self.quality then
+						self.player.quality = quality
 						self:UpdateItemList()
 					end
 				end,
@@ -688,9 +694,6 @@ do
 		AddButton(CreateButtonData(SI_ITEMQUALITY3, ITEM_QUALITY_ARCANE))
 		AddButton(CreateButtonData(SI_ITEMQUALITY4, ITEM_QUALITY_ARTIFACT))
 		AddButton(CreateButtonData(SI_ITEMQUALITY5, ITEM_QUALITY_LEGENDARY))
-
-		ZO_MenuBar_SelectDescriptor(self.qualityBar, self.player.quality)
-
 	end
 end
 
@@ -701,7 +704,7 @@ do
 		initialized = true
 
 		self:InitModeBar()
-		self:InitSetScrollList()
+		self:InitSetTemplateList()
 		self:InitItemList()
 		self:InitSetsList()
 		self:InitializeStyleList()
@@ -799,11 +802,10 @@ do
 	function addon:InitSetManager()
 		InitKeybindStripDescriptor()
 
-		local control
-
-		control = SetManagerTopLevel
+		local control = SetManagerTopLevel
 		control:SetHidden(true)
 		self.windowSet = control
+
 		SETMANAGER_CHARACTER_FRAGMENT = ZO_FadeSceneFragment:New(self.windowSet, false, 0)
 
 		local descriptor = self.name
@@ -823,6 +825,7 @@ do
 
 		SLASH_COMMANDS["/setm"] = function(...) addon:cmdSetManager(...) end
 
+		local LMM2 = LibStub("LibMainMenu-2.0")
 		LMM2:Init()
 		self.LMM2 = LMM2
 
@@ -848,8 +851,6 @@ do
 
 		LMM2:AddMenuItem(descriptor, sceneName, categoryLayoutInfo, nil)
 
-		em:RegisterForEvent(addon.name, EVENT_PLAYER_ACTIVATED, PlayerActivated)
-
 		SETMANAGER_CHARACTER_FRAGMENT:RegisterCallback("StateChange", function(oldState, newState)
 			if newState == SCENE_FRAGMENT_SHOWING then
 				addon:InitWindow()
@@ -857,8 +858,7 @@ do
 				if self.SetsList.dirty then
 					self:UpdateSetsList()
 				end
-				ZO_MenuBar_SelectDescriptor(self.modeBar, self.player.mode)
-				self:UpdateStyleList()
+
 				if self.scrollListSet.dirty then
 					self:UpdateTemplateList()
 				end
@@ -866,6 +866,11 @@ do
 				PushActionLayerByName(GetString(SI_KEYBINDINGS_LAYER_SET_MANAGER))
 				KEYBIND_STRIP:AddKeybindButtonGroup(self.keybindStripDescriptor)
 				KEYBIND_STRIP:AddKeybindButtonGroup(self.keybindStripDescriptorMouseOver)
+
+				ZO_MenuBar_SelectDescriptor(self.qualityBar, self.player.quality)
+				ZO_MenuBar_SelectDescriptor(self.modeBar, self.player.mode)
+
+				self:UpdateStyleList()
 			elseif newState == SCENE_FRAGMENT_HIDING then
 				ClearTooltip(ItemTooltip)
 				KEYBIND_STRIP:RemoveKeybindButtonGroup(self.keybindStripDescriptorMouseOver)
@@ -876,6 +881,11 @@ do
 			end
 		end )
 	end
+end
+
+local function PlayerActivated()
+	em:UnregisterForEvent(addon.name, EVENT_PLAYER_ACTIVATED)
+	-- reserved
 end
 
 local function OnAddonLoaded(event, name)
@@ -893,78 +903,11 @@ local function OnAddonLoaded(event, name)
 	addon:InitSetManager()
 	addon:InitInventoryScan()
 
-	-- addon:ScanSets()
+	em:RegisterForEvent(addon.name, EVENT_PLAYER_ACTIVATED, PlayerActivated)
 end
 
 function addon:ToggleEditorScene()
 	self.LMM2:SelectMenuItem(self.name)
-end
-
-function addon:ScanSets()
-	addon.debugstart = GetGameTimeMilliseconds()
-	local format, createLink = zo_strformat, string.format
-	local GetItemLinkSetInfo, GetItemLinkTraitInfo = GetItemLinkSetInfo, GetItemLinkTraitInfo
-	local list = { }
-
-	local identifier = "SET_MANAGER_SCANSETS"
-	local itemId = 29500
-	local GetFrameTimeMilliseconds, GetFramerate, GetGameTimeMilliseconds = GetFrameTimeMilliseconds, GetFramerate, GetGameTimeMilliseconds
-	local function Scan()
-		local start = GetFrameTimeMilliseconds()
-		local spendTime = 500 / GetFramerate()
-		while (GetGameTimeMilliseconds() - start) < spendTime do
-			if itemId <= 90000 then
-				local itemLink = createLink("|H1:item:%i:304:50:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h", itemId)
-				local hasSet, setName = GetItemLinkSetInfo(itemLink, false)
-				if hasSet then
-					local traitType = GetItemLinkTraitInfo(itemLink)
-					if traitType ~= ITEM_TRAIT_TYPE_NONE and traitType ~= ITEM_TRAIT_TYPE_SPECIAL_STAT then
-						local parts = list[setName] or { }
-						parts[#parts + 1] = itemId
-						list[setName] = parts
-					end
-				end
-				itemId = itemId + 1
-			else
-				local sets = { }
-				for name, items in pairs(list) do
-					local firstItem = items[1]
-					sets[firstItem] = items
-				end
-				em:UnregisterForUpdate(identifier)
-				d("done")
-				addon.account.all = sets
-				addon.debugend = GetGameTimeMilliseconds()
-				return
-			end
-		end
-	end
-	em:RegisterForUpdate(identifier, 0, Scan)
-end
-
-function addon:cmdSetManager(text)
-	d("execute /setm")
-	if (text == "dump") then
-		self:dumpItems(5, true)
-	elseif (text == "reset") then
-		d("check")
-		addon:DoCompleteProcess()
-	elseif (text == "boni") then
-		d("boni")
-		addon:dumpBoni()
-	else
-		d("use check|dump")
-	end
-end
-
-function addon:dumpItems(minNum, unbound)
-	if (addon.sets ~= nil) then
-		for set, info in pairs(addon.sets) do
-			self:dumpSetInfo(set, info)
-		end
-	else
-		d("No sets stored")
-	end
 end
 
 em:RegisterForEvent(addon.name, EVENT_ADD_ON_LOADED, OnAddonLoaded)

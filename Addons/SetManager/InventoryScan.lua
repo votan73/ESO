@@ -7,6 +7,7 @@ function addon:InitInventoryScan()
 		ZO_ClearNumericallyIndexedTable(list)
 
 		local IsEquipable, GetItemLink, GetItemLinkSetInfo, ZO_GetNextBagSlotIndex = IsEquipable, GetItemLink, GetItemLinkSetInfo, ZO_GetNextBagSlotIndex
+
 		local slotIndex = ZO_GetNextBagSlotIndex(bagId, nil)
 		while slotIndex do
 			if IsEquipable(bagId, slotIndex) then
@@ -26,17 +27,16 @@ function addon:InitInventoryScan()
 		addon.player.worn = ScanInventory(BAG_WORN, addon.player.worn)
 		addon.player.sets = ScanInventory(BAG_BACKPACK, addon.player.sets)
 	end
+	local function ScanCrafting(list)
+		list = list or { }
+		ZO_ClearNumericallyIndexedTable(list)
+
+		return list
+	end
 
 	local function PlayerDeactivated()
-
-		local function ScanCrafting()
-			local result = { }
-
-			return result
-		end
 		ScanBags()
-		addon.player.crafting = ScanCrafting()
-		addon:DoCompleteProcess()
+		addon.player.crafting = ScanCrafting(addon.player.crafting)
 	end
 	SETMANAGER_CHARACTER_FRAGMENT:RegisterCallback("StateChange", function(oldState, newState)
 		if newState == SCENE_FRAGMENT_SHOWING then
