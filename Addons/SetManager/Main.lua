@@ -210,13 +210,13 @@ function addon:InitSetsList()
 	end
 	local function onMouseExit(rowControl)
 		local rowData = ZO_ScrollList_GetData(rowControl)
-		HideRowHighlight(rowControl, self.SetsList.selected ~= rowData.id)
+		HideRowHighlight(rowControl, self.setsList.selected ~= rowData.id)
 	end
 	local selectedRow
 	local function onMouseDoubleClick(rowControl)
 		local rowData = ZO_ScrollList_GetData(rowControl)
-		self.SetsList.selected = rowData.id
-		if selectedRow then ZO_ScrollList_RefreshVisible(self.SetsList, selectedRow) end
+		self.setsList.selected = rowData.id
+		if selectedRow then ZO_ScrollList_RefreshVisible(self.setsList, selectedRow) end
 		selectedRow = rowData
 		self:UpdateItemList()
 		PlaySound(SOUNDS.DEFAULT_CLICK)
@@ -246,11 +246,11 @@ function addon:InitSetsList()
 		rowControl:SetHandler("OnClicked", onMouseDoubleClick)
 		onMouseExit(rowControl)
 	end
-	self.SetsList = SetManagerTopLevelSetsList
-	ZO_ScrollList_Initialize(self.SetsList)
-	self.SetsList.dirty = true
+	self.setsList = SetManagerTopLevelSetsList
+	ZO_ScrollList_Initialize(self.setsList)
+	self.setsList.dirty = true
 
-	ZO_ScrollList_AddDataType(self.SetsList, ROW_TYPE_ID, "SetManagerSetsListRow", 48, setupDataRow, setupDataRow)
+	ZO_ScrollList_AddDataType(self.setsList, ROW_TYPE_ID, "SetManagerSetsListRow", 48, setupDataRow, setupDataRow)
 end
 
 local function FakeEquippedItemTooltip(itemLink)
@@ -259,8 +259,8 @@ local function FakeEquippedItemTooltip(itemLink)
 	ItemTooltip:SetLink(itemLink, true)
 end
 
-function addon:InitSetTemplateList()
-	local function InitSetTemplateList(scrollListControl, listContainer, listSlotTemplate)
+function addon:InitSetTemplates()
+	local function InitSetTemplates(scrollListControl, listContainer, listSlotTemplate)
 		local function OnSelectedSlotChanged(control)
 			self.selectedSlot = control.selectedSlot
 			self:UpdateItemList()
@@ -275,13 +275,13 @@ function addon:InitSetTemplateList()
 			if rowControl.itemLink then
 				InitializeTooltip(ItemTooltip, rowControl, TOPRIGHT, 0, -104, TOPLEFT)
 				FakeEquippedItemTooltip(rowControl.itemLink)
-				self.scrollListSet.hoveredSlot = rowControl.slotId
+				self.setTemplates.hoveredSlot = rowControl.slotId
 				KEYBIND_STRIP:UpdateKeybindButtonGroup(self.keybindStripDescriptorMouseOver)
 			end
 		end
 		local function onMouseExit(rowControl)
 			ClearTooltip(ItemTooltip, rowControl)
-			self.scrollListSet.hoveredSlot = nil
+			self.setTemplates.hoveredSlot = nil
 			KEYBIND_STRIP:UpdateKeybindButtonGroup(self.keybindStripDescriptorMouseOver)
 		end
 		local function SetupFunction(control, data, selected, selectedDuringRebuild, enabled)
@@ -364,93 +364,89 @@ function addon:InitSetTemplateList()
 		scroll:SetFadeGradient(2, -1, 0, 64)
 		return scrollListControl:New(listContainer, listSlotTemplate, 1, SetupFunction, EqualityFunction, OnHorizonalScrollListShown, OnHorizonalScrollListCleared)
 	end
-	self.scrollListSet = InitSetTemplateList(ZO_HorizontalScrollList, SetManagerTopLevelSetTemplateList, "SetManager_Character_Template_Editable")
-	self.scrollListSet:SetScaleExtents(0.6, 1)
-	self.scrollListSet.dirty = true
+	self.setTemplates = InitSetTemplates(ZO_HorizontalScrollList, SetManagerTopLevelSetTemplateList, "SetManager_Character_Template_Editable")
+	self.setTemplates:SetScaleExtents(0.6, 1)
+	self.setTemplates.dirty = true
 end
 
-function addon:InitializeStyleList()
-	local function InitializeStyleList(scrollListControl, styleUnknownFont, notEnoughInInventoryFont, listSlotTemplate)
-		local listContainer = SetManagerTopLevelStyleList
-		local highlightTexture = listContainer.highlightTexture
-		listContainer.titleLabel:SetText(GetString(SI_SMITHING_HEADER_STYLE))
-
-		local function SetupFunction(control, data, selected, selectedDuringRebuild, enabled)
-
-			-- SetupSharedSlot(control, SLOT_TYPE_SMITHING_STYLE, listContainer, self.styleList)
-			ZO_ItemSlot_SetAlwaysShowStackCount(control, true)
-
-			control.styleIndex = data.styleIndex
-			local usesUniversalStyleItem = false
-			local stackCount = GetCurrentSmithingStyleItemCount(data.styleIndex)
-			local hasEnoughInInventory = stackCount > 0
-			local universalStyleItemCount = GetCurrentSmithingStyleItemCount(ZO_ADJUSTED_UNIVERSAL_STYLE_ITEM_INDEX)
-			local isStyleKnown = true
-			local usable = true
-			ZO_ItemSlot_SetupSlot(control, stackCount, data.icon, usable, not enabled)
-			local stackCountLabel = GetControl(control, "StackCount")
-			stackCountLabel:SetHidden(usesUniversalStyleItem)
-
-			if selected then
-				HideRowHighlight(highlightTexture, usable)
-
-				-- self:SetLabelHidden(listContainer.extraInfoLabel, true)
-				if not usable then
-					if not isStyleKnown then
-						-- self:SetLabelHidden(listContainer.extraInfoLabel, false)
-						listContainer.extraInfoLabel:SetText(GetString(SI_SMITHING_UNKNOWN_STYLE))
-					end
-				end
-
-				local universalStyleItemCount = GetCurrentSmithingStyleItemCount(ZO_ADJUSTED_UNIVERSAL_STYLE_ITEM_INDEX)
-				self.isStyleUsable = usable and USABILITY_TYPE_USABLE or USABILITY_TYPE_VALID_BUT_MISSING_REQUIREMENT
-
-				if not data.localizedName then
-					if data.itemStyle == ITEMSTYLE_NONE then
-						data.localizedName = GetString("SI_ITEMSTYLE", data.itemStyle)
-					else
-						data.localizedName = zo_strformat(SI_SMITHING_STYLE_DESCRIPTION, data.name, GetString("SI_ITEMSTYLE", data.itemStyle))
-					end
-				end
-
-				listContainer.selectedLabel:SetText(data.localizedName)
-
-				if not selectedDuringRebuild then
-					-- self:RefreshVisiblePatterns()
-				end
-			end
-		end
-
-		local function EqualityFunction(leftData, rightData)
-			return leftData.craftingType == rightData.craftingType and leftData.name == rightData.name
-		end
-
-		local function OnHorizonalScrollListCleared(...)
-			-- self:OnHorizonalScrollListCleared(...)
-		end
-
-		self.styleList = scrollListControl:New(listContainer.listControl, listSlotTemplate, BASE_NUM_ITEMS_IN_LIST, SetupFunction, EqualityFunction, OnHorizonalScrollListShown, OnHorizonalScrollListCleared)
-		self.styleList:SetNoItemText(GetString(SI_SMITHING_NO_STYLE_FOUND))
-
-		self.styleList:SetSelectionHighlightInfo(highlightTexture, highlightTexture and highlightTexture.pulseAnimation)
-		self.styleList:SetScaleExtents(0.6, 1)
-
-		self.styleList:SetOnSelectedDataChangedCallback( function(selectedData, oldData, selectedDuringRebuild)
-			self.styleList.selectedStyle = selectedData
-			addon:UpdateItemList()
-		end )
-
-	end
+function addon:InitStyleList()
 	local scrollListControl = ZO_HorizontalScrollList
-	local traitUnknownFont = "ZoFontWinH4"
+	local styleUnknownFont = "ZoFontWinH4"
 	local notEnoughInInventoryFont = "ZoFontHeader4"
 	local listSlotTemplate = "ZO_SmithingListSlot"
 
-	InitializeStyleList(scrollListControl, traitUnknownFont, notEnoughInInventoryFont, listSlotTemplate)
+	local listContainer = SetManagerTopLevelStyleList
+	local highlightTexture = listContainer.highlightTexture
+	listContainer.titleLabel:SetText(GetString(SI_SMITHING_HEADER_STYLE))
+
+	local function SetupFunction(control, data, selected, selectedDuringRebuild, enabled)
+
+		-- SetupSharedSlot(control, SLOT_TYPE_SMITHING_STYLE, listContainer, self.styleList)
+		ZO_ItemSlot_SetAlwaysShowStackCount(control, true)
+
+		control.styleIndex = data.styleIndex
+		local usesUniversalStyleItem = false
+		local stackCount = GetCurrentSmithingStyleItemCount(data.styleIndex)
+		local hasEnoughInInventory = stackCount > 0
+		local universalStyleItemCount = GetCurrentSmithingStyleItemCount(ZO_ADJUSTED_UNIVERSAL_STYLE_ITEM_INDEX)
+		local isStyleKnown = true
+		local usable = true
+		ZO_ItemSlot_SetupSlot(control, stackCount, data.icon, usable, not enabled)
+		local stackCountLabel = GetControl(control, "StackCount")
+		stackCountLabel:SetHidden(usesUniversalStyleItem)
+
+		if selected then
+			HideRowHighlight(highlightTexture, usable)
+
+			-- self:SetLabelHidden(listContainer.extraInfoLabel, true)
+			if not usable then
+				if not isStyleKnown then
+					-- self:SetLabelHidden(listContainer.extraInfoLabel, false)
+					listContainer.extraInfoLabel:SetText(GetString(SI_SMITHING_UNKNOWN_STYLE))
+				end
+			end
+
+			local universalStyleItemCount = GetCurrentSmithingStyleItemCount(ZO_ADJUSTED_UNIVERSAL_STYLE_ITEM_INDEX)
+			self.isStyleUsable = usable and USABILITY_TYPE_USABLE or USABILITY_TYPE_VALID_BUT_MISSING_REQUIREMENT
+
+			if not data.localizedName then
+				if data.itemStyle == ITEMSTYLE_NONE then
+					data.localizedName = GetString("SI_ITEMSTYLE", data.itemStyle)
+				else
+					data.localizedName = zo_strformat(SI_SMITHING_STYLE_DESCRIPTION, data.name, GetString("SI_ITEMSTYLE", data.itemStyle))
+				end
+			end
+
+			listContainer.selectedLabel:SetText(data.localizedName)
+
+			if not selectedDuringRebuild then
+				-- self:RefreshVisiblePatterns()
+			end
+		end
+	end
+
+	local function EqualityFunction(leftData, rightData)
+		return leftData.craftingType == rightData.craftingType and leftData.name == rightData.name
+	end
+
+	local function OnHorizonalScrollListCleared(...)
+		-- self:OnHorizonalScrollListCleared(...)
+	end
+
+	self.styleList = scrollListControl:New(listContainer.listControl, listSlotTemplate, BASE_NUM_ITEMS_IN_LIST, SetupFunction, EqualityFunction, OnHorizonalScrollListShown, OnHorizonalScrollListCleared)
+	self.styleList:SetNoItemText(GetString(SI_SMITHING_NO_STYLE_FOUND))
+
+	self.styleList:SetSelectionHighlightInfo(highlightTexture, highlightTexture and highlightTexture.pulseAnimation)
+	self.styleList:SetScaleExtents(0.6, 1)
+
+	self.styleList:SetOnSelectedDataChangedCallback( function(selectedData, oldData, selectedDuringRebuild)
+		self.styleList.selectedStyle = selectedData
+		addon:UpdateItemList()
+	end )
 end
 
 function addon:UpdateSetsList()
-	local scrollList = self.SetsList
+	local scrollList = self.setsList
 	local dataList = ZO_ScrollList_GetDataList(scrollList)
 
 	ZO_ScrollList_Clear(scrollList)
@@ -485,18 +481,20 @@ function addon:UpdateItemList()
 	self:ApplyFilter(dataList)
 	ZO_ScrollList_Commit(scrollList)
 	SetManagerTopLevelCraft:SetHidden((self.player.mode == "INVENTORY") or(#dataList == 0))
+	local isCraftable = self.setsList.selected and self.allSets[self.setsList.selected].isCraftable or false
+	self.styleList.control:SetHidden(not isCraftable)
 
 	scrollList.dirty = false
 end
 
-function addon:UpdateTemplateList()
+function addon:UpdateSetTemplates()
 	local templates = self.account.templates
-	self.scrollListSet:Clear()
+	self.setTemplates:Clear()
 	for _, template in ipairs(templates) do
-		self.scrollListSet:AddEntry(template)
+		self.setTemplates:AddEntry(template)
 	end
-	self.scrollListSet:Commit()
-	self.scrollListSet.dirty = false
+	self.setTemplates:Commit()
+	self.setTemplates.dirty = false
 end
 
 function addon:UpdateStyleList()
@@ -531,7 +529,7 @@ do
 	end
 
 	local function FilterByCraftableSet(self, dataList)
-		local targetSetId, selectedSlot = self.SetsList.selected, self.selectedSlot
+		local targetSetId, selectedSlot = self.setsList.selected, self.selectedSlot
 		if not targetSetId or not selectedSlot then return end
 		local setInfo = self.allSets[targetSetId]
 		if not setInfo then return end
@@ -559,7 +557,7 @@ do
 	end
 
 	local function FilterBySet(self, dataList)
-		local targetSetId, selectedSlot = self.SetsList.selected, self.selectedSlot
+		local targetSetId, selectedSlot = self.setsList.selected, self.selectedSlot
 		if not targetSetId or not selectedSlot then return end
 		local setInfo = self.allSets[targetSetId]
 		if not setInfo then return end
@@ -588,7 +586,7 @@ do
 
 	function addon:InitModeBar()
 		self.modeBar = SetManagerTopLevel:GetNamedChild("ModeMenuBar")
-		self.modeBarLabel = self.modeBar:GetNamedChild("Label")
+		self.modeBar.label = self.modeBar:GetNamedChild("Label")
 
 		local function CreateButtonData(name, mode, normal, pressed, highlight, disabled, filterFunc)
 			return {
@@ -601,14 +599,14 @@ do
 				highlight = highlight,
 				disabled = disabled,
 				callback = function(tabData)
-					self.modeBarLabel:SetText(GetString(name))
+					self.modeBar.label:SetText(GetString(name))
 					self.ApplyFilter = filterFunc
 					self.mode = mode
 					self.player.mode = mode
 					if mode == "CRAFTING" then
-						ZO_ScrollList_HideCategory(self.SetsList, self.setCategory.NonCraftable)
+						ZO_ScrollList_HideCategory(self.setsList, self.setCategory.NonCraftable)
 					else
-						ZO_ScrollList_ShowCategory(self.SetsList, self.setCategory.NonCraftable)
+						ZO_ScrollList_ShowCategory(self.setsList, self.setCategory.NonCraftable)
 					end
 					self:UpdateItemList()
 				end,
@@ -660,7 +658,7 @@ do
 
 	function addon:InitQualityBar()
 		self.qualityBar = SetManagerTopLevelQuality
-		self.qualityBarLabel = self.qualityBar:GetNamedChild("Label")
+		self.qualityBar.label = self.qualityBar:GetNamedChild("Label")
 
 		ZO_MenuBar_OnInitialized(self.qualityBar)
 
@@ -675,8 +673,8 @@ do
 				highlight = "/esoui/art/buttons/gamepad/gp_checkbox_upover.dds",
 				disabled = "/esoui/art/buttons/gamepad/gp_checkbox_disabled.dds",
 				callback = function(tabData)
-					self.qualityBarLabel:SetText(GetString(name))
-					if self.quality then
+					self.qualityBar.label:SetText(GetString(name))
+					if self.mode then
 						self.player.quality = quality
 						self:UpdateItemList()
 					end
@@ -704,10 +702,10 @@ do
 		initialized = true
 
 		self:InitModeBar()
-		self:InitSetTemplateList()
+		self:InitSetTemplates()
 		self:InitItemList()
 		self:InitSetsList()
-		self:InitializeStyleList()
+		self:InitStyleList()
 		self:InitQualityBar()
 	end
 end
@@ -729,9 +727,9 @@ do
 					local template = { }
 					templates[#templates + 1] = template
 
-					self.scrollListSet:AddEntry(template)
-					self.scrollListSet:Commit()
-					self.scrollListSet:SetSelectedDataIndex(#templates)
+					self.setTemplates:AddEntry(template)
+					self.setTemplates:Commit()
+					self.setTemplates:SetSelectedDataIndex(#templates)
 					KEYBIND_STRIP:UpdateKeybindButtonGroup(self.keybindStripDescriptor)
 				end,
 
@@ -745,12 +743,12 @@ do
 
 				callback = function()
 					-- Don't ask me, this is what you get.
-					local index = 1 - self.scrollListSet:GetSelectedIndex()
+					local index = 1 - self.setTemplates:GetSelectedIndex()
 					if index > 0 then
 						local templates = self.account.templates
 						table.remove(templates, index)
-						table.remove(self.scrollListSet.list, index)
-						self.scrollListSet:Commit()
+						table.remove(self.setTemplates.list, index)
+						self.setTemplates:Commit()
 						KEYBIND_STRIP:UpdateKeybindButtonGroup(self.keybindStripDescriptor)
 					end
 				end,
@@ -773,7 +771,7 @@ do
 				keybind = "UI_SHORTCUT_PRIMARY",
 
 				callback = function()
-					local selectedSet = self.scrollListSet:GetSelectedData()
+					local selectedSet = self.setTemplates:GetSelectedData()
 					if not selectedSet then return end
 					if self.ItemList.hovered then
 						local selectedSlot = self.selectedSlot
@@ -784,16 +782,16 @@ do
 
 						local soundCategory = GetItemSoundCategoryFromLink(hoveredItem.itemLink)
 						PlayItemSound(soundCategory, ITEM_SOUND_ACTION_EQUIP)
-					elseif self.scrollListSet.hoveredSlot then
-						local soundCategory = GetItemSoundCategoryFromLink(selectedSet[self.scrollListSet.hoveredSlot])
-						selectedSet[self.scrollListSet.hoveredSlot] = nil
+					elseif self.setTemplates.hoveredSlot then
+						local soundCategory = GetItemSoundCategoryFromLink(selectedSet[self.setTemplates.hoveredSlot])
+						selectedSet[self.setTemplates.hoveredSlot] = nil
 						PlayItemSound(soundCategory, ITEM_SOUND_ACTION_UNEQUIP)
 					end
-					self.scrollListSet:RefreshVisible()
+					self.setTemplates:RefreshVisible()
 				end,
 
 				visible = function()
-					return(self.selectedSlot and self.ItemList.hovered) or(self.scrollListSet.hoveredSlot)
+					return(self.selectedSlot and self.ItemList.hovered) or(self.setTemplates.hoveredSlot)
 				end,
 			},
 		}
@@ -855,12 +853,12 @@ do
 			if newState == SCENE_FRAGMENT_SHOWING then
 				addon:InitWindow()
 				ZO_Character_SetIsShowingReadOnlyFragment(true)
-				if self.SetsList.dirty then
+				if self.setsList.dirty then
 					self:UpdateSetsList()
 				end
 
-				if self.scrollListSet.dirty then
-					self:UpdateTemplateList()
+				if self.setTemplates.dirty then
+					self:UpdateSetTemplates()
 				end
 			elseif newState == SCENE_FRAGMENT_SHOWN then
 				PushActionLayerByName(GetString(SI_KEYBINDINGS_LAYER_SET_MANAGER))
