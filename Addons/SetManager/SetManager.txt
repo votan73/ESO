@@ -21,5 +21,6 @@ Sets.lua
 ProcessSets.lua
 InventoryScan.lua
 ItemLinks.lua
+Designer.lua
 
 Bindings.xml

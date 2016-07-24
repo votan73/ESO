@@ -17,7 +17,7 @@
       <Anchor point="CENTER" />
 
       <OnInitialized>
-        SET_MANAGER:InitializeSlots(self)
+        SET_MANAGER.Designer:InitializeSlots(self)
       </OnInitialized>
 
       <Controls>
@@ -125,7 +125,7 @@
     </Control>
     <Control name="SetManager_Character_Template_Editable" inherits="SetManager_Character_Template" virtual="true">
       <OnInitialized>
-        SET_MANAGER:InitializeEditableSlots(self)
+        SET_MANAGER.Designer:InitializeEditableSlots(self)
       </OnInitialized>
       <Controls>
         <EditBox name="$(parent)Name" inherits="ZO_DefaultEditForDarkBackdrop" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_NORMAL" maxInputCharacters="64">
