@@ -7,74 +7,15 @@ local em = GetEventManager()
 local ROW_TYPE_ID = 1
 local applySetFilter
 
-local function OnSlotClicked(control)
-	local parent = control:GetParent()
-	for equipSlot, other in pairs(parent.slots) do
-		local selected = other == control
-		other:SetState(selected and BSTATE_PRESSED or BSTATE_NORMAL)
-		if selected then parent.selectedSlot = equipSlot end
-	end
-	if parent.OnSelectedChanged then parent.OnSelectedChanged(parent) end
-end
-
-local function UpdateSlot(self)
-	local iconControl = self:GetNamedChild("Icon")
-	if self.itemLink then
-		local icon = GetItemLinkInfo(self.itemLink)
-		iconControl:SetTexture(icon)
-	else
-		iconControl:SetTexture(ZO_Character_GetEmptyEquipSlotTexture(self.slotId))
-	end
-end
-
-function designer:InitializeSlots(parent)
-	if parent.slots then return end
-
-	local slots =
-	{
-		[EQUIP_SLOT_HEAD] = parent:GetNamedChild("EquipmentSlotsHead"),
-		[EQUIP_SLOT_NECK] = parent:GetNamedChild("EquipmentSlotsNeck"),
-		[EQUIP_SLOT_CHEST] = parent:GetNamedChild("EquipmentSlotsChest"),
-		[EQUIP_SLOT_SHOULDERS] = parent:GetNamedChild("EquipmentSlotsShoulder"),
-		[EQUIP_SLOT_MAIN_HAND] = parent:GetNamedChild("EquipmentSlotsMainHand"),
-		[EQUIP_SLOT_OFF_HAND] = parent:GetNamedChild("EquipmentSlotsOffHand"),
-		[EQUIP_SLOT_POISON] = parent:GetNamedChild("EquipmentSlotsPoison"),
-		[EQUIP_SLOT_WAIST] = parent:GetNamedChild("EquipmentSlotsBelt"),
-		[EQUIP_SLOT_LEGS] = parent:GetNamedChild("EquipmentSlotsLeg"),
-		[EQUIP_SLOT_FEET] = parent:GetNamedChild("EquipmentSlotsFoot"),
-		[EQUIP_SLOT_COSTUME] = parent:GetNamedChild("EquipmentSlotsCostume"),
-		[EQUIP_SLOT_RING1] = parent:GetNamedChild("EquipmentSlotsRing1"),
-		[EQUIP_SLOT_RING2] = parent:GetNamedChild("EquipmentSlotsRing2"),
-		[EQUIP_SLOT_HAND] = parent:GetNamedChild("EquipmentSlotsGlove"),
-		[EQUIP_SLOT_BACKUP_MAIN] = parent:GetNamedChild("EquipmentSlotsBackupMain"),
-		[EQUIP_SLOT_BACKUP_OFF] = parent:GetNamedChild("EquipmentSlotsBackupOff"),
-		[EQUIP_SLOT_BACKUP_POISON] = parent:GetNamedChild("EquipmentSlotsBackupPoison"),
-	}
-
-	parent.slots = slots
-
-	parent:GetNamedChild("PaperDoll"):SetTexture(GetUnitSilhouetteTexture("player"))
-
-	local ZO_Character_GetEmptyEquipSlotTexture = ZO_Character_GetEmptyEquipSlotTexture
-	for slotId, slotControl in pairs(slots) do
-		slotControl.slotId = slotId
-		slotControl.Update = UpdateSlot
-		slotControl.OnSlotClicked = OnSlotClicked
-		slotControl:SetHandler("OnClicked", function(control, ...) control:OnSlotClicked(...) end)
-	end
-end
-
 do
-
 	function designer:InitializeEditableSlots(parent)
-		self:InitializeSlots(parent)
+		addon:InitializeSlots(parent)
 
-		local baseClick
-		local function OnSlotEditableClicked(control, button, ...)
+		local baseClick = parent.OnSlotClicked
+		local function OnSlotEditableClicked(parent, control, button, ...)
 			if button == MOUSE_BUTTON_INDEX_LEFT then
-				baseClick(control, button, ...)
+				baseClick(parent, control, button, ...)
 			elseif button == MOUSE_BUTTON_INDEX_RIGHT then
-				local parent = control:GetParent()
 			end
 		end
 		parent.OnSlotClicked = OnSlotEditableClicked
@@ -93,8 +34,6 @@ do
 		edit:SetHandler("OnTextChanged", TextChanged)
 		for slotId, slotControl in pairs(parent.slots) do
 			slotControl:EnableMouseButton(MOUSE_BUTTON_INDEX_RIGHT, true)
-			baseClick = slotControl.OnSlotClicked
-			slotControl.OnSlotClicked = OnSlotEditableClicked
 		end
 	end
 end
@@ -592,7 +531,7 @@ do
 				callback = function(tabData)
 					self.qualityBar.label:SetText(GetString(name))
 					if self.mode then
-						self.player.quality = quality
+						addon.player.quality = quality
 						self:UpdateItemList()
 					end
 				end,
