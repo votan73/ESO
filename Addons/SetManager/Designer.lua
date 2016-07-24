@@ -7,6 +7,12 @@ local em = GetEventManager()
 local ROW_TYPE_ID = 1
 local applySetFilter
 
+designer.modes = {
+	Inventory = "INVENTORY",
+	Crafting = "CRAFTING",
+	Buy = "BUY",
+}
+
 do
 	function designer:InitializeEditableSlots(parent)
 		addon:InitializeSlots(parent)
@@ -112,7 +118,7 @@ function designer:UpdateItemList()
 	local dataList = ZO_ScrollList_GetDataList(scrollList)
 	applySetFilter(self, dataList)
 	ZO_ScrollList_Commit(scrollList)
-	SetManagerTopLevelCraft:SetHidden((addon.player.mode == "INVENTORY") or(#dataList == 0))
+	SetManagerTopLevelCraft:SetHidden((addon.player.mode == designer.modes.Inventory) or(#dataList == 0))
 	local isCraftable = self.setsList.selected and addon.allSets[self.setsList.selected].isCraftable or false
 	self.styleList.control:SetHidden(not isCraftable)
 
@@ -457,9 +463,8 @@ do
 				callback = function(tabData)
 					self.modeBar.label:SetText(GetString(name))
 					applySetFilter = filterFunc
-					self.mode = mode
 					addon.player.mode = mode
-					if mode == "CRAFTING" then
+					if mode == self.modes.Crafting then
 						ZO_ScrollList_HideCategory(self.setsList, addon.setCategory.NonCraftable)
 					else
 						ZO_ScrollList_ShowCategory(self.setsList, addon.setCategory.NonCraftable)
@@ -471,7 +476,7 @@ do
 
 		ZO_MenuBar_AddButton(self.modeBar, CreateButtonData(
 		SI_INVENTORY_MENU_INVENTORY,
-		"INVENTORY",
+		self.modes.Inventory,
 		"/esoui/art/inventory/inventory_tabicon_items_up.dds",
 		"/esoui/art/inventory/inventory_tabicon_items_down.dds",
 		"/esoui/art/inventory/inventory_tabicon_items_over.dds",
@@ -481,7 +486,7 @@ do
 
 		ZO_MenuBar_AddButton(self.modeBar, CreateButtonData(
 		SI_SMITHING_TAB_CREATION,
-		"CRAFTING",
+		self.modes.Crafting,
 		"/esoui/art/crafting/smithing_tabicon_creation_up.dds",
 		"/esoui/art/crafting/smithing_tabicon_creation_down.dds",
 		"/esoui/art/crafting/smithing_tabicon_creation_over.dds",
@@ -491,7 +496,7 @@ do
 
 		ZO_MenuBar_AddButton(self.modeBar, CreateButtonData(
 		SI_TRADING_HOUSE_BUY_ITEM,
-		"BUY",
+		self.modes.Buy,
 		"/esoui/art/vendor/vendor_tabicon_buy_up.dds",
 		"/esoui/art/vendor/vendor_tabicon_buy_down.dds",
 		"/esoui/art/vendor/vendor_tabicon_buy_over.dds",
@@ -530,7 +535,7 @@ do
 				disabled = "/esoui/art/buttons/gamepad/gp_checkbox_disabled.dds",
 				callback = function(tabData)
 					self.qualityBar.label:SetText(GetString(name))
-					if self.mode then
+					if self.isOpen then
 						addon.player.quality = quality
 						self:UpdateItemList()
 					end
@@ -779,6 +784,7 @@ function designer:Init()
 	SETMANAGER_CHARACTER_FRAGMENT:RegisterCallback("StateChange", function(oldState, newState)
 		if newState == SCENE_FRAGMENT_SHOWING then
 			self:InitWindow()
+			self.isOpen = false
 			ZO_Character_SetIsShowingReadOnlyFragment(true)
 			if self.setsList.dirty then
 				self:UpdateSetsList()
@@ -796,7 +802,9 @@ function designer:Init()
 			ZO_MenuBar_SelectDescriptor(self.modeBar, addon.player.mode)
 
 			self:UpdateStyleList()
+			self.isOpen = true
 		elseif newState == SCENE_FRAGMENT_HIDING then
+			self.isOpen = false
 			ClearTooltip(ItemTooltip)
 			KEYBIND_STRIP:RemoveKeybindButtonGroup(self.keybindStripDescriptorMouseOver)
 			KEYBIND_STRIP:RemoveKeybindButtonGroup(self.keybindStripDescriptor)
