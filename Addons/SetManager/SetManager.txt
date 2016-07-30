@@ -16,6 +16,7 @@ lang/$(language).lua
 
 ControlsCommon.xml
 Controls.xml
+ControlsSelector.xml
 
 Main.lua
 Sets.lua
@@ -23,5 +24,6 @@ ProcessSets.lua
 InventoryScan.lua
 ItemLinks.lua
 Designer.lua
+Selector.lua
 
 Bindings.xml

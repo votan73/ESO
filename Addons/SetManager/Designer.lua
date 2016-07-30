@@ -256,13 +256,6 @@ function designer:InitSetsList()
 	ZO_ScrollList_AddDataType(self.setsList, ROW_TYPE_ID, "SetManagerSetsListRow", 48, setupDataRow, setupDataRow)
 end
 
-local function FakeEquippedItemTooltip(itemLink)
-	-- SetLink uses original functions only. They protected it.
-	-- Rewrite Tooltip???
-	ItemTooltip:SetLink(itemLink, true)
-	ZO_ItemTooltip_SetStolen(ItemTooltip, false)
-end
-
 function designer:InitSetTemplates()
 	local function InitSetTemplates(scrollListControl, listContainer, listSlotTemplate)
 		local function OnSelectedSlotChanged(control)
@@ -278,7 +271,7 @@ function designer:InitSetTemplates()
 		local function onMouseEnter(rowControl)
 			if rowControl.itemLink then
 				InitializeTooltip(ItemTooltip, rowControl, TOPRIGHT, 0, -104, TOPLEFT)
-				FakeEquippedItemTooltip(rowControl.itemLink)
+				addon:FakeEquippedItemTooltip(rowControl.itemLink)
 				self.setTemplates.hoveredSlot = rowControl.slotId
 				KEYBIND_STRIP:UpdateKeybindButtonGroup(self.keybindStripDescriptorMouseOver)
 			end

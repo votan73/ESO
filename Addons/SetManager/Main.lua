@@ -27,7 +27,9 @@ do
 	local function OnSlotClicked(parent, control)
 		for equipSlot, other in pairs(parent.slots) do
 			local selected = other == control
-			other:SetState(selected and BSTATE_PRESSED or BSTATE_NORMAL)
+			if other:GetState() ~= BSTATE_DISABLED then
+				other:SetState(selected and BSTATE_PRESSED or BSTATE_NORMAL)
+			end
 			if selected then parent.selectedSlot = equipSlot end
 		end
 		if parent.OnSelectedChanged then parent.OnSelectedChanged(parent) end
@@ -81,6 +83,13 @@ do
 	end
 end
 
+function addon:FakeEquippedItemTooltip(itemLink)
+	-- SetLink uses original functions only. They protected it.
+	-- Rewrite Tooltip???
+	ItemTooltip:SetLink(itemLink, true)
+	ZO_ItemTooltip_SetStolen(ItemTooltip, false)
+end
+
 function addon:Init()
 	SLASH_COMMANDS["/setm"] = function(...) addon:cmdSetManager(...) end
 
@@ -89,6 +98,8 @@ function addon:Init()
 	self.LMM2 = LMM2
 
 	self.Designer:Init()
+	self.Selector:Init()
+
 	self:InitInventoryScan()
 end
 
