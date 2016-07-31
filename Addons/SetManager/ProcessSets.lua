@@ -5,17 +5,17 @@ local S_REQUIRED = 1
 local S_DESCRIPTION = 2
 
 function addon:cmdSetManager(text, ...)
-	d("execute /setm")
+	-- d("execute /setm")
 	if (text == "dump") then
 		self:dumpItems(5, true)
 	elseif (text == "reset") then
-		d("check")
+		-- d("check")
 		addon:DoCompleteProcess(...)
 	elseif (text == "boni") then
-		d("boni")
+		-- d("boni")
 		addon:dumpBoni(...)
 	elseif (text == "scan") then
-		d("scan")
+		-- d("scan")
 		addon:ScanSets(...)
 	else
 		d("use check|dump|scan")
@@ -149,6 +149,15 @@ function addon:ScanSets(maxItemId)
 	local itemId = 29500
 	local GetFrameTimeMilliseconds, GetFramerate, GetGameTimeMilliseconds = GetFrameTimeMilliseconds, GetFramerate, GetGameTimeMilliseconds
 	local GetItemLinkEquipType = GetItemLinkEquipType
+	local blacklist = {
+		[ITEM_TRAIT_TYPE_NONE] = true,
+		[ITEM_TRAIT_TYPE_ARMOR_INTRICATE] = true,
+		[ITEM_TRAIT_TYPE_WEAPON_INTRICATE] = true,
+		[ITEM_TRAIT_TYPE_ARMOR_ORNATE] = true,
+		[ITEM_TRAIT_TYPE_JEWELRY_ORNATE] = true,
+		[ITEM_TRAIT_TYPE_WEAPON_ORNATE] = true,
+		[ITEM_TRAIT_TYPE_SPECIAL_STAT] = true,
+	}
 	local function Scan()
 		local start = GetFrameTimeMilliseconds()
 		local spendTime = 500 / GetFramerate()
@@ -158,7 +167,7 @@ function addon:ScanSets(maxItemId)
 				local hasSet, setName, numberOfBonuses, _, maxWearable = GetItemLinkSetInfo(itemLink, false)
 				if hasSet then
 					local traitType = GetItemLinkTraitInfo(itemLink)
-					if traitType ~= ITEM_TRAIT_TYPE_NONE and traitType ~= ITEM_TRAIT_TYPE_SPECIAL_STAT then
+					if not blacklist[traitType] then
 						local setInfo = list[setName] or { items = { }, equipType = { }, maxWearable = maxWearable }
 
 						local equipType = GetItemLinkEquipType(itemLink)

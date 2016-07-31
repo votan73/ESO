@@ -117,6 +117,8 @@ function designer:UpdateItemList()
 	ZO_ScrollList_Clear(scrollList)
 	local dataList = ZO_ScrollList_GetDataList(scrollList)
 	applySetFilter(self, dataList)
+	table.sort(dataList, function(a, b) return a.data.itemLink < b.data.itemLink end)
+
 	ZO_ScrollList_Commit(scrollList)
 	SetManagerTopLevelCraft:SetHidden((addon.player.mode == designer.modes.Inventory) or(#dataList == 0))
 	local isCraftable = self.setsList.selected and addon.allSets[self.setsList.selected].isCraftable or false
@@ -169,14 +171,18 @@ function designer:InitItemList()
 	local function setupDataRow(rowControl, rowData, scrollList)
 		local icon = rowControl:GetNamedChild("Texture")
 		local nameLabel = rowControl:GetNamedChild("Name")
+		local traitLabel = rowControl:GetNamedChild("Trait")
 
 		local itemName = GetItemLinkName(rowData.itemLink)
 		local iconTexture = GetItemLinkInfo(rowData.itemLink)
 		local quality = GetItemLinkQuality(rowData.itemLink)
+		local traitType = GetItemLinkTraitInfo(rowData.itemLink)
 
 		icon:SetTexture(iconTexture)
 		nameLabel:SetText(zo_strformat("<<C:1>>", itemName))
 		nameLabel:SetColor(GetItemQualityColor(quality):UnpackRGB())
+
+		traitLabel:SetText(zo_strformat("<<C:1>>", GetString("SI_ITEMTRAITTYPE", traitType)))
 
 		rowControl:SetHandler("OnMouseEnter", onMouseEnter)
 		rowControl:SetHandler("OnMouseExit", onMouseExit)
@@ -295,54 +301,6 @@ function designer:InitSetTemplates()
 				slotControl:SetHandler("OnMouseEnter", onMouseEnter)
 				slotControl:SetHandler("OnMouseExit", onMouseExit)
 			end
-
-			-- 		if self:IsInvalidMode() then return end
-
-			-- 		SetupSharedSlot(control, SLOT_TYPE_SMITHING_TRAIT, listContainer, self.traitList)
-			-- 		ZO_ItemSlot_SetAlwaysShowStackCount(control, data.traitType ~= ITEM_TRAIT_TYPE_NONE)
-
-			-- 		control.traitIndex = data.traitIndex
-			-- 		control.traitType = data.traitType
-			-- 		local stackCount = GetCurrentSmithingTraitItemCount(data.traitIndex)
-			-- 		local hasEnoughInInventory = stackCount > 0
-			-- 		local isTraitKnown = false
-			-- 		if self:IsCraftableWithoutTrait() then
-			-- 			local patternIndex, materialIndex, materialQty, styleIndex = self:GetAllNonTraitCraftingParameters()
-			-- 			isTraitKnown = IsSmithingTraitKnownForResult(patternIndex, materialIndex, materialQty, styleIndex, data.traitIndex)
-			-- 		end
-			-- 		local usable = data.traitType == ITEM_TRAIT_TYPE_NONE or(hasEnoughInInventory and isTraitKnown)
-
-			-- 		ZO_ItemSlot_SetupSlot(control, stackCount, data.icon, usable, not enabled)
-
-			-- 		if selected then
-			-- 			SetHighlightColor(highlightTexture, usable)
-
-			-- 			self:SetLabelHidden(listContainer.extraInfoLabel, usable or data.traitType == ITEM_TRAIT_TYPE_NONE)
-			-- 			if usable then
-			-- 				self.isTraitUsable = USABILITY_TYPE_USABLE
-			-- 			else
-			-- 				self.isTraitUsable = USABILITY_TYPE_VALID_BUT_MISSING_REQUIREMENT
-			-- 				if not isTraitKnown then
-			-- 					listContainer.extraInfoLabel:SetText(GetString(SI_SMITHING_TRAIT_MUST_BE_RESEARCHED))
-			-- 				elseif not hasEnoughInInventory then
-			-- 					self:SetLabelHidden(listContainer.extraInfoLabel, true)
-			-- 				end
-			-- 			end
-
-			-- 			if not data.localizedName then
-			-- 				if data.traitType == ITEM_TRAIT_TYPE_NONE then
-			-- 					data.localizedName = GetString("SI_ITEMTRAITTYPE", data.traitType)
-			-- 				else
-			-- 					data.localizedName = self:GetPlatformFormattedTextString(SI_SMITHING_TRAIT_DESCRIPTION, data.name, GetString("SI_ITEMTRAITTYPE", data.traitType))
-			-- 				end
-			-- 			end
-
-			-- 			listContainer.selectedLabel:SetText(data.localizedName)
-
-			-- 			if not selectedDuringRebuild then
-			-- 				self:RefreshVisiblePatterns()
-			-- 			end
-			-- 		end
 		end
 
 		local function EqualityFunction(leftData, rightData)

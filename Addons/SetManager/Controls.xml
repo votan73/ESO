@@ -43,9 +43,14 @@
         </Texture>
 
         <Label name="$(parent)Name" font="ZoFontWinH4" wrapMode="ELLIPSIS" verticalAlignment="CENTER" horizontalAlignment="LEFT">
-          <Dimensions y="48"/>
-          <Anchor point="TOPLEFT" relativeTo="$(parent)Texture" relativePoint="TOPRIGHT" offsetX="4" offsetY="-4"/>
+          <Dimensions y="38"/>
+          <Anchor point="TOPLEFT" relativeTo="$(parent)Texture" relativePoint="TOPRIGHT" offsetX="4" offsetY="0"/>
           <Anchor point="TOPRIGHT" relativeTo="$(parent)" relativePoint="TOPRIGHT" offsetX="-4" offsetY="0"/>
+        </Label>
+        <Label name="$(parent)Trait" font="$(BOLD_FONT)|14" wrapMode="ELLIPSIS" verticalAlignment="BOTTOM" horizontalAlignment="LEFT" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_NORMAL">
+          <Dimensions y="48"/>
+          <Anchor point="BOTTOMLEFT" relativeTo="$(parent)Texture" relativePoint="BOTTOMRIGHT" offsetX="4"/>
+          <Anchor point="BOTTOMRIGHT" relativeTo="$(parent)" relativePoint="BOTTOMRIGHT" offsetX="-4" offsetY="-2"/>
         </Label>
       </Controls>
     </Control>

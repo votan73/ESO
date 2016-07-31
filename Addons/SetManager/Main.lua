@@ -114,6 +114,7 @@ local function OnAddonLoaded(event, name)
 
 	addon.player = ZO_SavedVars:New("SetManager_Data", 1, nil, addon.playerDefaults, nil)
 	addon.account = ZO_SavedVars:NewAccountWide("SetManager_Data", 1, nil, addon.accountDefaults, nil)
+	addon.account.all = nil
 
 	local templates = addon.account.templates
 	if #templates == 0 then
