@@ -6,6 +6,19 @@ addon.Selector = {
 		[CRAFTING_TYPE_CLOTHIER] = true,
 		[CRAFTING_TYPE_WOODWORKING] = true,
 	},
+	allowedArmorType =
+	{
+		[CRAFTING_TYPE_BLACKSMITHING] = { [ARMORTYPE_HEAVY] = true },
+		[CRAFTING_TYPE_CLOTHIER] = { [ARMORTYPE_LIGHT] = true, [ARMORTYPE_MEDIUM] = true },
+		[CRAFTING_TYPE_WOODWORKING] = { },
+	},
+	allowedWeaponType =
+	{
+		[CRAFTING_TYPE_BLACKSMITHING] = { [WEAPONTYPE_AXE] = true, [WEAPONTYPE_DAGGER] = true, [WEAPONTYPE_HAMMER] = true, [WEAPONTYPE_SWORD] = true, [WEAPONTYPE_TWO_HANDED_AXE] = true, [WEAPONTYPE_TWO_HANDED_HAMMER] = true, [WEAPONTYPE_TWO_HANDED_SWORD] = true, },
+		[CRAFTING_TYPE_CLOTHIER] = { },
+		[CRAFTING_TYPE_WOODWORKING] = { [WEAPONTYPE_BOW] = true, [WEAPONTYPE_FIRE_STAFF] = true, [WEAPONTYPE_FROST_STAFF] = true, [WEAPONTYPE_HEALING_STAFF] = true, [WEAPONTYPE_LIGHTNING_STAFF] = true, [WEAPONTYPE_SHIELD] = true },
+	},
+
 }
 local selector = SET_MANAGER.Selector
 
@@ -59,6 +72,22 @@ function selector:InitSetTemplates()
 			end
 			return false
 		end
+		local function SetMaterialQuantity(creation, requiredLevel, requiredCP)
+			local patternIndex, materialIndex = creation:GetSelectedPatternIndex(), creation:GetSelectedMaterialIndex()
+
+			local GetItemLinkRequiredLevel, GetItemLinkRequiredChampionPoints = GetItemLinkRequiredLevel, GetItemLinkRequiredChampionPoints
+			local GetSmithingPatternNextMaterialQuantity = GetSmithingPatternNextMaterialQuantity
+
+			local quantity, count = 1, 0
+			local itemLink
+			repeat
+				quantity = GetSmithingPatternNextMaterialQuantity(patternIndex, materialIndex, quantity, 1, 1)
+				itemLink = GetSmithingPatternResultLink(patternIndex, materialIndex, quantity, 1, 1)
+				count = count + 1
+			until count > 10 or(requiredLevel == GetItemLinkRequiredLevel(itemLink) and requiredCP == GetItemLinkRequiredChampionPoints(itemLink))
+			creation.materialQuantitySpinner:ModifyValue(quantity)
+			return count <= 10
+		end
 		local function OnSelectedSlotChanged(control)
 			self.selectedSlot = control.selectedSlot
 			local GetItemLinkName, GetSmithingPatternResultLink = GetItemLinkName, GetSmithingPatternResultLink
@@ -70,32 +99,22 @@ function selector:InitSetTemplates()
 			local requiredRank, requiredLevel, requiredCP = GetItemLinkSmithingRequiredRankAndLevels(itemLink)
 			local itemName = GetItemLinkName(itemLink)
 
-
 			local craftingType = armorType > 0 and armorType or weaponType
 
 			SMITHING.modeBar.m_object:SelectDescriptor(2)
 			local creation = SMITHING.creationPanel
-			creation.tabs.m_object:SelectDescriptor(armorType > 0 and 4 or 3)
-			SetIndex(creation.patternList, function(_, newData) return itemName == GetItemLinkName(GetSmithingPatternResultLink(newData.patternIndex, 1, 7, 1, 1)) end)
-			SetIndex(creation.materialList, function(_, newData) return newData.rankRequirement == requiredRank end)
-			SetIndex(creation.styleList, function(_, newData) return newData.itemStyle == itemStyle end)
-			SetIndex(creation.traitList, function(_, newData) return newData.traitType == itemTrait end)
+			creation.tabs.m_object:SelectDescriptor(armorType > 0 and ZO_SMITHING_CREATION_FILTER_TYPE_SET_ARMOR or ZO_SMITHING_CREATION_FILTER_TYPE_SET_WEAPONS)
+			local success
+			success = SetIndex(creation.patternList, function(_, newData) return itemName == GetItemLinkName(GetSmithingPatternResultLink(newData.patternIndex, 1, 7, 1, 1)) end)
+			if SetIndex(creation.materialList, function(_, newData) return newData.rankRequirement == requiredRank end) then
+				success = SetMaterialQuantity(creation, requiredLevel, requiredCP) and success
+			else
+				success = false
+			end
+			success = SetIndex(creation.styleList, function(_, newData) return newData.itemStyle == itemStyle end) and success
+			success = SetIndex(creation.traitList, function(_, newData) d(newData) return newData.traitType == itemTrait end) and success
 
-			local patternIndex = creation.patternList:GetSelectedData().patternIndex
-			local materialIndex = creation.materialList:GetSelectedData().materialIndex
-
-			local GetItemLinkRequiredLevel, GetItemLinkRequiredChampionPoints = GetItemLinkRequiredLevel, GetItemLinkRequiredChampionPoints
-			local GetSmithingPatternNextMaterialQuantity = GetSmithingPatternNextMaterialQuantity
-
-			local quantity = 1
-			local itemLink
-			repeat
-				quantity = GetSmithingPatternNextMaterialQuantity(patternIndex, materialIndex, quantity, 1, 1)
-				itemLink = GetSmithingPatternResultLink(patternIndex, materialIndex, quantity, 1, 1)
-			until requiredLevel == GetItemLinkRequiredLevel(itemLink) and requiredCP == GetItemLinkRequiredChampionPoints(itemLink)
-			creation.materialQuantitySpinner:ModifyValue(quantity)
-
-			PlaySound(SOUNDS.DEFAULT_CLICK)
+			PlaySound(failed and SOUNDS.NEGATIVE_CLICK or SOUNDS.DEFAULT_CLICK)
 		end
 		local function OnTemplateChanged(self)
 			local rowData = self.data
@@ -128,7 +147,7 @@ function selector:InitSetTemplates()
 			edit:SetText(data.name)
 
 			edit = control:GetNamedChild("AccessoriesSectionText")
-			edit:SetColor(0.5, 0.5, 0.5)
+			edit:SetColor(ZO_DEFAULT_DISABLED_COLOR:UnpackRGB())
 
 			local weaponsAllowed = CanSmithingWeaponPatternsBeCraftedHere()
 			local apparelAllowed = CanSmithingApparelPatternsBeCraftedHere()
@@ -142,10 +161,12 @@ function selector:InitSetTemplates()
 				slotControl:SetHandler("OnMouseExit", onMouseExit)
 				local enabled = slotControl.itemLink ~= nil
 				if enabled then
-					if GetItemLinkArmorType(slotControl.itemLink) == 0 then
-						enabled = weaponsAllowed
+					local itemType = GetItemLinkArmorType(slotControl.itemLink)
+					if itemType == 0 then
+						itemType = GetItemLinkWeaponType(slotControl.itemLink)
+						enabled = weaponsAllowed and self.allowedWeaponType[self.interactionType][itemType]
 					else
-						enabled = apparelAllowed
+						enabled = apparelAllowed and self.allowedArmorType[self.interactionType][itemType]
 					end
 				end
 				if enabled then
