@@ -1,0 +1,37 @@
+<GuiXml>
+  <Controls>
+    <Control name="SetManager_Character_Template_Selector" inherits="SetManager_Character_Template" virtual="true">
+      <!--<OnInitialized>
+        SET_MANAGER.Designer:InitializeEditableSlots(self)
+      </OnInitialized>-->
+      <Controls>
+        <Label name="$(parent)Name" font="ZoFontEdit20NoShadow" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_NORMAL">
+          <Dimensions x="160" y="24"/>
+          <Anchor point="TOPLEFT"  relativeTo="$(parent)EquipmentSlotsBackupMain" relativePoint="BOTTOMLEFT" offsetY="4"/>
+        </Label>
+      </Controls>
+    </Control>
+
+    <TopLevelControl name="SetManagerTopLevelSelector" mouseEnabled="true" hidden="true" allowBringToTop="false">
+      <Dimensions x="273" />
+      <Anchor point="TOPRIGHT" relativeTo="ZO_SharedRightPanelBackground" relativePoint="TOPLEFT" offsetX="-48" />
+      <Anchor point="BOTTOMRIGHT" relativeTo="ZO_SharedRightPanelBackground" relativePoint="BOTTOMLEFT" offsetX="-48" />
+
+      <Controls>
+        <Control name="$(parent)SetTemplate">
+          <Dimensions x="273" />
+          <Anchor point="TOPRIGHT" relativeTo="$(parent)" relativePoint="TOPRIGHT" offsetX="0" />
+          <Anchor point="BOTTOMRIGHT" relativeTo="$(parent)" relativePoint="BOTTOMRIGHT" offsetX="0" />
+
+          <Controls>
+            <Control name="$(parent)List" inherits="ZO_HorizontalScrollListTemplate">
+              <Dimensions x="273" y="532" />
+              <Anchor point="CENTER" />
+            </Control>
+          </Controls>
+        </Control>
+      </Controls>
+    </TopLevelControl>
+  </Controls>
+
+</GuiXml>
