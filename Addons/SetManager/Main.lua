@@ -117,6 +117,13 @@ do
 		tooltip:AddLine(text, "ZoFontHeader3", r, g, b, CENTER, MODIFY_TEXT_TYPE_UPPERCASE, TEXT_ALIGN_CENTER, true)
 	end
 
+	local function AddSection(tooltip, title, description)
+		tooltip:AddLine(title, "ZoFontWinT2", rs, gs, bs, CENTER, MODIFY_TEXT_TYPE_UPPERCASE, TEXT_ALIGN_CENTER, true)
+		tooltip:AddVerticalPadding(-5)
+		tooltip:AddLine(description, "ZoFontGame", rn, gn, bn, CENTER, MODIFY_TEXT_TYPE_NONE, TEXT_ALIGN_CENTER, true)
+		tooltip:AddVerticalPadding(5)
+	end
+
 	function addon:FakeEquippedItemTooltip(itemLink, setTemplate, equipped)
 		-- SetLink uses original functions only. They protected it.
 		-- Rewrite Tooltip???
@@ -197,10 +204,7 @@ do
 		local function AddEnchant(itemLink)
 			local hasEnchant, enchantHeader, enchantDescription = GetItemLinkEnchantInfo(itemLink)
 			if hasEnchant then
-				tooltip:AddLine(enchantHeader, "ZoFontWinT2", rs, gs, bs, CENTER, MODIFY_TEXT_TYPE_UPPERCASE, TEXT_ALIGN_CENTER, true)
-				tooltip:AddVerticalPadding(-5)
-				tooltip:AddLine(enchantDescription, "ZoFontGame", rn, gn, bn, CENTER, MODIFY_TEXT_TYPE_NONE, TEXT_ALIGN_CENTER, true)
-				tooltip:AddVerticalPadding(5)
+				AddSection(tooltip, enchantHeader, enchantDescription)
 			end
 		end
 		local function AddTrait(itemLink)
@@ -208,17 +212,11 @@ do
 			if (traitType ~= ITEM_TRAIT_TYPE_NONE and traitType ~= ITEM_TRAIT_TYPE_SPECIAL_STAT and traitDescription ~= "") then
 				local traitName = GetString("SI_ITEMTRAITTYPE", traitType)
 				if traitName ~= "" then
-					tooltip:AddLine(zo_strformat(SI_ITEM_FORMAT_STR_ITEM_TRAIT_HEADER, traitName), "ZoFontWinT2", rs, gs, bs, CENTER, MODIFY_TEXT_TYPE_UPPERCASE, TEXT_ALIGN_CENTER, true)
-					tooltip:AddVerticalPadding(-5)
-					tooltip:AddLine(zo_strformat(SI_ITEM_FORMAT_STR_ITEM_TRAIT_DESCRIPTION, traitDescription), "ZoFontGame", rn, gn, bn, CENTER, MODIFY_TEXT_TYPE_NONE, TEXT_ALIGN_CENTER, true)
-					tooltip:AddVerticalPadding(5)
+					AddSection(tooltip, zo_strformat(SI_ITEM_FORMAT_STR_ITEM_TRAIT_HEADER, traitName), zo_strformat(SI_ITEM_FORMAT_STR_ITEM_TRAIT_DESCRIPTION, traitDescription))
 				end
 			end
 			if traitSubtype ~= 0 and traitSubtypeName ~= "" then
-				tooltip:AddLine(zo_strformat(SI_ITEM_FORMAT_STR_ITEM_TRAIT_HEADER, traitSubtypeName), "ZoFontWinT2", rs, gs, bs, CENTER, MODIFY_TEXT_TYPE_UPPERCASE, TEXT_ALIGN_CENTER, true)
-				tooltip:AddVerticalPadding(-5)
-				tooltip:AddLine(zo_strformat(SI_ITEM_FORMAT_STR_ITEM_TRAIT_DESCRIPTION, traitSubtypeDescription), "ZoFontGame", rn, gn, bn, CENTER, MODIFY_TEXT_TYPE_NONE, TEXT_ALIGN_CENTER, true)
-				tooltip:AddVerticalPadding(5)
+				AddSection(tooltip, zo_strformat(SI_ITEM_FORMAT_STR_ITEM_TRAIT_HEADER, traitSubtypeName), zo_strformat(SI_ITEM_FORMAT_STR_ITEM_TRAIT_DESCRIPTION, traitSubtypeDescription))
 			end
 		end
 		local function AddSet(itemLink)
