@@ -67,22 +67,6 @@ local function HideRowHighlight(rowControl, hidden)
 	end
 end
 
-local function AddLine(tooltip, text, color, alignment)
-	local r, g, b = color:UnpackRGB()
-	tooltip:AddLine(text, "", r, g, b, CENTER, MODIFY_TEXT_TYPE_NONE, alignment, alignment ~= TEXT_ALIGN_LEFT)
-end
-
-local function AddLineCenter(tooltip, text, color)
-	if not color then color = ZO_TOOLTIP_DEFAULT_COLOR end
-	AddLine(tooltip, text, color, TEXT_ALIGN_CENTER)
-end
-
-local function AddLineTitle(tooltip, text, color)
-	if not color then color = ZO_SELECTED_TEXT end
-	local r, g, b = color:UnpackRGB()
-	tooltip:AddLine(text, "ZoFontHeader3", r, g, b, CENTER, MODIFY_TEXT_TYPE_UPPERCASE, TEXT_ALIGN_CENTER, true)
-end
-
 function designer:UpdateSetsList()
 	local scrollList = self.setsList
 	local dataList = ZO_ScrollList_GetDataList(scrollList)
@@ -194,6 +178,21 @@ function designer:InitItemList()
 end
 
 function designer:InitSetsList()
+	local function AddLine(tooltip, text, color, alignment)
+		local r, g, b = color:UnpackRGB()
+		tooltip:AddLine(text, "", r, g, b, CENTER, MODIFY_TEXT_TYPE_NONE, alignment, alignment ~= TEXT_ALIGN_LEFT)
+	end
+
+	local function AddLineCenter(tooltip, text, color)
+		if not color then color = ZO_TOOLTIP_DEFAULT_COLOR end
+		AddLine(tooltip, text, color, TEXT_ALIGN_CENTER)
+	end
+
+	local function AddLineTitle(tooltip, text, color)
+		if not color then color = ZO_SELECTED_TEXT end
+		local r, g, b = color:UnpackRGB()
+		tooltip:AddLine(text, "ZoFontHeader3", r, g, b, CENTER, MODIFY_TEXT_TYPE_UPPERCASE, TEXT_ALIGN_CENTER, true)
+	end
 	local function onMouseEnter(rowControl)
 		HideRowHighlight(rowControl, false)
 		InitializeTooltip(ItemTooltip, rowControl, TOPRIGHT, 0, -104, TOPLEFT)
@@ -277,13 +276,13 @@ function designer:InitSetTemplates()
 		local function onMouseEnter(rowControl)
 			if rowControl.itemLink then
 				InitializeTooltip(ItemTooltip, rowControl, TOPRIGHT, 0, -104, TOPLEFT)
-				addon:FakeEquippedItemTooltip(rowControl.itemLink)
+				addon:FakeEquippedItemTooltip(rowControl.itemLink, rowControl:GetParent().data, true)
 				self.setTemplates.hoveredSlot = rowControl.slotId
 				KEYBIND_STRIP:UpdateKeybindButtonGroup(self.keybindStripDescriptorMouseOver)
 			end
 		end
 		local function onMouseExit(rowControl)
-			ClearTooltip(ItemTooltip, rowControl)
+			addon:ClearFakeEquippedItemTooltip()
 			self.setTemplates.hoveredSlot = nil
 			KEYBIND_STRIP:UpdateKeybindButtonGroup(self.keybindStripDescriptorMouseOver)
 		end
@@ -756,6 +755,7 @@ function designer:Init()
 			self.isOpen = true
 		elseif newState == SCENE_FRAGMENT_HIDING then
 			self.isOpen = false
+			addon:ClearFakeEquippedItemTooltip()
 			ClearTooltip(ItemTooltip)
 			KEYBIND_STRIP:RemoveKeybindButtonGroup(self.keybindStripDescriptorMouseOver)
 			KEYBIND_STRIP:RemoveKeybindButtonGroup(self.keybindStripDescriptor)
