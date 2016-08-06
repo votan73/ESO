@@ -4,7 +4,10 @@ local rs, gs, bs = ZO_SELECTED_TEXT:UnpackRGB()
 local rn, gn, bn = ZO_TOOLTIP_DEFAULT_COLOR:UnpackRGB()
 local rd, gd, bd = ZO_DISABLED_TEXT:UnpackRGB()
 
-local statValuePairPool = ZO_ControlPool:New("ZO_TooltipStatValuePair", GuiRoot, "SetManagerStatValuePair")
+SetItemTooltip = WINDOW_MANAGER:CreateControlFromVirtual("SetItemTooltip", ItemTooltipTopLevel, "ZO_ItemIconTooltip")
+local SetItemTooltip = SetItemTooltip
+
+local statValuePairPool = ZO_ControlPool:New("ZO_TooltipStatValuePair", SetItemTooltip, "SetManagerStatValuePair")
 statValuePairPool:SetCustomFactoryBehavior( function(self)
 	self.statLabel = self:GetNamedChild("Stat")
 	self.valueLabel = self:GetNamedChild("Value")
@@ -16,6 +19,14 @@ statValuePairPool:SetCustomFactoryBehavior( function(self)
 	self.valueLabel:SetColor(rs, gs, bs)
 	self.valueLabel:SetAnchor(BOTTOMLEFT, self.statLabel, BOTTOMRIGHT, 4, 2)
 end )
+
+do
+	local orgClearLines = SetItemTooltip.ClearLines
+	function SetItemTooltip:ClearLines()
+		statValuePairPool:ReleaseAllObjects()
+		return orgClearLines(self)
+	end
+end
 
 local function AddLine(tooltip, text, color, alignment)
 	local r, g, b = color:UnpackRGB()
@@ -40,36 +51,34 @@ local function AddSection(tooltip, title, description)
 	tooltip:AddVerticalPadding(5)
 end
 
+local function SetStatValue(tooltip, text, value)
+	local statValuePair = statValuePairPool:AcquireObject()
+	statValuePair.statLabel:SetWidth(0)
+	statValuePair.statLabel:SetText(text)
+	statValuePair.statLabel:SetDimensions(statValuePair.statLabel:GetTextDimensions(text))
+	statValuePair.valueLabel:SetWidth(0)
+	statValuePair.valueLabel:SetText(value)
+	statValuePair.valueLabel:SetDimensions(statValuePair.valueLabel:GetTextDimensions(text))
+	statValuePair:SetParent(tooltip)
+	local width = statValuePair.statLabel:GetWidth() + statValuePair.valueLabel:GetWidth()
+	statValuePair:SetDimensions(width, statValuePair.valueLabel:GetHeight())
+	statValuePair:ClearAnchors()
+	tooltip:AddControl(statValuePair)
+	return statValuePair
+end
+
 local lines = { }
-function addon:FakeEquippedItemTooltip(itemLink, setTemplate, equipped)
+function SetItemTooltip:SetTemplateItemLink(itemLink, setTemplate, equipped)
 	-- SetLink uses original functions only. They protected it.
-	-- Rewrite Tooltip???
-	-- ItemTooltip:SetLink(itemLink, true)
-	local tooltip = ItemTooltip
+	-- Rewrite Tooltip
 
 	local function AddItemTitle(itemLink)
 		local name = GetItemLinkName(itemLink)
 		local quality = GetItemLinkQuality(itemLink)
 		local qualityColor = GetItemQualityColor(quality)
-		AddLineTitle(tooltip, zo_strformat(SI_TOOLTIP_ITEM_NAME, name), qualityColor)
-		tooltip:AddVerticalPadding(-12)
-		ZO_Tooltip_AddDivider(tooltip)
-	end
-
-	local function SetStatValue(tooltip, text, value)
-		local statValuePair = statValuePairPool:AcquireObject()
-		statValuePair.statLabel:SetWidth(0)
-		statValuePair.statLabel:SetText(text)
-		statValuePair.statLabel:SetDimensions(statValuePair.statLabel:GetTextDimensions(text))
-		statValuePair.valueLabel:SetWidth(0)
-		statValuePair.valueLabel:SetText(value)
-		statValuePair.valueLabel:SetDimensions(statValuePair.valueLabel:GetTextDimensions(text))
-		statValuePair:SetParent(tooltip)
-		local width = statValuePair.statLabel:GetWidth() + statValuePair.valueLabel:GetWidth()
-		statValuePair:SetDimensions(width, statValuePair.valueLabel:GetHeight())
-		statValuePair:ClearAnchors()
-		tooltip:AddControl(statValuePair)
-		return statValuePair
+		AddLineTitle(self, zo_strformat(SI_TOOLTIP_ITEM_NAME, name), qualityColor)
+		self:AddVerticalPadding(-12)
+		ZO_Tooltip_AddDivider(self)
 	end
 
 	local function AddTopSection(itemLink)
@@ -89,11 +98,11 @@ function addon:FakeEquippedItemTooltip(itemLink, setTemplate, equipped)
 				lines[#lines + 1] = zo_strformat(SI_ITEM_FORMAT_STR_TEXT1_TEXT2, GetString("SI_WEAPONTYPE", weaponType), GetString("SI_EQUIPTYPE", equipType))
 			end
 		end
-		tooltip:AddHeaderLine(table.concat(lines, " "), "ZoFontWinT2", 1, TOOLTIP_HEADER_SIDE_LEFT, rn, gn, bn)
+		self:AddHeaderLine(table.concat(lines, " "), "ZoFontWinT2", 1, TOOLTIP_HEADER_SIDE_LEFT, rn, gn, bn)
 
 		ZO_ClearNumericallyIndexedTable(lines)
 
-		tooltip:AddHeaderLine(zo_strformat("<<1>>", GetString("SI_ITEMSTYLE", GetItemLinkItemStyle(itemLink))), "ZoFontWinT2", 2, TOOLTIP_HEADER_SIDE_LEFT, rn, gn, bn)
+		self:AddHeaderLine(zo_strformat("<<1>>", GetString("SI_ITEMSTYLE", GetItemLinkItemStyle(itemLink))), "ZoFontWinT2", 2, TOOLTIP_HEADER_SIDE_LEFT, rn, gn, bn)
 
 		-- Item counts
 		local bagCount, bankCount, craftBagCount = GetItemLinkStacks(itemLink)
@@ -108,20 +117,16 @@ function addon:FakeEquippedItemTooltip(itemLink, setTemplate, equipped)
 			lines[#lines + 1] = zo_iconFormat("EsoUI/Art/Tooltips/icon_bank.dds", 20, 20)
 		end
 
-		-- 		if craftBagCount > 0 then
-		-- 			lines[#lines + 1] = zo_iconTextFormat("EsoUI/Art/Tooltips/icon_craft_bag.dds", 24, 24, craftBagCount)
-		-- 		end
-
-		tooltip:AddHeaderLine(table.concat(lines, " "), "ZoFontWinT2", 1, TOOLTIP_HEADER_SIDE_RIGHT)
+		self:AddHeaderLine(table.concat(lines, " "), "ZoFontWinT2", 1, TOOLTIP_HEADER_SIDE_RIGHT)
 		ZO_ClearNumericallyIndexedTable(lines)
 	end
 	local function AddBaseStats(itemLink)
-		tooltip:AddVerticalPadding(-5)
+		self:AddVerticalPadding(-5)
 
 		local weaponPower = GetItemLinkWeaponPower(itemLink)
 		local hasValue = false
 		if weaponPower > 0 then
-			SetStatValue(tooltip, GetString(SI_ITEM_FORMAT_STR_DAMAGE), weaponPower):SetAnchor(LEFT, nil, CENTER, -150, 0)
+			SetStatValue(self, GetString(SI_ITEM_FORMAT_STR_DAMAGE), weaponPower):SetAnchor(LEFT, nil, CENTER, -150, 0)
 			hasValue = true
 		else
 			local CONSIDER_CONDITION = true
@@ -135,7 +140,7 @@ function addon:FakeEquippedItemTooltip(itemLink, setTemplate, equipped)
 					valueText = zo_strformat(SI_ITEM_FORMAT_STR_EFFECTIVE_VALUE_OF_MAX, effectiveArmorRating, armorRating)
 				end
 
-				SetStatValue(tooltip, GetString(SI_ITEM_FORMAT_STR_ARMOR), valueText):SetAnchor(LEFT, nil, CENTER, -150, 0)
+				SetStatValue(self, GetString(SI_ITEM_FORMAT_STR_ARMOR), valueText):SetAnchor(LEFT, nil, CENTER, -150, 0)
 				hasValue = true
 			end
 		end
@@ -146,18 +151,18 @@ function addon:FakeEquippedItemTooltip(itemLink, setTemplate, equipped)
 		if requiredLevel > 0 or requiredChampionPoints > 0 then
 			if requiredLevel > 0 then
 				if hasValue then
-					tooltip:AddVerticalPadding(-51)
-					SetStatValue(tooltip, GetString(SI_ITEM_FORMAT_STR_LEVEL), requiredLevel):SetAnchor(CENTER)
+					self:AddVerticalPadding(-51)
+					SetStatValue(self, GetString(SI_ITEM_FORMAT_STR_LEVEL), requiredLevel):SetAnchor(CENTER)
 				else
-					SetStatValue(tooltip, GetString(SI_ITEM_FORMAT_STR_LEVEL), requiredLevel):SetAnchor(LEFT, nil, CENTER, -100, 0)
+					SetStatValue(self, GetString(SI_ITEM_FORMAT_STR_LEVEL), requiredLevel):SetAnchor(LEFT, nil, CENTER, -100, 0)
 				end
 			end
 			if requiredChampionPoints > 0 then
-				if requiredLevel > 0 then tooltip:AddVerticalPadding(-51) end
+				if requiredLevel > 0 then self:AddVerticalPadding(-51) end
 				if hasValue then
-					SetStatValue(tooltip, zo_iconTextFormatNoSpace(GetGamepadChampionPointsIcon(), 32, 32, GetString(SI_ITEM_FORMAT_STR_CHAMPION)), requiredChampionPoints):SetAnchor(LEFT, nil, CENTER, 170, 0)
+					SetStatValue(self, zo_iconTextFormatNoSpace(GetGamepadChampionPointsIcon(), 32, 32, GetString(SI_ITEM_FORMAT_STR_CHAMPION)), requiredChampionPoints):SetAnchor(LEFT, nil, CENTER, 170, 0)
 				else
-					SetStatValue(tooltip, zo_iconTextFormatNoSpace(GetGamepadChampionPointsIcon(), 32, 32, GetString(SI_ITEM_FORMAT_STR_CHAMPION)), requiredChampionPoints):SetAnchor(LEFT, nil, CENTER, 120, 0)
+					SetStatValue(self, zo_iconTextFormatNoSpace(GetGamepadChampionPointsIcon(), 32, 32, GetString(SI_ITEM_FORMAT_STR_CHAMPION)), requiredChampionPoints):SetAnchor(LEFT, nil, CENTER, 120, 0)
 				end
 			end
 		end
@@ -165,7 +170,7 @@ function addon:FakeEquippedItemTooltip(itemLink, setTemplate, equipped)
 	local function AddEnchant(itemLink)
 		local hasEnchant, enchantHeader, enchantDescription = GetItemLinkEnchantInfo(itemLink)
 		if hasEnchant then
-			AddSection(tooltip, enchantHeader, enchantDescription)
+			AddSection(self, enchantHeader, enchantDescription)
 		end
 	end
 	local function AddTrait(itemLink)
@@ -173,11 +178,11 @@ function addon:FakeEquippedItemTooltip(itemLink, setTemplate, equipped)
 		if (traitType ~= ITEM_TRAIT_TYPE_NONE and traitType ~= ITEM_TRAIT_TYPE_SPECIAL_STAT and traitDescription ~= "") then
 			local traitName = GetString("SI_ITEMTRAITTYPE", traitType)
 			if traitName ~= "" then
-				AddSection(tooltip, zo_strformat(SI_ITEM_FORMAT_STR_ITEM_TRAIT_HEADER, traitName), zo_strformat(SI_ITEM_FORMAT_STR_ITEM_TRAIT_DESCRIPTION, traitDescription))
+				AddSection(self, zo_strformat(SI_ITEM_FORMAT_STR_ITEM_TRAIT_HEADER, traitName), zo_strformat(SI_ITEM_FORMAT_STR_ITEM_TRAIT_DESCRIPTION, traitDescription))
 			end
 		end
 		if traitSubtype ~= 0 and traitSubtypeName ~= "" then
-			AddSection(tooltip, zo_strformat(SI_ITEM_FORMAT_STR_ITEM_TRAIT_HEADER, traitSubtypeName), zo_strformat(SI_ITEM_FORMAT_STR_ITEM_TRAIT_DESCRIPTION, traitSubtypeDescription))
+			AddSection(self, zo_strformat(SI_ITEM_FORMAT_STR_ITEM_TRAIT_HEADER, traitSubtypeName), zo_strformat(SI_ITEM_FORMAT_STR_ITEM_TRAIT_DESCRIPTION, traitSubtypeDescription))
 		end
 	end
 	local function AddSet(itemLink)
@@ -193,40 +198,47 @@ function addon:FakeEquippedItemTooltip(itemLink, setTemplate, equipped)
 		end
 
 		if hasSet then
-			tooltip:AddLine(zo_strformat(SI_ITEM_FORMAT_STR_SET_NAME, setName, numEquipped, maxEquipped), "ZoFontWinT2", rs, gs, bs, CENTER, MODIFY_TEXT_TYPE_UPPERCASE, TEXT_ALIGN_CENTER, true)
+			self:AddLine(zo_strformat(SI_ITEM_FORMAT_STR_SET_NAME, setName, numEquipped, maxEquipped), "ZoFontWinT2", rs, gs, bs, CENTER, MODIFY_TEXT_TYPE_UPPERCASE, TEXT_ALIGN_CENTER, true)
 			for i = 1, numBonuses do
 				local numRequired, bonusDescription = GetItemLinkSetBonusInfo(itemLink, equipped, i)
 				if numEquipped >= numRequired then
-					tooltip:AddLine(bonusDescription, "ZoFontGame", rn, gn, bn, CENTER, MODIFY_TEXT_TYPE_NONE, TEXT_ALIGN_CENTER, true)
+					self:AddLine(bonusDescription, "ZoFontGame", rn, gn, bn, CENTER, MODIFY_TEXT_TYPE_NONE, TEXT_ALIGN_CENTER, true)
 				else
-					tooltip:AddLine(bonusDescription, "ZoFontGame", rd, gd, bd, CENTER, MODIFY_TEXT_TYPE_NONE, TEXT_ALIGN_CENTER, true)
+					self:AddLine(bonusDescription, "ZoFontGame", rd, gd, bd, CENTER, MODIFY_TEXT_TYPE_NONE, TEXT_ALIGN_CENTER, true)
 				end
 			end
 		end
 	end
 
-	tooltip:ClearLines()
-	statValuePairPool:ReleaseAllObjects()
-	tooltip:SetHeaderRowSpacing(0)
-	tooltip:SetHeaderVerticalOffset(10)
+	self:ClearLines()
+	self:SetHeaderRowSpacing(0)
+	self:SetHeaderVerticalOffset(10)
 	local iconTexture = GetItemLinkInfo(itemLink)
-	ZO_ItemIconTooltip_OnAddGameData(tooltip, TOOLTIP_GAME_DATA_ITEM_ICON, iconTexture)
-	-- tooltip:AddVerticalPadding(24)
+	ZO_ItemIconTooltip_OnAddGameData(self, TOOLTIP_GAME_DATA_ITEM_ICON, iconTexture)
 
 	AddTopSection(itemLink)
 	AddItemTitle(itemLink)
 	AddBaseStats(itemLink)
-	-- if (DoesItemLinkHaveEnchantCharges(itemLink)) then
-	-- 	self:AddEnchantChargeBar(itemLink, forceFullDurability, previewValueToAdd)
-	-- end
-
 	AddEnchant(itemLink)
 	AddTrait(itemLink)
 	AddSet(itemLink)
-
-	ZO_ItemTooltip_SetStolen(tooltip, false)
 end
-function addon:ClearFakeEquippedItemTooltip()
-	ClearTooltip(ItemTooltip)
-	statValuePairPool:ReleaseAllObjects()
+
+function SetItemTooltip:SetSetLink(itemLink)
+	self:ClearLines()
+
+	local iconTexture = GetItemLinkInfo(itemLink)
+	ZO_ItemIconTooltip_OnAddGameData(self, TOOLTIP_GAME_DATA_ITEM_ICON, iconTexture)
+	self:AddVerticalPadding(24)
+
+	local hasSet, setName, numBonuses, _, maxEquipped = GetItemLinkSetInfo(itemLink)
+	if hasSet then
+		AddLineTitle(self, zo_strformat(SI_TOOLTIP_ITEM_NAME, setName))
+		self:AddVerticalPadding(-9)
+		ZO_Tooltip_AddDivider(self)
+		for i = 1, numBonuses do
+			local _, bonusDescription = GetItemLinkSetBonusInfo(itemLink, false, i)
+			AddLineCenter(self, bonusDescription)
+		end
+	end
 end

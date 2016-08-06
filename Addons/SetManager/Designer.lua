@@ -60,7 +60,7 @@ local function HideRowHighlight(rowControl, hidden)
 		end
 		if hidden then
 			highlight.animation:PlayBackward()
-			ClearTooltip(ItemTooltip, rowControl)
+			ClearTooltip(SetItemTooltip, rowControl)
 		else
 			highlight.animation:PlayForward()
 		end
@@ -138,14 +138,13 @@ end
 function designer:InitItemList()
 	local function onMouseEnter(rowControl)
 		HideRowHighlight(rowControl, false)
-		InitializeTooltip(ItemTooltip, rowControl, TOPRIGHT, 0, -104, TOPLEFT)
+		InitializeTooltip(SetItemTooltip, rowControl, TOPRIGHT, 0, -104, TOPLEFT)
 		local rowData = ZO_ScrollList_GetData(rowControl)
-		addon:FakeEquippedItemTooltip(rowData.itemLink, self.setTemplates:GetSelectedData(), false)
+		SetItemTooltip:SetTemplateItemLink(rowData.itemLink, self.setTemplates:GetSelectedData(), false)
 		self.itemList.hovered = ZO_ScrollList_GetData(rowControl)
 		KEYBIND_STRIP:UpdateKeybindButtonGroup(self.keybindStripDescriptorMouseOver)
 	end
 	local function onMouseExit(rowControl)
-		addon:ClearFakeEquippedItemTooltip()
 		HideRowHighlight(rowControl, true)
 		self.itemList.hovered = nil
 		KEYBIND_STRIP:UpdateKeybindButtonGroup(self.keybindStripDescriptorMouseOver)
@@ -179,43 +178,12 @@ function designer:InitItemList()
 end
 
 function designer:InitSetsList()
-	local function AddLine(tooltip, text, color, alignment)
-		local r, g, b = color:UnpackRGB()
-		tooltip:AddLine(text, "", r, g, b, CENTER, MODIFY_TEXT_TYPE_NONE, alignment, alignment ~= TEXT_ALIGN_LEFT)
-	end
-
-	local function AddLineCenter(tooltip, text, color)
-		if not color then color = ZO_TOOLTIP_DEFAULT_COLOR end
-		AddLine(tooltip, text, color, TEXT_ALIGN_CENTER)
-	end
-
-	local function AddLineTitle(tooltip, text, color)
-		if not color then color = ZO_SELECTED_TEXT end
-		local r, g, b = color:UnpackRGB()
-		tooltip:AddLine(text, "ZoFontHeader3", r, g, b, CENTER, MODIFY_TEXT_TYPE_UPPERCASE, TEXT_ALIGN_CENTER, true)
-	end
 	local function onMouseEnter(rowControl)
 		HideRowHighlight(rowControl, false)
-		InitializeTooltip(ItemTooltip, rowControl, TOPRIGHT, 0, -104, TOPLEFT)
 		local rowData = ZO_ScrollList_GetData(rowControl)
-		ItemTooltip:ClearLines()
-
 		local itemLink = rowData.itemLink
-
-		local iconTexture = GetItemLinkInfo(itemLink)
-		ZO_ItemIconTooltip_OnAddGameData(ItemTooltip, TOOLTIP_GAME_DATA_ITEM_ICON, iconTexture)
-		ItemTooltip:AddVerticalPadding(24)
-
-		local hasSet, setName, numBonuses, _, maxEquipped = GetItemLinkSetInfo(itemLink)
-		if hasSet then
-			AddLineTitle(ItemTooltip, zo_strformat(SI_TOOLTIP_ITEM_NAME, setName))
-			ItemTooltip:AddVerticalPadding(-9)
-			ZO_Tooltip_AddDivider(ItemTooltip)
-			for i = 1, numBonuses do
-				local _, bonusDescription = GetItemLinkSetBonusInfo(itemLink, false, i)
-				AddLineCenter(ItemTooltip, bonusDescription)
-			end
-		end
+		InitializeTooltip(SetItemTooltip, rowControl, TOPRIGHT, 0, -104, TOPLEFT)
+		SetItemTooltip:SetSetLink(itemLink)
 	end
 	local function onMouseExit(rowControl)
 		local rowData = ZO_ScrollList_GetData(rowControl)
@@ -276,14 +244,14 @@ function designer:InitSetTemplates()
 
 		local function onMouseEnter(rowControl)
 			if rowControl.itemLink then
-				InitializeTooltip(ItemTooltip, rowControl, TOPRIGHT, 0, -104, TOPLEFT)
-				addon:FakeEquippedItemTooltip(rowControl.itemLink, rowControl:GetParent().data, true)
+				InitializeTooltip(SetItemTooltip, rowControl, TOPRIGHT, 0, -104, TOPLEFT)
+				SetItemTooltip:SetTemplateItemLink(rowControl.itemLink, rowControl:GetParent().data, true)
 				self.setTemplates.hoveredSlot = rowControl.slotId
 				KEYBIND_STRIP:UpdateKeybindButtonGroup(self.keybindStripDescriptorMouseOver)
 			end
 		end
 		local function onMouseExit(rowControl)
-			addon:ClearFakeEquippedItemTooltip()
+			ClearTooltip(SetItemTooltip)
 			self.setTemplates.hoveredSlot = nil
 			KEYBIND_STRIP:UpdateKeybindButtonGroup(self.keybindStripDescriptorMouseOver)
 		end
@@ -756,8 +724,7 @@ function designer:Init()
 			self.isOpen = true
 		elseif newState == SCENE_FRAGMENT_HIDING then
 			self.isOpen = false
-			addon:ClearFakeEquippedItemTooltip()
-			ClearTooltip(ItemTooltip)
+			ClearTooltip(SetItemTooltip)
 			KEYBIND_STRIP:RemoveKeybindButtonGroup(self.keybindStripDescriptorMouseOver)
 			KEYBIND_STRIP:RemoveKeybindButtonGroup(self.keybindStripDescriptor)
 			RemoveActionLayerByName(GetString(SI_KEYBINDINGS_LAYER_SET_MANAGER))

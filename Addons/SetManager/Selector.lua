@@ -123,14 +123,14 @@ function selector:InitSetTemplates()
 
 		local function onMouseEnter(rowControl)
 			if rowControl.itemLink then
-				InitializeTooltip(ItemTooltip, rowControl, TOPRIGHT, 0, -104, TOPLEFT)
-				addon:FakeEquippedItemTooltip(rowControl.itemLink, self.setTemplates:GetSelectedData(), false)
+				InitializeTooltip(SetItemTooltip, rowControl, TOPRIGHT, 0, -104, TOPLEFT)
+				SetItemTooltip:SetTemplateItemLink(rowControl.itemLink, self.setTemplates:GetSelectedData(), false)
 				self.setTemplates.hoveredSlot = rowControl.slotId
 				-- KEYBIND_STRIP:UpdateKeybindButtonGroup(self.keybindStripDescriptorMouseOver)
 			end
 		end
 		local function onMouseExit(rowControl)
-			addon:ClearFakeEquippedItemTooltip()
+			ClearTooltip(SetItemTooltip)
 			self.setTemplates.hoveredSlot = nil
 			-- KEYBIND_STRIP:UpdateKeybindButtonGroup(self.keybindStripDescriptorMouseOver)
 		end
