@@ -18,6 +18,14 @@
       <Anchor point="BOTTOMRIGHT" relativeTo="ZO_SharedRightPanelBackground" relativePoint="BOTTOMLEFT" offsetX="-48" />
 
       <Controls>
+        <Backdrop name="$(parent)Bg" integralWrapping="true">
+          <Anchor point="TOPLEFT" offsetX="-48" offsetY="-64"/>
+          <Anchor point="BOTTOMRIGHT" offsetX="32" offsetY="64"/>
+
+          <Edge file="EsoUI/Art/ChatWindow/chat_BG_edge.dds" edgeFileWidth="256" edgeFileHeight="256" edgeSize="96"/>
+          <Center file="EsoUI/Art/ChatWindow/chat_BG_center.dds" />
+          <Insets left="96" top="96" right="-96" bottom="-96" />
+        </Backdrop>
         <Control name="$(parent)SetTemplate">
           <Dimensions x="273" />
           <Anchor point="TOPRIGHT" relativeTo="$(parent)" relativePoint="TOPRIGHT" offsetX="0" />
