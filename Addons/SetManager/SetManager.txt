@@ -23,6 +23,7 @@ Sets.lua
 ProcessSets.lua
 InventoryScan.lua
 ItemLinks.lua
+Tooltip.lua
 Designer.lua
 Selector.lua
 
