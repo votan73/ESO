@@ -112,7 +112,7 @@ function selector:InitSetTemplates()
 				success = false
 			end
 			success = SetIndex(creation.styleList, function(_, newData) return newData.itemStyle == itemStyle end) and success
-			success = SetIndex(creation.traitList, function(_, newData) d(newData) return newData.traitType == itemTrait end) and success
+			success = SetIndex(creation.traitList, function(_, newData) return newData.traitType == itemTrait end) and success
 
 			PlaySound(failed and SOUNDS.NEGATIVE_CLICK or SOUNDS.DEFAULT_CLICK)
 		end
@@ -226,20 +226,15 @@ function selector:Init()
 
 	SETMANAGER_SELECTOR_FRAGMENT:RegisterCallback("StateChange", function(oldState, newState)
 		if newState == SCENE_FRAGMENT_SHOWING then
-			self.interactionType = GetCraftingInteractionType()
-			local allowed = self.allowedInteractions[self.interactionType]
-			self.window:SetMouseEnabled(allowed)
+			self.window:SetMouseEnabled(true)
 
-			if allowed and CanSmithingSetPatternsBeCraftedHere() then
-				self:CreateSetNameToData()
-				local name
-				allowed, name = GetItemLinkSetInfo(GetSmithingPatternResultLink(GetNumSmithingPatterns() / 2 + 1, 1, 7, 1, 1))
-				if allowed then
-					self.currentSetName = name
-					self:UpdateSetTemplates()
-				else
-					self.currentSetName = nil
-				end
+			self:CreateSetNameToData()
+			local allowed, name = GetItemLinkSetInfo(GetSmithingPatternResultLink(GetNumSmithingPatterns() / 2 + 1, 1, 7, 1, 1))
+			if allowed then
+				self.currentSetName = name
+				self:UpdateSetTemplates()
+			else
+				self.currentSetName = nil
 			end
 		elseif newState == SCENE_FRAGMENT_SHOWN then
 		elseif newState == SCENE_FRAGMENT_HIDING then
@@ -249,4 +244,14 @@ function selector:Init()
 	end )
 
 	self:InitSetTemplates()
+
+	local orgSetHidden = SMITHING.creationPanel.SetHidden
+	function SMITHING.creationPanel:SetHidden(hidden)
+		SETMANAGER_SELECTOR_FRAGMENT:SetHiddenForReason("hidden", hidden)
+		selector.interactionType = GetCraftingInteractionType()
+		local allowed = selector.allowedInteractions[selector.interactionType] and CanSmithingSetPatternsBeCraftedHere() or false
+		SETMANAGER_SELECTOR_FRAGMENT:SetHiddenForReason("wrongStation", not allowed)
+		SETMANAGER_SELECTOR_FRAGMENT:Refresh()
+		return orgSetHidden(self, hidden)
+	end
 end
