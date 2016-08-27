@@ -216,14 +216,10 @@ function SetItemTooltip:SetTemplateItemLink(itemLink, setTemplate, equipped)
 		end
 		return numEquipped
 	end
-	-- [EQUIP_SLOT_MAIN_HAND] = parent:GetNamedChild("EquipmentSlotsMainHand"),
-	-- [EQUIP_SLOT_OFF_HAND] = parent:GetNamedChild("EquipmentSlotsOffHand"),
-	-- [EQUIP_SLOT_BACKUP_MAIN] = parent:GetNamedChild("EquipmentSlotsBackupMain"),
-	-- [EQUIP_SLOT_BACKUP_OFF] = parent:GetNamedChild("EquipmentSlotsBackupOff"),
 
 	local function AddSet(itemLink)
 		local hasSet, setName, numBonuses, _, maxEquipped = GetItemLinkSetInfo(itemLink)
-		local numEquipped = GetNumEquipped(setName)
+		local numEquipped = hasSet and GetNumEquipped(setName) or 0
 
 		if hasSet then
 			self:AddLine(zo_strformat(SI_ITEM_FORMAT_STR_SET_NAME, setName, numEquipped, maxEquipped), "ZoFontWinT2", rs, gs, bs, CENTER, MODIFY_TEXT_TYPE_UPPERCASE, TEXT_ALIGN_CENTER, true)
