@@ -98,14 +98,26 @@ function selector:InitSetTemplates()
 			local itemTrait = GetItemLinkTraitInfo(itemLink)
 			local requiredRank, requiredLevel, requiredCP = GetItemLinkSmithingRequiredRankAndLevels(itemLink)
 			local itemName = GetItemLinkName(itemLink)
-
-			local craftingType = armorType > 0 and armorType or weaponType
-
-			SMITHING.modeBar.m_object:SelectDescriptor(2)
 			local creation = SMITHING.creationPanel
-			creation.tabs.m_object:SelectDescriptor(armorType > 0 and ZO_SMITHING_CREATION_FILTER_TYPE_SET_ARMOR or ZO_SMITHING_CREATION_FILTER_TYPE_SET_WEAPONS)
 			local success
+
+			SMITHING.modeBar.m_object:SelectDescriptor(SMITHING_MODE_CREATION)
+			creation.tabs.m_object:SelectDescriptor(armorType > 0 and ZO_SMITHING_CREATION_FILTER_TYPE_SET_ARMOR or ZO_SMITHING_CREATION_FILTER_TYPE_SET_WEAPONS)
 			success = SetIndex(creation.patternList, function(_, newData) return itemName == GetItemLinkName(GetSmithingPatternResultLink(newData.patternIndex, 1, 7, 1, 1)) end)
+			if not success then
+				local equipType = GetItemLinkEquipType(itemLink)
+				if armorType > 0 then
+					success = SetIndex(creation.patternList, function(_, newData)
+						local otherLink = GetSmithingPatternResultLink(newData.patternIndex, 1, 7, 1, 1)
+						return armorType == GetItemLinkArmorType(otherLink) and equipType == GetItemLinkEquipType(otherLink)
+					end )
+				else
+					success = SetIndex(creation.patternList, function(_, newData)
+						local otherLink = GetSmithingPatternResultLink(newData.patternIndex, 1, 7, 1, 1)
+						return weaponType == GetItemLinkWeaponType(otherLink) and equipType == GetItemLinkEquipType(otherLink)
+					end )
+				end
+			end
 			if SetIndex(creation.materialList, function(_, newData) return newData.rankRequirement == requiredRank end) then
 				success = SetMaterialQuantity(creation, requiredLevel, requiredCP) and success
 			else
@@ -114,7 +126,7 @@ function selector:InitSetTemplates()
 			success = SetIndex(creation.styleList, function(_, newData) return newData.itemStyle == itemStyle end) and success
 			success = SetIndex(creation.traitList, function(_, newData) return newData.traitType == itemTrait end) and success
 
-			PlaySound(failed and SOUNDS.NEGATIVE_CLICK or SOUNDS.DEFAULT_CLICK)
+			PlaySound(success and SOUNDS.DEFAULT_CLICK or SOUNDS.NEGATIVE_CLICK)
 		end
 		local function OnTemplateChanged(self)
 			local rowData = self.data
@@ -169,13 +181,15 @@ function selector:InitSetTemplates()
 						enabled = apparelAllowed and self.allowedArmorType[self.interactionType][itemType]
 					end
 				end
-				if enabled then
-					enabled = CanSetBeCraftedHere(slotControl.itemLink)
-				end
-				if not enabled and slotControl.itemLink then
-					slotControl:GetNamedChild("Icon"):SetColor(1, 0, 0)
+				if not enabled then
+					slotControl:GetNamedChild("Icon"):SetColor(1, 0.1, 0.1)
 				else
-					slotControl:GetNamedChild("Icon"):SetColor(1, 1, 1)
+					if slotControl.itemLink == nil or CanSetBeCraftedHere(slotControl.itemLink) then
+						slotControl:GetNamedChild("Icon"):SetColor(1, 1, 1)
+					else
+						slotControl:GetNamedChild("Icon"):SetColor(0.9, 0.9, 0.2)
+						enabled = true
+					end
 				end
 				slotControl:SetEnabled(enabled)
 			end
