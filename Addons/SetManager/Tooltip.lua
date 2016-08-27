@@ -185,17 +185,45 @@ function SetItemTooltip:SetTemplateItemLink(itemLink, setTemplate, equipped)
 			AddSection(self, zo_strformat(SI_ITEM_FORMAT_STR_ITEM_TRAIT_HEADER, traitSubtypeName), zo_strformat(SI_ITEM_FORMAT_STR_ITEM_TRAIT_DESCRIPTION, traitSubtypeDescription))
 		end
 	end
-	local function AddSet(itemLink)
+	local function GetNumEquipped(setName)
 		local GetItemLinkSetInfo = GetItemLinkSetInfo
-		local hasSet, setName, numBonuses, _, maxEquipped = GetItemLinkSetInfo(itemLink)
 		local numEquipped = 0
+		local weaponMainCounted, weaponOffHandCounted = false, false
+
 		for slotId = EQUIP_SLOT_HEAD, EQUIP_SLOT_MAX_VALUE do
 			local otherLink = setTemplate[slotId]
 			if otherLink then
 				local _, otherSetName = GetItemLinkSetInfo(otherLink)
-				if otherSetName == setName then numEquipped = numEquipped + 1 end
+				if otherSetName == setName then
+					if slotId == EQUIP_SLOT_MAIN_HAND or slotId == EQUIP_SLOT_BACKUP_MAIN then
+						if weaponMainCounted then
+							-- compensate
+							numEquipped = numEquipped - 1
+						else
+							weaponMainCounted = true
+						end
+					elseif slotId == EQUIP_SLOT_OFF_HAND or slotId == EQUIP_SLOT_BACKUP_OFF then
+						if weaponOffHandCounted then
+							-- compensate
+							numEquipped = numEquipped - 1
+						else
+							weaponOffHandCounted = true
+						end
+					end
+					numEquipped = numEquipped + 1
+				end
 			end
 		end
+		return numEquipped
+	end
+	-- [EQUIP_SLOT_MAIN_HAND] = parent:GetNamedChild("EquipmentSlotsMainHand"),
+	-- [EQUIP_SLOT_OFF_HAND] = parent:GetNamedChild("EquipmentSlotsOffHand"),
+	-- [EQUIP_SLOT_BACKUP_MAIN] = parent:GetNamedChild("EquipmentSlotsBackupMain"),
+	-- [EQUIP_SLOT_BACKUP_OFF] = parent:GetNamedChild("EquipmentSlotsBackupOff"),
+
+	local function AddSet(itemLink)
+		local hasSet, setName, numBonuses, _, maxEquipped = GetItemLinkSetInfo(itemLink)
+		local numEquipped = GetNumEquipped(setName)
 
 		if hasSet then
 			self:AddLine(zo_strformat(SI_ITEM_FORMAT_STR_SET_NAME, setName, numEquipped, maxEquipped), "ZoFontWinT2", rs, gs, bs, CENTER, MODIFY_TEXT_TYPE_UPPERCASE, TEXT_ALIGN_CENTER, true)
@@ -233,6 +261,7 @@ function SetItemTooltip:SetSetLink(itemLink)
 
 	local hasSet, setName, numBonuses, _, maxEquipped = GetItemLinkSetInfo(itemLink)
 	if hasSet then
+		local GetItemLinkSetBonusInfo = GetItemLinkSetBonusInfo
 		AddLineTitle(self, zo_strformat(SI_TOOLTIP_ITEM_NAME, setName))
 		self:AddVerticalPadding(-9)
 		ZO_Tooltip_AddDivider(self)
