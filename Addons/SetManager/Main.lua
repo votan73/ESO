@@ -24,7 +24,7 @@ local wm = GetWindowManager()
 local em = GetEventManager()
 
 do
-	local function OnSlotClicked(parent, control)
+	local function OnSlotClicked(parent, control, ...)
 		for equipSlot, other in pairs(parent.slots) do
 			local selected = other == control
 			if other:GetState() ~= BSTATE_DISABLED then
@@ -32,7 +32,7 @@ do
 			end
 			if selected then parent.selectedSlot = equipSlot end
 		end
-		if parent.OnSelectedChanged then parent.OnSelectedChanged(parent) end
+		if parent.OnSelectedChanged then parent.OnSelectedChanged(parent, ...) end
 	end
 
 	local function UpdateSlot(self)

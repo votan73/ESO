@@ -21,7 +21,7 @@
         </EditBox>
       </Controls>
     </Control>
-    <Control name="SetManagerItemListRow" virtual="true" mouseEnabled="true">
+    <Button name="SetManagerItemListRow" virtual="true" mouseEnabled="true">
       <Dimensions x="300" y="48" />
       <Controls>
         <Texture name="$(parent)Highlight" textureFile="EsoUI/Art/Miscellaneous/listItem_highlight.dds" alpha="0">
@@ -53,7 +53,7 @@
           <Anchor point="BOTTOMRIGHT" relativeTo="$(parent)" relativePoint="BOTTOMRIGHT" offsetX="-4" offsetY="-2"/>
         </Label>
       </Controls>
-    </Control>
+    </Button>
 
     <Button name="SetManagerSetsListRow" virtual="true" mouseEnabled="true">
       <Dimensions x="300" y="48" />

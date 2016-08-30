@@ -13,6 +13,8 @@ designer.modes = {
 	Buy = "BUY",
 }
 
+local function ReturnItemLink(itemLink) return itemLink end
+
 do
 	function designer:InitializeEditableSlots(parent)
 		addon:InitializeSlots(parent)
@@ -22,6 +24,18 @@ do
 			if button == MOUSE_BUTTON_INDEX_LEFT then
 				baseClick(parent, control, button, ...)
 			elseif button == MOUSE_BUTTON_INDEX_RIGHT then
+				if IsChatSystemAvailableForCurrentPlatform() and self.selectedSlot then
+					ClearMenu()
+					AddCustomMenuItem(GetString(SET_MANAGER_REMOVE_ITEM), function() self:RemoveItemFromSlot(self.selectedSlot) end)
+					AddCustomMenuItem(GetString(SI_ITEM_ACTION_LINK_TO_CHAT), function()
+						local selectedSet = self.setTemplates:GetSelectedData()
+						if not selectedSet then return end
+						if self.selectedSlot then
+							ZO_LinkHandler_InsertLink(ZO_LinkHandler_CreateChatLink(ReturnItemLink, selectedSet[self.selectedSlot]))
+						end
+					end )
+					ShowMenu(control)
+				end
 			end
 		end
 		parent.OnSlotClicked = OnSlotEditableClicked
@@ -149,7 +163,14 @@ function designer:InitItemList()
 		self.itemList.hovered = nil
 		KEYBIND_STRIP:UpdateKeybindButtonGroup(self.keybindStripDescriptorMouseOver)
 	end
-	local function onMouseDoubleClick(rowControl)
+	local function onMouseClick(rowControl, button)
+		local rowData = ZO_ScrollList_GetData(rowControl)
+		if button == MOUSE_BUTTON_INDEX_RIGHT and IsChatSystemAvailableForCurrentPlatform() and rowData.itemLink then
+			ClearMenu()
+			AddCustomMenuItem(GetString(SET_MANAGER_APPLY_ITEM), function() self:ApplyItem(rowData) end)
+			AddCustomMenuItem(GetString(SI_ITEM_ACTION_LINK_TO_CHAT), function() ZO_LinkHandler_InsertLink(ZO_LinkHandler_CreateChatLink(ReturnItemLink, rowData.itemLink)) end)
+			ShowMenu(sender)
+		end
 	end
 
 	local function setupDataRow(rowControl, rowData, scrollList)
@@ -170,7 +191,9 @@ function designer:InitItemList()
 
 		rowControl:SetHandler("OnMouseEnter", onMouseEnter)
 		rowControl:SetHandler("OnMouseExit", onMouseExit)
-		rowControl:SetHandler("OnMouseDoubleClick", onMouseDoubleClick)
+		rowControl:SetHandler("OnClicked", onMouseClick)
+		rowControl:EnableMouseButton(MOUSE_BUTTON_INDEX_LEFT, false)
+		rowControl:EnableMouseButton(MOUSE_BUTTON_INDEX_RIGHT, true)
 	end
 	self.itemList = SetManagerTopLevelItemList
 
@@ -190,7 +213,7 @@ function designer:InitSetsList()
 		HideRowHighlight(rowControl, self.setsList.selected ~= rowData.id)
 	end
 	local selectedRow
-	local function onMouseDoubleClick(rowControl)
+	local function onMouseClick(rowControl, button)
 		local rowData = ZO_ScrollList_GetData(rowControl)
 		self.setsList.selected = rowData.id
 		if selectedRow then ZO_ScrollList_RefreshVisible(self.setsList, selectedRow) end
@@ -219,8 +242,7 @@ function designer:InitSetsList()
 
 		rowControl:SetHandler("OnMouseEnter", onMouseEnter)
 		rowControl:SetHandler("OnMouseExit", onMouseExit)
-		-- rowControl:EnableMouseButton(1, true)
-		rowControl:SetHandler("OnClicked", onMouseDoubleClick)
+		rowControl:SetHandler("OnClicked", onMouseClick)
 		onMouseExit(rowControl)
 	end
 	self.setsList = SetManagerTopLevelSetsList
@@ -232,7 +254,7 @@ end
 
 function designer:InitSetTemplates()
 	local function InitSetTemplates(scrollListControl, listContainer, listSlotTemplate)
-		local function OnSelectedSlotChanged(control)
+		local function OnSelectedSlotChanged(control, button)
 			self.selectedSlot = control.selectedSlot
 			self:UpdateItemList()
 			PlaySound(SOUNDS.DEFAULT_CLICK)
@@ -551,6 +573,33 @@ function designer:InitStyleList()
 	end )
 end
 
+function designer:ApplyItem(data)
+	local selectedSet = self.setTemplates:GetSelectedData()
+	if not selectedSet then return end
+	if data then
+		local selectedSlot = self.selectedSlot
+		local hoveredItem = data
+		if not hoveredItem or not selectedSlot then return end
+
+		selectedSet[selectedSlot] = hoveredItem.itemLink
+
+		local soundCategory = GetItemSoundCategoryFromLink(hoveredItem.itemLink)
+		PlayItemSound(soundCategory, ITEM_SOUND_ACTION_EQUIP)
+	end
+	self.setTemplates:RefreshVisible()
+end
+
+function designer:RemoveItemFromSlot(slotId)
+	local selectedSet = self.setTemplates:GetSelectedData()
+	if not selectedSet then return end
+	if slotId then
+		local soundCategory = GetItemSoundCategoryFromLink(selectedSet[slotId])
+		selectedSet[slotId] = nil
+		PlayItemSound(soundCategory, ITEM_SOUND_ACTION_UNEQUIP)
+	end
+	self.setTemplates:RefreshVisible()
+end
+
 local function InitKeybindStripDescriptor()
 	local self = designer
 
@@ -607,27 +656,15 @@ local function InitKeybindStripDescriptor()
 		alignment = KEYBIND_STRIP_ALIGN_RIGHT,
 
 		{
-			name = function() return self.itemList.hovered and "Apply" or "Remove" end,
+			name = function() return GetString(self.itemList.hovered and SET_MANAGER_APPLY_ITEM or SET_MANAGER_REMOVE_ITEM) end,
 			keybind = "UI_SHORTCUT_PRIMARY",
 
 			callback = function()
-				local selectedSet = self.setTemplates:GetSelectedData()
-				if not selectedSet then return end
 				if self.itemList.hovered then
-					local selectedSlot = self.selectedSlot
-					local hoveredItem = self.itemList.hovered
-					if not hoveredItem or not selectedSlot then return end
-
-					selectedSet[selectedSlot] = hoveredItem.itemLink
-
-					local soundCategory = GetItemSoundCategoryFromLink(hoveredItem.itemLink)
-					PlayItemSound(soundCategory, ITEM_SOUND_ACTION_EQUIP)
+					self:ApplyItem(self.itemList.hovered)
 				elseif self.setTemplates.hoveredSlot then
-					local soundCategory = GetItemSoundCategoryFromLink(selectedSet[self.setTemplates.hoveredSlot])
-					selectedSet[self.setTemplates.hoveredSlot] = nil
-					PlayItemSound(soundCategory, ITEM_SOUND_ACTION_UNEQUIP)
+					self:RemoveItemFromSlot(self.setTemplates.hoveredSlot)
 				end
-				self.setTemplates:RefreshVisible()
 			end,
 
 			visible = function()
