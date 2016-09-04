@@ -24,6 +24,7 @@ do
 			if button == MOUSE_BUTTON_INDEX_LEFT then
 				baseClick(parent, control, button, ...)
 			elseif button == MOUSE_BUTTON_INDEX_RIGHT then
+				baseClick(parent, control, button, ...)
 				if IsChatSystemAvailableForCurrentPlatform() and self.selectedSlot then
 					ClearMenu()
 					AddCustomMenuItem(GetString(SET_MANAGER_REMOVE_ITEM), function() self:RemoveItemFromSlot(self.selectedSlot) end)
