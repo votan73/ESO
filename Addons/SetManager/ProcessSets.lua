@@ -18,7 +18,7 @@ function addon:cmdSetManager(text, ...)
 		-- d("scan")
 		addon:ScanSets(...)
 	else
-		d("use check|dump|scan")
+		d("use check/dump/scan")
 	end
 end
 
@@ -119,7 +119,7 @@ function addon:ProcessList(list)
 end
 
 function addon:ScanSets(maxItemId)
-	maxItemId = maxItemId or 90000
+	maxItemId = maxItemId or 110000
 	local isArmorList =
 	{
 		[EQUIP_TYPE_HEAD] = true,
