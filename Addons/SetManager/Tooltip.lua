@@ -4,8 +4,13 @@ local rs, gs, bs = ZO_SELECTED_TEXT:UnpackRGB()
 local rn, gn, bn = ZO_TOOLTIP_DEFAULT_COLOR:UnpackRGB()
 local rd, gd, bd = ZO_DISABLED_TEXT:UnpackRGB()
 
+--SetPopupTooltip = WINDOW_MANAGER:CreateControlFromVirtual("SetPopupTooltip", ItemTooltipTopLevel, "SetPopupTooltipBase")
+--SetPopupTooltip:SetDrawTier(0)
+
 SetItemTooltip = WINDOW_MANAGER:CreateControlFromVirtual("SetItemTooltip", ItemTooltipTopLevel, "ZO_ItemIconTooltip")
 local SetItemTooltip = SetItemTooltip
+local SetPopupTooltip = SetPopupTooltip
+local SetPopupTooltipContainer = SetPopupTooltipContainer
 
 local statValuePairPool = ZO_ControlPool:New("ZO_TooltipStatValuePair", SetItemTooltip, "SetManagerStatValuePair")
 statValuePairPool:SetCustomFactoryBehavior( function(self)
@@ -193,7 +198,7 @@ function SetItemTooltip:SetTemplateItemLink(itemLink, setTemplate, equipped)
 		local numEquipped = 0
 		local weaponMainCounted, weaponOffHandCounted = false, false
 
-		for slotId = EQUIP_SLOT_HEAD, EQUIP_SLOT_MAX_VALUE do
+		for slotId = EQUIP_SLOT_MIN_VALUE, EQUIP_SLOT_MAX_VALUE do
 			local otherLink = setTemplate[slotId]
 			if otherLink then
 				local _, otherSetName = GetItemLinkSetInfo(otherLink)
@@ -276,3 +281,59 @@ function SetItemTooltip:SetSetLink(itemLink)
 		end
 	end
 end
+
+--do
+--	local function onMouseEnter(rowControl)
+--		if rowControl.itemLink then
+--			InitializeTooltip(SetItemTooltip, rowControl, TOPRIGHT, 0, -104, TOPLEFT)
+--			SetItemTooltip:SetTemplateItemLink(rowControl.itemLink, rowControl:GetParent().data, true)
+--		end
+--	end
+--	local function onMouseExit(rowControl)
+--		ClearTooltip(SetItemTooltip)
+--	end
+
+--	function SetPopupTooltip:SetTemplateLink(setTemplate)
+--		local iconTexture = "esoui/art/crafting/smithing_tabicon_armorset_up.dds"
+--		ZO_ItemIconTooltip_OnAddGameData(self, TOOLTIP_GAME_DATA_ITEM_ICON, iconTexture)
+--		self:AddVerticalPadding(24)
+
+--		local control = SetPopupTooltipContainer
+--		control.data = setTemplate
+--		for slotId, slotControl in pairs(control.slots) do
+--			slotControl.itemLink = setTemplate[slotId]
+--			slotControl:Update()
+--			slotControl:SetHandler("OnMouseEnter", onMouseEnter)
+--			slotControl:SetHandler("OnMouseExit", onMouseExit)
+--			local enabled = slotControl.itemLink ~= nil
+--			slotControl:SetEnabled(enabled)
+--		end
+
+--		if setTemplate.name then
+--			AddLineTitle(self, zo_strformat(SI_TOOLTIP_ITEM_NAME, setTemplate.name))
+--		end
+
+--		self:AddControl(control)
+--		control:SetHidden(false)
+--		control:SetAnchor(CENTER)
+--		SetPopupTooltip.lastLink = setTemplate
+--	end
+--end
+
+--function addon:SetPopupTooltipSetTemplate(setTemplate)
+--	if not SetPopupTooltip:IsHidden() and SetPopupTooltip.lastLink == setTemplate then
+--		self:HidePopupTooltip()
+--		return false
+--	end
+
+--	SetPopupTooltip:SetHidden(false)
+--	SetPopupTooltip:ClearLines()
+--	SetPopupTooltip:SetTemplateLink(setTemplate)
+
+--	return true
+--end
+
+--function addon:HidePopupTooltip()
+--	SetPopupTooltip:SetHidden(true)
+--	SetPopupTooltip.lastLink = nil
+--end

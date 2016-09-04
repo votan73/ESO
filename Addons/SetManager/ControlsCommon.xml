@@ -123,6 +123,29 @@
         </Button>-->
       </Controls>
     </Control>
+
+    <!--<Tooltip name="SetPopupTooltipBase" inherits="ZO_ItemIconTooltip" mouseEnabled="true" movable="true" virtual="true">
+      <ResizeToFitPadding width="48" height="57"/>
+      <DimensionConstraints minX="416" maxX="416" />
+
+      <Anchor point="CENTER" relativePoint="CENTER" />
+      <OnHide>
+        self.lastLink = nil
+      </OnHide>
+
+      <Controls>
+        <Button name="$(parent)Close" inherits="ZO_CloseButton" excludeFromResizeToFitExtents="true">
+          <Anchor point="TOPRIGHT" offsetX="-6" offsetY="6" />
+          <OnClicked>
+            self:GetParent():SetHidden(true)
+          </OnClicked>
+        </Button>
+        <Control name="$(parent)Container" inherits="SetManager_Character_Template">
+          <Anchor point="TOP" offsetX="0" offsetY="6" />
+        </Control>
+      </Controls>
+    </Tooltip>-->
+
   </Controls>
 
 </GuiXml>

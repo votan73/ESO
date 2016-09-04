@@ -45,6 +45,23 @@ do
 		end
 	end
 
+	-- local function ReturnItemLink(itemLink) d(itemLink) return itemLink end
+	-- local function OnMouseDown(self, button)
+	-- 	if button == MOUSE_BUTTON_INDEX_RIGHT then
+	-- 		if IsChatSystemAvailableForCurrentPlatform() and self.data then
+	-- 			ClearMenu()
+	-- 			AddCustomMenuItem(GetString(SI_ITEM_ACTION_LINK_TO_CHAT), function()
+	-- 				local selectedSet = self.data
+	-- 				if not selectedSet then return end
+	-- 				local link = addon.ChatLinkHandler:CreateChatLink(selectedSet)
+	-- 				d(link)
+	-- 				ZO_LinkHandler_InsertLink(ZO_LinkHandler_CreateChatLink(ReturnItemLink, link))
+	-- 			end )
+	-- 			ShowMenu(control)
+	-- 		end
+	-- 	end
+	-- end
+
 	function addon:InitializeSlots(parent)
 		if parent.slots then return end
 
@@ -80,6 +97,7 @@ do
 			slotControl.Update = UpdateSlot
 			slotControl:SetHandler("OnClicked", function(control, ...) control:GetParent():OnSlotClicked(control, ...) end)
 		end
+		-- parent:SetHandler("OnMouseDown", OnMouseDown)
 	end
 end
 

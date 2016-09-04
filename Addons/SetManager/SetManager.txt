@@ -27,5 +27,6 @@ ItemLinks.lua
 Tooltip.lua
 Designer.lua
 Selector.lua
+##ChatLinkHandler.lua
 
 Bindings.xml
