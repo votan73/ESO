@@ -94,8 +94,13 @@ function designer:UpdateSetsList()
 	local GetItemLinkSetInfo, ZO_ScrollList_CreateDataEntry = GetItemLinkSetInfo, ZO_ScrollList_CreateDataEntry
 
 	local sets = addon.allSets
+
+	local level = GetUnitLevel("player")
+	local subId = addon:CreateSubItemId(level, GetUnitChampionPoints("player"), ITEM_QUALITY_LEGENDARY)
+	local itemLinkTemplate = createLink("|H1:item:%%i:%i:%i:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h", subId, level)
+
 	for itemId, setInfo in pairs(sets) do
-		local itemLink = createLink("|H1:item:%i:304:50:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h", itemId)
+		local itemLink = createLink(itemLinkTemplate, itemId)
 		local _, name = GetItemLinkSetInfo(itemLink, false)
 
 		local rowData = { id = itemId, name = name, itemLink = itemLink, setInfo = setInfo }

@@ -67,6 +67,27 @@ local function SetStatValue(tooltip, text, value)
 	return statValuePair
 end
 
+local function AddLevelSections(self, requiredLevel, requiredChampionPoints, hasValue)
+	if requiredLevel > 0 or requiredChampionPoints > 0 then
+		if requiredLevel > 0 then
+			if hasValue then
+				self:AddVerticalPadding(-51)
+				SetStatValue(self, GetString(SI_ITEM_FORMAT_STR_LEVEL), requiredLevel):SetAnchor(CENTER)
+			else
+				SetStatValue(self, GetString(SI_ITEM_FORMAT_STR_LEVEL), requiredLevel):SetAnchor(LEFT, nil, CENTER, -100, 0)
+			end
+		end
+		if requiredChampionPoints > 0 then
+			if requiredLevel > 0 then self:AddVerticalPadding(-51) end
+			if hasValue then
+				SetStatValue(self, zo_iconTextFormatNoSpace(GetGamepadChampionPointsIcon(), 32, 32, GetString(SI_ITEM_FORMAT_STR_CHAMPION)), requiredChampionPoints):SetAnchor(LEFT, nil, CENTER, 170, 0)
+			else
+				SetStatValue(self, zo_iconTextFormatNoSpace(GetGamepadChampionPointsIcon(), 32, 32, GetString(SI_ITEM_FORMAT_STR_CHAMPION)), requiredChampionPoints):SetAnchor(LEFT, nil, CENTER, 120, 0)
+			end
+		end
+	end
+end
+
 local lines = { }
 function SetItemTooltip:SetTemplateItemLink(itemLink, setTemplate, equipped)
 	-- SetLink uses original functions only. They protected it.
@@ -146,26 +167,8 @@ function SetItemTooltip:SetTemplateItemLink(itemLink, setTemplate, equipped)
 		end
 
 		-- Required Level/Champ Rank
-		local requiredLevel = GetItemLinkRequiredLevel(itemLink)
-		local requiredChampionPoints = GetItemLinkRequiredChampionPoints(itemLink)
-		if requiredLevel > 0 or requiredChampionPoints > 0 then
-			if requiredLevel > 0 then
-				if hasValue then
-					self:AddVerticalPadding(-51)
-					SetStatValue(self, GetString(SI_ITEM_FORMAT_STR_LEVEL), requiredLevel):SetAnchor(CENTER)
-				else
-					SetStatValue(self, GetString(SI_ITEM_FORMAT_STR_LEVEL), requiredLevel):SetAnchor(LEFT, nil, CENTER, -100, 0)
-				end
-			end
-			if requiredChampionPoints > 0 then
-				if requiredLevel > 0 then self:AddVerticalPadding(-51) end
-				if hasValue then
-					SetStatValue(self, zo_iconTextFormatNoSpace(GetGamepadChampionPointsIcon(), 32, 32, GetString(SI_ITEM_FORMAT_STR_CHAMPION)), requiredChampionPoints):SetAnchor(LEFT, nil, CENTER, 170, 0)
-				else
-					SetStatValue(self, zo_iconTextFormatNoSpace(GetGamepadChampionPointsIcon(), 32, 32, GetString(SI_ITEM_FORMAT_STR_CHAMPION)), requiredChampionPoints):SetAnchor(LEFT, nil, CENTER, 120, 0)
-				end
-			end
-		end
+		local requiredLevel, requiredChampionPoints = GetItemLinkRequiredLevel(itemLink), GetItemLinkRequiredChampionPoints(itemLink)
+		AddLevelSections(self, requiredLevel, requiredChampionPoints, hasValue)
 	end
 	local function AddEnchant(itemLink)
 		local hasEnchant, enchantHeader, enchantDescription = GetItemLinkEnchantInfo(itemLink)
@@ -257,10 +260,16 @@ function SetItemTooltip:SetSetLink(itemLink)
 
 	local hasSet, setName, numBonuses, _, maxEquipped = GetItemLinkSetInfo(itemLink)
 	if hasSet then
+		local requiredLevel, requiredChampionPoints = GetItemLinkRequiredLevel(itemLink), GetItemLinkRequiredChampionPoints(itemLink)
+		local quality = GetItemLinkQuality(itemLink)
+
 		local GetItemLinkSetBonusInfo = GetItemLinkSetBonusInfo
-		AddLineTitle(self, zo_strformat(SI_TOOLTIP_ITEM_NAME, setName))
+		AddLineTitle(self, zo_strformat(SI_TOOLTIP_ITEM_NAME, setName), GetItemQualityColor(quality))
 		self:AddVerticalPadding(-9)
 		ZO_Tooltip_AddDivider(self)
+
+		AddLevelSections(self, requiredLevel, requiredChampionPoints, false)
+
 		for i = 1, numBonuses do
 			local _, bonusDescription = GetItemLinkSetBonusInfo(itemLink, false, i)
 			AddLineCenter(self, bonusDescription)
