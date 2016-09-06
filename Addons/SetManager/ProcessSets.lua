@@ -142,7 +142,7 @@ function addon:ScanSets(maxItemId)
 
 	local debugstart = GetGameTimeMilliseconds()
 	local format, createLink = zo_strformat, string.format
-	local GetItemLinkSetInfo, GetItemLinkTraitInfo = GetItemLinkSetInfo, GetItemLinkTraitInfo
+	local GetItemLinkSetInfo, GetItemLinkTraitInfo, GetItemLinkSetBonusInfo = GetItemLinkSetInfo, GetItemLinkTraitInfo, GetItemLinkSetBonusInfo
 	local list = { }
 
 	local identifier = "SET_MANAGER_SCANSETS"
@@ -163,18 +163,26 @@ function addon:ScanSets(maxItemId)
 		local spendTime = 500 / GetFramerate()
 		while (GetGameTimeMilliseconds() - start) < spendTime do
 			if itemId <= maxItemId then
-				local itemLink = createLink("|H1:item:%i:304:50:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h", itemId)
-				local hasSet, setName, numberOfBonuses, _, maxWearable = GetItemLinkSetInfo(itemLink, false)
+				local itemLink = createLink("|H1:item:%i:370:50:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h", itemId)
+				local hasSet, setName, numBonuses, _, maxWearable = GetItemLinkSetInfo(itemLink, false)
 				if hasSet then
 					local traitType = GetItemLinkTraitInfo(itemLink)
 					if not blacklist[traitType] then
-						local setInfo = list[setName] or { items = { }, equipType = { }, maxWearable = maxWearable }
+						local setInfo = list[setName]
+						if setInfo == nil then
+							setInfo = { items = { }, equipType = { }, maxWearable = maxWearable, bonus = { } }
 
-						local equipType = GetItemLinkEquipType(itemLink)
-						setInfo.equipType[equipType] = true
+							local equipType = GetItemLinkEquipType(itemLink)
+							setInfo.equipType[equipType] = true
+							for i = 1, numBonuses do
+								local _, bonusDescription = GetItemLinkSetBonusInfo(itemLink, false, i)
+								setInfo.bonus[i] = bonusDescription
+							end
+
+							list[setName] = setInfo
+						end
+
 						setInfo.items[#setInfo.items + 1] = itemId
-
-						list[setName] = setInfo
 					end
 				end
 				itemId = itemId + 1
@@ -189,7 +197,8 @@ function addon:ScanSets(maxItemId)
 						isWeapon = isWeapon or isWeaponList[equipType] == true
 						isJevelry = isJevelry or isJevelryList[equipType] == true
 					end
-					sets[firstItem] = { items = items, isCraftable = #items >= 315, isMonster = setInfo.maxWearable <= 2 and isArmor, isJevelry = isJevelry and not isArmor }
+					local isMonster = setInfo.maxWearable <= 2 and isArmor
+					sets[firstItem] = { items = items, isCraftable = #items >= 315 and not isMonster, isMonster = isMonster, isJevelry = isJevelry and not isArmor, bonus = setInfo.bonus }
 				end
 				em:UnregisterForUpdate(identifier)
 				d(zo_strformat("done: <<1>>ms: <<2>> sets", GetGameTimeMilliseconds() - debugstart, NonContiguousCount(sets)))

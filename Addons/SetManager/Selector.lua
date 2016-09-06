@@ -250,8 +250,8 @@ function selector:Init()
 			else
 				self.currentSetName = nil
 			end
-		elseif newState == SCENE_FRAGMENT_SHOWN then
-		elseif newState == SCENE_FRAGMENT_HIDING then
+		--elseif newState == SCENE_FRAGMENT_SHOWN then
+		--elseif newState == SCENE_FRAGMENT_HIDING then
 		elseif newState == SCENE_FRAGMENT_HIDDEN then
 			collectgarbage()
 		end

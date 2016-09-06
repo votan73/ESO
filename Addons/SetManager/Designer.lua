@@ -105,7 +105,7 @@ function designer:UpdateSetsList()
 		local _, name = GetItemLinkSetInfo(itemLink, false)
 
 		local rowData = { id = itemId, name = name, itemLink = itemLink, setInfo = setInfo }
-		local categoryId = setInfo.isCraftable and addon.setCategory.Craftable or addon.setCategory.NonCraftable
+		local categoryId = setInfo.category == addon.SetType.Craftable and addon.setCategory.Craftable or addon.setCategory.NonCraftable
 		dataList[#dataList + 1] = ZO_ScrollList_CreateDataEntry(ROW_TYPE_ID, rowData, categoryId)
 	end
 
@@ -125,8 +125,8 @@ function designer:UpdateItemList()
 
 	ZO_ScrollList_Commit(scrollList)
 	SetManagerTopLevelCraft:SetHidden((addon.player.mode == designer.modes.Inventory) or(#dataList == 0))
-	local isCraftable = self.setsList.selected and addon.allSets[self.setsList.selected].isCraftable or false
-	self.styleList.control:SetHidden(not isCraftable)
+	local isCraftable = self.setsList.selected and addon.allSets[self.setsList.selected].category == addon.SetType.Craftable or false
+	self.styleList:SetEnabled(isCraftable)
 
 	scrollList.dirty = false
 end
@@ -234,11 +234,13 @@ function designer:InitSetsList()
 
 		local setInfo = rowData.setInfo
 		local iconiconTexture
-		if setInfo.isCraftable then
+		local setTypes = addon.SetType
+		local category = rowData.setInfo.category
+		if category == setTypes.Craftable then
 			iconTexture = "/esoui/art/icons/poi/poi_crafting_complete.dds"
-		elseif setInfo.isMonster then
+		elseif category == setTypes.Monster then
 			iconTexture = "/esoui/art/icons/servicemappins/servicepin_undaunted.dds"
-		elseif setInfo.isJevelry then
+		elseif category == setTypes.Jevelry then
 			iconTexture = "/esoui/art/icons/servicemappins/servicepin_armory.dds"
 		else
 			iconTexture = "/esoui/art/icons/mapkey/mapkey_bank.dds"

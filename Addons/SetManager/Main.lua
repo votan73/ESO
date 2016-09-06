@@ -16,7 +16,13 @@ local addon = {
 	{
 		NonCraftable = "NON_CRAFTABLE",
 		Craftable = "CRAFTABLE",
-	}
+	},
+	SetType =
+	{
+		Craftable = "CRAFTABLE",
+		Monster = "MONSTER",
+		Jevelry = "JEVELRY",
+	},
 }
 
 -- local am = GetAnimationManager()
