@@ -76,11 +76,23 @@
           </Controls>-->
         </Texture>
 
-        <Label name="$(parent)Name" font="ZoFontWinH4" wrapMode="ELLIPSIS" verticalAlignment="CENTER" horizontalAlignment="LEFT" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_NORMAL">
+        <Label name="$(parent)Name" font="ZoFontWinH4" verticalAlignment="CENTER" horizontalAlignment="LEFT" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_NORMAL">
           <Dimensions y="48"/>
-          <Anchor point="TOPLEFT" relativeTo="$(parent)Texture" relativePoint="TOPRIGHT" offsetX="4" offsetY="-4"/>
-          <Anchor point="TOPRIGHT" relativeTo="$(parent)" relativePoint="TOPRIGHT" offsetX="-4" offsetY="0"/>
+          <Anchor point="TOPLEFT" relativeTo="$(parent)Texture" relativePoint="TOPRIGHT" offsetX="4" offsetY="-2"/>
+          <Anchor point="TOPRIGHT" relativeTo="$(parent)" relativePoint="TOPRIGHT" offsetX="-36" offsetY="0"/>
         </Label>
+        <Texture name="$(parent)QualityS" textureFile="esoui/art/icons/alchemy/crafting_alchemy_trait_restorestamina.dds">
+          <Anchor point="TOPRIGHT" offsetX="-6" offsetY="5" />
+          <Dimensions x="20" y="20"/>
+        </Texture>
+        <Texture name="$(parent)QualityM" textureFile="esoui/art/icons/alchemy/crafting_alchemy_trait_restoremagicka.dds">
+          <Anchor point="TOPRIGHT" relativeTo="$(parent)QualityS" offsetX="-14" offsetY="7" />
+          <Dimensions x="20" y="20"/>
+        </Texture>
+        <Texture name="$(parent)QualityH" textureFile="esoui/art/icons/alchemy/crafting_alchemy_trait_restorehealth.dds">
+          <Anchor point="TOPRIGHT" relativeTo="$(parent)QualityS" offsetX="-4" offsetY="17" />
+          <Dimensions x="16" y="16"/>
+        </Texture>
       </Controls>
     </Button>
 

@@ -235,7 +235,8 @@ function designer:InitSetsList()
 		local setInfo = rowData.setInfo
 		local iconiconTexture
 		local setTypes = addon.SetType
-		local category = rowData.setInfo.category
+		local setInfo = rowData.setInfo
+		local category = setInfo.category
 		if category == setTypes.Craftable then
 			iconTexture = "/esoui/art/icons/poi/poi_crafting_complete.dds"
 		elseif category == setTypes.Monster then
@@ -247,6 +248,10 @@ function designer:InitSetsList()
 		end
 		icon:SetTexture(iconTexture)
 		nameLabel:SetText(zo_strformat("<<C:1>>", rowData.name))
+
+		rowControl:GetNamedChild("QualityM"):SetColor(GetItemQualityColor(setInfo.qualityM):UnpackRGB())
+		rowControl:GetNamedChild("QualityH"):SetColor(GetItemQualityColor(setInfo.qualityH):UnpackRGB())
+		rowControl:GetNamedChild("QualityS"):SetColor(GetItemQualityColor(setInfo.qualityS):UnpackRGB())
 
 		rowControl:SetHandler("OnMouseEnter", onMouseEnter)
 		rowControl:SetHandler("OnMouseExit", onMouseExit)
