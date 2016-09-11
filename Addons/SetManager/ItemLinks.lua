@@ -41,6 +41,6 @@ function addon:CreateCraftedItemLink(baseItemId, level, champ, quality, style, t
 	if not items then return "" end
 	local itemId = items[trait * 35]
 	if not itemId then itemId = baseItemId end
-	local itemLink = createLink("|H1:item:%i:%i:%i:0:0:0:0:0:0:0:0:0:0:0:0:%i:1:0:0:10000:0|h|h", itemId, subId, level, style)
+	local itemLink = string.format("|H1:item:%i:%i:%i:0:0:0:0:0:0:0:0:0:0:0:0:%i:1:0:0:10000:0|h|h", itemId, subId, level, style)
 	return itemLink
 end

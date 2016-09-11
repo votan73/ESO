@@ -61,7 +61,7 @@ function addon:getSortedKeys(dictionary, order)
 	return keys
 end
 
-function SortBoni(dict, a, b)
+local function SortBoni(dict, a, b)
 	local left = dict[a]
 	local right = dict[b]
 	return left[S_REQUIRED] < right[S_REQUIRED] and 1 or(left[S_DESCRIPTION] < right[S_DESCRIPTION])

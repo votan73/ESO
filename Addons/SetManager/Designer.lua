@@ -177,7 +177,7 @@ function designer:InitItemList()
 			ClearMenu()
 			AddCustomMenuItem(GetString(SET_MANAGER_APPLY_ITEM), function() self:ApplyItem(rowData) end)
 			AddCustomMenuItem(GetString(SI_ITEM_ACTION_LINK_TO_CHAT), function() ZO_LinkHandler_InsertLink(ZO_LinkHandler_CreateChatLink(ReturnItemLink, rowData.itemLink)) end)
-			ShowMenu(sender)
+			ShowMenu(rowControl)
 		end
 	end
 
@@ -239,7 +239,7 @@ function designer:InitSetsList()
 		local nameLabel = rowControl:GetNamedChild("Name")
 
 		local setInfo = rowData.setInfo
-		local iconiconTexture
+		local iconTexture
 		local setTypes = addon.SetType
 		local setInfo = rowData.setInfo
 		local category = setInfo.category
@@ -348,7 +348,7 @@ do
 				if ZO_Character_DoesEquipSlotUseEquipType(selectedSlot, equipType) then
 					local setName = select(2, GetItemLinkSetInfo(itemLink))
 					if setName == targetSetName then
-						local rowData = { id = itemId, itemLink = itemLink }
+						local rowData = { itemLink = itemLink }
 						dataList[#dataList + 1] = ZO_ScrollList_CreateDataEntry(ROW_TYPE_ID, rowData, 1)
 					end
 				end
@@ -357,7 +357,7 @@ do
 			function ItemFilter(itemLink)
 				local equipType = GetItemLinkEquipType(itemLink)
 				if ZO_Character_DoesEquipSlotUseEquipType(selectedSlot, equipType) then
-					local rowData = { id = itemId, itemLink = itemLink }
+					local rowData = { itemLink = itemLink }
 					dataList[#dataList + 1] = ZO_ScrollList_CreateDataEntry(ROW_TYPE_ID, rowData, 1)
 				end
 			end
@@ -386,7 +386,7 @@ do
 			if name == targetSetName then
 				local equipType = GetItemLinkEquipType(itemLink)
 				if ZO_Character_DoesEquipSlotUseEquipType(selectedSlot, equipType) then
-					local rowData = { id = itemId, itemLink = itemLink }
+					local rowData = { itemLink = itemLink }
 					dataList[#dataList + 1] = ZO_ScrollList_CreateDataEntry(ROW_TYPE_ID, rowData, 1)
 				end
 			end
@@ -414,7 +414,7 @@ do
 			if name == targetSetName then
 				local equipType = GetItemLinkEquipType(itemLink)
 				if ZO_Character_DoesEquipSlotUseEquipType(selectedSlot, equipType) then
-					local rowData = { id = itemId, itemLink = itemLink }
+					local rowData = { itemLink = itemLink }
 					dataList[#dataList + 1] = ZO_ScrollList_CreateDataEntry(ROW_TYPE_ID, rowData, 1)
 				end
 			end
