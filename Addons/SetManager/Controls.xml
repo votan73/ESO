@@ -90,7 +90,7 @@
           <Dimensions x="20" y="20"/>
         </Texture>
         <Texture name="$(parent)QualityH" textureFile="esoui/art/icons/alchemy/crafting_alchemy_trait_restorehealth.dds">
-          <Anchor point="TOPRIGHT" relativeTo="$(parent)QualityS" offsetX="-4" offsetY="17" />
+          <Anchor point="TOPRIGHT" relativeTo="$(parent)QualityS" offsetX="-2" offsetY="17" />
           <Dimensions x="16" y="16"/>
         </Texture>
       </Controls>

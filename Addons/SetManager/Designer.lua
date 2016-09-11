@@ -133,6 +133,8 @@ end
 
 function designer:UpdateSetTemplates()
 	local templates = addon.account.templates
+	table.sort(templates, function(a, b) return(a.name or "") <(b.name or "") end)
+
 	self.setTemplates:Clear()
 	for _, template in ipairs(templates) do
 		self.setTemplates:AddEntry(template)
@@ -221,9 +223,13 @@ function designer:InitSetsList()
 	local selectedRow
 	local function onMouseClick(rowControl, button)
 		local rowData = ZO_ScrollList_GetData(rowControl)
-		self.setsList.selected = rowData.id
+		if self.setsList.selected == rowData.id then
+			self.setsList.selected = nil
+		else
+			self.setsList.selected = rowData.id
+		end
 		if selectedRow then ZO_ScrollList_RefreshVisible(self.setsList, selectedRow) end
-		selectedRow = rowData
+		selectedRow = self.setsList.selected and rowData or nil
 		self:UpdateItemList()
 		PlaySound(SOUNDS.DEFAULT_CLICK)
 	end
@@ -329,14 +335,31 @@ end
 
 do
 	local function FilterByInventory(self, dataList)
-		local selectedSlot = self.selectedSlot
+		local targetSetId, selectedSlot = self.setsList.selected, self.selectedSlot
 		if not selectedSlot then return end
-		local GetItemLinkEquipType, ZO_Character_DoesEquipSlotUseEquipType = GetItemLinkEquipType, ZO_Character_DoesEquipSlotUseEquipType
-		local function ItemFilter(itemLink)
-			local equipType = GetItemLinkEquipType(itemLink)
-			if ZO_Character_DoesEquipSlotUseEquipType(selectedSlot, equipType) then
-				local rowData = { id = itemId, itemLink = itemLink }
-				dataList[#dataList + 1] = ZO_ScrollList_CreateDataEntry(ROW_TYPE_ID, rowData, 1)
+		local GetItemLinkEquipType, ZO_Character_DoesEquipSlotUseEquipType, GetItemLinkSetInfo = GetItemLinkEquipType, ZO_Character_DoesEquipSlotUseEquipType, GetItemLinkSetInfo
+		local ItemFilter
+		local createLink = string.format
+		if targetSetId then
+			local itemLink = createLink("|H1:item:%i:%i:%i:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h", targetSetId, 370, 50)
+			local _, targetSetName = GetItemLinkSetInfo(itemLink, false)
+			function ItemFilter(itemLink)
+				local equipType = GetItemLinkEquipType(itemLink)
+				if ZO_Character_DoesEquipSlotUseEquipType(selectedSlot, equipType) then
+					local setName = select(2, GetItemLinkSetInfo(itemLink))
+					if setName == targetSetName then
+						local rowData = { id = itemId, itemLink = itemLink }
+						dataList[#dataList + 1] = ZO_ScrollList_CreateDataEntry(ROW_TYPE_ID, rowData, 1)
+					end
+				end
+			end
+		else
+			function ItemFilter(itemLink)
+				local equipType = GetItemLinkEquipType(itemLink)
+				if ZO_Character_DoesEquipSlotUseEquipType(selectedSlot, equipType) then
+					local rowData = { id = itemId, itemLink = itemLink }
+					dataList[#dataList + 1] = ZO_ScrollList_CreateDataEntry(ROW_TYPE_ID, rowData, 1)
+				end
 			end
 		end
 		for _, itemLink in ipairs(addon.account.sets) do ItemFilter(itemLink) end
@@ -613,6 +636,45 @@ function designer:RemoveItemFromSlot(slotId)
 	self.setTemplates:RefreshVisible()
 end
 
+local function NewSet()
+	local self = designer
+	local templates = addon.account.templates
+	local template = { }
+	templates[#templates + 1] = template
+
+	self.setTemplates:AddEntry(template)
+	self.setTemplates:Commit()
+	self.setTemplates:SetSelectedDataIndex(#templates)
+	KEYBIND_STRIP:UpdateKeybindButtonGroup(self.keybindStripDescriptor)
+	return template
+end
+
+local function CopyEquipped()
+	local self = designer
+	local selectedSet = self.setTemplates:GetSelectedData()
+	if not selectedSet then return end
+
+	local name = zo_strformat(SI_UNIT_NAME, GetUnitName("player"))
+	if selectedSet.name ~= nil and #selectedSet.name > 0 and selectedSet.name ~= name then
+		selectedSet = NewSet()
+		if not selectedSet then return end
+	end
+
+	local bagId = BAG_WORN
+	local slotIndex = ZO_GetNextBagSlotIndex(bagId, nil)
+	local GetItemLink = GetItemLink
+	while slotIndex do
+		local itemLink = GetItemLink(bagId, slotIndex)
+		if itemLink == "" then itemLink = nil end
+		selectedSet[slotIndex] = itemLink
+		slotIndex = ZO_GetNextBagSlotIndex(bagId, slotIndex)
+	end
+	selectedSet.name = name
+
+	self.setTemplates:RefreshVisible()
+	PlaySound(SOUNDS.DEFAULT_CLICK)
+end
+
 local function InitKeybindStripDescriptor()
 	local self = designer
 
@@ -621,19 +683,24 @@ local function InitKeybindStripDescriptor()
 		alignment = KEYBIND_STRIP_ALIGN_CENTER,
 
 		{
+			name = GetString(SI_BINDING_NAME_SET_MANAGER_COPY_EQUIPPED),
+			keybind = "UI_SHORTCUT_SECONDARY",
+
+			callback = CopyEquipped,
+
+			visible = function()
+				return true
+			end,
+
+			enabled = function()
+				return self.setTemplates:GetSelectedData() ~= nil
+			end
+		},
+		{
 			name = GetString(SI_BINDING_NAME_SET_MANAGER_ADD_SET),
 			keybind = "UI_SHORTCUT_TERTIARY",
 
-			callback = function()
-				local templates = addon.account.templates
-				local template = { }
-				templates[#templates + 1] = template
-
-				self.setTemplates:AddEntry(template)
-				self.setTemplates:Commit()
-				self.setTemplates:SetSelectedDataIndex(#templates)
-				KEYBIND_STRIP:UpdateKeybindButtonGroup(self.keybindStripDescriptor)
-			end,
+			callback = NewSet,
 
 			visible = function()
 				return true
@@ -652,6 +719,7 @@ local function InitKeybindStripDescriptor()
 					table.remove(self.setTemplates.list, index)
 					self.setTemplates:Commit()
 					KEYBIND_STRIP:UpdateKeybindButtonGroup(self.keybindStripDescriptor)
+					PlaySound(SOUNDS.INVENTORY_ITEM_JUNKED)
 				end
 			end,
 

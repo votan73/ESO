@@ -26,7 +26,7 @@ local wm = GetWindowManager()
 local em = GetEventManager()
 
 function selector:UpdateSetTemplates()
-	local templates = addon.account.templates
+	local templates = self.templates
 	self.setTemplates:Clear()
 	for _, template in ipairs(templates) do
 		self.setTemplates:AddEntry(template)
@@ -246,6 +246,7 @@ function selector:Init()
 			local allowed, name = GetItemLinkSetInfo(GetSmithingPatternResultLink(GetNumSmithingPatterns() / 2 + 1, 1, 7, 1, 1))
 			if allowed then
 				self.currentSetName = name
+				self.templates = addon.account.templates
 				self:UpdateSetTemplates()
 			else
 				self.currentSetName = nil
