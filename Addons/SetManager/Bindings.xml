@@ -1,6 +1,6 @@
 <Bindings>
   <Layer name="SI_KEYBINDINGS_LAYER_GENERAL">
-    <Category name="SI_KEYBINDINGS_CATEGORY_USER_INTERFACE">
+    <Category name="SI_KEYBINDINGS_CATEGORY_SET_MANAGER">
       <Action name="SET_MANAGER">
         <Down>SET_MANAGER:ToggleEditorScene()</Down>
       </Action>
