@@ -230,6 +230,7 @@ function designer:InitSetsList()
 		end
 		if selectedRow then ZO_ScrollList_RefreshVisible(self.setsList, selectedRow) end
 		selectedRow = self.setsList.selected and rowData or nil
+		if selectedRow then onMouseEnter(rowControl) end
 		self:UpdateItemList()
 		PlaySound(SOUNDS.DEFAULT_CLICK)
 	end
