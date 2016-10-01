@@ -119,7 +119,7 @@ function addon:ProcessList(list)
 end
 
 function addon:ScanSets(maxItemId)
-	maxItemId = maxItemId or 120000
+	maxItemId = maxItemId or 130000
 	local isArmorList =
 	{
 		[EQUIP_TYPE_HEAD] = true,
