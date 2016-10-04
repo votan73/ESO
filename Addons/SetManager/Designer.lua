@@ -19,10 +19,24 @@ do
 	function designer:InitializeEditableSlots(parent)
 		addon:InitializeSlots(parent)
 
+		local function SetIndex(listControl, matchFunc)
+			local index = listControl:FindIndexFromData(0, matchFunc)
+			if index then
+				listControl:SetSelectedIndex(index, true, true)
+				return true
+			end
+			return false
+		end
 		local baseClick = parent.OnSlotClicked
 		local function OnSlotEditableClicked(parent, control, button, ...)
 			if button == MOUSE_BUTTON_INDEX_LEFT then
 				baseClick(parent, control, button, ...)
+				local selectedSet = self.setTemplates:GetSelectedData()
+				local itemLink = selectedSet[self.selectedSlot]
+				if itemLink then
+					local itemStyle = GetItemLinkItemStyle(itemLink)
+					SetIndex(designer.styleList, function(_, newData) return newData.itemStyle == itemStyle end)
+				end
 			elseif button == MOUSE_BUTTON_INDEX_RIGHT then
 				baseClick(parent, control, button, ...)
 				if IsChatSystemAvailableForCurrentPlatform() and self.selectedSlot then
