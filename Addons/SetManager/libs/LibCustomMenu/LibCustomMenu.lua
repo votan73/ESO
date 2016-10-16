@@ -2,7 +2,7 @@
 -- thanks to: baertram & circonian
 
 -- Register with LibStub
-local MAJOR, MINOR = "LibCustomMenu", 4.1
+local MAJOR, MINOR = "LibCustomMenu", 4.2
 local lib, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end -- the same or newer version of this lib is already loaded into memory
 
@@ -81,10 +81,10 @@ function Submenu:Initialize(name)
 	submenuControl:SetMouseEnabled(true)
 	submenuControl:SetHidden(true)
 	-- OnMouseEnter: Stop hiding of submenu initiated by mouse exit of parent
-	submenuControl:SetHandler("OnMouseEnter", function(control) ClearTimeout() end)
-	submenuControl:SetHandler("OnMouseExit", function(control)
-		SetTimeout( function() self.parent:OnSelect(SUBMENU_ITEM_MOUSE_EXIT) end)
-	end )
+	submenuControl:SetHandler("OnMouseEnter", ClearTimeout)
+
+	local function ExitSubMenu() if self.parent and self.parent.OnSelect then self.parent:OnSelect(SUBMENU_ITEM_MOUSE_EXIT) end end
+	submenuControl:SetHandler("OnMouseExit", function(control) SetTimeout(ExitSubMenu) end)
 
 	submenuControl:SetHandler("OnHide", function(control) ClearTimeout() self:Clear() end)
 	submenuControl:SetDrawLevel(ZO_Menu:GetDrawLevel() + 1)

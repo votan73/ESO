@@ -81,15 +81,15 @@
           <Anchor point="TOPLEFT" relativeTo="$(parent)Texture" relativePoint="TOPRIGHT" offsetX="4" offsetY="-2"/>
           <Anchor point="TOPRIGHT" relativeTo="$(parent)" relativePoint="TOPRIGHT" offsetX="-36" offsetY="0"/>
         </Label>
-        <Texture name="$(parent)QualityS" textureFile="esoui/art/icons/alchemy/crafting_alchemy_trait_restorestamina.dds">
+        <Texture name="$(parent)QualityS" textureFile="esoui/art/icons/alchemy/crafting_alchemy_trait_restorestamina.dds" color="INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS:ITEM_QUALITY_LEGENDARY">
           <Anchor point="TOPRIGHT" offsetX="-6" offsetY="5" />
           <Dimensions x="20" y="20"/>
         </Texture>
-        <Texture name="$(parent)QualityM" textureFile="esoui/art/icons/alchemy/crafting_alchemy_trait_restoremagicka.dds">
+        <Texture name="$(parent)QualityM" textureFile="esoui/art/icons/alchemy/crafting_alchemy_trait_restoremagicka.dds" color="INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS:ITEM_QUALITY_LEGENDARY">
           <Anchor point="TOPRIGHT" relativeTo="$(parent)QualityS" offsetX="-14" offsetY="7" />
           <Dimensions x="20" y="20"/>
         </Texture>
-        <Texture name="$(parent)QualityH" textureFile="esoui/art/icons/alchemy/crafting_alchemy_trait_restorehealth.dds">
+        <Texture name="$(parent)QualityH" textureFile="esoui/art/icons/alchemy/crafting_alchemy_trait_restorehealth.dds" color="INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS:ITEM_QUALITY_LEGENDARY">
           <Anchor point="TOPRIGHT" relativeTo="$(parent)QualityS" offsetX="-2" offsetY="17" />
           <Dimensions x="16" y="16"/>
         </Texture>

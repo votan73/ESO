@@ -249,6 +249,10 @@ function designer:InitSetsList()
 		PlaySound(SOUNDS.DEFAULT_CLICK)
 	end
 
+	local function SetQuality(control, quality, sum)
+		control:SetAlpha(quality * quality /(2.5 * sum))
+	end
+
 	local function setupDataRow(rowControl, rowData, scrollList)
 		local icon = rowControl:GetNamedChild("Texture")
 		local nameLabel = rowControl:GetNamedChild("Name")
@@ -270,9 +274,10 @@ function designer:InitSetsList()
 		icon:SetTexture(iconTexture)
 		nameLabel:SetText(zo_strformat("<<C:1>>", rowData.name))
 
-		rowControl:GetNamedChild("QualityM"):SetColor(GetItemQualityColor(setInfo.qualityM):UnpackRGB())
-		rowControl:GetNamedChild("QualityH"):SetColor(GetItemQualityColor(setInfo.qualityH):UnpackRGB())
-		rowControl:GetNamedChild("QualityS"):SetColor(GetItemQualityColor(setInfo.qualityS):UnpackRGB())
+		local sum = setInfo.qualityM + setInfo.qualityH + setInfo.qualityS
+		SetQuality(rowControl:GetNamedChild("QualityM"), setInfo.qualityM, sum)
+		SetQuality(rowControl:GetNamedChild("QualityH"), setInfo.qualityH, sum)
+		SetQuality(rowControl:GetNamedChild("QualityS"), setInfo.qualityS, sum)
 
 		rowControl:SetHandler("OnMouseEnter", onMouseEnter)
 		rowControl:SetHandler("OnMouseExit", onMouseExit)
