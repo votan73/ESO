@@ -61,7 +61,7 @@ namespace CompactSets
             nameToStatType["Reduces the costs of Stamina"] = new StatType() { Resource = 'S', Factor = 1 };
             nameToStatType["Reduce cost of Break Free"] = new StatType() { Resource = 'S', Factor = 1 };
 
-            string filename = @"C:\Users\Votan.Defiant\Data\Documents\Visual Studio 2012\Projects\CompactSets\SetManager_100017.lua";
+            string filename = @"C:\Users\Votan.Defiant\Data\Documents\Visual Studio 2012\Projects\CompactSets\SetManager_100018.lua";
             var serializer = new System.Web.Script.Serialization.JavaScriptSerializer();
             var lines = new List<string>(System.IO.File.ReadAllLines(filename));
             lines.RemoveAt(0);
