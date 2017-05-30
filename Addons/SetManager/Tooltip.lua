@@ -9,8 +9,8 @@ local rd, gd, bd = ZO_DISABLED_TEXT:UnpackRGB()
 
 SetItemTooltip = WINDOW_MANAGER:CreateControlFromVirtual("SetItemTooltip", ItemTooltipTopLevel, "ZO_ItemIconTooltip")
 local SetItemTooltip = SetItemTooltip
-local SetPopupTooltip = SetPopupTooltip
-local SetPopupTooltipContainer = SetPopupTooltipContainer
+--local SetPopupTooltip = SetPopupTooltip
+--local SetPopupTooltipContainer = SetPopupTooltipContainer
 
 local statValuePairPool = ZO_ControlPool:New("ZO_TooltipStatValuePair", SetItemTooltip, "SetManagerStatValuePair")
 statValuePairPool:SetCustomFactoryBehavior( function(self)
@@ -63,7 +63,7 @@ local function SetStatValue(tooltip, text, value)
 	statValuePair.statLabel:SetDimensions(statValuePair.statLabel:GetTextDimensions(text))
 	statValuePair.valueLabel:SetWidth(0)
 	statValuePair.valueLabel:SetText(value)
-	statValuePair.valueLabel:SetDimensions(statValuePair.valueLabel:GetTextDimensions(text))
+	statValuePair.valueLabel:SetDimensions(statValuePair.valueLabel:GetTextDimensions(value))
 	statValuePair:SetParent(tooltip)
 	local width = statValuePair.statLabel:GetWidth() + statValuePair.valueLabel:GetWidth()
 	statValuePair:SetDimensions(width, statValuePair.valueLabel:GetHeight())
@@ -85,9 +85,9 @@ local function AddLevelSections(self, requiredLevel, requiredChampionPoints, has
 		if requiredChampionPoints > 0 then
 			if requiredLevel > 0 then self:AddVerticalPadding(-51) end
 			if hasValue then
-				SetStatValue(self, zo_iconTextFormatNoSpace(GetGamepadChampionPointsIcon(), 32, 32, GetString(SI_ITEM_FORMAT_STR_CHAMPION)), requiredChampionPoints):SetAnchor(LEFT, nil, CENTER, 170, 0)
+				SetStatValue(self, zo_iconTextFormatNoSpace(GetGamepadChampionPointsIcon(), 24, 24, GetString(SI_ITEM_FORMAT_STR_CHAMPION)), requiredChampionPoints):SetAnchor(LEFT, nil, CENTER, 170, 0)
 			else
-				SetStatValue(self, zo_iconTextFormatNoSpace(GetGamepadChampionPointsIcon(), 32, 32, GetString(SI_ITEM_FORMAT_STR_CHAMPION)), requiredChampionPoints):SetAnchor(LEFT, nil, CENTER, 120, 0)
+				SetStatValue(self, zo_iconTextFormatNoSpace(GetGamepadChampionPointsIcon(), 24, 24, GetString(SI_ITEM_FORMAT_STR_CHAMPION)), requiredChampionPoints):SetAnchor(LEFT, nil, CENTER, 120, 0)
 			end
 		end
 	end

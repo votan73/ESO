@@ -102,7 +102,8 @@ function selector:InitSetTemplates()
 			local success
 
 			SMITHING.modeBar.m_object:SelectDescriptor(SMITHING_MODE_CREATION)
-			creation.tabs.m_object:SelectDescriptor(armorType > 0 and ZO_SMITHING_CREATION_FILTER_TYPE_SET_ARMOR or ZO_SMITHING_CREATION_FILTER_TYPE_SET_WEAPONS)
+
+			creation.tabs.m_object:SelectDescriptor((armorType > 0 or weaponType == WEAPONTYPE_SHIELD) and ZO_SMITHING_CREATION_FILTER_TYPE_SET_ARMOR or ZO_SMITHING_CREATION_FILTER_TYPE_SET_WEAPONS)
 			success = SetIndex(creation.patternList, function(_, newData) return itemName == GetItemLinkName(GetSmithingPatternResultLink(newData.patternIndex, 1, 7, 1, 1)) end)
 			if not success then
 				local equipType = GetItemLinkEquipType(itemLink)
@@ -251,8 +252,8 @@ function selector:Init()
 			else
 				self.currentSetName = nil
 			end
-		--elseif newState == SCENE_FRAGMENT_SHOWN then
-		--elseif newState == SCENE_FRAGMENT_HIDING then
+			-- elseif newState == SCENE_FRAGMENT_SHOWN then
+			-- elseif newState == SCENE_FRAGMENT_HIDING then
 		elseif newState == SCENE_FRAGMENT_HIDDEN then
 			collectgarbage()
 		end
