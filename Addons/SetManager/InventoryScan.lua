@@ -2,9 +2,11 @@ local addon = SET_MANAGER
 local em = GetEventManager()
 
 function addon:InitInventoryScan()
-	local function ScanInventory(bagId, list)
+	local function ScanInventory(bagId, list, addTo)
 		list = list or { }
-		ZO_ClearNumericallyIndexedTable(list)
+		if not addTo then
+			ZO_ClearNumericallyIndexedTable(list)
+		end
 
 		local IsEquipable, GetItemLink, GetItemLinkSetInfo, ZO_GetNextBagSlotIndex = IsEquipable, GetItemLink, GetItemLinkSetInfo, ZO_GetNextBagSlotIndex
 
@@ -24,6 +26,7 @@ function addon:InitInventoryScan()
 	end
 	local function ScanBags()
 		addon.account.sets = ScanInventory(BAG_BANK, addon.account.sets)
+		addon.account.sets = ScanInventory(BAG_SUBSCRIBER_BANK, addon.account.sets, true)
 		addon.player.worn = ScanInventory(BAG_WORN, addon.player.worn)
 		addon.player.sets = ScanInventory(BAG_BACKPACK, addon.player.sets)
 	end
