@@ -20,7 +20,7 @@ Controls.xml
 ControlsSelector.xml
 
 Main.lua
-Sets${APIVersion}.lua
+Sets$(APIVersion).lua
 ProcessSets.lua
 InventoryScan.lua
 ItemLinks.lua

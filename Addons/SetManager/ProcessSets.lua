@@ -119,7 +119,7 @@ function addon:ProcessList(list)
 end
 
 function addon:ScanSets(maxItemId)
-	maxItemId = maxItemId or 150000
+	maxItemId = maxItemId or 190000
 	local isArmorList =
 	{
 		[EQUIP_TYPE_HEAD] = true,
@@ -156,8 +156,11 @@ function addon:ScanSets(maxItemId)
 		[ITEM_TRAIT_TYPE_ARMOR_ORNATE] = true,
 		[ITEM_TRAIT_TYPE_JEWELRY_ORNATE] = true,
 		[ITEM_TRAIT_TYPE_WEAPON_ORNATE] = true,
-		[ITEM_TRAIT_TYPE_SPECIAL_STAT] = true,
 	}
+	if GetAPIVersion() <= 100019 then
+		blacklist[ITEM_TRAIT_TYPE_SPECIAL_STAT] = true
+	end
+
 	local function Scan()
 		local start = GetFrameTimeMilliseconds()
 		local spendTime = 500 / GetFramerate()
