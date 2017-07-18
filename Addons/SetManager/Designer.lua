@@ -157,18 +157,39 @@ function designer:UpdateSetTemplates()
 	self.setTemplates.dirty = false
 end
 
-function designer:UpdateStyleList()
-	self.styleList:Clear()
+if GetAPIVersion() <= 100019 then
+	function designer:UpdateStyleList()
+		self.styleList:Clear()
 
-	local GetSmithingStyleItemInfo = GetSmithingStyleItemInfo
-	for styleIndex = 1, GetNumSmithingStyleItems() do
-		local name, icon, sellPrice, meetsUsageRequirement, itemStyle, quality = GetSmithingStyleItemInfo(styleIndex)
-		if meetsUsageRequirement then
-			self.styleList:AddEntry( { craftingType = 0, styleIndex = styleIndex, name = name, itemStyle = itemStyle, icon = icon, quality = quality })
+		local GetSmithingStyleItemInfo = GetSmithingStyleItemInfo
+		for styleIndex = 1, GetNumSmithingStyleItems() do
+			local name, icon, sellPrice, meetsUsageRequirement, itemStyle, quality = GetSmithingStyleItemInfo(styleIndex)
+			if meetsUsageRequirement then
+				self.styleList:AddEntry( { craftingType = 0, styleIndex = styleIndex, localizedName = GetString("SI_ITEMSTYLE", itemStyle), icon = icon, quality = quality })
+			end
 		end
+
+		self.styleList:Commit()
 	end
 
-	self.styleList:Commit()
+else
+	function designer:UpdateStyleList()
+		self.styleList:Clear()
+
+		local GetItemStyleMaterialLink, GetItemLinkName, GetItemLinkName, GetItemLinkInfo, GetItemLinkQuality, GetItemStyleName = GetItemStyleMaterialLink, GetItemLinkName, GetItemLinkName, GetItemLinkInfo, GetItemLinkQuality, GetItemStyleName
+		local SI_TOOLTIP_ITEM_NAME = GetString(SI_TOOLTIP_ITEM_NAME)
+		for styleIndex = 1, GetHighestItemStyleId() do
+			local styleItemLink = GetItemStyleMaterialLink(styleIndex)
+			local icon, sellPrice, meetsUsageRequirement = GetItemLinkInfo(styleItemLink)
+			if meetsUsageRequirement then
+				-- local name = GetItemLinkName(styleItemLink)
+				local quality = GetItemLinkQuality(styleItemLink)
+				self.styleList:AddEntry( { craftingType = 0, styleIndex = styleIndex, localizedName = zo_strformat(SI_TOOLTIP_ITEM_NAME, GetItemStyleName(styleIndex)), icon = icon, quality = quality })
+			end
+		end
+
+		self.styleList:Commit()
+	end
 end
 
 function designer:InitItemList()
