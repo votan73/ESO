@@ -162,10 +162,11 @@ if GetAPIVersion() <= 100019 then
 		self.styleList:Clear()
 
 		local GetSmithingStyleItemInfo = GetSmithingStyleItemInfo
+		local SI_TOOLTIP_ITEM_NAME = GetString(SI_TOOLTIP_ITEM_NAME)
 		for styleIndex = 1, GetNumSmithingStyleItems() do
 			local name, icon, sellPrice, meetsUsageRequirement, itemStyle, quality = GetSmithingStyleItemInfo(styleIndex)
 			if meetsUsageRequirement then
-				self.styleList:AddEntry( { craftingType = 0, styleIndex = styleIndex, localizedName = GetString("SI_ITEMSTYLE", itemStyle), icon = icon, quality = quality })
+				self.styleList:AddEntry( { craftingType = 0, styleIndex = styleIndex, localizedName = zo_strformat(SI_TOOLTIP_ITEM_NAME, GetString("SI_ITEMSTYLE", itemStyle)), icon = icon, quality = quality })
 			end
 		end
 
@@ -614,19 +615,11 @@ function designer:InitStyleList()
 			local universalStyleItemCount = GetCurrentSmithingStyleItemCount(ZO_ADJUSTED_UNIVERSAL_STYLE_ITEM_INDEX)
 			self.isStyleUsable = usable and USABILITY_TYPE_USABLE or USABILITY_TYPE_VALID_BUT_MISSING_REQUIREMENT
 
-			if not data.localizedName then
-				if data.itemStyle == ITEMSTYLE_NONE then
-					data.localizedName = GetString("SI_ITEMSTYLE", data.itemStyle)
-				else
-					data.localizedName = zo_strformat(SI_SMITHING_STYLE_DESCRIPTION, data.name, GetString("SI_ITEMSTYLE", data.itemStyle))
-				end
-			end
-
 			listContainer.selectedLabel:SetText(data.localizedName)
 
-			if not selectedDuringRebuild then
-				-- self:RefreshVisiblePatterns()
-			end
+			-- 		if not selectedDuringRebuild then
+			-- 			-- self:RefreshVisiblePatterns()
+			-- 		end
 		end
 	end
 

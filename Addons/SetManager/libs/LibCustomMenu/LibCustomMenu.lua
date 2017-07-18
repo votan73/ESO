@@ -2,7 +2,7 @@
 -- thanks to: baertram & circonian
 
 -- Register with LibStub
-local MAJOR, MINOR = "LibCustomMenu", 4.2
+local MAJOR, MINOR = "LibCustomMenu", 4.3
 local lib, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end -- the same or newer version of this lib is already loaded into memory
 
@@ -24,6 +24,7 @@ local function SetupDivider(pool, control)
 	label.SetFont = Noop
 	label.GetTextDimensions = GetTextDimensions
 	label:SetHidden(false)
+	control.nameLabel = label
 
 	control:SetMouseEnabled(false)
 end
@@ -181,7 +182,7 @@ function Submenu:UnselectItem(index)
 	local item = self.items[index]
 	if item then
 		self.highlight:SetHidden(true)
-		local nameControl = GetControl(item, "Name")
+		local nameControl = item.nameLabel
 		nameControl:SetColor(nameControl.normalColor:UnpackRGBA())
 
 		self.selectedIndex = nil
@@ -200,7 +201,7 @@ function Submenu:SelectItem(index)
 
 		highlight:SetHidden(false)
 
-		local nameControl = GetControl(item, "Name")
+		local nameControl = item.nameLabel
 		nameControl:SetColor(nameControl.highlightColor:UnpackRGBA())
 
 		self.selectedIndex = index
@@ -216,7 +217,7 @@ function Submenu:UpdateAnchors()
 
 	for i = 1, #items do
 		local item = items[i]
-		local textWidth, textHeight = GetControl(item, "Name"):GetTextDimensions()
+		local textWidth, textHeight = item.nameLabel:GetTextDimensions()
 		width = math.max(textWidth + padding * 2, width)
 		height = height + textHeight
 		item:ClearAnchors()
@@ -259,6 +260,7 @@ function Submenu:AddItem(entry, myfont, normalColor, highlightColor, itemYPad)
 	self.items[item.index] = item
 
 	local nameControl = GetControl(item, "Name")
+	item.nameLabel = nameControl
 
 	local entryFont = GetValueOrCallback(entry.myfont, ZO_Menu, item) or myfont
 	local normColor = GetValueOrCallback(entry.normalColor, ZO_Menu, item) or normalColor
@@ -332,6 +334,7 @@ local function SubMenuItemFactory(pool)
 
 	local label = wm:CreateControl("$(parent)Name", control, CT_LABEL)
 	label:SetAnchor(TOPLEFT)
+	control.nameLabel = label
 
 	control:SetHandler("OnMouseEnter", MouseEnter)
 	control:SetHandler("OnMouseExit", MouseExit)
@@ -374,6 +377,7 @@ local function MenuItemFactory(pool)
 
 	local label = wm:CreateControl("$(parent)Name", control, CT_LABEL)
 	label:SetAnchor(TOPLEFT)
+	control.nameLabel = label
 
 	control:SetHandler("OnMouseEnter", MouseEnter)
 	control:SetHandler("OnMouseExit", MouseExit)
@@ -385,6 +389,8 @@ end
 
 local function CheckBoxFactory(pool)
 	local control = CreateControlFromVirtual("ZO_CustomMenuItemCheckButton", ZO_Menu, "ZO_CheckButton", pool:GetNextControlId())
+	control.nameLabel = control
+
 	local function MouseEnter()
 		ZO_Menu_EnterItem(control)
 	end
@@ -476,23 +482,6 @@ local function HookAddSlotAction()
 		ZO_Menu.checkBoxPool = orgCheckboxItemPool
 	end
 end
---[[
--- uncomment this, if you want to see where and when "insecure" controls get re-used.
-function AddCustomMenuItem(mytext, myfunction, itemType, myfont, normalColor, highlightColor, itemYPad)
-	local lastCount = ZO_Menu.itemPool and ZO_Menu.itemPool:GetTotalObjectCount() or 0
-	local index = AddMenuItem(mytext, myfunction, itemType, myfont, normalColor, highlightColor, itemYPad)
-
-	local control = ZO_Menu.items[index].item
-	if ZO_Menu.itemPool:GetTotalObjectCount() > lastCount and control:GetNamedChild("Bad") == nil then
-		local bad = wm:CreateControl("$(parent)Bad", control, CT_TEXTURE)
-		bad:SetTexture("esoui/art/icons/poi/poi_groupboss_complete.dds")
-		bad:SetDimensions(23, 23)
-		bad:SetAnchor(RIGHT, control, RIGHT)
-	end
-
-	return index
-end
-]]--
 
 ---- Init -----
 
