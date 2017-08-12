@@ -166,7 +166,13 @@ if GetAPIVersion() <= 100019 then
 		for styleIndex = 1, GetNumSmithingStyleItems() do
 			local name, icon, sellPrice, meetsUsageRequirement, itemStyle, quality = GetSmithingStyleItemInfo(styleIndex)
 			if meetsUsageRequirement then
-				self.styleList:AddEntry( { craftingType = 0, styleIndex = styleIndex, name = name, itemStyle = itemStyle, icon = icon, quality = quality })
+				local localizedName
+				if itemStyle == ITEMSTYLE_NONE then
+					localizedName = GetString("SI_ITEMSTYLE", itemStyle)
+				else
+					localizedName = zo_strformat("<<C:1>>", GetString("SI_ITEMSTYLE", itemStyle))
+				end
+				self.styleList:AddEntry( { craftingType = 0, styleIndex = styleIndex, name = name, localizedName = localizedName, itemStyle = itemStyle, icon = icon, quality = quality })
 			end
 		end
 
@@ -183,9 +189,10 @@ else
 			local styleItemLink = GetItemStyleMaterialLink(styleIndex)
 			local icon, sellPrice, meetsUsageRequirement = GetItemLinkInfo(styleItemLink)
 			if meetsUsageRequirement then
-				-- local name = GetItemLinkName(styleItemLink)
 				local quality = GetItemLinkQuality(styleItemLink)
-				self.styleList:AddEntry( { craftingType = 0, styleIndex = styleIndex, localizedName = zo_strformat(SI_TOOLTIP_ITEM_NAME, GetItemStyleName(styleIndex)), icon = icon, quality = quality })
+				local name = GetItemStyleName(styleIndex)
+				local itemStyle = GetItemLinkItemStyle(styleItemLink)
+				self.styleList:AddEntry( { craftingType = 0, styleIndex = styleIndex, name = name, localizedName = zo_strformat(SI_TOOLTIP_ITEM_NAME, name), itemStyle = itemStyle, icon = icon, quality = quality })
 			end
 		end
 
@@ -614,14 +621,6 @@ function designer:InitStyleList()
 
 			local universalStyleItemCount = GetCurrentSmithingStyleItemCount(ZO_ADJUSTED_UNIVERSAL_STYLE_ITEM_INDEX)
 			self.isStyleUsable = usable and USABILITY_TYPE_USABLE or USABILITY_TYPE_VALID_BUT_MISSING_REQUIREMENT
-
-			if not data.localizedName then
-				if data.itemStyle == ITEMSTYLE_NONE then
-					data.localizedName = GetString("SI_ITEMSTYLE", data.itemStyle)
-				else
-					data.localizedName = zo_strformat("<<C:1>>", GetString("SI_ITEMSTYLE", data.itemStyle))
-				end
-			end
 
 			listContainer.selectedLabel:SetText(data.localizedName)
 
