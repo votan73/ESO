@@ -8,3 +8,5 @@ ZO_CreateStringId("SI_BINDING_NAME_SET_MANAGER_COPY_EQUIPPED", "Copy Equipment")
 
 ZO_CreateStringId("SET_MANAGER_APPLY_ITEM", "Apply")
 ZO_CreateStringId("SET_MANAGER_REMOVE_ITEM", "Remove")
+
+ZO_CreateStringId("SI_BINDING_NAME_SET_MANAGER_WRIT_POPUP", "Show in Popup")

@@ -7,3 +7,5 @@ SafeAddString(SI_BINDING_NAME_SET_MANAGER_COPY_EQUIPPED, "Ausrüstung übernehme
 
 SafeAddString(SET_MANAGER_APPLY_ITEM, "Hinzufügen", 0)
 SafeAddString(SET_MANAGER_REMOVE_ITEM, "Entfernen", 0)
+
+SafeAddString(SI_BINDING_NAME_SET_MANAGER_WRIT_POPUP, "In Popup anzeigen", 0)

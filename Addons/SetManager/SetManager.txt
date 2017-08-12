@@ -28,5 +28,6 @@ Tooltip.lua
 Designer.lua
 Selector.lua
 ##ChatLinkHandler.lua
+MasterWritLink.lua
 
 Bindings.xml
