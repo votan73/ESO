@@ -94,7 +94,7 @@ function selector:InitSetTemplates()
 			local itemLink = control.data[control.selectedSlot]
 			local armorType = GetItemLinkArmorType(itemLink)
 			local weaponType = GetItemLinkWeaponType(itemLink)
-			local itemStyle = GetItemLinkItemStyle(itemLink)
+			local itemStyleId = GetItemLinkItemStyle(itemLink)
 			local itemTrait = GetItemLinkTraitInfo(itemLink)
 			local requiredRank, requiredLevel, requiredCP = GetItemLinkSmithingRequiredRankAndLevels(itemLink)
 			local itemName = GetItemLinkName(itemLink)
@@ -124,7 +124,7 @@ function selector:InitSetTemplates()
 			else
 				success = false
 			end
-			success = SetIndex(creation.styleList, function(_, newData) return newData.itemStyle == itemStyle end) and success
+			success = SetIndex(creation.styleList, function(_, newData) return newData.itemStyleId == itemStyleId end) and success
 			success = SetIndex(creation.traitList, function(_, newData) return newData.traitType == itemTrait end) and success
 
 			PlaySound(success and SOUNDS.DEFAULT_CLICK or SOUNDS.NEGATIVE_CLICK)
