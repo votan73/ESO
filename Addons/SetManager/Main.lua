@@ -129,7 +129,7 @@ local function OnAddonLoaded(event, name)
 	if name ~= addon.name then return end
 	em:UnregisterForEvent(addon.name, EVENT_ADD_ON_LOADED)
 
-	addon.player = ZO_SavedVars:New("SetManager_Data", 1, nil, addon.playerDefaults, nil)
+	addon.player = ZO_SavedVars:NewCharacterIdSettings("SetManager_Data", 1, nil, addon.playerDefaults, nil)
 	addon.account = ZO_SavedVars:NewAccountWide("SetManager_Data", 1, nil, addon.accountDefaults, nil)
 	addon.account.all = nil
 
