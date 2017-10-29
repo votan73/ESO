@@ -66,75 +66,127 @@ local function GetLocalTimeStamp()
 	return utc + localTimeShift
 end
 
-function addon:FormatTime(localTimeStamp, text)
+local function FormatTime(eventArgs)
+	local text = eventArgs.formattedEventText
 	if not text then return end
-	localTimeStamp = localTimeStamp or GetLocalTimeStamp()
-	return string.format("|cCCCCCC[%s]|r %s", ZO_FormatTime(localTimeStamp % 86400, TIME_FORMAT_STYLE_CLOCK_TIME, TIME_FORMAT_PRECISION_TWENTY_FOUR_HOUR), text)
-end
-
-function addon:PostFormatting(formattedEventText, targetChannel, fromDisplayName, rawMessageText)
-	return formattedEventText, targetChannel, fromDisplayName, rawMessageText
+	return string.format("|cCCCCCC[%s]|r %s", ZO_FormatTime(eventArgs.localTimeStamp % 86400, TIME_FORMAT_STYLE_CLOCK_TIME, TIME_FORMAT_PRECISION_TWENTY_FOUR_HOUR), text)
 end
 
 do
-	local newFormatter = ZO_ChatSystem_GetEventHandlers()
-	local orgFormatter = ZO_ShallowTableCopy(newFormatter)
-	local function AddTime(localTimeStamp, formattedEventText, ...)
-		formattedEventText = addon:FormatTime(localTimeStamp, formattedEventText, ...)
-		return formattedEventText, ...
+	local eventArgs = { }
+	local function PreFormatting(orgFormatter, ...)
+		eventArgs.cancel, eventArgs.isHandled = false, false
+		addon.events:FireCallbacks("PreFormatting", eventArgs)
+		if eventArgs.cancel then return end
+		if eventArgs.isHandled then
+			return eventArgs.formattedEventText, eventArgs.targetChannel, eventArgs.shownDisplayName, eventArgs.rawMessageText
+		else
+			return orgFormatter(...)
+		end
+	end
+	function addon:PostFormatting(formattedEventText, targetChannel, shownDisplayName, rawMessageText)
+		eventArgs.formattedEventText, eventArgs.targetChannel, eventArgs.shownDisplayName = formattedEventText, targetChannel, shownDisplayName
+		eventArgs.rawMessageText = rawMessageText or eventArgs.rawMessageText
+
+		addon.events:FireCallbacks("PostFormatting", eventArgs)
+
+		eventArgs.formattedEventText = FormatTime(eventArgs)
+
+		return eventArgs.formattedEventText, eventArgs.targetChannel, eventArgs.shownDisplayName, eventArgs.rawMessageText
 	end
 
+	local function NewEvent(event, localTimeStamp, messageType, fromCharacterName, fromDisplayName, rawMessageText)
+		eventArgs.event, eventArgs.messageType = event, messageType
+
+		eventArgs.formattedEventText, eventArgs.targetChannel, eventArgs.shownDisplayName = nil, nil, nil
+		eventArgs.isFromCustomerService, eventArgs.oldStatus, eventArgs.newStatus = nil, nil, nil
+		eventArgs.largeGroup, eventArgs.response, eventArgs.restrictionType = nil, nil, nil
+		eventArgs.reason, eventArgs.isLocalPlayer, eventArgs.isLeader, eventArgs.actionRequiredVote = nil, nil, nil, nil
+
+		eventArgs.localTimeStamp, eventArgs.rawMessageText = localTimeStamp or GetLocalTimeStamp(), rawMessageText
+		eventArgs.messageType, eventArgs.fromCharacterName, eventArgs.fromDisplayName = messageType, fromCharacterName, fromDisplayName
+	end
+
+	-- The new formatters are in the original table
+	local newFormatter = ZO_ChatSystem_GetEventHandlers()
+	-- The original formatters are saved in a new table. Sounds odd, but is right.
+	local orgFormatter = ZO_ShallowTableCopy(newFormatter)
+
 	newFormatter[EVENT_CHAT_MESSAGE_CHANNEL] = function(messageType, fromName, text, isFromCustomerService, fromDisplayName, localTimeStamp)
-		return AddTime(localTimeStamp, addon:PostFormatting(orgFormatter[EVENT_CHAT_MESSAGE_CHANNEL](messageType, fromName, text, isFromCustomerService, fromDisplayName)))
+		NewEvent(EVENT_CHAT_MESSAGE_CHANNEL, localTimeStamp, messageType, fromName, fromDisplayName, text)
+		eventArgs.isFromCustomerService = isFromCustomerService
+		return addon:PostFormatting(PreFormatting(orgFormatter[EVENT_CHAT_MESSAGE_CHANNEL], messageType, fromName, text, isFromCustomerService, fromDisplayName))
 	end
 
 	newFormatter[EVENT_BROADCAST] = function(message, localTimeStamp)
-		return AddTime(localTimeStamp, addon:PostFormatting(orgFormatter[EVENT_BROADCAST](message)))
+		NewEvent(EVENT_BROADCAST, localTimeStamp, CHAT_CHANNEL_SYSTEM, nil, nil, message)
+		return addon:PostFormatting(PreFormatting(orgFormatter[EVENT_BROADCAST], message))
 	end
 
 	newFormatter[EVENT_FRIEND_PLAYER_STATUS_CHANGED] = function(displayName, characterName, oldStatus, newStatus, localTimeStamp)
-		return AddTime(localTimeStamp, addon:PostFormatting(orgFormatter[EVENT_FRIEND_PLAYER_STATUS_CHANGED](displayName, characterName, oldStatus, newStatus)))
+		NewEvent(EVENT_FRIEND_PLAYER_STATUS_CHANGED, localTimeStamp, characterName, displayName)
+		eventArgs.oldStatus, eventArgs.newStatus = oldStatus, newStatus
+		return addon:PostFormatting(PreFormatting(orgFormatter[EVENT_FRIEND_PLAYER_STATUS_CHANGED], displayName, characterName, oldStatus, newStatus))
 	end
 
 	newFormatter[EVENT_IGNORE_ADDED] = function(displayName, localTimeStamp)
-		return AddTime(localTimeStamp, addon:PostFormatting(orgFormatter[EVENT_IGNORE_ADDED](displayName)))
+		NewEvent(EVENT_IGNORE_ADDED, localTimeStamp, CHAT_CHANNEL_SYSTEM, nil, displayName)
+		return addon:PostFormatting(PreFormatting(orgFormatter[EVENT_IGNORE_ADDED], displayName))
 	end
 
 	newFormatter[EVENT_IGNORE_REMOVED] = function(displayName, localTimeStamp)
-		return AddTime(localTimeStamp, addon:PostFormatting(orgFormatter[EVENT_IGNORE_REMOVED](displayName)))
+		NewEvent(EVENT_IGNORE_REMOVED, localTimeStamp, CHAT_CHANNEL_SYSTEM, nil, displayName)
+		return addon:PostFormatting(PreFormatting(orgFormatter[EVENT_IGNORE_REMOVED], displayName))
 	end
 
 	newFormatter[EVENT_GROUP_TYPE_CHANGED] = function(largeGroup, localTimeStamp)
-		return AddTime(localTimeStamp, addon:PostFormatting(orgFormatter[EVENT_GROUP_TYPE_CHANGED](largeGroup)))
+		NewEvent(EVENT_GROUP_TYPE_CHANGED, localTimeStamp, CHAT_CHANNEL_SYSTEM)
+		eventArgs.largeGroup = largeGroup
+		return addon:PostFormatting(PreFormatting(orgFormatter[EVENT_GROUP_TYPE_CHANGED], largeGroup))
 	end
 
 	newFormatter[EVENT_GROUP_INVITE_RESPONSE] = function(characterName, response, displayName, localTimeStamp)
-		return AddTime(localTimeStamp, addon:PostFormatting(orgFormatter[EVENT_GROUP_INVITE_RESPONSE](characterName, response, displayName, localTimeStamp)))
+		NewEvent(EVENT_GROUP_INVITE_RESPONSE, localTimeStamp, CHAT_CHANNEL_SYSTEM, characterName, displayName)
+		eventArgs.response = response
+		return addon:PostFormatting(PreFormatting(orgFormatter[EVENT_GROUP_INVITE_RESPONSE], characterName, response, displayName))
 	end
 
 	newFormatter[EVENT_SOCIAL_ERROR] = function(error, localTimeStamp)
-		return AddTime(localTimeStamp, addon:PostFormatting(orgFormatter[EVENT_SOCIAL_ERROR](error)))
+		NewEvent(EVENT_SOCIAL_ERROR, localTimeStamp, CHAT_CHANNEL_SYSTEM, nil, nil, error)
+		return addon:PostFormatting(PreFormatting(orgFormatter[EVENT_SOCIAL_ERROR], error))
 	end
 
 	newFormatter[EVENT_TRIAL_FEATURE_RESTRICTED] = function(restrictionType, localTimeStamp)
-		return AddTime(localTimeStamp, addon:PostFormatting(orgFormatter[VENT_TRIAL_FEATURE_RESTRICTED](restrictionType)))
+		NewEvent(EVENT_TRIAL_FEATURE_RESTRICTED, localTimeStamp, CHAT_CHANNEL_SYSTEM)
+		eventArgs.restrictionType = restrictionType
+		return addon:PostFormatting(PreFormatting(orgFormatter[VENT_TRIAL_FEATURE_RESTRICTED], restrictionType))
 	end
 
 	newFormatter[EVENT_GROUP_MEMBER_LEFT] = function(characterName, reason, isLocalPlayer, isLeader, displayName, actionRequiredVote, localTimeStamp)
-		return AddTime(localTimeStamp, addon:PostFormatting(orgFormatter[EVENT_GROUP_MEMBER_LEFT](characterName, reason, isLocalPlayer, isLeader, displayName, actionRequiredVote)))
+		NewEvent(EVENT_GROUP_MEMBER_LEFT, localTimeStamp, CHAT_CHANNEL_SYSTEM, characterName, displayName)
+		eventArgs.reason, eventArgs.isLocalPlayer, eventArgs.isLeader, eventArgs.actionRequiredVote = reason, isLocalPlayer, isLeader, actionRequiredVote
+		return addon:PostFormatting(PreFormatting(orgFormatter[EVENT_GROUP_MEMBER_LEFT], characterName, reason, isLocalPlayer, isLeader, displayName, actionRequiredVote))
 	end
 
 	newFormatter[EVENT_BATTLEGROUND_INACTIVITY_WARNING] = function(localTimeStamp)
-		return AddTime(localTimeStamp, addon:PostFormatting(orgFormatter[EVENT_BATTLEGROUND_INACTIVITY_WARNING]()))
+		NewEvent(EVENT_BATTLEGROUND_INACTIVITY_WARNING, localTimeStamp, CHAT_CHANNEL_SYSTEM)
+		return addon:PostFormatting(PreFormatting(orgFormatter[EVENT_BATTLEGROUND_INACTIVITY_WARNING]))
 	end
 end
 
 do
 	local orgOnChatEvent = SharedChatSystem.OnChatEvent
-	function SharedChatSystem.OnChatEvent(chat, ...)
-		local entry = { ...}
+	function SharedChatSystem.OnChatEvent(self, ...)
+		local chat, entry = self, { ...}
 		entry[#entry + 1] = GetLocalTimeStamp()
-		addon.task:Call( function() addon.events:FireCallbacks("OnChatEvent", chat, entry) end):Then( function() orgOnChatEvent(chat, unpack(entry)) end)
+		local function PrePostMessage()
+			addon.events:FireCallbacks("OnChatEvent", chat, entry)
+		end
+
+		local function PostMessage()
+			orgOnChatEvent(chat, unpack(entry))
+		end
+		addon.task:Call(PrePostMessage):Then(PostMessage)
 	end
 end
 
