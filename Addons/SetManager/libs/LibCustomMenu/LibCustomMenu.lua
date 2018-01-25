@@ -2,7 +2,7 @@
 -- thanks to: baertram & circonian
 
 -- Register with LibStub
-local MAJOR, MINOR = "LibCustomMenu", 5
+local MAJOR, MINOR = "LibCustomMenu", 6
 local lib, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end -- the same or newer version of this lib is already loaded into memory
 
@@ -477,6 +477,49 @@ local function DividerFactory(pool)
 	return control
 end
 
+---- Hook points for context menu -----
+
+local function HookContextMenu()
+	local orgAddSlotAction, category, registry, inventorySlot, slotActions
+	local function addCategory()
+		category = category + 1
+		registry:FireCallbacks(category, inventorySlot, slotActions)
+	end
+	local function NewAddSlotAction(...)
+		-- disable hook to prevent recursion
+		ZO_InventorySlotActions.AddSlotAction = orgAddSlotAction
+		if category < 5 then
+			addCategory()
+			ZO_InventorySlotActions.AddSlotAction = NewAddSlotAction
+		end
+		return orgAddSlotAction(...)
+	end
+	local function HookSlotActions(method)
+		category, orgAddSlotAction = 0, ZO_InventorySlotActions.AddSlotAction
+		ZO_InventorySlotActions.AddSlotAction = NewAddSlotAction
+		-- Temporary replace function
+		local orgMethod = ZO_InventorySlotActions[method]
+		ZO_InventorySlotActions[method] = function(...)
+			ZO_InventorySlotActions[method], ZO_InventorySlotActions.AddSlotAction = orgMethod, orgAddSlotAction
+			while category <= 6 do addCategory() end
+			inventorySlot, slotActions = nil, nil
+			return orgMethod(...)
+		end
+	end
+	local function AddSlots(...)
+		inventorySlot, slotActions = ...
+		if slotActions.m_contextMenuMode then
+			registry = lib.contextMenuRegistry
+			HookSlotActions("Show")
+		else
+			registry = lib.keybindRegistry
+			HookSlotActions("GetPrimaryActionName")
+		end
+	end
+
+	ZO_PreHook("ZO_InventorySlot_DiscoverSlotActionsFromActionList", AddSlots)
+end
+
 ----- Public API -----
 
 function AddCustomMenuItem(mytext, myfunction, itemType, myFont, normalColor, highlightColor, itemYPad, horizontalAlignment)
@@ -552,6 +595,16 @@ local function HookAddSlotAction()
 	end
 end
 
+function lib:RegisterContextMenu(func, category, ...)
+	category = zo_clamp(category or self.CATEGORY_LATE, self.CATEGORY_EARLY, self.CATEGORY_LATE)
+	self.contextMenuRegistry:RegisterCallback(category, func, ...)
+end
+
+function lib:RegisterKeyStrip(func, category, ...)
+	category = zo_clamp(category or self.CATEGORY_LATE, self.CATEGORY_EARLY, self.CATEGORY_LATE)
+	self.keybindRegistry:RegisterCallback(category, func, ...)
+end
+
 ---- Init -----
 
 local function OnAddonLoaded(event, name)
@@ -564,7 +617,18 @@ local function OnAddonLoaded(event, name)
 	lib.submenu = Submenu:New("LibCustomMenuSubmenu")
 	HookClearMenu()
 	HookAddSlotAction()
+	HookContextMenu()
 end
+
+lib.contextMenuRegistry = lib.contextMenuRegistry or ZO_CallbackObject:New()
+lib.keybindRegistry = lib.keybindRegistry or ZO_CallbackObject:New()
+
+lib.CATEGORY_EARLY = 1
+lib.CATEGORY_PRIMARY = 2
+lib.CATEGORY_SECONDARY = 3
+lib.CATEGORY_TERTIARY = 4
+lib.CATEGORY_QUATERNARY = 5
+lib.CATEGORY_LATE = 6
 
 EVENT_MANAGER:UnregisterForEvent(MAJOR, EVENT_ADD_ON_LOADED)
 EVENT_MANAGER:RegisterForEvent(MAJOR, EVENT_ADD_ON_LOADED, OnAddonLoaded)
