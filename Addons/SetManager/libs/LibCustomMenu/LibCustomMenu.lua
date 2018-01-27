@@ -2,7 +2,7 @@
 -- thanks to: baertram & circonian
 
 -- Register with LibStub
-local MAJOR, MINOR = "LibCustomMenu", 6
+local MAJOR, MINOR = "LibCustomMenu", 6.1
 local lib, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end -- the same or newer version of this lib is already loaded into memory
 
@@ -485,24 +485,26 @@ local function HookContextMenu()
 		category = category + 1
 		registry:FireCallbacks(category, inventorySlot, slotActions)
 	end
+	local inCategory
 	local function NewAddSlotAction(...)
 		-- disable hook to prevent recursion
-		ZO_InventorySlotActions.AddSlotAction = orgAddSlotAction
-		if category < 5 then
+		if not inCategory and category < 5 then
+			inCategory = true
 			addCategory()
-			ZO_InventorySlotActions.AddSlotAction = NewAddSlotAction
+			inCategory = false
 		end
 		return orgAddSlotAction(...)
 	end
-	local function HookSlotActions(method)
-		category, orgAddSlotAction = 0, ZO_InventorySlotActions.AddSlotAction
-		ZO_InventorySlotActions.AddSlotAction = NewAddSlotAction
+	local function HookSlotActions(self, method)
+		category, orgAddSlotAction = 0, self.AddSlotAction
+
+		self.AddSlotAction = NewAddSlotAction
 		-- Temporary replace function
-		local orgMethod = ZO_InventorySlotActions[method]
-		ZO_InventorySlotActions[method] = function(...)
-			ZO_InventorySlotActions[method], ZO_InventorySlotActions.AddSlotAction = orgMethod, orgAddSlotAction
+		local orgMethod = self[method]
+		self[method] = function(...)
+			self[method], self.AddSlotAction = orgMethod, orgAddSlotAction
 			while category <= 6 do addCategory() end
-			inventorySlot, slotActions = nil, nil
+			inventorySlot, slotActions, orgAddSlotAction = nil, nil, nil
 			return orgMethod(...)
 		end
 	end
@@ -510,10 +512,10 @@ local function HookContextMenu()
 		inventorySlot, slotActions = ...
 		if slotActions.m_contextMenuMode then
 			registry = lib.contextMenuRegistry
-			HookSlotActions("Show")
+			HookSlotActions(slotActions, "Show")
 		else
 			registry = lib.keybindRegistry
-			HookSlotActions("GetPrimaryActionName")
+			HookSlotActions(slotActions, "GetPrimaryActionName")
 		end
 	end
 
