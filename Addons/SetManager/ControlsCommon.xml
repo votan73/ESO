@@ -95,57 +95,14 @@
         <Button name="$(parent)EquipmentSlotsOffHand" inherits="SetManager_ItemSlot" >
           <Anchor point="LEFT" relativeTo="$(parent)EquipmentSlotsMainHand" relativePoint="RIGHT" offsetX="10" />
         </Button>
-        <!--<Button name="$(parent)EquipmentSlotsPoison" inherits="ZO_InventoryWeaponSlot" >
-          <Anchor point="LEFT" relativeTo="$(parent)EquipmentSlotsOffHand" relativePoint="RIGHT" offsetX="10" />
-          <Controls>
-            <Label name="$(parent)StackCount" override="true">
-              <Anchor point="BOTTOMRIGHT" offsetX="-4" offsetY="2" />
-            </Label>
-          </Controls>
-        </Button>-->
         <Button name="$(parent)EquipmentSlotsBackupMain" inherits="SetManager_ItemSlot">
           <Anchor point="TOPLEFT" relativeTo="$(parent)EquipmentSlotsMainHand" relativePoint="BOTTOMLEFT" offsetY="4" />
         </Button>
         <Button name="$(parent)EquipmentSlotsBackupOff" inherits="SetManager_ItemSlot">
           <Anchor point="LEFT" relativeTo="$(parent)EquipmentSlotsBackupMain" relativePoint="RIGHT" offsetX="10" />
         </Button>
-        <!--<Button name="$(parent)EquipmentSlotsBackupPoison" inherits="ZO_InventoryWeaponSlot" >
-          <Anchor point="LEFT" relativeTo="$(parent)EquipmentSlotsBackupOff" relativePoint="RIGHT" offsetX="10" />
-          <Controls>
-            <Label name="$(parent)StackCount" override="true">
-              <Anchor point="BOTTOMRIGHT" offsetX="-4" offsetY="2" />
-            </Label>
-          </Controls>
-        </Button>-->
-
-        <!--<Button name="$(parent)WeaponSwap" inherits="ZO_WeaponSwapLeft">
-          <Anchor point="LEFT" relativeTo="$(parent)EquipmentSlotsPoison" relativePoint="BOTTOMRIGHT" offsetX="3" />
-        </Button>-->
       </Controls>
     </Control>
-
-    <!--<Tooltip name="SetPopupTooltipBase" inherits="ZO_ItemIconTooltip" mouseEnabled="true" movable="true" virtual="true">
-      <ResizeToFitPadding width="48" height="57"/>
-      <DimensionConstraints minX="416" maxX="416" />
-
-      <Anchor point="CENTER" relativePoint="CENTER" />
-      <OnHide>
-        self.lastLink = nil
-      </OnHide>
-
-      <Controls>
-        <Button name="$(parent)Close" inherits="ZO_CloseButton" excludeFromResizeToFitExtents="true">
-          <Anchor point="TOPRIGHT" offsetX="-6" offsetY="6" />
-          <OnClicked>
-            self:GetParent():SetHidden(true)
-          </OnClicked>
-        </Button>
-        <Control name="$(parent)Container" inherits="SetManager_Character_Template">
-          <Anchor point="TOP" offsetX="0" offsetY="6" />
-        </Control>
-      </Controls>
-    </Tooltip>-->
-
   </Controls>
 
 </GuiXml>
