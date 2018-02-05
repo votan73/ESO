@@ -2,7 +2,7 @@
 -- thanks to: baertram & circonian
 
 -- Register with LibStub
-local MAJOR, MINOR = "LibCustomMenu", 6.1
+local MAJOR, MINOR = "LibCustomMenu", 6.2
 local lib, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end -- the same or newer version of this lib is already loaded into memory
 
@@ -480,45 +480,61 @@ end
 ---- Hook points for context menu -----
 
 local function HookContextMenu()
-	local orgAddSlotAction, category, registry, inventorySlot, slotActions
+	local orgMethod, lastMethod, category, registry, inventorySlot, slotActions, entered
+	local function Unhook()
+		if orgMethod then
+			slotActions[lastMethod] = orgMethod
+			orgMethod, inventorySlot, slotActions = nil, nil, nil
+		end
+		category = 0
+	end
+	local function RemoveMouseOverKeybinds()
+		if entered then
+			entered = false
+			lib.keybindRegistry:FireCallbacks("Exit")
+		end
+		Unhook()
+	end
 	local function addCategory()
 		category = category + 1
 		registry:FireCallbacks(category, inventorySlot, slotActions)
 	end
-	local inCategory
-	local function NewAddSlotAction(...)
-		-- disable hook to prevent recursion
-		if not inCategory and category < 5 then
-			inCategory = true
-			addCategory()
-			inCategory = false
-		end
-		return orgAddSlotAction(...)
-	end
 	local function HookSlotActions(self, method)
-		category, orgAddSlotAction = 0, self.AddSlotAction
-
-		self.AddSlotAction = NewAddSlotAction
 		-- Temporary replace function
-		local orgMethod = self[method]
+		orgMethod, lastMethod = self[method], method
 		self[method] = function(...)
-			self[method], self.AddSlotAction = orgMethod, orgAddSlotAction
+			self[method] = orgMethod
 			while category <= 6 do addCategory() end
-			inventorySlot, slotActions, orgAddSlotAction = nil, nil, nil
-			return orgMethod(...)
+			Unhook()
+			return self[method](...)
 		end
+		local orgAddSlotAction = self.AddSlotAction
+		local function NewAddSlotAction(...)
+			-- disable hook to prevent recursion
+			self.AddSlotAction = orgAddSlotAction
+			if category < 4 and inventorySlot then
+				addCategory()
+				self.AddSlotAction = NewAddSlotAction
+			end
+			return orgAddSlotAction(...)
+		end
+		self.AddSlotAction = NewAddSlotAction
 	end
 	local function AddSlots(...)
+		Unhook()
 		inventorySlot, slotActions = ...
 		if slotActions.m_contextMenuMode then
 			registry = lib.contextMenuRegistry
 			HookSlotActions(slotActions, "Show")
 		else
+			entered = true
 			registry = lib.keybindRegistry
 			HookSlotActions(slotActions, "GetPrimaryActionName")
 		end
 	end
 
+	ZO_PreHook("ZO_InventorySlot_RemoveMouseOverKeybinds", RemoveMouseOverKeybinds)
+	ZO_PreHook("ZO_InventorySlot_OnMouseExit", RemoveMouseOverKeybinds)
 	ZO_PreHook("ZO_InventorySlot_DiscoverSlotActionsFromActionList", AddSlots)
 end
 
@@ -602,9 +618,13 @@ function lib:RegisterContextMenu(func, category, ...)
 	self.contextMenuRegistry:RegisterCallback(category, func, ...)
 end
 
-function lib:RegisterKeyStrip(func, category, ...)
+function lib:RegisterKeyStripEnter(func, category, ...)
 	category = zo_clamp(category or self.CATEGORY_LATE, self.CATEGORY_EARLY, self.CATEGORY_LATE)
 	self.keybindRegistry:RegisterCallback(category, func, ...)
+end
+
+function lib:RegisterKeyStripExit(func, ...)
+	self.keybindRegistry:RegisterCallback("Exit", func, ...)
 end
 
 ---- Init -----
