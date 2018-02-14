@@ -1,5 +1,3 @@
-if GetAPIVersion() < 100022 then return end
-
 local addon = SET_MANAGER
 
 local C = SET_MANAGER.SetType.Craftable
