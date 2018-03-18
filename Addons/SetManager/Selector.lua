@@ -73,20 +73,15 @@ function selector:InitSetTemplates()
 			return false
 		end
 		local function SetMaterialQuantity(creation, requiredLevel, requiredCP)
-			local patternIndex, materialIndex = creation:GetSelectedPatternIndex(), creation:GetSelectedMaterialIndex()
-
-			local GetItemLinkRequiredLevel, GetItemLinkRequiredChampionPoints = GetItemLinkRequiredLevel, GetItemLinkRequiredChampionPoints
-			local GetSmithingPatternNextMaterialQuantity = GetSmithingPatternNextMaterialQuantity
-
-			local quantity, count = 1, 0
-			local itemLink
-			repeat
-				quantity = GetSmithingPatternNextMaterialQuantity(patternIndex, materialIndex, quantity, 1, 1)
-				itemLink = GetSmithingPatternResultLink(patternIndex, materialIndex, quantity, 1, 1)
-				count = count + 1
-			until count > 10 or(requiredLevel == GetItemLinkRequiredLevel(itemLink) and requiredCP == GetItemLinkRequiredChampionPoints(itemLink))
-			creation.materialQuantitySpinner:ModifyValue(quantity)
-			return count <= 10
+			local data = creation.materialList:GetSelectedData()
+			local value = data.isChampionPoint and requiredCP or requiredLevel
+			for index, item in ipairs(data.combinations) do
+				if item.createsItemOfLevel >= value then
+					creation.materialQuantitySpinner:ModifyValue(index)
+					return true
+				end
+			end
+			return false
 		end
 		local function OnSelectedSlotChanged(control)
 			self.selectedSlot = control.selectedSlot

@@ -157,47 +157,23 @@ function designer:UpdateSetTemplates()
 	self.setTemplates.dirty = false
 end
 
-if GetAPIVersion() <= 100019 then
-	function designer:UpdateStyleList()
-		self.styleList:Clear()
+function designer:UpdateStyleList()
+	self.styleList:Clear()
 
-		local GetSmithingStyleItemInfo = GetSmithingStyleItemInfo
-		local SI_TOOLTIP_ITEM_NAME = GetString(SI_TOOLTIP_ITEM_NAME)
-		for styleIndex = 1, GetNumSmithingStyleItems() do
-			local name, icon, sellPrice, meetsUsageRequirement, itemStyle, quality = GetSmithingStyleItemInfo(styleIndex)
-			if meetsUsageRequirement then
-				local localizedName
-				if itemStyle == ITEMSTYLE_NONE then
-					localizedName = GetString("SI_ITEMSTYLE", itemStyle)
-				else
-					localizedName = zo_strformat("<<C:1>>", GetString("SI_ITEMSTYLE", itemStyle))
-				end
-				self.styleList:AddEntry( { craftingType = 0, styleIndex = styleIndex, name = name, localizedName = localizedName, itemStyle = itemStyle, icon = icon, quality = quality })
-			end
+	local GetItemStyleMaterialLink, GetItemLinkName, GetItemLinkName, GetItemLinkInfo, GetItemLinkQuality, GetItemStyleName = GetItemStyleMaterialLink, GetItemLinkName, GetItemLinkName, GetItemLinkInfo, GetItemLinkQuality, GetItemStyleName
+	local SI_TOOLTIP_ITEM_NAME = GetString(SI_TOOLTIP_ITEM_NAME)
+	for styleIndex = 1, GetHighestItemStyleId() do
+		local styleItemLink = GetItemStyleMaterialLink(styleIndex)
+		local icon, sellPrice, meetsUsageRequirement = GetItemLinkInfo(styleItemLink)
+		if meetsUsageRequirement then
+			local quality = GetItemLinkQuality(styleItemLink)
+			local name = GetItemStyleName(styleIndex)
+			local itemStyle = GetItemLinkItemStyle(styleItemLink)
+			self.styleList:AddEntry( { craftingType = 0, styleIndex = styleIndex, name = name, localizedName = zo_strformat(SI_TOOLTIP_ITEM_NAME, name), itemStyle = itemStyle, icon = icon, quality = quality })
 		end
-
-		self.styleList:Commit()
 	end
 
-else
-	function designer:UpdateStyleList()
-		self.styleList:Clear()
-
-		local GetItemStyleMaterialLink, GetItemLinkName, GetItemLinkName, GetItemLinkInfo, GetItemLinkQuality, GetItemStyleName = GetItemStyleMaterialLink, GetItemLinkName, GetItemLinkName, GetItemLinkInfo, GetItemLinkQuality, GetItemStyleName
-		local SI_TOOLTIP_ITEM_NAME = GetString(SI_TOOLTIP_ITEM_NAME)
-		for styleIndex = 1, GetHighestItemStyleId() do
-			local styleItemLink = GetItemStyleMaterialLink(styleIndex)
-			local icon, sellPrice, meetsUsageRequirement = GetItemLinkInfo(styleItemLink)
-			if meetsUsageRequirement then
-				local quality = GetItemLinkQuality(styleItemLink)
-				local name = GetItemStyleName(styleIndex)
-				local itemStyle = GetItemLinkItemStyle(styleItemLink)
-				self.styleList:AddEntry( { craftingType = 0, styleIndex = styleIndex, name = name, localizedName = zo_strformat(SI_TOOLTIP_ITEM_NAME, name), itemStyle = itemStyle, icon = icon, quality = quality })
-			end
-		end
-
-		self.styleList:Commit()
-	end
+	self.styleList:Commit()
 end
 
 function designer:InitItemList()
