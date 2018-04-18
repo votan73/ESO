@@ -577,7 +577,6 @@ function designer:InitStyleList()
 		local usesUniversalStyleItem = false
 		local stackCount = GetCurrentSmithingStyleItemCount(data.styleIndex)
 		local hasEnoughInInventory = stackCount > 0
-		local universalStyleItemCount = GetCurrentSmithingStyleItemCount(ZO_ADJUSTED_UNIVERSAL_STYLE_ITEM_INDEX)
 		local isStyleKnown = true
 		local usable = true
 		ZO_ItemSlot_SetupSlot(control, stackCount, data.icon, usable, not enabled)
@@ -595,14 +594,9 @@ function designer:InitStyleList()
 				end
 			end
 
-			local universalStyleItemCount = GetCurrentSmithingStyleItemCount(ZO_ADJUSTED_UNIVERSAL_STYLE_ITEM_INDEX)
 			self.isStyleUsable = usable and USABILITY_TYPE_USABLE or USABILITY_TYPE_VALID_BUT_MISSING_REQUIREMENT
 
 			listContainer.selectedLabel:SetText(data.localizedName)
-
-			-- 		if not selectedDuringRebuild then
-			-- 			-- self:RefreshVisiblePatterns()
-			-- 		end
 		end
 	end
 
@@ -614,7 +608,7 @@ function designer:InitStyleList()
 		-- self:OnHorizonalScrollListCleared(...)
 	end
 
-	self.styleList = scrollListControl:New(listContainer.listControl, listSlotTemplate, BASE_NUM_ITEMS_IN_LIST, SetupFunction, EqualityFunction, OnHorizonalScrollListShown, OnHorizonalScrollListCleared)
+	self.styleList = scrollListControl:New(listContainer.listControl, listSlotTemplate, 5, SetupFunction, EqualityFunction, OnHorizonalScrollListShown, OnHorizonalScrollListCleared)
 	self.styleList:SetNoItemText(GetString(SI_SMITHING_NO_STYLE_FOUND))
 
 	self.styleList:SetSelectionHighlightInfo(highlightTexture, highlightTexture and highlightTexture.pulseAnimation)
