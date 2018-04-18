@@ -1,7 +1,7 @@
 ## Title: Set Manager
 ## Author: Criscal & votan
-## APIVersion: 100022
-## Version: 1.0.2
+## APIVersion: 100022 100023
+## Version: 1.0.3
 ## OptionalDependsOn: LibStub LibAddonMenu-2.0
 ## SavedVariables: SetManager_Data
 
@@ -21,6 +21,7 @@ ControlsSelector.xml
 
 Main.lua
 Sets100022.lua
+Sets100023.lua
 ProcessSets.lua
 InventoryScan.lua
 ItemLinks.lua

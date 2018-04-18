@@ -115,7 +115,11 @@ function selector:InitSetTemplates()
 				end
 			end
 			if SetIndex(creation.materialList, function(_, newData) return newData.rankRequirement == requiredRank end) then
-				success = SetMaterialQuantity(creation, requiredLevel, requiredCP) and success
+				if GetAPIVersion() < 100022 then
+					success = SetMaterialQuantity(creation, requiredLevel, requiredCP) and success
+				else
+					success = true
+				end
 			else
 				success = false
 			end
