@@ -13,7 +13,7 @@ do
 end
 
 function addon:Initialize()
-	self.events:FireCallbacks("PreInit")
+	self.events:FireCallbacks("OnPreInit")
 
 	self.account = ZO_SavedVars:NewAccountWide("iChatSavedVar", 1, nil, self.accountDefaults)
 	self.player = ZO_SavedVars:NewCharacterIdSettings("iChatSavedVar", 1, nil, self.defaults)
@@ -52,7 +52,7 @@ function addon:InitSettings()
 	local settings = LibHarvensAddonSettings:AddAddon("iChat")
 	if not settings then return end
 	addon.settingsControls = settings
-	settings.version = "1.0.0"
+	settings.version = "1.0.1"
 	settings.allowDefaults = true
 	-- settings.website = "http://www.esoui.com/downloads/"
 end
@@ -206,20 +206,41 @@ do
 		local orgClearMenu = ClearMenu
 		local orgShowMenu = ShowMenu
 
-		local container, tabIndex = ...
-		function ClearMenu(...)
-			ClearMenu = orgClearMenu
-			ClearMenu(...)
-			if not ZO_Dialogs_IsShowingDialog() then
+		if not ZO_Dialogs_IsShowingDialog() then
+			local container, tabIndex = ...
+			function ClearMenu(...)
+				ClearMenu = orgClearMenu
+				ClearMenu(...)
 				addon.events:FireCallbacks("ContextMenuInsertBefore", container, tabIndex)
 			end
-		end
-		function ShowMenu(...)
-			ShowMenu = orgShowMenu
-			if not ZO_Dialogs_IsShowingDialog() then
+			function ShowMenu(...)
+				ShowMenu = orgShowMenu
 				addon.events:FireCallbacks("ContextMenuAppendAfter", container, tabIndex)
+				return ShowMenu(...)
 			end
-			return ShowMenu(...)
+		end
+		return orgShowContextMenu(...)
+	end
+end
+
+do
+	local orgShowContextMenu = SharedChatSystem.ShowPlayerContextMenu
+	function SharedChatSystem.ShowPlayerContextMenu(...)
+		local orgClearMenu = ClearMenu
+		local orgShowMenu = ShowMenu
+
+		if not ZO_Dialogs_IsShowingDialog() then
+			local chat, playerName, rawName = ...
+			function ClearMenu(...)
+				ClearMenu = orgClearMenu
+				ClearMenu(...)
+				addon.events:FireCallbacks("PlayerContextMenuInsertBefore", chat, playerName, rawName)
+			end
+			function ShowMenu(...)
+				ShowMenu = orgShowMenu
+				addon.events:FireCallbacks("PlayerContextMenuAppendAfter", chat, playerName, rawName)
+				return ShowMenu(...)
+			end
 		end
 		return orgShowContextMenu(...)
 	end

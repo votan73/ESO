@@ -1,4 +1,4 @@
-local MAJOR, MINOR = "LibAsync", 1.4
+local MAJOR, MINOR = "LibAsync", 1.6
 local async, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 if not async then return end -- the same or newer version of this lib is already loaded into memory
 
@@ -48,7 +48,7 @@ local function DoJob(job)
 	if call then
 		DoCallback(job, index)
 	else
-		assert(index == 0, "No call on non-empty stack?!")
+		-- assert(index == 0, "No call on non-empty stack?!")
 		jobs[job.name] = nil
 		call = job.finally
 		if call then pcall(safeCall) end
@@ -57,27 +57,32 @@ local function DoJob(job)
 end
 
 -- time we can spend until the next frame must be shown
-local frameTimeTarget = 13
+local frameTimeTarget = GetCVar("VSYNC") == "1" and 14 or(tonumber(GetCVar("MinFrameTime.2")) * 1000)
+
 -- we allow a function to use 25% of the frame time before it gets critical
 local spendTimeDef = frameTimeTarget * 0.75
-local spendTimeDefNoHUD = spendTimeDef * 1.54
+local spendTimeDefNoHUD = 15
 local spendTime = spendTimeDef
 
 local debug = false
 
+local running
 local GetFrameTimeMilliseconds, GetGameTimeMilliseconds = GetFrameTimeMilliseconds, GetGameTimeMilliseconds
-local identifier = "ASYNCTASKS_JOBS"
 
 local function GetThreshold()
 	return(HUD_SCENE:IsShowing() or HUD_UI_SCENE:IsShowing()) and spendTimeDef or spendTimeDefNoHUD
 end
 
 local job = nil
+local cpuLoad = 0
 local function Scheduler()
+	if not running then return end
+
+	job = nil
 	local start = GetFrameTimeMilliseconds()
-	local runTime = start
-	if (GetGameTimeMilliseconds() - start) > spendTime then
-		spendTime = 750 / GetFramerate()
+	local runTime, cpuLoad = start, GetGameTimeMilliseconds() - start
+	if cpuLoad > spendTime then
+		spendTime = math.min(30, spendTime + spendTime * 0.02)
 		if debug then
 			df("initial gap: %ims. skip. new threshold: %ims", GetGameTimeMilliseconds() - start, spendTime)
 		end
@@ -92,20 +97,21 @@ local function Scheduler()
 		if job then
 			runTime = GetGameTimeMilliseconds()
 			DoJob(job)
+			spendTime = spendTime - 0.001
 		else
 			-- Finished
-			em:UnregisterForUpdate(identifier)
+			running = false
 			spendTime = GetThreshold()
-		return
+			return
 		end
 	end
-	spendTime = GetThreshold()
+	-- spendTime = GetThreshold()
 	if debug and job then
 		local now = GetGameTimeMilliseconds()
 		local freezeTime = now - start
 		if freezeTime >= 16 then
 			runTime = now - runTime
-			df("%s freeze. used %ims, resulting frametime %ims.", job.name, runTime, freezeTime)
+			df("%s freeze. allowed: %ims, used %ims, resulting fps %i.", job.name, spendTime, runTime, 1000 / freezeTime)
 		end
 	end
 end
@@ -116,6 +122,10 @@ end
 
 function async:SetDebug(enabled)
 	debug = enabled
+end
+
+function async:GetCpuLoad()
+	return cpuLoad / frameTimeTarget
 end
 
 -- Class task
@@ -139,8 +149,8 @@ end
 
 -- Resume the execution context.
 function task:Resume()
+	running = true
 	jobs[self.name] = self
-	em:RegisterForUpdate(identifier, 0, Scheduler)
 	return self
 end
 
@@ -174,7 +184,7 @@ do
 	local insert = table.insert
 	-- Continue your task context execution with the given FuncOfTask after the previous as finished.
 	function task:Then(funcOfTask)
-		assert(self.lastCallIndex > 0 and self.lastCallIndex <= #self.callstack, "cap!")
+		-- assert(self.lastCallIndex > 0 and self.lastCallIndex <= #self.callstack, "cap!")
 		insert(self.callstack, self.lastCallIndex, funcOfTask)
 		return self
 	end
@@ -338,3 +348,22 @@ end
 -- async.BREAK is the new 'break' for breaking loops. As Lua would not allowed the keyword 'break' in that context.
 -- To break a for-loop, return async.BREAK
 async.BREAK = true
+
+local function stateChange(oldState, newState)
+	if newState == SCENE_SHOWN or newState == SCENE_HIDING then
+		spendTime = GetThreshold()
+	end
+end
+
+local identifier = "ASYNCTASKS_JOBS"
+
+HUD_SCENE:RegisterCallback("StateChange", stateChange)
+HUD_UI_SCENE:RegisterCallback("StateChange", stateChange)
+
+function async:Unload()
+	HUD_SCENE:UnregisterCallback("StateChange", stateChange)
+	HUD_UI_SCENE:UnregisterCallback("StateChange", stateChange)
+end
+
+em:UnregisterForUpdate(identifier)
+em:RegisterForUpdate(identifier, 0, Scheduler)
