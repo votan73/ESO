@@ -2,7 +2,7 @@
 -- thanks to: baertram & circonian
 
 -- Register with LibStub
-local MAJOR, MINOR = "LibCustomMenu", 6.3
+local MAJOR, MINOR = "LibCustomMenu", 6.5
 local lib, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end -- the same or newer version of this lib is already loaded into memory
 
@@ -478,6 +478,25 @@ local function DividerFactory(pool)
 end
 
 ---- Hook points for context menu -----
+local function PreHook(objectTable, existingFunctionName, hookFunction)
+	if type(objectTable) == "string" then
+		hookFunction = existingFunctionName
+		existingFunctionName = objectTable
+		objectTable = _G
+	end
+
+	local existingFn = objectTable[existingFunctionName]
+	local newFn
+	if existingFn and type(existingFn) == "function" then
+		newFn = function(...)
+			hookFunction(...)
+			return existingFn(...)
+		end
+	else
+		newFn = hookFunction
+	end
+	objectTable[existingFunctionName] = newFn
+end
 
 local function HookContextMenu()
 	local category, registry, inventorySlot, slotActions, entered
@@ -518,13 +537,14 @@ local function HookContextMenu()
 			Reset()
 		end
 	end
+	Reset()
 
-	ZO_PreHook("ZO_InventorySlot_RemoveMouseOverKeybinds", RemoveMouseOverKeybinds)
-	ZO_PreHook("ZO_InventorySlot_OnMouseExit", RemoveMouseOverKeybinds)
-	ZO_PreHook("ZO_InventorySlot_DiscoverSlotActionsFromActionList", AddSlots)
-	ZO_PreHook(ZO_InventorySlotActions, "AddSlotAction", InsertToMenu)
-	ZO_PreHook(ZO_InventorySlotActions, "Show", AppendToMenu)
-	ZO_PreHook(ZO_InventorySlotActions, "GetPrimaryActionName", AppendToMenu)
+	PreHook("ZO_InventorySlot_RemoveMouseOverKeybinds", RemoveMouseOverKeybinds)
+	PreHook("ZO_InventorySlot_OnMouseExit", RemoveMouseOverKeybinds)
+	PreHook("ZO_InventorySlot_DiscoverSlotActionsFromActionList", AddSlots)
+	PreHook(ZO_InventorySlotActions, "AddSlotAction", InsertToMenu)
+	PreHook(ZO_InventorySlotActions, "Show", AppendToMenu)
+	PreHook(ZO_InventorySlotActions, "GetPrimaryActionName", AppendToMenu)
 end
 
 ----- Public API -----
