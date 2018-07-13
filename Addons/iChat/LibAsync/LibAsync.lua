@@ -1,4 +1,4 @@
-local MAJOR, MINOR = "LibAsync", 1.6
+local MAJOR, MINOR = "LibAsync", 1.7
 local async, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 if not async then return end -- the same or newer version of this lib is already loaded into memory
 
@@ -75,6 +75,7 @@ end
 
 local job = nil
 local cpuLoad = 0
+local name
 local function Scheduler()
 	if not running then return end
 
@@ -91,9 +92,9 @@ local function Scheduler()
 	if debug then
 		df("initial gap: %ims", GetGameTimeMilliseconds() - start)
 	end
-	local name
 	while (GetGameTimeMilliseconds() - start) <= spendTime do
-		name, job = next(jobs)
+		name, job = next(jobs, name)
+		if not job then name, job = next(jobs) end
 		if job then
 			runTime = GetGameTimeMilliseconds()
 			DoJob(job)
