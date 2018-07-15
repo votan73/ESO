@@ -1,8 +1,13 @@
-## Title: Harven's Addon Settins
-## APIVersion: 100021
-## AddOnVersion: 4
-## Version: 4
+; This Add-on is not created by, affiliated with or sponsored by ZeniMax
+; Media Inc. or its affiliates. The Elder Scrolls® and related logos are
+; registered trademarks or trademarks of ZeniMax Media Inc. in the United
+; States and/or other countries. All rights reserved.
+
+## Title: Harven's Addon Settings
+## Description: Library to add your addon settings to the common settings page. The functionality is similar to great Seerah's LibAddonMenu addon but it's written from scratch.
+## APIVersion: 100023 100024
+## Version: 7.1
+## AddOnVersion: 710
+## DependsOn: LibStub
 
 LibHarvensAddonSettings.lua
-
-## This Add-On is not created by, affiliated with or sponsored by ZeniMax Media Inc. or its affiliates. The Elder Scrolls® and related logos are registered trademarks or trademarks of ZeniMax Media Inc. in the United States and/or other countries. All rights reserved.
