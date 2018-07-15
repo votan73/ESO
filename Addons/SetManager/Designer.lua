@@ -105,7 +105,7 @@ function designer:UpdateSetsList()
 		ZO_ScrollList_AddCategory(scrollList, categoryId)
 	end
 
-	local format, createLink = zo_strformat, string.format
+	local format, createLink = ZO_CachedStrFormat, string.format
 	local GetItemLinkSetInfo, ZO_ScrollList_CreateDataEntry = GetItemLinkSetInfo, ZO_ScrollList_CreateDataEntry
 
 	local sets = addon.allSets
