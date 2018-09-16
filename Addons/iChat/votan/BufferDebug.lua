@@ -4,6 +4,13 @@ local task = addon.task
 
 local orgAddMessage = SharedChatSystem.AddMessage
 local buffer = { }
+
+local orgGetGuiHidden = GetGuiHidden
+function GetGuiHidden(...)
+	if buffer then return true end
+	return orgGetGuiHidden(...)
+end
+
 function SharedChatSystem:AddMessage(text)
 	buffer[#buffer + 1] = text
 end

@@ -46,7 +46,7 @@ end
 -- end
 
 function addon:InitSettings()
-	local LibHarvensAddonSettings = LibStub("LibHarvensAddonSettings-1.0")
+	local LibHarvensAddonSettings = LibStub("LibHarvensAddonSettings-1.0", LibStub.SILENT)
 	if not LibHarvensAddonSettings then return end
 
 	local settings = LibHarvensAddonSettings:AddAddon("iChat")

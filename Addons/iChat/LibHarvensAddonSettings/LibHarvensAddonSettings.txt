@@ -5,9 +5,9 @@
 
 ## Title: Harven's Addon Settings
 ## Description: Library to add your addon settings to the common settings page. The functionality is similar to great Seerah's LibAddonMenu addon but it's written from scratch.
-## APIVersion: 100023 100024
-## Version: 7.1
-## AddOnVersion: 710
+## APIVersion: 100024
+## Version: 7.2
+## AddOnVersion: 720
 ## DependsOn: LibStub
 
 LibHarvensAddonSettings.lua

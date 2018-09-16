@@ -1,4 +1,4 @@
-local version = 7.1
+local version = 7.2
 local LibHarvensAddonSettings = LibStub:NewLibrary("LibHarvensAddonSettings-1.0", version)
 if not LibHarvensAddonSettings then return end
 
@@ -70,7 +70,7 @@ local changeControlStateFunctions = {
 		GetControl(editBackdrop, "Edit"):SetEditEnabled(state)
 	end,
 	[LibHarvensAddonSettings.ST_COLOR] = function(control, state)
-		local color = GetControl(control, "Color")
+		local color = GetControl(control, "ColorSection")
 		color:SetMouseEnabled(state)
 		color:SetAlpha(alphaStates[state])
 	end
@@ -148,9 +148,9 @@ local updateControlFunctions = {
 	end,
 	[LibHarvensAddonSettings.ST_COLOR] = function(self, lastControl)
 		self:SetAnchor(lastControl)
-		local label = GetControl(self.control, "Label")
+		local label = GetControl(self.control, "Name")
 		label:SetText(self:GetValueOrCallback(self.labelText))
-		self.control.texture:SetColor(self.getFunction())
+		self.control:GetNamedChild("Color"):SetColor(self.getFunction())
 		return self.control
 	end,
 }
@@ -236,14 +236,13 @@ local createControlFunctions = {
 	[LibHarvensAddonSettings.ST_COLOR] = function(self, lastControl)
 		self.control, self.controlKey = LibHarvensAddonSettings.colorPool:AcquireObject()
 		self.control.data = setmetatable( { }, { _index = self })
-		local color = self.control:GetNamedChild("Color")
-		self.control.texture = color:GetNamedChild("Texture")
+		self.control.texture = self.control:GetNamedChild("Color")
 		updateControlFunctions[LibHarvensAddonSettings.ST_COLOR](self, lastControl)
 		local function OnColorSet(re, gr, bl, al)
 			self:ValueChanged(re, gr, bl, al)
 			self.control.texture:SetColor(self.getFunction())
 		end
-		color:SetHandler("OnMouseUp", function()
+		self.control:GetNamedChild("ColorSection"):SetHandler("OnMouseUp", function()
 			COLOR_PICKER:Show(OnColorSet, self.getFunction())
 		end )
 		return self.control
@@ -285,8 +284,8 @@ local cleanControlFunctions = {
 		LibHarvensAddonSettings.sectionPool:ReleaseObject(self.controlKey)
 	end,
 	[LibHarvensAddonSettings.ST_COLOR] = function(self)
-		GetControl(self.control, "Label"):SetText(nil)
-		self.control:GetNamedChild("Color"):SetHandler("OnMouseUp", nil)
+		GetControl(self.control, "Name"):SetText(nil)
+		self.control:GetNamedChild("ColorSection"):SetHandler("OnMouseUp", nil)
 		LibHarvensAddonSettings.colorPool:ReleaseObject(self.controlKey)
 	end,
 }
@@ -890,7 +889,7 @@ function LibHarvensAddonSettings:CreateControlPools()
 	self.dropdownPool = ZO_ControlPool:New("ZO_Options_Dropdown", self.container, "Dropdown")
 	self.labelPool = ZO_ObjectPool:New(LabelPoolCreateLabel)
 	self.sectionPool = ZO_ControlPool:New("ZO_Options_SectionTitle_WithDivider", self.container, "SectionLabel")
-	self.colorPool = ZO_ControlPool:New("Options_Social_ColorOption", self.container, "Color")
+	self.colorPool = ZO_ControlPool:New("ZO_Options_Color", self.container, "Color")
 end
 
 function LibHarvensAddonSettings:CreateAddonList()
