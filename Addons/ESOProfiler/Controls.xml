@@ -1,0 +1,148 @@
+<GuiXml>
+  <Controls>
+    <Label name="ESOProfilerLabel" virtual="true" inherits="ZO_FriendsListRowLabel" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_NORMAL" mouseEnabled="false" />
+    <Label name="ESOProfilerNumLabel" virtual="true" inherits="ESOProfilerLabel" horizontalAlignment="RIGHT"/>
+    <Control name="ESOProfilerRow" virtual="true" mouseEnabled="true">
+      <Dimensions x="800" y="24" />
+      <OnMouseEnter>
+        ZO_ScrollList_MouseEnter(ESO_PROFILER.contentList, self)
+      </OnMouseEnter>
+      <OnMouseExit>
+        ZO_ScrollList_MouseExit(ESO_PROFILER.contentList,self)
+      </OnMouseExit>
+      <OnMouseUp>
+        if not upInside then return end
+        if button ~= MOUSE_BUTTON_INDEX_RIGHT then
+        ZO_ScrollList_MouseClick(ESO_PROFILER.contentList, self)
+        else
+        ESO_PROFILER:ShowContextMenu(self)
+        end
+      </OnMouseUp>
+      <Controls>
+        <Label name="$(parent)Name" inherits="ESOProfilerLabel" verticalAlignment="CENTER">
+          <Anchor point="TOPLEFT" relativePoint="TOPLEFT" relativeTo="$(parent)" offsetX="0"/>
+          <Dimensions x="540" y="24"/>
+        </Label>
+        <Label name="$(parent)IncludeTime" inherits="ESOProfilerNumLabel" verticalAlignment="CENTER">
+          <Anchor point="TOPLEFT" relativePoint="TOPRIGHT" relativeTo="$(parent)Name" offsetX="2"/>
+          <Dimensions x="64" y="24"/>
+        </Label>
+        <Label name="$(parent)IncludeTimeMin" inherits="ESOProfilerNumLabel" verticalAlignment="CENTER">
+          <Anchor point="TOPLEFT" relativePoint="TOPRIGHT" relativeTo="$(parent)IncludeTime" offsetX="2"/>
+          <Dimensions x="64" y="24"/>
+        </Label>
+        <Label name="$(parent)IncludeTimeMax" inherits="ESOProfilerNumLabel" verticalAlignment="CENTER">
+          <Anchor point="TOPLEFT" relativePoint="TOPRIGHT" relativeTo="$(parent)IncludeTimeMin" offsetX="2"/>
+          <Dimensions x="64" y="24"/>
+        </Label>
+        <Label name="$(parent)ExcludeTime" inherits="ESOProfilerNumLabel" verticalAlignment="CENTER">
+          <Anchor point="TOPLEFT" relativePoint="TOPRIGHT" relativeTo="$(parent)IncludeTimeMax" offsetX="2"/>
+          <Dimensions x="64" y="24"/>
+        </Label>
+        <Label name="$(parent)Count" inherits="ESOProfilerNumLabel" verticalAlignment="CENTER">
+          <Anchor point="TOPLEFT" relativePoint="TOPRIGHT" relativeTo="$(parent)ExcludeTime" offsetX="2"/>
+          <Dimensions x="80" y="24"/>
+        </Label>
+      </Controls>
+    </Control>
+    <TopLevelControl name="ESOProfilerTopLevel" inherits="ZO_RightPanelFootPrint" hidden="true">
+      <Controls>
+        <Control name="$(parent)Content">
+          <Anchor point="TOPLEFT" offsetY="5" />
+          <Anchor point="BOTTOMRIGHT" offsetX="-5" />
+
+          <Controls>
+            <EditBox name="$(parent)SearchBox" font="ZoFontWinT1" inherits="ZO_DefaultEdit ZO_EditDefaultText">
+              <Dimensions x="540" />
+              <Anchor point="TOPLEFT" offsetY="4" />
+              <OnInitialized>
+                ZO_EditDefaultText_Initialize(self, GetString(SI_ITEM_FILTER_BY_TEXT))
+              </OnInitialized>
+
+              <OnEscape>
+                ESO_PROFILER:EndSearch(self)
+              </OnEscape>
+
+              <OnTextChanged>
+                ZO_EditDefaultText_OnTextChanged(self)
+                --ESO_PROFILER:OnSearchTextChanged(self)
+              </OnTextChanged>
+
+              <OnEnter>
+                ESO_PROFILER:OnSearchEnterKeyPressed(self)
+              </OnEnter>
+
+              <Controls>
+                <Backdrop name="$(parent)Bg" inherits="ZO_EditBackdrop">
+                  <AnchorFill />
+                </Backdrop>
+              </Controls>
+            </EditBox>
+            <Control name="$(parent)SortBy" inherits="ZO_InventorySortHeaders">
+              <Anchor point="TOPLEFT" />
+              <Anchor point="TOPRIGHT" offsetY="32" />
+              <Controls>
+                <Control name="$(parent)Name" verticalAlignment="CENTER" inherits="ZO_SortHeader">
+                  <Anchor point="TOPLEFT" relativePoint="TOPLEFT" relativeTo="$(parent)" offsetX="0"/>
+                  <Dimensions x="540" y="24"/>
+                  <OnInitialized>
+                    ZO_PlayerInventory_InitSortHeader(self, SI_JOURNAL_MENU_ESO_PROFILER_NAME, TEXT_ALIGN_LEFT, "name", ZO_SORT_ORDER_UP)
+                  </OnInitialized>
+                </Control>
+                <Control name="$(parent)IncludeTime" verticalAlignment="CENTER" inherits="ZO_SortHeader">
+                  <Anchor point="TOPLEFT" relativePoint="TOPRIGHT" relativeTo="$(parent)Name" offsetX="2"/>
+                  <Dimensions x="64" y="24"/>
+                  <OnInitialized>
+                    ZO_PlayerInventory_InitSortHeader(self, SI_JOURNAL_MENU_ESO_PROFILER_INCLUDE_TIME, TEXT_ALIGN_RIGHT, "includeTime", ZO_SORT_ORDER_DOWN)
+                    ZO_SortHeader_SetTooltip(self, GetString(SI_JOURNAL_MENU_ESO_PROFILER_INCLUDE_TIME_TOOLTIP), BOTTOMRIGHT, 0, 32)
+                  </OnInitialized>
+                </Control>
+                <Control name="$(parent)IncludeTimeMin" verticalAlignment="CENTER" inherits="ZO_SortHeader">
+                  <Anchor point="TOPLEFT" relativePoint="TOPRIGHT" relativeTo="$(parent)IncludeTime" offsetX="2"/>
+                  <Dimensions x="64" y="24"/>
+                  <OnInitialized>
+                    ZO_PlayerInventory_InitSortHeader(self, SI_JOURNAL_MENU_ESO_PROFILER_INCLUDE_TIME_MIN, TEXT_ALIGN_RIGHT, "includeTimeMin", ZO_SORT_ORDER_DOWN)
+                    ZO_SortHeader_SetTooltip(self, GetString(SI_JOURNAL_MENU_ESO_PROFILER_INCLUDE_TIME_MIN_TOOLTIP), BOTTOMRIGHT, 0, 32)
+                  </OnInitialized>
+                </Control>
+                <Control name="$(parent)IncludeTimeMax" verticalAlignment="CENTER" inherits="ZO_SortHeader">
+                  <Anchor point="TOPLEFT" relativePoint="TOPRIGHT" relativeTo="$(parent)IncludeTimeMin" offsetX="2"/>
+                  <Dimensions x="64" y="24"/>
+                  <OnInitialized>
+                    ZO_PlayerInventory_InitSortHeader(self, SI_JOURNAL_MENU_ESO_PROFILER_INCLUDE_TIME_MAX, TEXT_ALIGN_RIGHT, "includeTimeMax", ZO_SORT_ORDER_DOWN)
+                    ZO_SortHeader_SetTooltip(self, GetString(SI_JOURNAL_MENU_ESO_PROFILER_INCLUDE_TIME_MAX_TOOLTIP), BOTTOMRIGHT, 0, 32)
+                  </OnInitialized>
+                </Control>
+                <Control name="$(parent)ExcludeTime" verticalAlignment="CENTER" inherits="ZO_SortHeader">
+                  <Anchor point="TOPLEFT" relativePoint="TOPRIGHT" relativeTo="$(parent)IncludeTimeMax" offsetX="2"/>
+                  <Dimensions x="64" y="24"/>
+                  <OnInitialized>
+                    ZO_PlayerInventory_InitSortHeader(self, SI_JOURNAL_MENU_ESO_PROFILER_EXCLUDE_TIME, TEXT_ALIGN_RIGHT, "excludeTime", ZO_SORT_ORDER_DOWN)
+                    ZO_SortHeader_SetTooltip(self, GetString(SI_JOURNAL_MENU_ESO_PROFILER_EXCLUDE_TIME_TOOLTIP), BOTTOMRIGHT, 0, 32)
+                  </OnInitialized>
+                </Control>
+                <Control name="$(parent)Count" verticalAlignment="CENTER" inherits="ZO_SortHeader">
+                  <Anchor point="TOPLEFT" relativePoint="TOPRIGHT" relativeTo="$(parent)ExcludeTime" offsetX="2"/>
+                  <Dimensions x="80" y="24"/>
+                  <OnInitialized>
+                    ZO_PlayerInventory_InitSortHeader(self, SI_JOURNAL_MENU_ESO_PROFILER_EXCLUDE_COUNT, TEXT_ALIGN_RIGHT, "count", ZO_SORT_ORDER_DOWN)
+                    ZO_SortHeader_SetTooltip(self, GetString(SI_JOURNAL_MENU_ESO_PROFILER_EXCLUDE_COUNT_TOOLTIP), BOTTOMRIGHT, 0, 32)
+                  </OnInitialized>
+                </Control>
+              </Controls>
+            </Control>
+
+            <Control name="$(parent)List" inherits="ZO_ScrollList">
+              <Anchor point="TOPLEFT" offsetY="56" />
+              <Anchor point="BOTTOMRIGHT" offsetX="0" />
+            </Control>
+          </Controls>
+        </Control>
+        <StatusBar name="$(parent)LoadingBar" inherits="ZO_DefaultStatusBarBG">
+          <Anchor point="BOTTOMLEFT" offsetX="24" />
+          <Anchor point="BOTTOMRIGHT" offsetX="-24" />
+        </StatusBar>
+      </Controls>
+    </TopLevelControl>
+  </Controls>
+</GuiXml>

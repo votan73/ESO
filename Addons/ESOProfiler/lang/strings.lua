@@ -1,0 +1,18 @@
+ZO_CreateStringId("SI_KEYBINDINGS_CATEGORY_ESO_PROFILER", "ESO Profiler")
+ZO_CreateStringId("SI_BINDING_NAME_ESO_PROFILER_TOGGLE", "Toggle Profiling")
+
+ZO_CreateStringId("SI_JOURNAL_MENU_ESO_PROFILER_START", "Start Profiler")
+ZO_CreateStringId("SI_JOURNAL_MENU_ESO_PROFILER_STOP", "Stop Profiler")
+
+ZO_CreateStringId("SI_JOURNAL_MENU_ESO_PROFILER", "ESO Profiler")
+ZO_CreateStringId("SI_JOURNAL_MENU_ESO_PROFILER_NAME", "Source Location")
+ZO_CreateStringId("SI_JOURNAL_MENU_ESO_PROFILER_INCLUDE_TIME", "Time")
+ZO_CreateStringId("SI_JOURNAL_MENU_ESO_PROFILER_INCLUDE_TIME_TOOLTIP", "Average time spend (ms), including sub-calls. Sorting includes number of calls.")
+ZO_CreateStringId("SI_JOURNAL_MENU_ESO_PROFILER_INCLUDE_TIME_MIN", "Min.")
+ZO_CreateStringId("SI_JOURNAL_MENU_ESO_PROFILER_INCLUDE_TIME_MIN_TOOLTIP", "Fastest run (ms), including sub-calls.")
+ZO_CreateStringId("SI_JOURNAL_MENU_ESO_PROFILER_INCLUDE_TIME_MAX", "Max.")
+ZO_CreateStringId("SI_JOURNAL_MENU_ESO_PROFILER_INCLUDE_TIME_MAX_TOOLTIP", "Slowest run (ms), including sub-calls.")
+ZO_CreateStringId("SI_JOURNAL_MENU_ESO_PROFILER_EXCLUDE_TIME", "Excl.")
+ZO_CreateStringId("SI_JOURNAL_MENU_ESO_PROFILER_EXCLUDE_TIME_TOOLTIP", "Average time spend (ms) without sub-calls. Sorting includes number of calls.")
+ZO_CreateStringId("SI_JOURNAL_MENU_ESO_PROFILER_EXCLUDE_COUNT", "Count")
+ZO_CreateStringId("SI_JOURNAL_MENU_ESO_PROFILER_EXCLUDE_COUNT_TOOLTIP", "Total number of calls.")
