@@ -1,3 +1,5 @@
+if GetAPIVersion() < 100025 then return end
+
 local ProfilerData = ZO_Object:Subclass()
 ESO_PROFILER.ProfilerData = ProfilerData
 
