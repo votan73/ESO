@@ -86,14 +86,14 @@
               <Anchor point="TOPLEFT" />
               <Anchor point="TOPRIGHT" offsetY="32" />
               <Controls>
-                <Control name="$(parent)Name" verticalAlignment="CENTER" inherits="ZO_SortHeader">
+                <Control name="$(parent)Name" inherits="ZO_SortHeader">
                   <Anchor point="TOPLEFT" relativePoint="TOPLEFT" relativeTo="$(parent)" offsetX="0"/>
                   <Dimensions x="540" y="24"/>
                   <OnInitialized>
                     ZO_PlayerInventory_InitSortHeader(self, SI_JOURNAL_MENU_ESO_PROFILER_NAME, TEXT_ALIGN_LEFT, "name", ZO_SORT_ORDER_UP)
                   </OnInitialized>
                 </Control>
-                <Control name="$(parent)IncludeTime" verticalAlignment="CENTER" inherits="ZO_SortHeader">
+                <Control name="$(parent)IncludeTime" inherits="ZO_SortHeader">
                   <Anchor point="TOPLEFT" relativePoint="TOPRIGHT" relativeTo="$(parent)Name" offsetX="2"/>
                   <Dimensions x="64" y="24"/>
                   <OnInitialized>
@@ -101,7 +101,7 @@
                     ZO_SortHeader_SetTooltip(self, GetString(SI_JOURNAL_MENU_ESO_PROFILER_INCLUDE_TIME_TOOLTIP), BOTTOMRIGHT, 0, 32)
                   </OnInitialized>
                 </Control>
-                <Control name="$(parent)IncludeTimeMin" verticalAlignment="CENTER" inherits="ZO_SortHeader">
+                <Control name="$(parent)IncludeTimeMin" inherits="ZO_SortHeader">
                   <Anchor point="TOPLEFT" relativePoint="TOPRIGHT" relativeTo="$(parent)IncludeTime" offsetX="2"/>
                   <Dimensions x="64" y="24"/>
                   <OnInitialized>
@@ -109,7 +109,7 @@
                     ZO_SortHeader_SetTooltip(self, GetString(SI_JOURNAL_MENU_ESO_PROFILER_INCLUDE_TIME_MIN_TOOLTIP), BOTTOMRIGHT, 0, 32)
                   </OnInitialized>
                 </Control>
-                <Control name="$(parent)IncludeTimeMax" verticalAlignment="CENTER" inherits="ZO_SortHeader">
+                <Control name="$(parent)IncludeTimeMax" inherits="ZO_SortHeader">
                   <Anchor point="TOPLEFT" relativePoint="TOPRIGHT" relativeTo="$(parent)IncludeTimeMin" offsetX="2"/>
                   <Dimensions x="64" y="24"/>
                   <OnInitialized>
@@ -117,7 +117,7 @@
                     ZO_SortHeader_SetTooltip(self, GetString(SI_JOURNAL_MENU_ESO_PROFILER_INCLUDE_TIME_MAX_TOOLTIP), BOTTOMRIGHT, 0, 32)
                   </OnInitialized>
                 </Control>
-                <Control name="$(parent)ExcludeTime" verticalAlignment="CENTER" inherits="ZO_SortHeader">
+                <Control name="$(parent)ExcludeTime" inherits="ZO_SortHeader">
                   <Anchor point="TOPLEFT" relativePoint="TOPRIGHT" relativeTo="$(parent)IncludeTimeMax" offsetX="2"/>
                   <Dimensions x="64" y="24"/>
                   <OnInitialized>
@@ -125,7 +125,7 @@
                     ZO_SortHeader_SetTooltip(self, GetString(SI_JOURNAL_MENU_ESO_PROFILER_EXCLUDE_TIME_TOOLTIP), BOTTOMRIGHT, 0, 32)
                   </OnInitialized>
                 </Control>
-                <Control name="$(parent)Count" verticalAlignment="CENTER" inherits="ZO_SortHeader">
+                <Control name="$(parent)Count" inherits="ZO_SortHeader">
                   <Anchor point="TOPLEFT" relativePoint="TOPRIGHT" relativeTo="$(parent)ExcludeTime" offsetX="2"/>
                   <Dimensions x="80" y="24"/>
                   <OnInitialized>
