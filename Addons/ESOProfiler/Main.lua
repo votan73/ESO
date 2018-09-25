@@ -21,7 +21,7 @@ do
 		addon.startTime = GetTimeStamp()
 		addon.profiling = true
 		UpdateKeybind()
-        d("Start profiler....")
+		d("Start profiler....")
 		return orgStartScriptProfiler()
 	end
 	local orgStopScriptProfiler = StopScriptProfiler
@@ -30,7 +30,7 @@ do
 		addon.profiling = false
 		addon.hasProfile = true
 		UpdateKeybind()
-        d("Profiler stopped ....")
+		d("Profiler stopped ....")
 		return orgStopScriptProfiler()
 	end
 end
@@ -48,7 +48,7 @@ function addon:GenerateReport()
 	local recordDataByRecordType = {
 		[SCRIPT_PROFILER_RECORD_TYPE_CLOSURE] = { },
 	}
-    profile = recordDataByRecordType
+	profile = recordDataByRecordType
 
 	local GetScriptProfilerClosureInfo = GetScriptProfilerClosureInfo
 	local function GetOrCreateRecordData(recordType, recordDataIndex)
@@ -116,7 +116,7 @@ function addon:GenerateReport()
 	end
 
 	local _, upTime = GetScriptProfilerRecordInfo(1, 1)
-	local profilerData = ESO_PROFILER.ProfilerData:New(self.startTime, upTime)
+	local profilerData = self.ProfilerData:New(self.startTime, upTime)
 	self.profilerData = profilerData
 
 	local numFrames = GetScriptProfilerNumFrames()
@@ -145,7 +145,7 @@ function addon:PrintReport()
 	local ZO_ScrollList_CreateDataEntry = ZO_ScrollList_CreateDataEntry
 	local text = self.searchBox:GetText()
 	if text == "" then
-        task:For(pairs(profile)):Do( function(recordType, recordDatas)
+		task:For(pairs(profile)):Do( function(recordType, recordDatas)
 			task:For(pairs(recordDatas)):Do( function(recordDataIndex, recordData)
 				dataList[#dataList + 1] = ZO_ScrollList_CreateDataEntry(recordType, recordData)
 			end )
@@ -154,7 +154,7 @@ function addon:PrintReport()
 		text = text:lower()
 		local zo_plainstrfind = zo_plainstrfind
 		local line = tonumber(text)
-        task:For(pairs(profile)):Do( function(recordType, recordDatas)
+		task:For(pairs(profile)):Do( function(recordType, recordDatas)
 			task:For(pairs(recordDatas)):Do( function(recordDataIndex, recordData)
 				if zo_plainstrfind(recordData.name:lower(), text) or zo_plainstrfind(recordData.filename:lower(), text) or line == recordData.lineDefined then
 					dataList[#dataList + 1] = ZO_ScrollList_CreateDataEntry(recordType, recordData)
@@ -169,9 +169,18 @@ function addon:PrintReport()
 end
 
 function addon:Export()
-	if(self.profilerData) then
-		ESOProfiler_Export = self.profilerData:Export()
-		ReloadUI()
+	if (self.profilerData) then
+		local content = self.control:GetNamedChild("Content")
+		content:SetHidden(true)
+		-- we reload ui anyway
+		local loading = WINDOW_MANAGER:CreateControlFromVirtual("$(parent)Loading", self.control, "ZO_Loading")
+		loading:SetAnchor(CENTER)
+		ZO_Loading_Initialize(loading, "Exporting ...")
+		loading:Show()
+
+		task:Call( function(task)
+			ESOProfiler_Export = self.profilerData:Export(task)
+		end ):Then( function() return ReloadUI() end)
 	end
 end
 ----------------------------------
@@ -212,12 +221,27 @@ do
 		ZO_ClearNumericallyIndexedTable(text)
 		text[#text + 1] = string.format("%s in %s:%i", selectedData.name, selectedData.filename, selectedData.lineDefined)
 		text[#text + 1] = ""
-		text[#text + 1] = string.format("Time: %.5fms", selectedData.includeTime / count)
-		text[#text + 1] = string.format("Fastest: %.5fms", selectedData.includeTimeMin)
-		text[#text + 1] = string.format("Slowest %.5fms", selectedData.includeTimeMax)
-		text[#text + 1] = string.format("Without sub-calls %.5fms", selectedData.excludeTime / count)
+		text[#text + 1] = string.format("Time: %.5fms / Fastest: %.5fms", selectedData.includeTime / count, selectedData.includeTimeMin)
+		text[#text + 1] = string.format("Slowest %.5fms / Without sub-calls %.5fms", selectedData.includeTimeMax, selectedData.excludeTime / count)
 		text[#text + 1] = string.format("%i calls => %f per frame", count, count / self.numFrames)
 		AddLineCenter(ItemTooltip, table.concat(text, "\n"))
+
+		if selectedData.excludeTime > 0 and(selectedData.excludeTime / selectedData.includeTime) < 0.5 then
+			AddLineCenter(ItemTooltip, "Expensive sub-calls.")
+		end
+		ZO_ClearNumericallyIndexedTable(text)
+		if selectedData.calledBy then
+			text[#text + 1] = "Slowest run callstack:"
+			local num = 20
+			while num > 0 and selectedData.calledBy do
+				selectedData = selectedData.calledBy
+				num = num - 1
+				text[#text + 1] = string.format("%s (|cefefef%s:%i|r)", selectedData.name, selectedData.filename, selectedData.lineDefined)
+			end
+
+			AddLine(ItemTooltip, table.concat(text, "\n"), ZO_TOOLTIP_DEFAULT_COLOR, TEXT_ALIGN_LEFT)
+		end
+		ZO_ClearNumericallyIndexedTable(text)
 
 		if selectedData.excludeTime > 0 and(selectedData.excludeTime / selectedData.includeTime) < 0.5 then
 			AddLineCenter(ItemTooltip, "Expensive sub-calls.")
@@ -227,7 +251,7 @@ do
 		while num > 0 and selectedData.calledBy do
 			selectedData = selectedData.calledBy
 			num = num - 1
-            text[#text + 1] = string.format("%s (|cefefef%s:%i|r)", selectedData.name, selectedData.filename, selectedData.lineDefined)
+			text[#text + 1] = string.format("%s (|cefefef%s:%i|r)", selectedData.name, selectedData.filename, selectedData.lineDefined)
 		end
 		if #text > 0 then
 			AddLine(ItemTooltip, table.concat(text, "\n"), ZO_TOOLTIP_DEFAULT_COLOR, TEXT_ALIGN_LEFT)
