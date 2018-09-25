@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+
+<head>
+  <link rel="import" href="trace_viewer_full.html" />
+
+  <style>
+    html,
+    body {
+      box-sizing: border-box;
+      overflow: hidden;
+      margin: 0px;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    #trace-viewer {
+      width: 100%;
+      height: 100%;
+    }
+
+    #trace-viewer:focus {
+      outline: none;
+    }
+  </style>
+  <script>
+    (function () {
+      const fs = require("fs");
+      const ChromeProfilerExportConverter = require("./converter").ChromeProfilerExportConverter;
+      const path = process.cwd().replace(/Elder Scrolls Online\\(.+)\\AddOns.*/, "Elder Scrolls Online\\$1\\SavedVariables");
+      var saveButton;
+      var viewer;
+      var url;
+      var model;
+      var currentData = "";
+
+      function onResultFail(err) {
+        var overlay = new tr.ui.b.Overlay();
+        overlay.textContent = err + ': ' + url + ' could not be loaded';
+        overlay.title = 'Failed to fetch data';
+        overlay.visible = true;
+      }
+
+      function onResult(result) {
+        currentData = result;
+        model = new tr.Model();
+        var i = new tr.importer.Import(model);
+        var p = i.importTracesWithProgressDialog([result]);
+        p.then(onModelLoaded, onImportFail);
+      }
+
+      function onModelLoaded() {
+        saveButton.disabled = (currentData === "");
+        viewer.model = model;
+        viewer.viewTitle = url;
+        console.log(model)
+      }
+
+      function onImportFail(err) {
+        var overlay = new tr.ui.b.Overlay();
+        overlay.textContent = tr.b.normalizeException(err).message;
+        overlay.title = 'Import error';
+        overlay.visible = true;
+      }
+
+      function loadFile(filename) {
+        console.log("loadFile", filename);
+        url = filename;
+        saveButton.disabled = true;
+        if (filename.endsWith(".lua")) {
+          const converter = new ChromeProfilerExportConverter();
+          converter.convert(filename).then(function (data) {
+            onResult(JSON.stringify(data));
+          }, onResultFail);
+        } else {
+          onResult(fs.readFileSync(filename).toString("utf8"));
+        }
+      }
+
+      function saveFile(filename) {
+        console.log("saveFile", filename);
+        fs.writeFileSync(filename, currentData);
+      }
+
+      document.addEventListener('DOMContentLoaded', function () {
+        var container = document.createElement('track-view-container');
+        container.id = 'track_view_container';
+
+        viewer = document.createElement('tr-ui-timeline-view');
+        viewer.track_view_container = container;
+        viewer.appendChild(container);
+
+        viewer.id = 'trace-viewer';
+        viewer.globalMode = true;
+        document.body.appendChild(viewer);
+
+        let loadButton = document.getElementById("loadButton");
+        let loadInput = document.getElementById("loadInput");
+        saveButton = document.getElementById("saveButton");
+        let saveInput = document.getElementById("saveInput");
+
+        let fileButtons = document.getElementById("fileButtons");
+        document.body.removeChild(fileButtons);
+        viewer.leftControls.appendChild(fileButtons);
+
+        loadButton.addEventListener("click", e => loadInput.click());
+        loadInput.addEventListener("change", e => loadFile(loadInput.value));
+        saveButton.addEventListener("click", e => {
+          let name = "ESOProfiler";
+          if(model && model.metadata && model.metadata.length > 0 && model.metadata[0].value.startTime) {
+            name += "-" + model.metadata[0].value.startTime;
+          }
+          model.metadata[0].value.date
+          saveInput.nwsaveas=name + ".json";
+          saveInput.click();
+        });
+        saveInput.addEventListener("change", e => saveFile(saveInput.value));
+        loadInput.nwworkingdir = path + "\\ESOProfiler.lua";
+
+        if(path.endsWith("SavedVariables")) {
+          loadFile(path + "\\ESOProfiler.lua");
+        }
+      });
+    }());
+  </script>
+</head>
+
+<body>
+  <div id="fileButtons">
+    <button id="saveButton" disabled="true">Save</button>
+    <input id="saveInput" type="file" accept=".json" style="display: none" />
+    <button id="loadButton">Load</button>
+    <input id="loadInput" type="file" accept=".lua,.json" style="display: none" />
+  </div>
+</body>
+
+</html>

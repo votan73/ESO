@@ -1,4 +1,4 @@
-<GuiXml>
+<GuiXml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sir.insidi.at/or/schema/esoui.xsd">
   <Controls>
     <Label name="ESOProfilerLabel" virtual="true" inherits="ZO_FriendsListRowLabel" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_NORMAL" mouseEnabled="false" />
     <Label name="ESOProfilerNumLabel" virtual="true" inherits="ESOProfilerLabel" horizontalAlignment="RIGHT"/>
@@ -78,6 +78,10 @@
                 </Backdrop>
               </Controls>
             </EditBox>
+            <Button name="$(parent)ExportButton" inherits="ZO_DefaultButton" text="Export">
+                <Anchor point="TOPRIGHT"/>
+                <OnClicked>ESO_PROFILER:Export()</OnClicked>
+            </Button>
             <Control name="$(parent)SortBy" inherits="ZO_InventorySortHeaders">
               <Anchor point="TOPLEFT" />
               <Anchor point="TOPRIGHT" offsetY="32" />

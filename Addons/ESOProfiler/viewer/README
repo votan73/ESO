@@ -1,0 +1,2 @@
+You need to download the NW.js runtime (https://nwjs.io/) into the bin folder in order to use the viewer.
+On windows you can then just run nw.exe directly, for other systems different instructions may be necessary: https://github.com/nwjs/nw.js/wiki/how-to-run-apps
