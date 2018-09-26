@@ -7,13 +7,13 @@ local em = GetEventManager()
 local async = LibStub("LibAsync")
 local task = async:Create("ESO_PROFILER")
 
-local function UpdateKeybind()
-	if addon.keybindButtonGroup and KEYBIND_STRIP:HasKeybindButtonGroup(addon.keybindButtonGroup) then
-		KEYBIND_STRIP:UpdateKeybindButtonGroup(addon.keybindButtonGroup)
-	end
-end
-
 do
+	local function UpdateKeybind()
+		if addon.keybindButtonGroup and KEYBIND_STRIP:HasKeybindButtonGroup(addon.keybindButtonGroup) then
+			KEYBIND_STRIP:UpdateKeybindButtonGroup(addon.keybindButtonGroup)
+		end
+	end
+
 	local orgStartScriptProfiler = StartScriptProfiler
 	function StartScriptProfiler()
 		if addon.profiling then return end
@@ -89,20 +89,17 @@ function addon:GenerateReport()
 		source.excludeTime = source.excludeTime + timeMS
 		source.includeTimeMin = zo_min(source.includeTimeMin, timeMS)
 
-		local calledByData
-		if calledByRecordIndex then
-			-- TODO
-			local calledByRecordType = SCRIPT_PROFILER_RECORD_TYPE_CLOSURE
-			--
-			local calledByRecordDataIndex = GetScriptProfilerRecordInfo(frameIndex, calledByRecordIndex)
-			calledByData = GetOrCreateRecordData(calledByRecordType, calledByRecordDataIndex)
-			calledByData.excludeTime = calledByData.excludeTime - timeMS
-		else
-			calledByData = nil
-		end
 		if source.includeTimeMax < timeMS then
-			source.calledBy = calledByData
 			source.includeTimeMax = timeMS
+			if calledByRecordIndex then
+				-- TODO
+				local calledByRecordType = SCRIPT_PROFILER_RECORD_TYPE_CLOSURE
+				--
+				local calledByRecordDataIndex = GetScriptProfilerRecordInfo(frameIndex, calledByRecordIndex)
+				local calledByData = GetOrCreateRecordData(calledByRecordType, calledByRecordDataIndex)
+				calledByData.excludeTime = calledByData.excludeTime - timeMS
+				source.calledBy = calledByData
+			end
 		end
 	end
 
@@ -243,10 +240,6 @@ do
 		end
 		ZO_ClearNumericallyIndexedTable(text)
 
-		if selectedData.excludeTime > 0 and(selectedData.excludeTime / selectedData.includeTime) < 0.5 then
-			AddLineCenter(ItemTooltip, "Expensive sub-calls.")
-		end
-		ZO_ClearNumericallyIndexedTable(text)
 		local num = 20
 		while num > 0 and selectedData.calledBy do
 			selectedData = selectedData.calledBy
