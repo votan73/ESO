@@ -26,7 +26,9 @@ function ProfilerData:GetClosureInfo(recordDataIndex)
 			callCount = 0,
 			wallTime = 0,
 			selfTime = 0,
-			maxTime = 0
+			minTime = math.huge,
+			maxTime = 0,
+			slowestRun = 0
 		}
 	end
 	return self.closureInfo[recordDataIndex]
@@ -37,10 +39,6 @@ function ProfilerData:ProcessRecord(frameIndex, recordIndex)
 	local closureInfo = self:GetClosureInfo(recordDataIndex)
 	local start = (startTimeNS - self.upTime) / 1000
 	local duration = (endTimeNS - startTimeNS) / 1000
-	closureInfo.callCount = closureInfo.callCount + 1
-	closureInfo.wallTime = closureInfo.wallTime + duration
-	closureInfo.selfTime = closureInfo.selfTime + duration
-	closureInfo.maxTime = math.max(closureInfo.maxTime, duration)
 
 	local stackId, parentId
 	if (calledByRecordIndex) then
@@ -57,6 +55,15 @@ function ProfilerData:ProcessRecord(frameIndex, recordIndex)
 	else
 		stackId = self:GetStackFrameId(recordDataIndex)
 	end
+
+	closureInfo.callCount = closureInfo.callCount + 1
+	closureInfo.wallTime = closureInfo.wallTime + duration
+	closureInfo.selfTime = closureInfo.selfTime + duration
+	closureInfo.minTime = math.min(closureInfo.minTime, duration)
+	if(duration > closureInfo.maxTime) then
+		closureInfo.maxTime = duration
+		closureInfo.slowestRun = stackId
+	end
 	self.events[#self.events + 1] = { start, duration, stackId }
 	self.stackFrames[stackId] = { recordDataIndex, parentId }
 end
@@ -68,6 +75,15 @@ function ProfilerData:GetStackFrameId(recordDataIndex, parentRecordDataIndex)
 		self.nextStackFrameId = self.nextStackFrameId + 1
 	end
 	return self.frameIdLookup[key]
+end
+
+function ProfilerData:GetClosureInfoList()
+    return self.closureInfo
+end
+
+function ProfilerData:GetClosureByStackId(stackId)
+    local recordDataIndex, parentId = unpack(self.stackFrames[stackId])
+    return self.closureInfo[recordDataIndex], parentId
 end
 
 local function GetEmptySaveData(startTime, upTime)

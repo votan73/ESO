@@ -9,9 +9,9 @@ local task = async:Create("ESO_PROFILER")
 
 do
 	local function UpdateKeybind()
-		if addon.keybindButtonGroup and KEYBIND_STRIP:HasKeybindButtonGroup(addon.keybindButtonGroup) then
-			KEYBIND_STRIP:UpdateKeybindButtonGroup(addon.keybindButtonGroup)
-		end
+	if addon.keybindButtonGroup and KEYBIND_STRIP:HasKeybindButtonGroup(addon.keybindButtonGroup) then
+		KEYBIND_STRIP:UpdateKeybindButtonGroup(addon.keybindButtonGroup)
+	end
 	end
 
 	local orgStartScriptProfiler = StartScriptProfiler
@@ -37,76 +37,17 @@ end
 
 -- TODO: Someday there will be multiple record types, and they will be delineated by a SCRIPT_PROFILER_RECORD_TYPE enum.
 local SCRIPT_PROFILER_RECORD_TYPE_CLOSURE = 1
+local CLOSURE_NAME_INDEX = 1
+local CLOSURE_FILE_INDEX = 2
+local CLOSURE_LINE_INDEX = 3
 
-local profile
 function addon:GenerateReport()
 	if self.lastProfile == self.newRun or self.profiling then return end
 	self.lastProfile = self.newRun
 
-	local numRecords = 0
-
-	local recordDataByRecordType = {
-		[SCRIPT_PROFILER_RECORD_TYPE_CLOSURE] = { },
-	}
-	profile = recordDataByRecordType
-
-	local GetScriptProfilerClosureInfo = GetScriptProfilerClosureInfo
-	local function GetOrCreateRecordData(recordType, recordDataIndex)
-		local recordData = recordDataByRecordType[recordType]
-		-- assert(recordData, "Missing record type")
-		if not recordData[recordDataIndex] then
-			local data = {
-				count = 0,
-				includeTime = 0,
-				includeTimeMin = 1e99,
-				includeTimeMax = 0,
-				excludeTime = 0,
-			}
-
-			if recordType == SCRIPT_PROFILER_RECORD_TYPE_CLOSURE then
-				data.name, data.filename, data.lineDefined = GetScriptProfilerClosureInfo(recordDataIndex)
-				-- else
-				-- assert(false, "Missing record type")
-			end
-			recordData[recordDataIndex] = data
-		end
-
-		return recordData[recordDataIndex]
-	end
-
-	local GetScriptProfilerRecordInfo, zo_min, zo_max = GetScriptProfilerRecordInfo, zo_min, zo_max
-	local function ParseRecord(frameIndex, recordIndex)
-		-- TODO
-		local recordType = SCRIPT_PROFILER_RECORD_TYPE_CLOSURE
-		--
-
-		local recordDataIndex, startTimeNS, endTimeNS, calledByRecordIndex = GetScriptProfilerRecordInfo(frameIndex, recordIndex)
-		local timeMS =(endTimeNS - startTimeNS) * 0.0000001
-
-		local source = GetOrCreateRecordData(recordType, recordDataIndex)
-		source.count = source.count + 1
-		source.includeTime = source.includeTime + timeMS
-		source.excludeTime = source.excludeTime + timeMS
-		source.includeTimeMin = zo_min(source.includeTimeMin, timeMS)
-
-		if source.includeTimeMax < timeMS then
-			source.includeTimeMax = timeMS
-			if calledByRecordIndex then
-				-- TODO
-				local calledByRecordType = SCRIPT_PROFILER_RECORD_TYPE_CLOSURE
-				--
-				local calledByRecordDataIndex = GetScriptProfilerRecordInfo(frameIndex, calledByRecordIndex)
-				local calledByData = GetOrCreateRecordData(calledByRecordType, calledByRecordDataIndex)
-				calledByData.excludeTime = calledByData.excludeTime - timeMS
-				source.calledBy = calledByData
-			end
-		end
-	end
-
 	local statusBar = self.control:GetNamedChild("LoadingBar")
 	local content = self.control:GetNamedChild("Content")
 	local function PrintReport()
-		self.numRecords = numRecords
 		self:PrintReport()
 		statusBar:SetHidden(true)
 		content:SetHidden(false)
@@ -128,8 +69,6 @@ function addon:GenerateReport()
 		statusBar:SetValue(frameIndex)
 		task:For(1, GetScriptProfilerFrameNumRecords(frameIndex)):Do( function(recordIndex)
 			profilerData:ProcessRecord(frameIndex, recordIndex)
-			ParseRecord(frameIndex, recordIndex)
-			numRecords = numRecords + 1
 		end )
 	end ):Then(PrintReport)
 end
@@ -140,25 +79,13 @@ function addon:PrintReport()
 	local dataList = ZO_ScrollList_GetDataList(scrollList)
 
 	local ZO_ScrollList_CreateDataEntry = ZO_ScrollList_CreateDataEntry
-	local text = self.searchBox:GetText()
-	if text == "" then
-		task:For(pairs(profile)):Do( function(recordType, recordDatas)
-			task:For(pairs(recordDatas)):Do( function(recordDataIndex, recordData)
-				dataList[#dataList + 1] = ZO_ScrollList_CreateDataEntry(recordType, recordData)
-			end )
-		end )
-	else
-		text = text:lower()
-		local zo_plainstrfind = zo_plainstrfind
-		local line = tonumber(text)
-		task:For(pairs(profile)):Do( function(recordType, recordDatas)
-			task:For(pairs(recordDatas)):Do( function(recordDataIndex, recordData)
-				if zo_plainstrfind(recordData.name:lower(), text) or zo_plainstrfind(recordData.filename:lower(), text) or line == recordData.lineDefined then
-					dataList[#dataList + 1] = ZO_ScrollList_CreateDataEntry(recordType, recordData)
-				end
-			end )
-		end )
-	end
+	local text = self.searchBox:GetText():lower()
+	local line = tonumber(text)
+	task:For(pairs(self.profilerData:GetClosureInfoList())):Do( function(recordDataIndex, closure)
+		if text == "" or line == closure.info[CLOSURE_LINE_INDEX] or zo_plainstrfind(closure.info[CLOSURE_NAME_INDEX]:lower(), text) or zo_plainstrfind(closure.info[CLOSURE_FILE_INDEX]:lower(), text) then
+			dataList[#dataList + 1] = ZO_ScrollList_CreateDataEntry(SCRIPT_PROFILER_RECORD_TYPE_CLOSURE, { closure = closure })
+		end
+	end )
 	task:Then( function()
 		local sortHeaders = self.sortHeaders
 		self:ChangeSort(sortHeaders.selectedSortHeader.key, sortHeaders.sortDirection)
@@ -214,43 +141,36 @@ do
 
 		InitializeTooltip(ItemTooltip, self.control, RIGHT, -5, 0, LEFT)
 		ZO_ItemTooltip_SetStolen(ItemTooltip, false)
-		local count = selectedData.count
+		local closure = selectedData.closure
+		local count = closure.callCount
 		ZO_ClearNumericallyIndexedTable(text)
-		text[#text + 1] = string.format("%s in %s:%i", selectedData.name, selectedData.filename, selectedData.lineDefined)
+		text[#text + 1] = string.format("%s in %s:%i", closure.info[CLOSURE_NAME_INDEX], closure.info[CLOSURE_FILE_INDEX], closure.info[CLOSURE_LINE_INDEX])
 		text[#text + 1] = ""
-		text[#text + 1] = string.format("Time: %.5fms / Fastest: %.5fms", selectedData.includeTime / count, selectedData.includeTimeMin)
-		text[#text + 1] = string.format("Slowest %.5fms / Without sub-calls %.5fms", selectedData.includeTimeMax, selectedData.excludeTime / count)
+		text[#text + 1] = string.format("wall-time: %.3fus / avg: %.3fus", closure.wallTime, closure.wallTime / count)
+		text[#text + 1] = string.format("self-time: %.3fus / avg: %.3fus", closure.selfTime, closure.selfTime / count)
+		text[#text + 1] = string.format("slowest %.3fus / fastest: %.3fus", closure.maxTime, closure.minTime)
 		text[#text + 1] = string.format("%i calls => %f per frame", count, count / self.numFrames)
 		AddLineCenter(ItemTooltip, table.concat(text, "\n"))
 
-		if selectedData.excludeTime > 0 and(selectedData.excludeTime / selectedData.includeTime) < 0.5 then
+		if closure.selfTime > 0 and (closure.selfTime / closure.wallTime) < 0.5 then
 			AddLineCenter(ItemTooltip, "Expensive sub-calls.")
 		end
 		ZO_ClearNumericallyIndexedTable(text)
-		if selectedData.calledBy then
-			text[#text + 1] = "Slowest run callstack:"
-			local num = 20
-			while num > 0 and selectedData.calledBy do
-				selectedData = selectedData.calledBy
-				num = num - 1
-				text[#text + 1] = string.format("%s (|cefefef%s:%i|r)", selectedData.name, selectedData.filename, selectedData.lineDefined)
-			end
 
-			AddLine(ItemTooltip, table.concat(text, "\n"), ZO_TOOLTIP_DEFAULT_COLOR, TEXT_ALIGN_LEFT)
-		end
-		ZO_ClearNumericallyIndexedTable(text)
-
+		text[#text + 1] = "Slowest run callstack:"
 		local num = 20
-		while num > 0 and selectedData.calledBy do
-			selectedData = selectedData.calledBy
+		local stackId = closure.slowestRun
+		local profilerData = self.profilerData
+		local parent
+		while num > 0 and stackId and stackId > 0 do
+			parent, stackId = profilerData:GetClosureByStackId(stackId)
 			num = num - 1
-			text[#text + 1] = string.format("%s (|cefefef%s:%i|r)", selectedData.name, selectedData.filename, selectedData.lineDefined)
+			text[#text + 1] = string.format("%s (|cefefef%s:%i|r)", parent.info[CLOSURE_NAME_INDEX], parent.info[CLOSURE_FILE_INDEX], parent.info[CLOSURE_LINE_INDEX])
 		end
-		if #text > 0 then
-			AddLine(ItemTooltip, table.concat(text, "\n"), ZO_TOOLTIP_DEFAULT_COLOR, TEXT_ALIGN_LEFT)
-		end
-		ZO_ClearNumericallyIndexedTable(text)
+
+		AddLine(ItemTooltip, table.concat(text, "\n"), ZO_TOOLTIP_DEFAULT_COLOR, TEXT_ALIGN_LEFT)
 	end
+	ZO_ClearNumericallyIndexedTable(text)
 end
 
 function addon:ShowContextMenu(control)
@@ -302,13 +222,7 @@ function addon:InitializeWindow()
 	self.searchBox = self.content:GetNamedChild("SearchBox")
 
 	local function formatValue(value)
-		if value >= 100 then
-			return string.format("%.3f", value)
-		elseif value >= 10 then
-			return string.format("%.4f", value)
-		else
-			return string.format("%.5f", value)
-		end
+		return string.format("%d", value)
 	end
 	local function setupDataRow(rowControl, rowData, scrollList)
 		local nameCtl = rowControl:GetNamedChild("Name")
@@ -318,14 +232,13 @@ function addon:InitializeWindow()
 		local excludeTimeCtl = rowControl:GetNamedChild("ExcludeTime")
 		local countCtl = rowControl:GetNamedChild("Count")
 
-		local count = rowData.count
-
-		nameCtl:SetText(string.format("%s (%s:%d)", rowData.name, rowData.filename, rowData.lineDefined))
-		includeTimeCtl:SetText(formatValue(rowData.includeTime / count))
-		includeTimeMinCtl:SetText(formatValue(rowData.includeTimeMin))
-		includeTimeMaxCtl:SetText(formatValue(rowData.includeTimeMax))
-		excludeTimeCtl:SetText(formatValue(rowData.excludeTime / count))
-		countCtl:SetText(count)
+		local closure = rowData.closure
+		nameCtl:SetText(string.format("%s (%s:%d)", closure.info[CLOSURE_NAME_INDEX], closure.info[CLOSURE_FILE_INDEX], closure.info[CLOSURE_LINE_INDEX]))
+		includeTimeCtl:SetText(formatValue(closure.wallTime))
+		includeTimeMinCtl:SetText(formatValue(closure.minTime))
+		includeTimeMaxCtl:SetText(formatValue(closure.maxTime))
+		excludeTimeCtl:SetText(formatValue(closure.selfTime))
+		countCtl:SetText(closure.callCount)
 	end
 	ZO_ScrollList_AddDataType(self.contentList, SCRIPT_PROFILER_RECORD_TYPE_CLOSURE, "ESOProfilerRow", 24, setupDataRow)
 	ZO_ScrollList_SetTypeSelectable(self.contentList, SCRIPT_PROFILER_RECORD_TYPE_CLOSURE, true)
@@ -351,27 +264,31 @@ do
 	local function name(order)
 		if order then
 			return function(a, b)
-				if a.data.filename == b.data.filename then
-					return a.data.name < b.data.name
+				local infoA = a.data.closure.info
+				local infoB = b.data.closure.info
+				if infoA[CLOSURE_FILE_INDEX] == infoB[CLOSURE_FILE_INDEX] then
+					return infoA[CLOSURE_NAME_INDEX] < infoB[CLOSURE_NAME_INDEX]
 				else
-					return a.data.filename < b.data.filename
+					return infoA[CLOSURE_FILE_INDEX] < infoB[CLOSURE_FILE_INDEX]
 				end
 			end
 		else
 			return function(a, b)
-				if a.data.filename == b.data.filename then
-					return a.data.name > b.data.name
+				local infoA = a.data.closure.info
+				local infoB = b.data.closure.info
+				if infoA[CLOSURE_FILE_INDEX] == infoB[CLOSURE_FILE_INDEX] then
+					return infoA[CLOSURE_NAME_INDEX] > infoB[CLOSURE_NAME_INDEX]
 				else
-					return a.data.filename > b.data.filename
+					return infoA[CLOSURE_FILE_INDEX] > infoB[CLOSURE_FILE_INDEX]
 				end
 			end
 		end
 	end
 	local function simple(name, order)
 		if order then
-			return function(a, b) return a.data[name] < b.data[name] end
+			return function(a, b) return a.data.closure[name] < b.data.closure[name] end
 		else
-			return function(a, b) return a.data[name] > b.data[name] end
+			return function(a, b) return a.data.closure[name] > b.data.closure[name] end
 		end
 	end
 
@@ -381,15 +298,15 @@ do
 		if key == "name" then
 			f = name(order)
 		elseif key == "includeTime" then
-			f = simple(key, order)
+			f = simple("wallTime", order)
 		elseif key == "includeTimeMin" then
-			f = simple(key, order)
+			f = simple("minTime", order)
 		elseif key == "includeTimeMax" then
-			f = simple(key, order)
+			f = simple("maxTime", order)
 		elseif key == "excludeTime" then
-			f = simple(key, order)
+			f = simple("selfTime", order)
 		elseif key == "count" then
-			f = simple(key, order)
+			f = simple("callCount", order)
 		end
 		if f then
 			local scrollList = self.contentList
