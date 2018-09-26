@@ -5,6 +5,7 @@ enum ReaderState {
     UNDETERMINED,
     READ_TRACE_EVENTS,
     READ_STACK_FRAMES,
+    READ_CLOSURES,
     READ_OTHER_DATA
 }
 
@@ -12,15 +13,16 @@ const PID = 0;
 const TID = 0;
 
 interface ProfilerData {
-    traceEvents:any[],
-    stackFrames:any,
-    otherData:any,
+    traceEvents: any[],
+    stackFrames: any,
+    otherData: any,
 }
 
 export class ChromeProfilerExportConverter {
     data: ProfilerData;
     names: any;
     categories: any;
+    closures: any;
     uptime: number;
     fileName: string;
     currentLine: string;
@@ -54,6 +56,8 @@ export class ChromeProfilerExportConverter {
             return ReaderState.READ_TRACE_EVENTS;
         } else if (this.lineStartsWith("    [\"stackFrames\"]")) {
             return ReaderState.READ_STACK_FRAMES;
+        } else if (this.lineStartsWith("    [\"closures\"]")) {
+            return ReaderState.READ_CLOSURES;
         } else if (this.lineStartsWith("    [\"otherData\"]")) {
             return ReaderState.READ_OTHER_DATA;
         } else {
@@ -92,19 +96,26 @@ export class ChromeProfilerExportConverter {
 
         if (this.lineStartsWith("        [")) {
             let [stackId, data] = this.getMatches(/\[(.+)\] = "(.+)",$/);
-            let [name, file, line, parent] = data.split(",");
-            let stackFrame = {
-                name: name + " (" + file + ":" + line + ")",
-            }
+            let [recordDataIndex, parent] = data.split(",");
+            let stackFrame = {};
+            stackFrame["name"] = recordDataIndex;
             if (parent) {
                 stackFrame["parent"] = parent;
             }
             this.data.stackFrames[stackId] = stackFrame;
-            this.names[stackId] = name;
-            let matches = file.match(/@user:\/AddOns\/(.+?)\//);
-            if(matches && matches.length > 1) {
-                this.categories[stackId] = matches[1];
-            }
+        }
+        return false;
+    }
+
+    readClosures(): boolean {
+        if (this.lineStartsWith("    },")) {
+            // section ended
+            return true
+        }
+
+        if (this.lineStartsWith("        [")) {
+            let [recordDataIndex, data] = this.getMatches(/\[(.+)\] = "(.+)",$/);
+            this.closures[recordDataIndex] = data.split(",");
         }
         return false;
     }
@@ -118,7 +129,7 @@ export class ChromeProfilerExportConverter {
         if (this.lineStartsWith("        [")) {
             let [key, value] = this.getMatches(/\["(.+)"\] = "?(.+)"?,$/);
             this.data.otherData[key] = value;
-            if (key === "upTime") { 
+            if (key === "upTime") {
                 this.uptime = Math.floor(parseFloat(value) / 1e6);
             }
         }
@@ -136,6 +147,9 @@ export class ChromeProfilerExportConverter {
             case ReaderState.READ_STACK_FRAMES:
                 finished = this.readStackFrames();
                 break;
+            case ReaderState.READ_CLOSURES:
+                finished = this.readClosures();
+                break;
             case ReaderState.READ_OTHER_DATA:
                 finished = this.readOtherData();
                 break;
@@ -150,14 +164,24 @@ export class ChromeProfilerExportConverter {
     }
 
     fillInNames() {
-        let eventData = [];
+        Object.keys(this.data.stackFrames).forEach(stackId => {
+            let stackFrame = this.data.stackFrames[stackId];
+            let [name, file, line] = this.closures[stackFrame.name];
+            
+            this.names[stackId] = name;
+            stackFrame["name"] = name + " (" + file + ":" + line + ")";
+            let matches = file.match(/@user:\/AddOns\/(.+?)\//);
+            if (matches && matches.length > 1) {
+                this.categories[stackId] = matches[1];
+            }
+        });
+
         this.data.traceEvents.forEach(event => {
             event.name = this.names[event.sf];
-            if(this.categories[event.sf]) {
+            if (this.categories[event.sf]) {
                 event.cat = this.categories[event.sf];
             }
         });
-        this.data.traceEvents = this.data.traceEvents.concat(eventData);
     }
 
     writeFile() {
@@ -167,7 +191,7 @@ export class ChromeProfilerExportConverter {
     }
 
     addMetaData(name, args) {
-        this.data.traceEvents.unshift({ 
+        this.data.traceEvents.unshift({
             name: name,
             cat: "__metadata",
             ts: 0,
@@ -180,6 +204,7 @@ export class ChromeProfilerExportConverter {
 
     parseFile(resolve: Function, reject: Function) {
         this.names = {};
+        this.closures = {};
         this.categories = {};
         this.data = {
             traceEvents: [],

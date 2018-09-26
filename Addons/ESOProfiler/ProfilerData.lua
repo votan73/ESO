@@ -12,30 +12,57 @@ end
 function ProfilerData:Initialize(startTime, upTime)
 	self.nextStackFrameId = 1
 	self.frameIdLookup = { }
+	self.closureInfo = { }
 	self.events = { }
 	self.stackFrames = { }
 	self.startTime = startTime
 	self.upTime = upTime
 end
 
-function ProfilerData:ProcessRecord(frameIndex, recordIndex)
-	local recordDataIndex, startTimeNS, endTimeNS, calledByRecordIndex = GetScriptProfilerRecordInfo(frameIndex, recordIndex)
-	local name, filename, lineDefined = GetScriptProfilerClosureInfo(recordDataIndex)
-
-	local strackId = self:GetStackFrameId(frameIndex, recordDataIndex)
-	local stackFrame = { name, filename, lineDefined }
-	if (calledByRecordIndex) then
-		stackFrame[#stackFrame] = self:GetStackFrameId(frameIndex, calledByRecordIndex)
+function ProfilerData:GetClosureInfo(recordDataIndex)
+	if(not self.closureInfo[recordDataIndex]) then
+		self.closureInfo[recordDataIndex] = {
+			info = { GetScriptProfilerClosureInfo(recordDataIndex) },
+			callCount = 0,
+			wallTime = 0,
+			selfTime = 0,
+			maxTime = 0
+		}
 	end
-	self.stackFrames[strackId] = stackFrame
-
-	local start = (startTimeNS - self.upTime) / 1000
-	local duration = (endTimeNS - startTimeNS) / 1000
-	self.events[#self.events + 1] = { start, duration, strackId }
+	return self.closureInfo[recordDataIndex]
 end
 
-function ProfilerData:GetStackFrameId(frameIndex, recordIndex)
-	local key = string.format("%d_%d", frameIndex, recordIndex)
+function ProfilerData:ProcessRecord(frameIndex, recordIndex)
+	local recordDataIndex, startTimeNS, endTimeNS, calledByRecordIndex = GetScriptProfilerRecordInfo(frameIndex, recordIndex)
+	local closureInfo = self:GetClosureInfo(recordDataIndex)
+	local start = (startTimeNS - self.upTime) / 1000
+	local duration = (endTimeNS - startTimeNS) / 1000
+	closureInfo.callCount = closureInfo.callCount + 1
+	closureInfo.wallTime = closureInfo.wallTime + duration
+	closureInfo.selfTime = closureInfo.selfTime + duration
+	closureInfo.maxTime = math.max(closureInfo.maxTime, duration)
+
+	local stackId, parentId
+	if (calledByRecordIndex) then
+		local parentRecordDataIndex, _, _, grandParentRecordIndex = GetScriptProfilerRecordInfo(frameIndex, calledByRecordIndex)
+		local calledByInfo = self:GetClosureInfo(parentRecordDataIndex)
+		calledByInfo.selfTime = calledByInfo.selfTime - duration
+
+		stackId = self:GetStackFrameId(recordDataIndex, parentRecordDataIndex)
+		local grandParentDataRecordIndex
+		if(grandParentRecordIndex) then
+			grandParentDataRecordIndex = GetScriptProfilerRecordInfo(frameIndex, grandParentRecordIndex)
+		end
+		parentId = self:GetStackFrameId(parentRecordDataIndex, grandParentDataRecordIndex)
+	else
+		stackId = self:GetStackFrameId(recordDataIndex)
+	end
+	self.events[#self.events + 1] = { start, duration, stackId }
+	self.stackFrames[stackId] = { recordDataIndex, parentId }
+end
+
+function ProfilerData:GetStackFrameId(recordDataIndex, parentRecordDataIndex)
+	local key = string.format("%d_%d", recordDataIndex, parentRecordDataIndex or 0)
 	if (not self.frameIdLookup[key]) then
 		self.frameIdLookup[key] = self.nextStackFrameId
 		self.nextStackFrameId = self.nextStackFrameId + 1
@@ -46,9 +73,11 @@ end
 local function GetEmptySaveData(startTime, upTime)
 	local events = { }
 	local stackFrames = { }
+	local closures = { }
 	local data = {
 		traceEvents = events,
 		stackFrames = stackFrames,
+		closures = closures,
 		otherData =
 		{
 			startTime = startTime,
@@ -56,21 +85,26 @@ local function GetEmptySaveData(startTime, upTime)
 			version = GetESOVersionString(),
 		}
 	}
-	return data, events, stackFrames
+	return data, events, stackFrames, closures
 end
 ESO_PROFILER.GetEmptySaveData = GetEmptySaveData
 
 function ProfilerData:Export(task)
-	local data, events, stackFrames = GetEmptySaveData(self.startTime, self.upTime)
+	local data, events, stackFrames, closures = GetEmptySaveData(self.startTime, self.upTime)
 	task:For(1, #self.events):Do( function(i)
 		events[i] = string.format("%.3f,%.3f,%d", unpack(self.events[i]))
 	end )
 	task:For(pairs(self.stackFrames)):Do( function(id, frame)
-		if (#frame == 4) then
-			stackFrames[id] = string.format("%s,%s,%d,%d", unpack(frame))
+		local recordDataIndex, parentId = unpack(frame)
+		if (parentId) then
+			stackFrames[id] = string.format("%d,%d", recordDataIndex, parentId)
 		else
-			stackFrames[id] = string.format("%s,%s,%d", unpack(frame))
+			stackFrames[id] = string.format("%d", recordDataIndex)
 		end
+	end )
+	task:For(pairs(self.closureInfo)):Do( function(recordDataIndex, closureInfo)
+		local name, file, line = unpack(closureInfo.info)
+		closures[recordDataIndex] = string.format("%s,%s,%d", name, file, line)
 	end )
 	-- return immediately with an empty list to be filled
 	return data
