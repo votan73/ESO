@@ -1,4 +1,4 @@
-if GetAPIVersion() < 100025 then return end
+﻿if GetAPIVersion() < 100025 then return end
 
 local addon = {
 	name = "ESOProfiler",
@@ -9,9 +9,9 @@ local task = async:Create("ESO_PROFILER")
 
 do
 	local function UpdateKeybind()
-	if addon.keybindButtonGroup and KEYBIND_STRIP:HasKeybindButtonGroup(addon.keybindButtonGroup) then
-		KEYBIND_STRIP:UpdateKeybindButtonGroup(addon.keybindButtonGroup)
-	end
+		if addon.keybindButtonGroup and KEYBIND_STRIP:HasKeybindButtonGroup(addon.keybindButtonGroup) then
+			KEYBIND_STRIP:UpdateKeybindButtonGroup(addon.keybindButtonGroup)
+		end
 	end
 
 	local orgStartScriptProfiler = StartScriptProfiler
@@ -26,9 +26,7 @@ do
 	end
 	local orgStopScriptProfiler = StopScriptProfiler
 	function StopScriptProfiler()
-		if not addon.profiling then return end
 		addon.profiling = false
-		addon.hasProfile = true
 		UpdateKeybind()
 		d("Profiler stopped ....")
 		return orgStopScriptProfiler()
@@ -120,18 +118,6 @@ do
 		AddLine(tooltip, text, color, TEXT_ALIGN_CENTER)
 	end
 
-	local function AddLineTitle(tooltip, text, color)
-		if not color then color = ZO_SELECTED_TEXT end
-		local r, g, b = color:UnpackRGB()
-		tooltip:AddLine(text, "ZoFontHeader3", r, g, b, CENTER, MODIFY_TEXT_TYPE_UPPERCASE, TEXT_ALIGN_CENTER, true)
-	end
-
-	local function AddLineSubTitle(tooltip, text, color)
-		if not color then color = ZO_SELECTED_TEXT end
-		local r, g, b = color:UnpackRGB()
-		tooltip:AddLine(text, "ZoFontWinH5", r, g, b, CENTER, MODIFY_TEXT_TYPE_UPPERCASE, TEXT_ALIGN_CENTER, true)
-	end
-
 	local text = { }
 	function addon:OnSelectionChanged(previouslySelectedData, selectedData, selectingDuringRebuild)
 		if not selectedData or selectingDuringRebuild then
@@ -146,9 +132,9 @@ do
 		ZO_ClearNumericallyIndexedTable(text)
 		text[#text + 1] = string.format("%s in %s:%i", closure.info[CLOSURE_NAME_INDEX], closure.info[CLOSURE_FILE_INDEX], closure.info[CLOSURE_LINE_INDEX])
 		text[#text + 1] = ""
-		text[#text + 1] = string.format("wall-time: %.3fus / avg: %.3fus", closure.wallTime, closure.wallTime / count)
-		text[#text + 1] = string.format("self-time: %.3fus / avg: %.3fus", closure.selfTime, closure.selfTime / count)
-		text[#text + 1] = string.format("slowest %.3fus / fastest: %.3fus", closure.maxTime, closure.minTime)
+		text[#text + 1] = string.format("wall-time: %.3fµs / avg: %.3fµs", closure.wallTime, closure.wallTime / count)
+		text[#text + 1] = string.format("self-time: %.3fus / avg: %.3fµs", closure.selfTime, closure.selfTime / count)
+		text[#text + 1] = string.format("slowest %.3fµs / fastest: %.3fµs", closure.maxTime, closure.minTime)
 		text[#text + 1] = string.format("%i calls => %f per frame", count, count / self.numFrames)
 		AddLineCenter(ItemTooltip, table.concat(text, "\n"))
 
@@ -242,7 +228,7 @@ function addon:InitializeWindow()
 	end
 	ZO_ScrollList_AddDataType(self.contentList, SCRIPT_PROFILER_RECORD_TYPE_CLOSURE, "ESOProfilerRow", 24, setupDataRow)
 	ZO_ScrollList_SetTypeSelectable(self.contentList, SCRIPT_PROFILER_RECORD_TYPE_CLOSURE, true)
-	ZO_ScrollList_SetDeselectOnReselect(self.contentList, false)
+	ZO_ScrollList_SetDeselectOnReselect(self.contentList, true)
 	ZO_ScrollList_EnableSelection(self.contentList, "ZO_ThinListHighlight", function(...) self:OnSelectionChanged(...) end)
 	ZO_ScrollList_EnableHighlight(self.contentList, "ZO_ThinListHighlight")
 
