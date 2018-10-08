@@ -1,8 +1,0 @@
-{
-  "name": "ESOProfiler",
-  "main": "index.html",
-  "window": {
-    "width": 1280,
-    "height": 800
-  }
-}

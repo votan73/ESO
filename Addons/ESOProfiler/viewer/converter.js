@@ -12,7 +12,7 @@ var ReaderState;
 })(ReaderState || (ReaderState = {}));
 const PID = 0;
 const TID = 0;
-class ChromeProfilerExportConverter {
+class ESOProfilerExportConverter {
     lineStartsWith(prefix) {
         return this.currentLine.startsWith(prefix);
     }
@@ -105,8 +105,9 @@ class ChromeProfilerExportConverter {
             return true;
         }
         if (this.lineStartsWith("        [")) {
-            let [key, value] = this.getMatches(/\["(.+)"\] = "?(.+)"?,$/);
-            this.data.otherData[key] = value;
+            let [key, value] = this.getMatches(/\["(.+)"\] = (.+),$/);
+            value = JSON.parse(value);
+            this.data.otherData[key] = "" + value;
             if (key === "upTime") {
                 this.uptime = Math.floor(parseFloat(value) / 1e6);
             }
@@ -138,8 +139,9 @@ class ChromeProfilerExportConverter {
         }
     }
     fillInNames() {
-        Object.keys(this.data.stackFrames).forEach(stackId => {
-            let stackFrame = this.data.stackFrames[stackId];
+        let data = this.data;
+        Object.keys(data.stackFrames).forEach(stackId => {
+            let stackFrame = data.stackFrames[stackId];
             let [name, file, line] = this.closures[stackFrame.name];
             this.names[stackId] = name;
             stackFrame["name"] = name + " (" + file + ":" + line + ")";
@@ -148,7 +150,7 @@ class ChromeProfilerExportConverter {
                 this.categories[stackId] = matches[1];
             }
         });
-        this.data.traceEvents.forEach(event => {
+        data.traceEvents.forEach(event => {
             event.name = this.names[event.sf];
             if (this.categories[event.sf]) {
                 event.cat = this.categories[event.sf];
@@ -201,4 +203,4 @@ class ChromeProfilerExportConverter {
         return new Promise(this.parseFile.bind(this));
     }
 }
-exports.ChromeProfilerExportConverter = ChromeProfilerExportConverter;
+exports.ESOProfilerExportConverter = ESOProfilerExportConverter;

@@ -1,0 +1,13 @@
+{
+  "name": "ESOProfiler",
+  "main": "index.html",
+  "window": {
+    "icon": "./viewer.png",
+    "width": 1280,
+    "height": 800
+  },
+  "dependencies": {
+    "JSONStream": "^1.3.4"
+  },
+  "js-flags": "--max-old-space-size=4096"
+}

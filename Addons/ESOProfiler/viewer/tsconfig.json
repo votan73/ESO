@@ -6,9 +6,10 @@
         ],
         "target": "es6",
         "module": "commonjs",
-        "outDir": "bin"
+        "outDir": "."
     },
     "files": [
-        "./converter.ts"
+        "./converter.ts",
+        "./main.ts"
     ]
 }

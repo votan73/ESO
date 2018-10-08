@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <link rel="import" href="trace_viewer_full.html" />
+  <style>
+    html, body {
+    box-sizing: border-box;
+    overflow: hidden;
+    margin: 0px;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+}
+
+#trace-viewer {
+    width: 100%;
+    height: 100%;
+}
+
+#trace-viewer:focus {
+    outline: none;
+}
+        </style>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      require("./main.js").init(tr, document, Polymer);
+    });
+  </script>
+</head>
+
+<body>
+  <div id="fileButtons">
+    <button id="saveButton" disabled="disabled">Save</button>
+    <input id="saveInput" type="file" accept=".json" style="display: none" />
+    <button id="loadButton">Load</button>
+    <input id="loadInput" type="file" accept=".lua,.json" style="display: none" />
+  </div>
+</body>
+
+</html>
