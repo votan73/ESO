@@ -143,7 +143,7 @@ do
 		text[#text + 1] = string.format("%s in %s:%i", closure.info[CLOSURE_NAME_INDEX], closure.info[CLOSURE_FILE_INDEX], closure.info[CLOSURE_LINE_INDEX])
 		text[#text + 1] = ""
 		text[#text + 1] = string.format("wall-time: %.3fµs / avg: %.3fµs", closure.wallTime, closure.wallTime / count)
-		text[#text + 1] = string.format("self-time: %.3fus / avg: %.3fµs", closure.selfTime, closure.selfTime / count)
+		text[#text + 1] = string.format("self-time: %.3fµs / avg: %.3fµs", closure.selfTime, closure.selfTime / count)
 		text[#text + 1] = string.format("slowest %.3fµs / fastest: %.3fµs", closure.maxTime, closure.minTime)
 		text[#text + 1] = string.format("%i calls => %f per frame", count, count / self.numFrames)
 		AddLineCenter(ItemTooltip, table.concat(text, "\n"))
