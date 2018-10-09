@@ -8,7 +8,8 @@ var ReaderState;
     ReaderState[ReaderState["READ_TRACE_EVENTS"] = 1] = "READ_TRACE_EVENTS";
     ReaderState[ReaderState["READ_STACK_FRAMES"] = 2] = "READ_STACK_FRAMES";
     ReaderState[ReaderState["READ_CLOSURES"] = 3] = "READ_CLOSURES";
-    ReaderState[ReaderState["READ_OTHER_DATA"] = 4] = "READ_OTHER_DATA";
+    ReaderState[ReaderState["READ_STATS"] = 4] = "READ_STATS";
+    ReaderState[ReaderState["READ_OTHER_DATA"] = 5] = "READ_OTHER_DATA";
 })(ReaderState || (ReaderState = {}));
 const PID = 0;
 const TID = 0;
@@ -42,6 +43,9 @@ class ESOProfilerExportConverter {
         }
         else if (this.lineStartsWith("    [\"closures\"]")) {
             return ReaderState.READ_CLOSURES;
+        }
+        else if (this.lineStartsWith("    [\"frameStats\"]")) {
+            return ReaderState.READ_STATS;
         }
         else if (this.lineStartsWith("    [\"otherData\"]")) {
             return ReaderState.READ_OTHER_DATA;
@@ -99,6 +103,35 @@ class ESOProfilerExportConverter {
         }
         return false;
     }
+    addCounter(name, start, value) {
+        let args = {};
+        args[name] = value;
+        let event = {
+            name: name,
+            ph: "C",
+            cat: "stats",
+            ts: start,
+            pid: PID,
+            tid: TID,
+            args: args
+        };
+        this.data.traceEvents.push(event);
+    }
+    readStats() {
+        if (this.lineStartsWith("    },")) {
+            // section ended
+            return true;
+        }
+        if (this.lineStartsWith("        [")) {
+            let [frameIndex, data] = this.getMatches(/\[(.+)\] = "(.+)",$/);
+            let [start, fps, latency, memory] = data.split(",");
+            let startTime = parseFloat(start);
+            this.addCounter("FPS", startTime, parseInt(fps));
+            this.addCounter("Latency [ms]", startTime, parseInt(latency));
+            this.addCounter("Memory [MB]", startTime, parseInt(memory) / (1024 * 1024));
+        }
+        return false;
+    }
     readOtherData() {
         if (this.lineStartsWith("    },")) {
             // section ended
@@ -127,6 +160,9 @@ class ESOProfilerExportConverter {
             case ReaderState.READ_CLOSURES:
                 finished = this.readClosures();
                 break;
+            case ReaderState.READ_STATS:
+                finished = this.readStats();
+                break;
             case ReaderState.READ_OTHER_DATA:
                 finished = this.readOtherData();
                 break;
@@ -151,9 +187,11 @@ class ESOProfilerExportConverter {
             }
         });
         data.traceEvents.forEach(event => {
-            event.name = this.names[event.sf];
-            if (this.categories[event.sf]) {
-                event.cat = this.categories[event.sf];
+            if (!event.name) {
+                event.name = this.names[event.sf];
+                if (this.categories[event.sf]) {
+                    event.cat = this.categories[event.sf];
+                }
             }
         });
     }

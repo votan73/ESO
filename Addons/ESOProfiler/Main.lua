@@ -8,6 +8,14 @@ local async = LibStub("LibAsync")
 local task = async:Create("ESO_PROFILER")
 
 do
+	local function CaptureFrameMetrics()
+		local fps = tostring(math.floor(GetFramerate())*100)
+		local latency = tostring(GetLatency())
+		local memory = tostring(collectgarbage("count")*1024)
+		local name = string.format("statsF%sL%sM%s", fps, latency, memory)
+		LoadString("", name)()
+	end
+
 	local function UpdateKeybind()
 		if addon.keybindButtonGroup and KEYBIND_STRIP:HasKeybindButtonGroup(addon.keybindButtonGroup) then
 			KEYBIND_STRIP:UpdateKeybindButtonGroup(addon.keybindButtonGroup)
@@ -20,12 +28,14 @@ do
 		addon.newRun = GetGameTimeMilliseconds()
 		addon.startTime = GetTimeStamp()
 		addon.profiling = true
+		EVENT_MANAGER:RegisterForUpdate(addon.name, 0, CaptureFrameMetrics)
 		UpdateKeybind()
 		d("Start profiler....")
 		return orgStartScriptProfiler()
 	end
 	local orgStopScriptProfiler = StopScriptProfiler
 	function StopScriptProfiler()
+		EVENT_MANAGER:UnregisterForUpdate(addon.name)
 		addon.profiling = false
 		UpdateKeybind()
 		d("Profiler stopped ....")

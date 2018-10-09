@@ -6,6 +6,7 @@ enum ReaderState {
     READ_TRACE_EVENTS,
     READ_STACK_FRAMES,
     READ_CLOSURES,
+    READ_STATS,
     READ_OTHER_DATA
 }
 
@@ -58,6 +59,8 @@ export class ESOProfilerExportConverter {
             return ReaderState.READ_STACK_FRAMES;
         } else if (this.lineStartsWith("    [\"closures\"]")) {
             return ReaderState.READ_CLOSURES;
+        } else if (this.lineStartsWith("    [\"frameStats\"]")) {
+            return ReaderState.READ_STATS;
         } else if (this.lineStartsWith("    [\"otherData\"]")) {
             return ReaderState.READ_OTHER_DATA;
         } else {
@@ -120,6 +123,38 @@ export class ESOProfilerExportConverter {
         return false;
     }
 
+    addCounter(name, start, value) {
+        let args = {};
+        args[name] = value;
+        let event = {
+            name: name,
+            ph: "C",
+            cat: "stats",
+            ts: start,
+            pid: PID,
+            tid: TID,
+            args: args
+        };
+        this.data.traceEvents.push(event);
+    }
+
+    readStats(): boolean {
+        if (this.lineStartsWith("    },")) {
+            // section ended
+            return true
+        }
+
+        if (this.lineStartsWith("        [")) {
+            let [frameIndex, data] = this.getMatches(/\[(.+)\] = "(.+)",$/);
+            let [start, fps, latency, memory] = data.split(",");
+            let startTime = parseFloat(start);
+            this.addCounter("FPS", startTime, parseInt(fps));
+            this.addCounter("Latency [ms]", startTime, parseInt(latency));
+            this.addCounter("Memory [MB]", startTime, parseInt(memory) / (1024*1024));
+        }
+        return false;
+    }
+
     readOtherData(): boolean {
         if (this.lineStartsWith("    },")) {
             // section ended
@@ -151,6 +186,9 @@ export class ESOProfilerExportConverter {
             case ReaderState.READ_CLOSURES:
                 finished = this.readClosures();
                 break;
+            case ReaderState.READ_STATS:
+                finished = this.readStats();
+                break;
             case ReaderState.READ_OTHER_DATA:
                 finished = this.readOtherData();
                 break;
@@ -179,9 +217,11 @@ export class ESOProfilerExportConverter {
         });
 
         data.traceEvents.forEach(event => {
-            event.name = this.names[event.sf];
-            if (this.categories[event.sf]) {
-                event.cat = this.categories[event.sf];
+            if (!event.name) {
+                event.name = this.names[event.sf];
+                if (this.categories[event.sf]) {
+                    event.cat = this.categories[event.sf];
+                }
             }
         });
     }

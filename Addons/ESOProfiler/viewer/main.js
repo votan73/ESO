@@ -73,6 +73,7 @@ function init(tr, document, Polymer) {
     }
     function onResult(result) {
         model = new tr.Model();
+        console.log("onResult", model);
         var i = new tr.importer.Import(model);
         var p = i.importTracesWithProgressDialog(result);
         p.then(onModelLoaded, onImportFail);
@@ -204,7 +205,6 @@ function init(tr, document, Polymer) {
     saveButton = document.getElementById("saveButton");
     let saveInput = document.getElementById("saveInput");
     let fileButtons = document.getElementById("fileButtons");
-    console.log(fileButtons);
     document.body.removeChild(fileButtons);
     viewer.leftControls.appendChild(fileButtons);
     loadButton.addEventListener("click", e => loadInput.click());

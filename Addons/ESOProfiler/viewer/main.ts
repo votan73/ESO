@@ -89,6 +89,7 @@ export function init(tr, document, Polymer) {
 
     function onResult(result) {
         model = new tr.Model();
+        console.log("onResult", model);
         var i = new tr.importer.Import(model);
         var p = i.importTracesWithProgressDialog(result);
         p.then(onModelLoaded, onImportFail);
@@ -244,7 +245,6 @@ export function init(tr, document, Polymer) {
     let saveInput: NwjsInputElement = <NwjsInputElement>document.getElementById("saveInput");
 
     let fileButtons = document.getElementById("fileButtons");
-    console.log(fileButtons)
     document.body.removeChild(fileButtons);
     viewer.leftControls.appendChild(fileButtons);
 

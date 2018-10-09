@@ -15,29 +15,45 @@ function ProfilerData:Initialize(startTime, upTime)
 	self.closureInfo = { }
 	self.events = { }
 	self.stackFrames = { }
+	self.frameStats = { }
 	self.startTime = startTime
 	self.upTime = upTime
 end
 
-function ProfilerData:GetClosureInfo(recordDataIndex)
+function ProfilerData:GetClosureInfo(recordDataIndex, frameIndex, startTime)
 	if(not self.closureInfo[recordDataIndex]) then
-		self.closureInfo[recordDataIndex] = {
-			info = { GetScriptProfilerClosureInfo(recordDataIndex) },
-			callCount = 0,
-			wallTime = 0,
-			selfTime = 0,
-			minTime = math.huge,
-			maxTime = 0,
-			slowestRun = 0
-		}
+		local name, file, line = GetScriptProfilerClosureInfo(recordDataIndex)
+		local fps, latency, memory = file:match("statsF(%d+)L(%d+)M(%d+)")
+		if(not fps or not frameIndex) then
+			self.closureInfo[recordDataIndex] = {
+				info = { name, file, line },
+				callCount = 0,
+				wallTime = 0,
+				selfTime = 0,
+				minTime = math.huge,
+				maxTime = 0,
+				slowestRun = 0
+			}
+		else
+			assert(not self.frameStats[frameIndex], "more than one stats entry for same frame found")
+			self.frameStats[frameIndex] = {
+				start = startTime,
+				fps = tonumber(fps) / 100,
+				latency = tonumber(latency),
+				memory = tonumber(memory)
+			}
+		end
 	end
 	return self.closureInfo[recordDataIndex]
 end
 
 function ProfilerData:ProcessRecord(frameIndex, recordIndex)
 	local recordDataIndex, startTimeNS, endTimeNS, calledByRecordIndex = GetScriptProfilerRecordInfo(frameIndex, recordIndex)
-	local closureInfo = self:GetClosureInfo(recordDataIndex)
 	local start = (startTimeNS - self.upTime) / 1000
+
+	local closureInfo = self:GetClosureInfo(recordDataIndex, frameIndex, start)
+	if(not closureInfo) then return end
+
 	local duration = (endTimeNS - startTimeNS) / 1000
 
 	local stackId, parentId
@@ -78,22 +94,24 @@ function ProfilerData:GetStackFrameId(recordDataIndex, parentRecordDataIndex)
 end
 
 function ProfilerData:GetClosureInfoList()
-    return self.closureInfo
+	return self.closureInfo
 end
 
 function ProfilerData:GetClosureByStackId(stackId)
-    local recordDataIndex, parentId = unpack(self.stackFrames[stackId])
-    return self.closureInfo[recordDataIndex], parentId
+	local recordDataIndex, parentId = unpack(self.stackFrames[stackId])
+	return self.closureInfo[recordDataIndex], parentId
 end
 
 local function GetEmptySaveData(startTime, upTime)
 	local events = { }
 	local stackFrames = { }
 	local closures = { }
+	local frameStats = { }
 	local data = {
 		traceEvents = events,
 		stackFrames = stackFrames,
 		closures = closures,
+		frameStats = frameStats,
 		otherData =
 		{
 			startTime = startTime,
@@ -101,12 +119,12 @@ local function GetEmptySaveData(startTime, upTime)
 			version = GetESOVersionString(),
 		}
 	}
-	return data, events, stackFrames, closures
+	return data, events, stackFrames, closures, frameStats
 end
 ESO_PROFILER.GetEmptySaveData = GetEmptySaveData
 
 function ProfilerData:Export(task)
-	local data, events, stackFrames, closures = GetEmptySaveData(self.startTime, self.upTime)
+	local data, events, stackFrames, closures, frameStats = GetEmptySaveData(self.startTime, self.upTime)
 	task:For(1, #self.events):Do( function(i)
 		events[i] = string.format("%.3f,%.3f,%d", unpack(self.events[i]))
 	end )
@@ -121,6 +139,9 @@ function ProfilerData:Export(task)
 	task:For(pairs(self.closureInfo)):Do( function(recordDataIndex, closureInfo)
 		local name, file, line = unpack(closureInfo.info)
 		closures[recordDataIndex] = string.format("%s,%s,%d", name, file, line)
+	end )
+	task:For(pairs(self.frameStats)):Do( function(frameIndex, stats)
+		frameStats[frameIndex] = string.format("%.3f,%d,%d,%d", stats.start, stats.fps, stats.latency, stats.memory)
 	end )
 	-- return immediately with an empty list to be filled
 	return data
