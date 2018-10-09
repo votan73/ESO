@@ -185,6 +185,12 @@ class ESOProfilerExportConverter {
             if (matches && matches.length > 1) {
                 this.categories[stackId] = matches[1];
             }
+            else {
+                let matches = file.match(/@user:\/SavedVariables\/(.+?)/);
+                if (matches && matches.length > 1) {
+                    this.categories[stackId] = "SavedVariables";
+                }
+            }
         });
         data.traceEvents.forEach(event => {
             if (!event.name) {
