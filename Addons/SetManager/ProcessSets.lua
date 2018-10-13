@@ -160,7 +160,7 @@ function addon:ScanSets(maxItemId)
 	if GetAPIVersion() <= 100019 then
 		blacklist[ITEM_TRAIT_TYPE_SPECIAL_STAT] = true
 	end
-
+	local maxId = 0
 	local function Scan()
 		local start = GetFrameTimeMilliseconds()
 		local spendTime = 500 / GetFramerate()
@@ -186,6 +186,7 @@ function addon:ScanSets(maxItemId)
 						end
 
 						setInfo.items[#setInfo.items + 1] = itemId
+						maxId = itemId
 					end
 				end
 				itemId = itemId + 1
@@ -204,7 +205,7 @@ function addon:ScanSets(maxItemId)
 					sets[firstItem] = { items = items, isCraftable = #items >= 315 and not isMonster, isMonster = isMonster, isJevelry = isJevelry and not isArmor, bonus = setInfo.bonus }
 				end
 				em:UnregisterForUpdate(identifier)
-				d(zo_strformat("done: <<1>>ms: <<2>> sets", GetGameTimeMilliseconds() - debugstart, NonContiguousCount(sets)))
+				d(zo_strformat("done: <<1>>ms: <<2>> sets. highest id: <<3>>", GetGameTimeMilliseconds() - debugstart, NonContiguousCount(sets), maxId))
 				addon.account.all = sets
 				return
 			end
