@@ -9,9 +9,9 @@ local task = async:Create("ESO_PROFILER")
 
 do
 	local function CaptureFrameMetrics()
-		local fps = tostring(math.floor(GetFramerate())*100)
+		local fps = tostring(math.floor(GetFramerate()) * 100)
 		local latency = tostring(GetLatency())
-		local memory = tostring(collectgarbage("count")*1024)
+		local memory = tostring(collectgarbage("count") * 1024)
 		local name = string.format("statsF%sL%sM%s", fps, latency, memory)
 		LoadString("", name)()
 	end
@@ -130,6 +130,7 @@ do
 
 	local text = { }
 	function addon:OnSelectionChanged(previouslySelectedData, selectedData, selectingDuringRebuild)
+		self.selectedData = selectedData
 		if not selectedData or selectingDuringRebuild then
 			ClearTooltip(ItemTooltip)
 			return
@@ -158,6 +159,7 @@ do
 		local stackId = closure.slowestRun
 		local profilerData = self.profilerData
 		local parent
+
 		while num > 0 and stackId and stackId > 0 do
 			parent, stackId = profilerData:GetClosureByStackId(stackId)
 			num = num - 1
@@ -169,8 +171,99 @@ do
 	ZO_ClearNumericallyIndexedTable(text)
 end
 
-function addon:ShowContextMenu(control)
+----------------------------------
+
+do
+	local task = async:Create("ESO_PROFILER_SUBCALLS")
+	addon.showSubCalls = false
+	local function FindSubCalls(self)
+		local selectedData = self.selectedData
+		if not selectedData then return end
+
+		local closure = selectedData.closure
+		local stackId = closure.slowestRun
+		if not stackId then return end
+
+		local profilerData = self.profilerData
+		local stackFrames = profilerData.stackFrames
+		if #stackFrames == 0 then return end
+
+		task:Cancel()
+
+		local statusBar = self.control:GetNamedChild("LoadingBar")
+		local content = self.control:GetNamedChild("Content")
+
+		local value, max = 0, 1
+
+		statusBar:SetHidden(false)
+		content:SetHidden(true)
+
+		self.showSubCalls = true
+		local scrollList = self.contentList
+		ZO_ScrollList_Clear(scrollList)
+		local dataList = ZO_ScrollList_GetDataList(scrollList)
+
+		local ZO_ScrollList_CreateDataEntry = ZO_ScrollList_CreateDataEntry
+		local processed = { }
+
+		local function Step()
+			value = value + 1
+		end
+		local function addStackFrame(stackId)
+			statusBar:SetMinMax(0, max)
+			statusBar:SetValue(value)
+			local closure = profilerData:GetClosureByStackId(stackId)
+			dataList[#dataList + 1] = ZO_ScrollList_CreateDataEntry(SCRIPT_PROFILER_RECORD_TYPE_CLOSURE, { closure = closure })
+			task:For(1, #stackFrames):Do( function(index)
+				local subclosure, parentId = profilerData:GetClosureByStackId(index)
+				-- find current stackId as parentId
+				if parentId and subclosure ~= closure and not processed[subclosure] and profilerData:GetClosureByStackId(parentId) == closure then
+					processed[subclosure] = true
+					max = max + 1
+					addStackFrame(index)
+				end
+			end ):Then(Step)
+		end
+		addStackFrame(stackId)
+
+		task:Then( function()
+			local sortHeaders = self.sortHeaders
+			self:ChangeSort(sortHeaders.selectedSortHeader.key, sortHeaders.sortDirection)
+			statusBar:SetHidden(true)
+			content:SetHidden(false)
+		end )
+
+	end
+
+	function addon:ShowContextMenuInsertBefore(control)
+		local data = ZO_ScrollList_GetData(control)
+		if self.selectedData ~= data then
+			self:OnSelectionChanged(self.selectedData, data, false)
+		end
+		if self.selectedData then
+			AddCustomMenuItem("Find Sub Calls", function() FindSubCalls(self) end)
+		end
+		if self.showSubCalls then
+			AddCustomMenuItem("Show All", function()
+				task:Cancel()
+				self.showSubCalls = false
+				self:PrintReport()
+			end )
+		end
+	end
 end
+
+function addon:ShowContextMenuAppendAfter(control)
+end
+
+function addon:ShowContextMenu(control)
+	ClearMenu()
+	self:ShowContextMenuInsertBefore(control)
+	self:ShowContextMenuAppendAfter(control)
+	ShowMenu()
+end
+
+----------------------------------
 
 function addon:EndSearch(editBox)
 	if editBox:GetText() ~= "" then
