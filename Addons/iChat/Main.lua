@@ -52,7 +52,7 @@ function addon:InitSettings()
 	local settings = LibHarvensAddonSettings:AddAddon("iChat")
 	if not settings then return end
 	addon.settingsControls = settings
-	settings.version = "1.0.1"
+	settings.version = "1.0.2"
 	settings.allowDefaults = true
 	-- settings.website = "http://www.esoui.com/downloads/"
 end
