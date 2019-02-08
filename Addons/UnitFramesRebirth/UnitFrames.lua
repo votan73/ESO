@@ -814,6 +814,8 @@ end
 UnitFrame = ZO_Object:Subclass()
 
 function UnitFrame:New(unitTag, anchors, showBarText, style)
+	df("New UnitFrame %s", unitTag)
+
 	local newFrame = ZO_Object.New(self)
 	local baseWindowName = style .. unitTag
 	local parent = ZO_UnitFrames
@@ -1030,6 +1032,7 @@ function UnitFrame:RefreshControls()
 		self.dirty = true
 	else
 		if self.hasTarget then
+			df("UnitFrame RefreshControls %s", this.unitTag)
 			self:UpdateName()
 			self:UpdateUnitReaction()
 			self:UpdateLevel()
