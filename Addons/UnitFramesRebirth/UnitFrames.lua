@@ -1032,7 +1032,7 @@ function UnitFrame:RefreshControls()
 		self.dirty = true
 	else
 		if self.hasTarget then
-			df("UnitFrame RefreshControls %s", this.unitTag)
+			df("UnitFrame RefreshControls %s", self.unitTag)
 			self:UpdateName()
 			self:UpdateUnitReaction()
 			self:UpdateLevel()
