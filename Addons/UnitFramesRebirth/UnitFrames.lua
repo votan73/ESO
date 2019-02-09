@@ -131,6 +131,8 @@ local UNIT_CHANGED = true
 
 local groupFrameAnchor = ZO_Anchor:New(TOPLEFT, GuiRoot, TOPLEFT, 0, 0)
 
+local largeGroupAnchorFrames = { }
+
 local function GetGroupFrameAnchor(groupIndex, groupSize)
 	local constants = GetPlatformConstants()
 
@@ -143,7 +145,7 @@ local function GetGroupFrameAnchor(groupIndex, groupSize)
 			column = zo_mod(groupIndex - 1, constants.NUM_COLUMNS)
 			row = zo_floor((groupIndex - 1) / 2)
 		end
-		groupFrameAnchor:SetTarget(GetControl("ZO_LargeGroupAnchorFrame" ..(column + 1)))
+		groupFrameAnchor:SetTarget(largeGroupAnchorFrames[column + 1])
 		groupFrameAnchor:SetOffsets(0, row * constants.RAID_FRAME_OFFSET_Y)
 		return groupFrameAnchor
 	else
@@ -182,35 +184,41 @@ UnitFramesManager = ZO_Object:Subclass()
 
 function UnitFramesManager:New()
 	local unitFrames = ZO_Object.New(self)
-
-	unitFrames.groupFrames = { }
-	-- unitFrames.raidFrames = { }
-	unitFrames.staticFrames = { }
-	unitFrames.nameToUnitTag = { }
-	unitFrames.unitTagToName = { }
-
-	unitFrames.groupSize = GetGroupSize()
-	unitFrames.targetOfTargetEnabled = true
-	unitFrames.groupAndRaidHiddenReasons = ZO_HiddenReasons:New()
-	unitFrames.firstDirtyGroupIndex = nil
-
+	unitFrames:Initialize()
 	return unitFrames
 end
 
-local function ApplyVisualStyleToAllFrames(frames)
+function UnitFramesManager:Initialize()
+	self.groupFrames = { }
+	self.raidFrames = { }
+	self.staticFrames = { }
+	self.nameToUnitTag = { }
+	self.unitTagToName = { }
+
+	self.groupSize = GetGroupSize()
+	self.targetOfTargetEnabled = true
+	self.groupAndRaidHiddenReasons = ZO_HiddenReasons:New()
+	self.firstDirtyGroupIndex = nil
+end
+
+local function ApplyVisualStyleToAllFrames(frames, gamepadMode)
 	for _, unitFrame in pairs(frames) do
-		unitFrame:ApplyVisualStyle()
+		unitFrame:ApplyVisualStyle(gamepadMode)
 	end
 end
 
 function UnitFramesManager:ApplyVisualStyle()
-	ApplyVisualStyleToAllFrames(self.staticFrames)
-	ApplyVisualStyleToAllFrames(self.groupFrames)
-	-- ApplyVisualStyleToAllFrames(self.raidFrames)
+	self.gamepadMode = IsInGamepadPreferredMode()
+	ApplyVisualStyleToAllFrames(self.staticFrames, self.gamepadMode)
+	ApplyVisualStyleToAllFrames(self.groupFrames, self.gamepadMode)
+	ApplyVisualStyleToAllFrames(self.raidFrames, self.gamepadMode)
 end
 
 function UnitFramesManager:GetUnitFrameLookupTable(unitTag)
-	return unitTag and ZO_Group_IsGroupUnitTag(unitTag) and self.groupFrames or self.staticFrames
+	if unitTag and ZO_Group_IsGroupUnitTag(unitTag) then
+		return self.groupSize > SMALL_GROUP_SIZE_THRESHOLD and self.raidFrames or self.groupFrames
+	end
+	return self.staticFrames
 end
 
 function UnitFramesManager:GetFrame(unitTag)
@@ -270,10 +278,10 @@ function UnitFramesManager:ClearDirty()
 end
 
 function UnitFramesManager:DisableGroupAndRaidFrames()
-	-- -- Disable the raid frames
-	-- for unitTag, unitFrame in pairs(self.raidFrames) do
-	-- 	unitFrame:SetHiddenForReason("disabled", true)
-	-- end
+	-- Disable the raid frames
+	for unitTag, unitFrame in pairs(self.raidFrames) do
+		unitFrame:SetHiddenForReason("disabled", true)
+	end
 
 	-- Disable the group frames
 	for unitTag, unitFrame in pairs(self.groupFrames) do
@@ -291,15 +299,16 @@ function UnitFramesManager:UpdateGroupAnchorFrames()
 	if (self.groupSize <= SMALL_GROUP_SIZE_THRESHOLD or self.groupAndRaidHiddenReasons:IsHidden()) then
 		-- Small groups never show the raid frame anchors
 		for subgroupIndex = 1, NUM_SUBGROUPS do
-			GetControl("ZO_LargeGroupAnchorFrame" .. subgroupIndex):SetHidden(true)
+			largeGroupAnchorFrames[subgroupIndex]:SetHidden(true)
 		end
 	else
 		for subgroupIndex = 1, NUM_SUBGROUPS do
 			local frameIsHidden = true
 			-- Label starts out hidden...
 			local isLocalPlayerInSubgroup = false
+			local unitTag
 			for groupMemberIndex = 1, SMALL_GROUP_SIZE_THRESHOLD do
-				local unitTag = GetGroupUnitTagByIndex(((subgroupIndex - 1) * SMALL_GROUP_SIZE_THRESHOLD) + groupMemberIndex)
+				unitTag = GetGroupUnitTagByIndex(((subgroupIndex - 1) * SMALL_GROUP_SIZE_THRESHOLD) + groupMemberIndex)
 				if unitTag then
 					frameIsHidden = false
 					if AreUnitsEqual("player", unitTag) then
@@ -310,8 +319,7 @@ function UnitFramesManager:UpdateGroupAnchorFrames()
 				end
 			end
 
-			local anchorFrame = GetControl("ZO_LargeGroupAnchorFrame" .. subgroupIndex)
-			anchorFrame:SetHidden(frameIsHidden)
+			largeGroupAnchorFrames[subgroupIndex]:SetHidden(frameIsHidden)
 		end
 	end
 end
@@ -813,6 +821,7 @@ function UnitFrame:New(unitTag, anchors, showBarText, style)
 	local layoutData = GetPlatformLayoutData(style)
 	if not layoutData then return end
 
+	newFrame.style = style
 	newFrame.frame = CreateControlFromVirtual(baseWindowName, parent, style)
 	newFrame.fadeComponents = { }
 	newFrame.hiddenReasons = ZO_HiddenReasons:New()
@@ -853,10 +862,7 @@ end
 
 function UnitFrame:SetData(unitTag, anchors, showBarText, style)
 	df("SetData %s", unitTag)
-	local parent = ZO_Group_IsGroupUnitTag(unitTag) and ZO_UnitFramesGroups or ZO_UnitFrames
-	self.frame:SetParent(parent)
 
-	self.style = style
 	self.hasTarget = false
 	self.unitTag = unitTag
 	self.dirty = true
@@ -872,9 +878,9 @@ function UnitFrame:SetData(unitTag, anchors, showBarText, style)
 	self:RefreshVisible()
 end
 
-function UnitFrame:ApplyVisualStyle()
-	if self.currentStyle == self.style then return end
-	self.currentStyle = self.style
+function UnitFrame:ApplyVisualStyle(gamepadMode)
+	if self.currentGamepadMode == gamepadMode then return end
+	self.currentGamepadMode = gamepadMode
 
 	DoUnitFrameLayout(self, self.style)
 	local frameTemplate = ZO_GetPlatformTemplate(self.style)
@@ -1452,11 +1458,10 @@ local function CreateGroupAnchorFrames()
 	smallFrame:SetAnchor(TOPLEFT, GuiRoot, TOPLEFT, constants.GROUP_FRAME_BASE_OFFSET_X, constants.GROUP_FRAME_BASE_OFFSET_Y)
 
 	-- Create raid group anchor frames, these are positioned at the default locations
-	for
-		i = 1, NUM_SUBGROUPS
-	do
+	for i = 1, NUM_SUBGROUPS do
 		local raidFrame = CreateControlFromVirtual("ZO_LargeGroupAnchorFrame" .. i, ZO_UnitFramesGroups, "ZO_RaidFrameAnchor")
 		raidFrame:SetDimensions(constants.RAID_FRAME_ANCHOR_CONTAINER_WIDTH, constants.RAID_FRAME_ANCHOR_CONTAINER_HEIGHT)
+		largeGroupAnchorFrames[i] = raidFrame
 
 		GetControl(raidFrame, "GroupName"):SetText(zo_strformat(SI_GROUP_SUBGROUP_LABEL, i))
 
@@ -1669,16 +1674,9 @@ local function CreateTargetFrame()
 	CALLBACK_MANAGER:FireCallbacks("TargetFrameCreated", targetFrame)
 end
 
-local function CreateGroupMember(frameIndex, unitTag, groupSize)
-	if (frameIndex == nil) then return end
-
-	local frameStyle = "ZO_GroupUnitFrame"
-	if (groupSize > SMALL_GROUP_SIZE_THRESHOLD) then
-		frameStyle = "ZO_RaidUnitFrame"
-	end
-
+local function CreateGroupMember(frameIndex, unitTag, style, groupSize)
 	local anchor = GetGroupFrameAnchor(frameIndex, groupSize)
-	local frame = UnitFrames:CreateFrame(unitTag, anchor, HIDE_BAR_TEXT, frameStyle)
+	local frame = UnitFrames:CreateFrame(unitTag, anchor, HIDE_BAR_TEXT, style)
 	frame:SetHiddenForReason("disabled", false)
 
 	ZO_UnitFrames_UpdateWindow(unitTag, UNIT_CHANGED)
@@ -1687,11 +1685,13 @@ end
 local function CreateGroupsAfter(startIndex)
 	local groupSize = GetGroupSize()
 
+	local style = groupSize > SMALL_GROUP_SIZE_THRESHOLD and "ZO_RaidUnitFrame" or "ZO_GroupUnitFrame"
+	local unitTag
 	for i = startIndex, GROUP_SIZE_MAX do
-		local unitTag = GetGroupUnitTagByIndex(i)
+		unitTag = GetGroupUnitTagByIndex(i)
 
 		if unitTag then
-			CreateGroupMember(i, unitTag, groupSize)
+			CreateGroupMember(i, unitTag, style, groupSize)
 		end
 	end
 
@@ -1759,7 +1759,7 @@ local function UpdateGroupFramesVisualStyle()
 	-- Raid group anchor frames.
 	local raidTemplate = ZO_GetPlatformTemplate("ZO_RaidFrameAnchor")
 	for i = 1, NUM_SUBGROUPS do
-		local raidFrame = GetControl("ZO_LargeGroupAnchorFrame" .. i)
+		local raidFrame = largeGroupAnchorFrames[i]
 		ApplyTemplateToControl(raidFrame, raidTemplate)
 
 		-- For some reason, the ModifyTextType attribute on the template isn't being applied to the existing text on the label.
