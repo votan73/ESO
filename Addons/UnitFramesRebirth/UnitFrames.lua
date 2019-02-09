@@ -184,8 +184,11 @@ function UnitFramesManager:New()
 	local unitFrames = ZO_Object.New(self)
 
 	unitFrames.groupFrames = { }
-	unitFrames.raidFrames = { }
+	-- unitFrames.raidFrames = { }
 	unitFrames.staticFrames = { }
+	unitFrames.nameToUnitTag = { }
+	unitFrames.unitTagToName = { }
+
 	unitFrames.groupSize = GetGroupSize()
 	unitFrames.targetOfTargetEnabled = true
 	unitFrames.groupAndRaidHiddenReasons = ZO_HiddenReasons:New()
@@ -203,45 +206,32 @@ end
 function UnitFramesManager:ApplyVisualStyle()
 	ApplyVisualStyleToAllFrames(self.staticFrames)
 	ApplyVisualStyleToAllFrames(self.groupFrames)
-	ApplyVisualStyleToAllFrames(self.raidFrames)
+	-- ApplyVisualStyleToAllFrames(self.raidFrames)
 end
 
 function UnitFramesManager:GetUnitFrameLookupTable(unitTag)
-	if unitTag then
-		local isGroupTag = ZO_Group_IsGroupUnitTag(unitTag)
-
-		if isGroupTag then
-			if self.groupSize <= SMALL_GROUP_SIZE_THRESHOLD then
-				return self.groupFrames
-			else
-				return self.raidFrames
-			end
-		end
-	end
-
-	return self.staticFrames
+	return unitTag and ZO_Group_IsGroupUnitTag(unitTag) and self.groupFrames or self.staticFrames
 end
 
 function UnitFramesManager:GetFrame(unitTag)
 	local unitFrameTable = self:GetUnitFrameLookupTable(unitTag)
 
-	if unitFrameTable then
-		return unitFrameTable[unitTag]
-	end
+	return unitFrameTable and unitFrameTable[unitTag]
 end
 
 function UnitFramesManager:CreateFrame(unitTag, anchors, showBarText, style)
 	local unitFrame = self:GetFrame(unitTag)
-	if unitFrame == nil then
+	if not unitFrame then
 		local unitFrameTable = self:GetUnitFrameLookupTable(unitTag)
 		unitFrame = UnitFrame:New(unitTag, anchors, showBarText, style)
 
 		if unitFrameTable then
 			unitFrameTable[unitTag] = unitFrame
 		end
-	else
+	end
+	if unitFrame then
 		-- Frame already existed, but may need to be reanchored.
-		unitFrame:SetAnchor(anchors)
+		unitFrame:SetData(unitTag, anchors, showBarText, style)
 	end
 
 	return unitFrame
@@ -280,10 +270,10 @@ function UnitFramesManager:ClearDirty()
 end
 
 function UnitFramesManager:DisableGroupAndRaidFrames()
-	-- Disable the raid frames
-	for unitTag, unitFrame in pairs(self.raidFrames) do
-		unitFrame:SetHiddenForReason("disabled", true)
-	end
+	-- -- Disable the raid frames
+	-- for unitTag, unitFrame in pairs(self.raidFrames) do
+	-- 	unitFrame:SetHiddenForReason("disabled", true)
+	-- end
 
 	-- Disable the group frames
 	for unitTag, unitFrame in pairs(self.groupFrames) do
@@ -818,23 +808,12 @@ function UnitFrame:New(unitTag, anchors, showBarText, style)
 
 	local newFrame = ZO_Object.New(self)
 	local baseWindowName = style .. unitTag
-	local parent = ZO_UnitFrames
-
-	if ZO_Group_IsGroupUnitTag(unitTag) then
-		parent = ZO_UnitFramesGroups
-	end
+	local parent = ZO_Group_IsGroupUnitTag(unitTag) and ZO_UnitFramesGroups or ZO_UnitFrames
 
 	local layoutData = GetPlatformLayoutData(style)
-	if (not layoutData) then
-		return
-	end
+	if not layoutData then return end
 
 	newFrame.frame = CreateControlFromVirtual(baseWindowName, parent, style)
-	newFrame.style = style
-	newFrame.hasTarget = false
-	newFrame.unitTag = unitTag
-	newFrame.dirty = true
-	newFrame.animateShowHide = false
 	newFrame.fadeComponents = { }
 	newFrame.hiddenReasons = ZO_HiddenReasons:New()
 
@@ -861,26 +840,42 @@ function UnitFrame:New(unitTag, anchors, showBarText, style)
 	newFrame.rightBracketGlow = GetControl(newFrame.frame, "RightBracketGlow")
 	newFrame.rightBracketUnderlay = GetControl(newFrame.frame, "RightBracketUnderlay")
 
-	newFrame.showBarText = showBarText
-
-	newFrame.healthBar = UnitFrameBar:New(baseWindowName .. "Hp", newFrame.frame, showBarText, style, POWERTYPE_HEALTH)
+	newFrame.healthBar = UnitFrameBar:New("$(parent)Hp", newFrame.frame, showBarText, style, POWERTYPE_HEALTH)
 	newFrame.healthBar:SetColor(POWERTYPE_HEALTH)
 
 	newFrame.resourceBars = { }
 	newFrame.resourceBars[POWERTYPE_HEALTH] = newFrame.healthBar
 
 	newFrame.powerBars = { }
-	newFrame.lastPowerType = 0
-	newFrame.frame.m_unitTag = unitTag
-
-	newFrame:SetAnchor(anchors)
-	newFrame:ApplyVisualStyle()
-	newFrame:RefreshVisible()
 
 	return newFrame
 end
 
+function UnitFrame:SetData(unitTag, anchors, showBarText, style)
+	df("SetData %s", unitTag)
+	local parent = ZO_Group_IsGroupUnitTag(unitTag) and ZO_UnitFramesGroups or ZO_UnitFrames
+	self.frame:SetParent(parent)
+
+	self.style = style
+	self.hasTarget = false
+	self.unitTag = unitTag
+	self.dirty = true
+	self.animateShowHide = false
+
+	self.showBarText = showBarText
+
+	self.lastPowerType = 0
+	self.frame.m_unitTag = unitTag
+
+	self:SetAnchor(anchors)
+	self:ApplyVisualStyle()
+	self:RefreshVisible()
+end
+
 function UnitFrame:ApplyVisualStyle()
+	if self.currentStyle == self.style then return end
+	self.currentStyle = self.style
+
 	DoUnitFrameLayout(self, self.style)
 	local frameTemplate = ZO_GetPlatformTemplate(self.style)
 	ApplyTemplateToControl(self.frame, frameTemplate)
@@ -911,7 +906,7 @@ function UnitFrame:ApplyVisualStyle()
 			end
 		end
 	end
-	local statusBackground = GetControl(self.frame, "Background1")
+	local statusBackground = self.frame:GetNamedChild("Background1")
 	if statusBackground then
 		statusBackground:SetHidden(not isOnline and barData.hideBgIfOffline)
 	end
@@ -936,10 +931,10 @@ function UnitFrame:SetAnimateShowHide(animate)
 end
 
 function UnitFrame:AddFadeComponent(name, setColor)
-	local control = GetControl(self.frame, name)
+	local control = self.frame:GetNamedChild(name)
 	if control then
 		control.setColor = setColor ~= false
-		table.insert(self.fadeComponents, control)
+		self.fadeComponents[#self.fadeComponents + 1] = control
 	end
 	return control
 end
@@ -992,10 +987,6 @@ function UnitFrame:RefreshVisible(instant)
 	local hidden = self:ComputeHidden()
 	if hidden ~= self.hidden then
 		self.hidden = hidden
-		if not hidden and self.dirty then
-			self.dirty = nil
-			self:RefreshControls()
-		end
 
 		if self.animateShowHide and not instant then
 			if not self.showHideTimeline then
@@ -1025,13 +1016,17 @@ function UnitFrame:RefreshVisible(instant)
 			self.buffTracker:SetDisabled(hidden)
 		end
 	end
+	if not hidden then
+		self:RefreshControls()
+	end
 end
 
 function UnitFrame:RefreshControls()
 	if self.hidden then
 		self.dirty = true
 	else
-		if self.hasTarget then
+		if self.hasTarget and self.dirty then
+			self.dirty = nil
 			df("UnitFrame RefreshControls %s", self.unitTag)
 			self:UpdateName()
 			self:UpdateUnitReaction()
@@ -1041,8 +1036,9 @@ function UnitFrame:RefreshControls()
 			local health, maxHealth = GetUnitPower(self.unitTag, POWERTYPE_HEALTH)
 			self.healthBar:Update(POWERTYPE_HEALTH, health, maxHealth, FORCE_INIT)
 
+			local powerType, cur, max
 			for i = 1, NUM_POWER_POOLS do
-				local powerType, cur, max = GetUnitPowerInfo(self.unitTag, i)
+				powerType, cur, max = GetUnitPowerInfo(self.unitTag, i)
 				self:UpdatePowerBar(i, powerType, cur, max, FORCE_INIT)
 			end
 
@@ -1065,6 +1061,7 @@ function UnitFrame:RefreshUnit(unitChanged)
 	end
 
 	if unitChanged or self.hasTarget ~= validTarget then
+		self.dirty = true
 		MenuOwnerClosed(self.frame)
 
 		if self.castBar then
@@ -1888,7 +1885,7 @@ local function RegisterForEvents()
 
 				unitFrame.healthBar:Update(POWERTYPE_HEALTH, powerPool, powerPoolMax)
 
-				if (oldHealth ~= nil and oldHealth == 0) then
+				if oldHealth and oldHealth == 0 then
 					-- Unit went from dead to non dead...update reaction
 					unitFrame:UpdateUnitReaction()
 				end
