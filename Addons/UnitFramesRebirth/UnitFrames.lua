@@ -1824,24 +1824,16 @@ function UnitFrame_HandleMouseExit(frame)
 	end
 end
 
-local function RefreshGroups(eventCode)
-	DoGroupUpdate(eventCode)
-
-	for i = 1, GROUP_SIZE_MAX do
-		ZO_UnitFrames_UpdateWindow(ZO_Group_GetUnitTagForGroupIndex(i))
-	end
-end
-
 local function UpdateStatus(unitTag, isDead, isOnline)
 	local unitFrame = UnitFrames:GetFrame(unitTag)
-	if (unitFrame) then
+	if unitFrame then
 		unitFrame:UpdateStatus(isDead, isOnline)
 		unitFrame:DoAlphaUpdate(IsUnitInGroupSupportRange(unitTag), isOnline, IsUnitGroupLeader(unitTag))
 	end
 
 	if (AreUnitsEqual(unitTag, "reticleover")) then
 		unitFrame = UnitFrames:GetFrame("reticleover")
-		if (unitFrame) then
+		if unitFrame then
 			unitFrame:UpdateStatus(isDead, isOnline)
 		end
 	end
@@ -1918,7 +1910,7 @@ local function RegisterForEvents()
 	local function OnLevelUpdate(eventCode, unitTag, level)
 		local unitFrame = UnitFrames:GetFrame(unitTag)
 
-		if (unitFrame) then
+		if unitFrame then
 			unitFrame:UpdateLevel()
 		end
 	end
@@ -1930,7 +1922,7 @@ local function RegisterForEvents()
 	local function OnDispositionUpdate(eventCode, unitTag)
 		local unitFrame = UnitFrames:GetFrame(unitTag)
 
-		if (unitFrame) then
+		if unitFrame then
 			unitFrame:UpdateUnitReaction()
 		end
 	end
@@ -1938,7 +1930,7 @@ local function RegisterForEvents()
 	local function OnGroupSupportRangeUpdate(evt, unitTag, isNearby)
 		local unitFrame = UnitFrames:GetFrame(unitTag)
 
-		if (unitFrame) then
+		if unitFrame then
 			local isOnline = IsUnitOnline(unitTag)
 			local isLeader = IsUnitGroupLeader(unitTag)
 			unitFrame:DoAlphaUpdate(isNearby, isOnline, isLeader)
@@ -1970,8 +1962,8 @@ local function RegisterForEvents()
 	end
 
 	local function OnGroupMemberLeft(eventCode, characterName, reason, wasLocalPlayer, amLeader)
-		if (wasLocalPlayer) then
-			RefreshGroups(eventCode)
+		if wasLocalPlayer then
+			RequestFullRefresh()
 		end
 	end
 
@@ -1994,7 +1986,7 @@ local function RegisterForEvents()
 	local function OnRankPointUpdate(eventCode, unitTag)
 		local unitFrame = UnitFrames:GetFrame(unitTag)
 
-		if (unitFrame) then
+		if unitFrame then
 			unitFrame:UpdateRank()
 		end
 	end
@@ -2002,7 +1994,7 @@ local function RegisterForEvents()
 	local function OnChampionPointsUpdate(eventCode, unitTag)
 		local unitFrame = UnitFrames:GetFrame(unitTag)
 
-		if (unitFrame) then
+		if unitFrame then
 			unitFrame:UpdateLevel()
 		end
 	end
@@ -2010,7 +2002,7 @@ local function RegisterForEvents()
 	local function OnTitleUpdated(eventCode, unitTag)
 		local unitFrame = UnitFrames:GetFrame(unitTag)
 
-		if (unitFrame) then
+		if unitFrame then
 			unitFrame:UpdateCaption()
 		end
 	end
@@ -2031,7 +2023,7 @@ local function RegisterForEvents()
 
 	local function OnInterfaceSettingChanged(eventCode)
 		-- Groups do not update every frame (they wait for events), so refresh if the primary name option may have changed
-		RefreshGroups(eventCode)
+		RequestFullRefresh()
 	end
 
 	local function OnGuildNameAvailable()
