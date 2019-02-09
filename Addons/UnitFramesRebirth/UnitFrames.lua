@@ -1386,15 +1386,15 @@ function UnitFrame:UpdateStatus(isDead, isOnline)
 		end
 
 		if (layoutData and layoutData.showStatusInName) then
-			if (not isOnline) then
-				statusLabel:SetText("(" .. GetString(SI_UNIT_FRAME_STATUS_OFFLINE) .. ")")
+			if not isOnline then
+				statusLabel:SetText(string.format("(%s)", GetString(SI_UNIT_FRAME_STATUS_OFFLINE)))
 			elseif (isDead) then
-				statusLabel:SetText("(" .. GetString(SI_UNIT_FRAME_STATUS_DEAD) .. ")")
+				statusLabel:SetText(string.format("(%s)", GetString(SI_UNIT_FRAME_STATUS_DEAD)))
 			else
 				statusLabel:SetText("")
 			end
 		else
-			if (not isOnline) then
+			if not isOnline then
 				statusLabel:SetText(GetString(SI_UNIT_FRAME_STATUS_OFFLINE))
 			elseif (isDead) then
 				statusLabel:SetText(GetString(SI_UNIT_FRAME_STATUS_DEAD))
@@ -1772,13 +1772,15 @@ local function UpdateGroupFramesVisualStyle()
 	end
 
 	-- Update all UnitFrame anchors.
-	local groupSize = GetGroupSize()
+	local groupSize = UnitFrames.groupSize or GetGroupSize()
+	local unitTag, unitFrame
 	for i = 1, GROUP_SIZE_MAX do
-		local unitTag = GetGroupUnitTagByIndex(i)
+		unitTag = GetGroupUnitTagByIndex(i)
 		if unitTag then
-			local unitFrame = UnitFrames:GetFrame(unitTag)
-			local anchor = GetGroupFrameAnchor(i, groupSize)
-			unitFrame:SetAnchor(anchor)
+			unitFrame = UnitFrames:GetFrame(unitTag)
+			if unitFrame then
+				unitFrame:SetAnchor(GetGroupFrameAnchor(i, groupSize))
+			end
 		end
 	end
 
@@ -1858,6 +1860,11 @@ function ZO_UnitFrames_IsTargetOfTargetEnabled()
 end
 
 local function RegisterForEvents()
+	local delayedUpdateIdentifier = "UnitFramesRebirth_OnGroupUpdate"
+
+	local function RequestFullRefresh()
+		UnitFrames.firstDirtyGroupIndex = 1
+	end
 	local function OnTargetChanged(evt, unitTag)
 		ZO_UnitFrames_UpdateWindow("reticleovertarget", UNIT_CHANGED)
 	end
@@ -1891,6 +1898,7 @@ local function RegisterForEvents()
 	end
 
 	local function OnUnitCreated(evt, unitTag)
+		d("OnUnitCreated")
 		if (ZO_Group_IsGroupUnitTag(unitTag)) then
 			ReportUnitChanged(unitTag)
 		else
@@ -1899,6 +1907,7 @@ local function RegisterForEvents()
 	end
 
 	local function OnUnitDestroyed(evt, unitTag)
+		d("OnUnitDestroyed")
 		if (ZO_Group_IsGroupUnitTag(unitTag)) then
 			ReportUnitChanged(unitTag)
 		else
@@ -1946,11 +1955,10 @@ local function RegisterForEvents()
 		end
 	end
 
-	local delayedUpdateIdentifier = "UnitFramesRebirth_OnGroupUpdate"
 	local function delayedUpdate()
 		EVENT_MANAGER:UnregisterForUpdate(delayedUpdateIdentifier)
 		d("OnGroupUpdate executed")
-		UnitFrames.firstDirtyGroupIndex = 1
+		RequestFullRefresh()
 	end
 	local function OnGroupUpdate(eventCode)
 		-- Pretty much anything can happen on a full group update so refresh everything
@@ -1968,6 +1976,7 @@ local function RegisterForEvents()
 	end
 
 	local function OnGroupMemberConnectedStateChanged(event, unitTag, isOnline)
+		d("OnGroupMemberConnectedStateChanged")
 		UpdateStatus(unitTag, IsUnitDead(unitTag), isOnline)
 	end
 
@@ -2011,9 +2020,9 @@ local function RegisterForEvents()
 		ZO_UnitFrames_UpdateWindow("reticleovertarget", UNIT_CHANGED)
 
 		-- do a full update because we probably missed events while loading
-		UnitFrames:SetGroupSize()
-		UnitFrames:DisableGroupAndRaidFrames()
-		CreateGroups()
+		-- UnitFrames:SetGroupSize()
+		-- UnitFrames:DisableGroupAndRaidFrames()
+		RequestFullRefresh()
 	end
 
 	local function OnTargetOfTargetEnabledChanged(enabled)
@@ -2083,7 +2092,9 @@ do
 		UnitFrames = UnitFramesManager:New()
 
 		CreateTargetFrame()
-		CreateGroups()
+		-- CreateGroups()
+
+		UNIT_FRAMES = UnitFrames
 
 		local function OnGamepadPreferredModeChanged()
 			UnitFrames:ApplyVisualStyle()
@@ -2091,8 +2102,6 @@ do
 			UpdateLeaderIndicator()
 		end
 		ZO_PlatformStyle:New(OnGamepadPreferredModeChanged)
-
-		UNIT_FRAMES = UnitFrames
 
 		CALLBACK_MANAGER:FireCallbacks("UnitFramesCreated")
 	end
