@@ -237,10 +237,6 @@ function UnitFramesManager:CreateFrame(unitTag, anchors, showBarText, style)
 			unitFrameTable[unitTag] = unitFrame
 		end
 	end
-	if unitFrame then
-		-- Frame already existed, but may need to be reanchored.
-		unitFrame:SetData(unitTag, anchors, showBarText, style)
-	end
 
 	return unitFrame
 end
@@ -860,7 +856,7 @@ function UnitFrame:New(unitTag, anchors, showBarText, style)
 	return newFrame
 end
 
-function UnitFrame:SetData(unitTag, anchors, showBarText, style)
+function UnitFrame:SetData(unitTag, anchors, showBarText)
 	df("SetData %s", unitTag)
 
 	self.hasTarget = false
@@ -870,11 +866,11 @@ function UnitFrame:SetData(unitTag, anchors, showBarText, style)
 
 	self.showBarText = showBarText
 
-	self.lastPowerType = 0
+	self.lastPowerType = POWERTYPE_INVALID
 	self.frame.m_unitTag = unitTag
 
 	self:SetAnchor(anchors)
-	self:ApplyVisualStyle()
+	self:ApplyVisualStyle(UnitFrames.gamepadMode)
 	self:RefreshVisible()
 end
 
@@ -1032,27 +1028,28 @@ function UnitFrame:RefreshControls()
 		self.dirty = true
 	else
 		if self.hasTarget and self.dirty then
-			self.dirty = nil
-			df("UnitFrame RefreshControls %s", self.unitTag)
+			self.dirty = false
+			local unitTag = self.unitTag
+			df("UnitFrame RefreshControls %s", unitTag)
 			self:UpdateName()
 			self:UpdateUnitReaction()
 			self:UpdateLevel()
 			self:UpdateCaption()
 
-			local health, maxHealth = GetUnitPower(self.unitTag, POWERTYPE_HEALTH)
+			local health, maxHealth = GetUnitPower(unitTag, POWERTYPE_HEALTH)
 			self.healthBar:Update(POWERTYPE_HEALTH, health, maxHealth, FORCE_INIT)
 
 			local powerType, cur, max
 			for i = 1, NUM_POWER_POOLS do
-				powerType, cur, max = GetUnitPowerInfo(self.unitTag, i)
+				powerType, cur, max = GetUnitPowerInfo(unitTag, i)
 				self:UpdatePowerBar(i, powerType, cur, max, FORCE_INIT)
 			end
 
-			self:UpdateStatus(IsUnitDead(self.unitTag), IsUnitOnline(self.unitTag))
+			self:UpdateStatus(IsUnitDead(unitTag), IsUnitOnline(unitTag))
 			self:UpdateRank()
 			self:UpdateAssignment()
 			self:UpdateDifficulty()
-			self:DoAlphaUpdate(IsUnitInGroupSupportRange(self.unitTag), IsUnitOnline(self.unitTag), IsUnitGroupLeader(self.unitTag))
+			self:DoAlphaUpdate(IsUnitInGroupSupportRange(unitTag), IsUnitOnline(unitTag), IsUnitGroupLeader(unitTag))
 		end
 	end
 end
@@ -1076,6 +1073,7 @@ function UnitFrame:RefreshUnit(unitChanged)
 	end
 
 	self:SetHasTarget(validTarget)
+	self:RefreshControls()
 end
 
 function UnitFrame:SetBarsHidden(hidden)
@@ -1445,7 +1443,6 @@ function ZO_UnitFrames_UpdateWindow(unitTag, unitChanged)
 	local unitFrame = UnitFrames:GetFrame(unitTag)
 	if unitFrame then
 		unitFrame:RefreshUnit(unitChanged)
-		unitFrame:RefreshControls()
 	end
 end
 
@@ -1588,7 +1585,10 @@ local TARGET_ATTRIBUTE_VISUALIZER_SOUNDS =
 local function CreateTargetFrame()
 	local targetFrameAnchor = ZO_Anchor:New(TOP, GuiRoot, TOP, 0, 88)
 	local targetFrame = UnitFrames:CreateFrame("reticleover", targetFrameAnchor, HIDE_BAR_TEXT, "ZO_TargetUnitFrame")
-	targetFrame:SetAnimateShowHide(true)
+	if targetFrame then
+		targetFrame:SetData("reticleover", targetFrameAnchor, HIDE_BAR_TEXT)
+		targetFrame:SetAnimateShowHide(true)
+	end
 	local visualizer = targetFrame:CreateAttributeVisualizer(TARGET_ATTRIBUTE_VISUALIZER_SOUNDS)
 
 	visualizer:AddModule(ZO_UnitVisualizer_ArrowRegenerationModule:New())
@@ -1677,9 +1677,11 @@ end
 local function CreateGroupMember(frameIndex, unitTag, style, groupSize)
 	local anchor = GetGroupFrameAnchor(frameIndex, groupSize)
 	local frame = UnitFrames:CreateFrame(unitTag, anchor, HIDE_BAR_TEXT, style)
-	frame:SetHiddenForReason("disabled", false)
-
-	ZO_UnitFrames_UpdateWindow(unitTag, UNIT_CHANGED)
+	if frame then
+		frame:SetHiddenForReason("disabled", false)
+		frame:SetData(unitTag, anchor, HIDE_BAR_TEXT)
+		ZO_UnitFrames_UpdateWindow(unitTag, UNIT_CHANGED)
+	end
 end
 
 local function CreateGroupsAfter(startIndex)
@@ -1726,13 +1728,6 @@ local function UpdateGroupFrameStyle(groupIndex)
 		-- Only update the frames of the unit being changed, and those after it in the list for performance
 		--  reasons.
 		CreateGroupsAfter(groupIndex)
-	end
-end
-
-local function RefreshUnitFrames()
-	if UnitFrames:GetIsDirty() then
-		UpdateGroupFrameStyle(UnitFrames:GetFirstDirtyGroupIndex())
-		UnitFrames:ClearDirty()
 	end
 end
 
@@ -2050,6 +2045,7 @@ local function RegisterForEvents()
 	ZO_UnitFrames:RegisterForEvent(EVENT_LEVEL_UPDATE, OnLevelUpdate)
 	ZO_UnitFrames:RegisterForEvent(EVENT_LEADER_UPDATE, OnLeaderUpdate)
 	ZO_UnitFrames:RegisterForEvent(EVENT_DISPOSITION_UPDATE, OnDispositionUpdate)
+	ZO_UnitFrames:AddFilterForEvent(EVENT_DISPOSITION_UPDATE, REGISTER_FILTER_UNIT_TAG_PREFIX, "group")
 	ZO_UnitFrames:RegisterForEvent(EVENT_GROUP_SUPPORT_RANGE_UPDATE, OnGroupSupportRangeUpdate)
 	ZO_UnitFrames:RegisterForEvent(EVENT_GROUP_UPDATE, OnGroupUpdate)
 	ZO_UnitFrames:RegisterForEvent(EVENT_GROUP_MEMBER_LEFT, OnGroupMemberLeft)
@@ -2100,6 +2096,7 @@ end
 
 function ZO_UnitFrames_OnUpdate()
 	if UnitFrames and UnitFrames:GetIsDirty() then
-		RefreshUnitFrames()
+		UpdateGroupFrameStyle(UnitFrames:GetFirstDirtyGroupIndex())
+		UnitFrames:ClearDirty()
 	end
 end
