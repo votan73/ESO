@@ -1709,17 +1709,17 @@ end
 -- goes above or below the "small group" or "raid group" thresholds.
 local function UpdateGroupFrameStyle(groupIndex)
 	local groupSize = GetGroupSize()
-	local oldGroupSize = UnitFrames.groupSize
+	local oldGroupSize = UnitFrames.groupSize or -1
 
-	local oldLargeGroup =(oldGroupSize ~= nil) and(oldGroupSize > SMALL_GROUP_SIZE_THRESHOLD);
-	local newLargeGroup = groupSize > SMALL_GROUP_SIZE_THRESHOLD;
+	local oldLargeGroup = oldGroupSize > SMALL_GROUP_SIZE_THRESHOLD
+	local newLargeGroup = groupSize > SMALL_GROUP_SIZE_THRESHOLD
 
 	UnitFrames:SetGroupSize(groupSize)
 
 	-- In cases where no UI has been setup, the group changes between large and small group sizes, or when
 	--  members are removed, we need to run a full update of the UI. These could also be optimized to only
 	--  run partial updates if more performance is needed.
-	if (oldGroupSize == nil) or(oldLargeGroup ~= newLargeGroup) or(oldGroupSize > groupSize) then
+	if oldLargeGroup ~= newLargeGroup or groupSize <= 1 then
 		-- Create all the appropriate frames for the new group member, or in the case of a unit_destroyed
 		-- create the small group versions.
 		UnitFrames:DisableGroupAndRaidFrames()
@@ -1946,12 +1946,19 @@ local function RegisterForEvents()
 		end
 	end
 
+	local delayedUpdateIdentifier = "UnitFramesRebirth_OnGroupUpdate"
+	local function delayedUpdate()
+		EVENT_MANAGER:UnregisterForUpdate(delayedUpdateIdentifier)
+		d("OnGroupUpdate executed")
+		UnitFrames.firstDirtyGroupIndex = 1
+	end
 	local function OnGroupUpdate(eventCode)
 		-- Pretty much anything can happen on a full group update so refresh everything
-		UnitFrames:SetGroupSize(GetGroupSize())
-		UnitFrames:DisableGroupAndRaidFrames()
-		CreateGroups()
-		UnitFrames:ClearDirty()
+		-- 	UnitFrames:SetGroupSize(GetGroupSize())
+		-- 	UnitFrames:DisableGroupAndRaidFrames()
+		d("OnGroupUpdate")
+		EVENT_MANAGER:UnregisterForUpdate(delayedUpdateIdentifier)
+		EVENT_MANAGER:RegisterForUpdate(delayedUpdateIdentifier, 2000, delayedUpdate)
 	end
 
 	local function OnGroupMemberLeft(eventCode, characterName, reason, wasLocalPlayer, amLeader)
