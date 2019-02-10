@@ -1869,7 +1869,6 @@ function ZO_UnitFrames_IsTargetOfTargetEnabled()
 end
 
 local function RegisterForEvents()
-	-- local delayedUpdateIdentifier = "UnitFramesRebirth_OnGroupUpdate"
 
 	local function RequestFullRefresh()
 		UnitFrames.firstDirtyGroupIndex = 1
@@ -1907,8 +1906,8 @@ local function RegisterForEvents()
 	end
 
 	local function OnUnitCreated(evt, unitTag)
-		d("OnUnitCreated")
 		if (ZO_Group_IsGroupUnitTag(unitTag)) then
+			d("OnUnitCreated")
 			local groupIndex = GetGroupIndexByUnitTag(unitTag)
 			UnitFrames:SetGroupIndexDirty(groupIndex)
 		else
@@ -1917,7 +1916,6 @@ local function RegisterForEvents()
 	end
 
 	local function OnUnitDestroyed(evt, unitTag)
-		df("OnUnitDestroyed", unitTag, ZO_Group_IsGroupUnitTag(unitTag))
 		if ZO_Group_IsGroupUnitTag(unitTag) then
 			local unitFrame = UnitFrames:GetFrame(unitTag)
 
@@ -1926,11 +1924,11 @@ local function RegisterForEvents()
 				-- In this case GetGroupIndexByUnitTag is working.
 				-- But for a leaving unit GetGroupIndexByUnitTag returns 4294967296.
 				-- The trick is to store the last used index in the unitFrame.
-				d("jo", GetGroupIndexByUnitTag(unitTag), unitFrame.index)
+				d("OnUnitDestroyed", GetGroupIndexByUnitTag(unitTag), unitFrame.index)
 				UnitFrames:SetGroupIndexDirty(unitFrame.index)
 				unitFrame.index = 4294967296
 				-- unitFrame.healthBar.currentValue = 0
-				unitFrame:RefreshUnit(UNIT_CHANGED)
+				unitFrame:SetHasTarget(false)
 			end
 		else
 			ZO_UnitFrames_UpdateWindow(unitTag)
@@ -1976,20 +1974,6 @@ local function RegisterForEvents()
 			end
 		end
 	end
-
-	-- local function delayedUpdate()
-	-- 	EVENT_MANAGER:UnregisterForUpdate(delayedUpdateIdentifier)
-	-- 	d("OnGroupUpdate executed")
-	-- 	RequestFullRefresh()
-	-- end
-	-- local function OnGroupUpdate(eventCode)
-	-- 	-- Pretty much anything can happen on a full group update so refresh everything
-	-- 	-- 	UnitFrames:SetGroupSize(GetGroupSize())
-	-- 	-- 	UnitFrames:DisableGroupAndRaidFrames()
-	-- 	d("OnGroupUpdate")
-	-- 	EVENT_MANAGER:UnregisterForUpdate(delayedUpdateIdentifier)
-	-- 	EVENT_MANAGER:RegisterForUpdate(delayedUpdateIdentifier, 2000, delayedUpdate)
-	-- end
 
 	local function OnGroupMemberLeft(eventCode, characterName, reason, wasLocalPlayer, amLeader)
 		if wasLocalPlayer then
