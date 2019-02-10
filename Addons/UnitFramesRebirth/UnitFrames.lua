@@ -1354,22 +1354,37 @@ function UnitFrame:UpdateName()
 	end
 end
 
-function UnitFrame:UpdateCaption()
-	local captionLabel = self.captionLabel
-	if captionLabel then
-		local caption
-		local unitTag = self:GetUnitTag()
-		if IsUnitPlayer(unitTag) then
-			local iconSize = IsInGamepadPreferredMode() and "100%" or "120%"
-			caption = string.format("%s %s", zo_iconFormat(GetPlatformClassIcon(GetUnitClassId(unitTag)), iconSize, iconSize), ZO_GetSecondaryPlayerNameWithTitleFromUnitTag(unitTag))
+do
+	local function ZO_GetSecondaryPlayerNameWithTitleFromUnitTag(unitTag)
+		local name = ZO_GetSecondaryPlayerNameFromUnitTag(unitTag)
+		local title = GetUnitTitle(unitTag)
+		if title ~= "" then
+			-- Will this fill up the memory? And if so, who cares in an x64 env?
+			return ZO_CachedStrFormat(SI_PLAYER_NAME_WITH_TITLE_FORMAT, name, title)
 		else
-			caption = zo_strformat(SI_TOOLTIP_UNIT_CAPTION, GetUnitCaption(unitTag))
+			return name
 		end
+	end
 
-		local hideCaption = caption == ""
-		captionLabel:SetHidden(hideCaption)
-		captionLabel:SetText(caption)
-		-- still set the caption text when empty so we collapse the label for anything anchoring off the bottom of it
+	function UnitFrame:UpdateCaption()
+		local captionLabel = self.captionLabel
+		if captionLabel then
+			local caption
+			local unitTag = self:GetUnitTag()
+			if IsUnitPlayer(unitTag) then
+				local start = GetGameTimeSeconds()
+				local iconSize = IsInGamepadPreferredMode() and "100%" or "120%"
+				caption = string.format("%s %s", zo_iconFormat(GetPlatformClassIcon(GetUnitClassId(unitTag)), iconSize, iconSize), ZO_GetSecondaryPlayerNameWithTitleFromUnitTag(unitTag))
+				d((GetGameTimeSeconds() - start) * 1000)
+			else
+				caption = ZO_CachedStrFormat(SI_TOOLTIP_UNIT_CAPTION, GetUnitCaption(unitTag))
+			end
+
+			local hideCaption = caption == ""
+			captionLabel:SetHidden(hideCaption)
+			captionLabel:SetText(caption)
+			-- still set the caption text when empty so we collapse the label for anything anchoring off the bottom of it
+		end
 	end
 end
 
@@ -1854,7 +1869,7 @@ function ZO_UnitFrames_IsTargetOfTargetEnabled()
 end
 
 local function RegisterForEvents()
---	local delayedUpdateIdentifier = "UnitFramesRebirth_OnGroupUpdate"
+	-- local delayedUpdateIdentifier = "UnitFramesRebirth_OnGroupUpdate"
 
 	local function RequestFullRefresh()
 		UnitFrames.firstDirtyGroupIndex = 1
@@ -1909,11 +1924,11 @@ local function RegisterForEvents()
 			if unitFrame then
 				-- OnUnitDestroyed is called, if a joining unit replaces a previous one.
 				-- In this case GetGroupIndexByUnitTag is working.
-				-- But for a leaving unit GetGroupIndexByUnitTag returns UInt32.MaxValue.
+				-- But for a leaving unit GetGroupIndexByUnitTag returns 4294967296.
 				-- The trick is to store the last used index in the unitFrame.
 				d("jo", GetGroupIndexByUnitTag(unitTag), unitFrame.index)
 				UnitFrames:SetGroupIndexDirty(unitFrame.index)
-				unitFrame.index = 4294967295
+				unitFrame.index = 4294967296
 				-- unitFrame.healthBar.currentValue = 0
 				unitFrame:RefreshUnit(UNIT_CHANGED)
 			end
@@ -2025,6 +2040,9 @@ local function RegisterForEvents()
 	local function OnPlayerActivated(eventCode)
 		ZO_UnitFrames_UpdateWindow("reticleover", UNIT_CHANGED)
 		ZO_UnitFrames_UpdateWindow("reticleovertarget", UNIT_CHANGED)
+
+		-- Clear cache of ZO_GetSecondaryPlayerNameWithTitleFromUnitTag
+		ZO_ResetCachedStrFormat(SI_PLAYER_NAME_WITH_TITLE_FORMAT)
 
 		-- do a full update because we probably missed events while loading
 		RequestFullRefresh()
