@@ -266,6 +266,7 @@ function UnitFramesManager:SetGroupIndexDirty(groupIndex)
 	-- So we really just need to know what is the smallest groupIndex that is being changed
 	if not self.firstDirtyGroupIndex or groupIndex < self.firstDirtyGroupIndex then
 		self.firstDirtyGroupIndex = groupIndex
+		df("SetGroupIndexDirty %i", groupIndex)
 	end
 end
 
@@ -808,8 +809,6 @@ end
 UnitFrame = ZO_Object:Subclass()
 
 function UnitFrame:New(unitTag, anchors, showBarText, style)
-	df("New UnitFrame %s", unitTag)
-
 	local newFrame = ZO_Object.New(self)
 	local baseWindowName = style .. unitTag
 	local parent = ZO_Group_IsGroupUnitTag(unitTag) and ZO_UnitFramesGroups or ZO_UnitFrames
@@ -1029,8 +1028,8 @@ function UnitFrame:RefreshControls()
 	else
 		if self.hasTarget and self.dirty then
 			self.dirty = false
-			local unitTag = self.unitTag
-			df("UnitFrame RefreshControls %s", unitTag)
+			local unitTag = self:GetUnitTag()
+			-- df("UnitFrame RefreshControls %s", unitTag)
 			self:UpdateName()
 			self:UpdateUnitReaction()
 			self:UpdateLevel()
@@ -1130,14 +1129,14 @@ function UnitFrame:UpdatePowerBar(index, powerType, cur, max, forceInit)
 
 	local currentBar = self.powerBars[index]
 
-	if (currentBar == nil) then
-		self.powerBars[index] = UnitFrameBar:New(self.frame:GetName() .. "PowerBar" .. index, self.frame, self.showBarText, self.style, powerType)
+	if not currentBar then
+		self.powerBars[index] = UnitFrameBar:New("$(parent)PowerBar" .. index, self.frame, self.showBarText, self.style, powerType)
 		currentBar = self.powerBars[index]
 		currentBar:SetColor(powerType)
 		self.resourceBars[powerType] = currentBar
 	end
 
-	if (currentBar ~= nil) then
+	if currentBar then
 		currentBar:Update(powerType, cur, max, forceInit)
 
 		currentBar:Hide(powerType == POWERTYPE_INVALID)
@@ -1303,10 +1302,11 @@ end
 
 function UnitFrame:UpdateDifficulty()
 	if self.leftBracket then
-		local difficulty = GetUnitDifficulty(self:GetUnitTag())
+		local unitTag = self:GetUnitTag()
+		local difficulty = GetUnitDifficulty(unitTag)
 
 		-- show difficulty for neutral and hostile NPCs
-		local unitReaction = GetUnitReaction(self:GetUnitTag())
+		local unitReaction = GetUnitReaction(unitTag)
 		local showsDifficulty =(difficulty > MONSTER_DIFFICULTY_EASY) and(unitReaction == UNIT_REACTION_NEUTRAL or unitReaction == UNIT_REACTION_HOSTILE)
 
 		self.leftBracket:SetHidden(not showsDifficulty)
@@ -1360,7 +1360,8 @@ function UnitFrame:UpdateCaption()
 		local caption
 		local unitTag = self:GetUnitTag()
 		if IsUnitPlayer(unitTag) then
-			caption = ZO_GetSecondaryPlayerNameWithTitleFromUnitTag(unitTag)
+			local iconSize = IsInGamepadPreferredMode() and "100%" or "120%"
+			caption = string.format("%s %s", zo_iconFormat(GetPlatformClassIcon(GetUnitClassId(unitTag)), iconSize, iconSize), ZO_GetSecondaryPlayerNameWithTitleFromUnitTag(unitTag))
 		else
 			caption = zo_strformat(SI_TOOLTIP_UNIT_CAPTION, GetUnitCaption(unitTag))
 		end
@@ -1455,14 +1456,15 @@ local function CreateGroupAnchorFrames()
 	smallFrame:SetAnchor(TOPLEFT, GuiRoot, TOPLEFT, constants.GROUP_FRAME_BASE_OFFSET_X, constants.GROUP_FRAME_BASE_OFFSET_Y)
 
 	-- Create raid group anchor frames, these are positioned at the default locations
+	local raidFrame, x, y
 	for i = 1, NUM_SUBGROUPS do
-		local raidFrame = CreateControlFromVirtual("ZO_LargeGroupAnchorFrame" .. i, ZO_UnitFramesGroups, "ZO_RaidFrameAnchor")
+		raidFrame = CreateControlFromVirtual("ZO_LargeGroupAnchorFrame" .. i, ZO_UnitFramesGroups, "ZO_RaidFrameAnchor")
 		raidFrame:SetDimensions(constants.RAID_FRAME_ANCHOR_CONTAINER_WIDTH, constants.RAID_FRAME_ANCHOR_CONTAINER_HEIGHT)
 		largeGroupAnchorFrames[i] = raidFrame
 
 		GetControl(raidFrame, "GroupName"):SetText(zo_strformat(SI_GROUP_SUBGROUP_LABEL, i))
 
-		local x, y = GetGroupAnchorFrameOffsets(i, constants.GROUP_STRIDE, constants)
+		x, y = GetGroupAnchorFrameOffsets(i, constants.GROUP_STRIDE, constants)
 		raidFrame:SetAnchor(TOPLEFT, GuiRoot, TOPLEFT, x, y)
 	end
 end
@@ -1470,9 +1472,10 @@ end
 local function UpdateLeaderIndicator()
 	ZO_UnitFrames_Leader:SetHidden(true)
 
+	local unitTag, unitFrame
 	for i = 1, GROUP_SIZE_MAX do
-		local unitTag = GetGroupUnitTagByIndex(i)
-		local unitFrame = unitTag and UnitFrames:GetFrame(unitTag)
+		unitTag = GetGroupUnitTagByIndex(i)
+		unitFrame = unitTag and UnitFrames:GetFrame(unitTag)
 
 		if unitFrame then
 			if IsUnitGroupLeader(unitTag) then
@@ -1676,10 +1679,12 @@ end
 
 local function CreateGroupMember(frameIndex, unitTag, style, groupSize)
 	local anchor = GetGroupFrameAnchor(frameIndex, groupSize)
-	local frame = UnitFrames:CreateFrame(unitTag, anchor, HIDE_BAR_TEXT, style)
-	if frame then
-		frame:SetHiddenForReason("disabled", false)
-		frame:SetData(unitTag, anchor, HIDE_BAR_TEXT)
+	local unitFrame = UnitFrames:CreateFrame(unitTag, anchor, HIDE_BAR_TEXT, style)
+	if unitFrame then
+		-- For OnUnitDestroyed
+		unitFrame.index = frameIndex
+		unitFrame:SetHiddenForReason("disabled", false)
+		unitFrame:SetData(unitTag, anchor, HIDE_BAR_TEXT)
 		ZO_UnitFrames_UpdateWindow(unitTag, UNIT_CHANGED)
 	end
 end
@@ -1731,11 +1736,6 @@ local function UpdateGroupFrameStyle(groupIndex)
 	end
 end
 
-local function ReportUnitChanged(unitTag)
-	local groupIndex = GetGroupIndexByUnitTag(unitTag)
-	UnitFrames:SetGroupIndexDirty(groupIndex)
-end
-
 local function SetAnchorOffsets(control, offsetX, offsetY)
 	local isValid, point, target, relPoint = control:GetAnchor(0)
 	if isValid then
@@ -1779,6 +1779,8 @@ local function UpdateGroupFramesVisualStyle()
 		if unitTag then
 			unitFrame = UnitFrames:GetFrame(unitTag)
 			if unitFrame then
+				-- For OnUnitDestroyed
+				unitFrame.index = i
 				unitFrame:SetAnchor(GetGroupFrameAnchor(i, groupSize))
 			end
 		end
@@ -1852,7 +1854,7 @@ function ZO_UnitFrames_IsTargetOfTargetEnabled()
 end
 
 local function RegisterForEvents()
-	local delayedUpdateIdentifier = "UnitFramesRebirth_OnGroupUpdate"
+--	local delayedUpdateIdentifier = "UnitFramesRebirth_OnGroupUpdate"
 
 	local function RequestFullRefresh()
 		UnitFrames.firstDirtyGroupIndex = 1
@@ -1892,16 +1894,29 @@ local function RegisterForEvents()
 	local function OnUnitCreated(evt, unitTag)
 		d("OnUnitCreated")
 		if (ZO_Group_IsGroupUnitTag(unitTag)) then
-			ReportUnitChanged(unitTag)
+			local groupIndex = GetGroupIndexByUnitTag(unitTag)
+			UnitFrames:SetGroupIndexDirty(groupIndex)
 		else
 			ZO_UnitFrames_UpdateWindow(unitTag, UNIT_CHANGED)
 		end
 	end
 
 	local function OnUnitDestroyed(evt, unitTag)
-		d("OnUnitDestroyed")
-		if (ZO_Group_IsGroupUnitTag(unitTag)) then
-			ReportUnitChanged(unitTag)
+		df("OnUnitDestroyed", unitTag, ZO_Group_IsGroupUnitTag(unitTag))
+		if ZO_Group_IsGroupUnitTag(unitTag) then
+			local unitFrame = UnitFrames:GetFrame(unitTag)
+
+			if unitFrame then
+				-- OnUnitDestroyed is called, if a joining unit replaces a previous one.
+				-- In this case GetGroupIndexByUnitTag is working.
+				-- But for a leaving unit GetGroupIndexByUnitTag returns UInt32.MaxValue.
+				-- The trick is to store the last used index in the unitFrame.
+				d("jo", GetGroupIndexByUnitTag(unitTag), unitFrame.index)
+				UnitFrames:SetGroupIndexDirty(unitFrame.index)
+				unitFrame.index = 4294967295
+				-- unitFrame.healthBar.currentValue = 0
+				unitFrame:RefreshUnit(UNIT_CHANGED)
+			end
 		else
 			ZO_UnitFrames_UpdateWindow(unitTag)
 		end
@@ -1947,19 +1962,19 @@ local function RegisterForEvents()
 		end
 	end
 
-	local function delayedUpdate()
-		EVENT_MANAGER:UnregisterForUpdate(delayedUpdateIdentifier)
-		d("OnGroupUpdate executed")
-		RequestFullRefresh()
-	end
-	local function OnGroupUpdate(eventCode)
-		-- Pretty much anything can happen on a full group update so refresh everything
-		-- 	UnitFrames:SetGroupSize(GetGroupSize())
-		-- 	UnitFrames:DisableGroupAndRaidFrames()
-		d("OnGroupUpdate")
-		EVENT_MANAGER:UnregisterForUpdate(delayedUpdateIdentifier)
-		EVENT_MANAGER:RegisterForUpdate(delayedUpdateIdentifier, 2000, delayedUpdate)
-	end
+	-- local function delayedUpdate()
+	-- 	EVENT_MANAGER:UnregisterForUpdate(delayedUpdateIdentifier)
+	-- 	d("OnGroupUpdate executed")
+	-- 	RequestFullRefresh()
+	-- end
+	-- local function OnGroupUpdate(eventCode)
+	-- 	-- Pretty much anything can happen on a full group update so refresh everything
+	-- 	-- 	UnitFrames:SetGroupSize(GetGroupSize())
+	-- 	-- 	UnitFrames:DisableGroupAndRaidFrames()
+	-- 	d("OnGroupUpdate")
+	-- 	EVENT_MANAGER:UnregisterForUpdate(delayedUpdateIdentifier)
+	-- 	EVENT_MANAGER:RegisterForUpdate(delayedUpdateIdentifier, 2000, delayedUpdate)
+	-- end
 
 	local function OnGroupMemberLeft(eventCode, characterName, reason, wasLocalPlayer, amLeader)
 		if wasLocalPlayer then
@@ -2012,8 +2027,6 @@ local function RegisterForEvents()
 		ZO_UnitFrames_UpdateWindow("reticleovertarget", UNIT_CHANGED)
 
 		-- do a full update because we probably missed events while loading
-		-- UnitFrames:SetGroupSize()
-		-- UnitFrames:DisableGroupAndRaidFrames()
 		RequestFullRefresh()
 	end
 
@@ -2055,7 +2068,8 @@ local function RegisterForEvents()
 	ZO_UnitFrames:RegisterForEvent(EVENT_DISPOSITION_UPDATE, OnDispositionUpdate)
 	ZO_UnitFrames:AddFilterForEvent(EVENT_DISPOSITION_UPDATE, REGISTER_FILTER_UNIT_TAG_PREFIX, "group")
 	ZO_UnitFrames:RegisterForEvent(EVENT_GROUP_SUPPORT_RANGE_UPDATE, OnGroupSupportRangeUpdate)
-	ZO_UnitFrames:RegisterForEvent(EVENT_GROUP_UPDATE, OnGroupUpdate)
+	-- Not needed here. Just causing full updates for every unit zoning (via wayshrine).
+	-- ZO_UnitFrames:RegisterForEvent(EVENT_GROUP_UPDATE, OnGroupUpdate)
 	ZO_UnitFrames:RegisterForEvent(EVENT_GROUP_MEMBER_LEFT, OnGroupMemberLeft)
 	ZO_UnitFrames:RegisterForEvent(EVENT_GROUP_MEMBER_CONNECTED_STATUS, OnGroupMemberConnectedStateChanged)
 	ZO_UnitFrames:RegisterForEvent(EVENT_GROUP_MEMBER_ROLE_CHANGED, OnGroupMemberRoleChanged)
