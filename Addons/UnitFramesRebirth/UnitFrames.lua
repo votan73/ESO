@@ -966,9 +966,12 @@ function UnitFrame:SetAnchor(anchors)
 	end
 end
 
+-- buffTracker is not in use
+--[[
 function UnitFrame:SetBuffTracker(buffTracker)
 	self.buffTracker = buffTracker
 end
+]]
 
 function UnitFrame:SetHiddenForReason(reason, hidden)
 	if (self.hiddenReasons:SetHiddenForReason(reason, hidden)) then
@@ -1020,9 +1023,12 @@ function UnitFrame:RefreshVisible(instant)
 			self.frame:SetHidden(hidden)
 		end
 
+		-- buffTracker is not in use
+		--[[
 		if self.buffTracker then
 			self.buffTracker:SetDisabled(hidden)
 		end
+		]]
 	end
 	if not hidden then
 		self:RefreshControls()
@@ -1073,9 +1079,12 @@ function UnitFrame:RefreshUnit(unitChanged)
 		self.dirty = true
 		MenuOwnerClosed(self.frame)
 
+		-- castBar is not in use
+		--[[
 		if self.castBar then
 			self.castBar:UpdateAfterUnitChange()
 		end
+		]]
 	end
 
 	self:SetHasTarget(validTarget)
@@ -1124,9 +1133,12 @@ function UnitFrame:DoAlphaUpdate(isNearby, isOnline, isLeader)
 	end
 end
 
+-- buffTracker is not in use
+--[[
 function UnitFrame:GetBuffTracker()
 	return self.buffTracker
 end
+]]
 
 function UnitFrame:UpdatePowerBar(index, powerType, cur, max, forceInit)
 	-- Should this bar type ever be displayed?
@@ -1529,10 +1541,13 @@ local function DoGroupUpdate(eventCode)
 	UnitFrames:UpdateGroupAnchorFrames()
 end
 
+-- castBar is not in use
+--[[
 local function GetCastBar(unitTag)
 	local frame = UnitFrames:GetFrame(unitTag)
 	return frame and frame.castBar or nil
 end
+]]
 
 local unitTypesWhoUseCastInfo =
 {
