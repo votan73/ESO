@@ -536,7 +536,7 @@ end
 do
 	-- The health bar animation is pretty slow. We gonna make it a bit faster. This is very helpful in PvP.
 	local customApproachAmountMs = 200 -- DEFAULT_ANIMATION_TIME_MS = 500
-	
+
 	function UnitFrameBar:Update(barType, cur, max, forceInit)
 		local numBarControls = #self.barControls
 		local centeredBarControls = numBarControls == 2
@@ -1762,12 +1762,12 @@ local function UpdateGroupFrameStyle(groupIndex)
 	-- In cases where no UI has been setup, the group changes between large and small group sizes, or when
 	--  members are removed, we need to run a full update of the UI. These could also be optimized to only
 	--  run partial updates if more performance is needed.
-	if oldLargeGroup ~= newLargeGroup then
+	if oldLargeGroup ~= newLargeGroup or groupSize == 0 then
 		-- Create all the appropriate frames for the new group member, or in the case of a unit_destroyed
 		-- create the small group versions.
 		UnitFrames:DisableGroupAndRaidFrames()
 	end
-	if IsPlayerGrouped() then
+	if IsPlayerGrouped() or oldGroupSize > 0 then
 		-- Only update the frames of the unit being changed, and those after it in the list for performance
 		--  reasons.
 		CreateGroupsAfter(groupIndex)
