@@ -529,31 +529,34 @@ function UnitFrameBar:New(baseBarName, parent, showFrameBarText, style, mechanic
 	end
 end
 
-function UnitFrameBar:Update(barType, cur, max, forceInit)
-	local barCur = cur
-	local barMax = max
+do
+	-- The health bar animation is pretty slow. We gonna make it a bit faster. This is very helpful in PvP.
+	local customApproachAmountMs = 200 -- DEFAULT_ANIMATION_TIME_MS = 500
+	
+	function UnitFrameBar:Update(barType, cur, max, forceInit)
+		local numBarControls = #self.barControls
+		local centeredBarControls = numBarControls == 2
 
-	if #self.barControls == 2 then
-		barCur = cur / 2
-		barMax = max / 2
+		local barCur = centeredBarControls and cur / 2 or cur
+		local barMax = centeredBarControls and max / 2 or max
+
+		for i = 1, numBarControls do
+			ZO_StatusBar_SmoothTransition(self.barControls[i], barCur, barMax, forceInit, nil, customApproachAmountMs)
+		end
+
+		local updateBarType = false
+		local updateValue = cur ~= self.currentValue or self.maxValue ~= max
+		self.currentValue = cur
+		self.maxValue = max
+
+		if barType ~= self.barType then
+			updateBarType = true
+			self.barType = barType
+			self.barTypeName = GetString("SI_COMBATMECHANICTYPE", self.barType)
+		end
+
+		self:UpdateText(updateBarType, updateValue)
 	end
-
-	for i = 1, #self.barControls do
-		ZO_StatusBar_SmoothTransition(self.barControls[i], barCur, barMax, forceInit)
-	end
-
-	local updateBarType = false
-	local updateValue = cur ~= self.currentValue or self.maxValue ~= max
-	self.currentValue = cur
-	self.maxValue = max
-
-	if barType ~= self.barType then
-		updateBarType = true
-		self.barType = barType
-		self.barTypeName = GetString("SI_COMBATMECHANICTYPE", self.barType)
-	end
-
-	self:UpdateText(updateBarType, updateValue)
 end
 
 local function GetVisibility(self)
@@ -2067,6 +2070,7 @@ local function RegisterForEvents()
 	ZO_UnitFrames:RegisterForEvent(EVENT_UNIT_DESTROYED, OnUnitDestroyed)
 	ZO_UnitFrames:RegisterForEvent(EVENT_LEVEL_UPDATE, OnLevelUpdate)
 	ZO_UnitFrames:RegisterForEvent(EVENT_LEADER_UPDATE, OnLeaderUpdate)
+	ZO_UnitFrames:RegisterForEvent(EVENT_GROUPING_TOOLS_NO_LONGER_LFG, RequestFullRefresh)
 	ZO_UnitFrames:RegisterForEvent(EVENT_DISPOSITION_UPDATE, OnDispositionUpdate)
 	ZO_UnitFrames:AddFilterForEvent(EVENT_DISPOSITION_UPDATE, REGISTER_FILTER_UNIT_TAG_PREFIX, "group")
 	ZO_UnitFrames:RegisterForEvent(EVENT_GROUP_SUPPORT_RANGE_UPDATE, OnGroupSupportRangeUpdate)
