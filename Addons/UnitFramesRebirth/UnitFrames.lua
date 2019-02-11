@@ -15,10 +15,13 @@ local GROUP_UNIT_FRAME = "ZO_GroupUnitFrame"
 local RAID_UNIT_FRAME = "ZO_RaidUnitFrame"
 local TARGET_UNIT_FRAME = "ZO_TargetUnitFrame"
 
+-- untrackedBarTypes not in use
+--[[
 local untrackedBarTypes =
 {
 
 }
+]]
 
 local NUM_SUBGROUPS = GROUP_SIZE_MAX / SMALL_GROUP_SIZE_THRESHOLD
 
@@ -363,8 +366,8 @@ local UNITFRAME_BAR_STYLES =
 			keyboard =
 			{
 				template = "ZO_GroupUnitFrameStatus",
-				barHeight = 9,
-				barWidth = 170,
+				barHeight = 14,
+				barWidth = 180,
 				barAnchors = { ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 36, 42) },
 			},
 
@@ -1141,24 +1144,29 @@ end
 ]]
 
 function UnitFrame:UpdatePowerBar(index, powerType, cur, max, forceInit)
-	-- Should this bar type ever be displayed?
+
+	-- untrackedBarTypes not in use
+	--[[
 	if (untrackedBarTypes[powerType] ~= nil or not IsValidBarStyle(self.style, powerType)) then
 		return
 	end
+	]]
+	
+	if IsValidBarStyle(self.style, powerType) then
+		local currentBar = self.powerBars[index]
 
-	local currentBar = self.powerBars[index]
+		if not currentBar then
+			self.powerBars[index] = UnitFrameBar:New("$(parent)PowerBar" .. index, self.frame, self.showBarText, self.style, powerType)
+			currentBar = self.powerBars[index]
+			currentBar:SetColor(powerType)
+			self.resourceBars[powerType] = currentBar
+		end
 
-	if not currentBar then
-		self.powerBars[index] = UnitFrameBar:New("$(parent)PowerBar" .. index, self.frame, self.showBarText, self.style, powerType)
-		currentBar = self.powerBars[index]
-		currentBar:SetColor(powerType)
-		self.resourceBars[powerType] = currentBar
-	end
+		if currentBar then
+			currentBar:Update(powerType, cur, max, forceInit)
 
-	if currentBar then
-		currentBar:Update(powerType, cur, max, forceInit)
-
-		currentBar:Hide(powerType == POWERTYPE_INVALID)
+			currentBar:Hide(powerType == POWERTYPE_INVALID)
+		end
 	end
 end
 
