@@ -164,6 +164,10 @@ local function GetGroupAnchorFrameOffsets(subgroupIndex, groupStride, constants)
 	return(constants.RAID_FRAME_BASE_OFFSET_X +(column * constants.RAID_FRAME_OFFSET_X)),(constants.RAID_FRAME_BASE_OFFSET_Y +(row * constants.RAID_FRAME_ANCHOR_CONTAINER_HEIGHT))
 end
 
+local function IsPlayerGrouped()
+	return IsUnitGrouped("player")
+end
+
 --[[
     Global object declarations
 --]]
@@ -195,7 +199,7 @@ function UnitFramesManager:Initialize()
 	self.nameToUnitTag = { }
 	self.unitTagToName = { }
 
-	self.groupSize = GetGroupSize()
+	self.groupSize = 0
 	self.targetOfTargetEnabled = true
 	self.groupAndRaidHiddenReasons = ZO_HiddenReasons:New()
 	self.firstDirtyGroupIndex = nil
@@ -1372,10 +1376,10 @@ do
 			local caption
 			local unitTag = self:GetUnitTag()
 			if IsUnitPlayer(unitTag) then
-				local start = GetGameTimeSeconds()
+				-- local start = GetGameTimeSeconds()
 				local iconSize = IsInGamepadPreferredMode() and "100%" or "120%"
 				caption = string.format("%s %s", zo_iconFormat(GetPlatformClassIcon(GetUnitClassId(unitTag)), iconSize, iconSize), ZO_GetSecondaryPlayerNameWithTitleFromUnitTag(unitTag))
-				d((GetGameTimeSeconds() - start) * 1000)
+				-- df("%.1fus", (GetGameTimeSeconds() - start) * 1000000)
 			else
 				caption = ZO_CachedStrFormat(SI_TOOLTIP_UNIT_CAPTION, GetUnitCaption(unitTag))
 			end
@@ -1475,6 +1479,7 @@ local function CreateGroupAnchorFrames()
 	for i = 1, NUM_SUBGROUPS do
 		raidFrame = CreateControlFromVirtual("ZO_LargeGroupAnchorFrame" .. i, ZO_UnitFramesGroups, "ZO_RaidFrameAnchor")
 		raidFrame:SetDimensions(constants.RAID_FRAME_ANCHOR_CONTAINER_WIDTH, constants.RAID_FRAME_ANCHOR_CONTAINER_HEIGHT)
+		raidFrame:SetHidden(true)
 		largeGroupAnchorFrames[i] = raidFrame
 
 		GetControl(raidFrame, "GroupName"):SetText(zo_strformat(SI_GROUP_SUBGROUP_LABEL, i))
@@ -1729,7 +1734,7 @@ end
 -- goes above or below the "small group" or "raid group" thresholds.
 local function UpdateGroupFrameStyle(groupIndex)
 	local groupSize = GetGroupSize()
-	local oldGroupSize = UnitFrames.groupSize or -1
+	local oldGroupSize = UnitFrames.groupSize or 0
 
 	local oldLargeGroup = oldGroupSize > SMALL_GROUP_SIZE_THRESHOLD
 	local newLargeGroup = groupSize > SMALL_GROUP_SIZE_THRESHOLD
@@ -1739,12 +1744,12 @@ local function UpdateGroupFrameStyle(groupIndex)
 	-- In cases where no UI has been setup, the group changes between large and small group sizes, or when
 	--  members are removed, we need to run a full update of the UI. These could also be optimized to only
 	--  run partial updates if more performance is needed.
-	if oldLargeGroup ~= newLargeGroup or groupSize <= 1 then
+	if oldLargeGroup ~= newLargeGroup then
 		-- Create all the appropriate frames for the new group member, or in the case of a unit_destroyed
 		-- create the small group versions.
 		UnitFrames:DisableGroupAndRaidFrames()
-		CreateGroups()
-	else
+	end
+	if IsPlayerGrouped() then
 		-- Only update the frames of the unit being changed, and those after it in the list for performance
 		--  reasons.
 		CreateGroupsAfter(groupIndex)
@@ -1873,20 +1878,20 @@ local function RegisterForEvents()
 	local function RequestFullRefresh()
 		UnitFrames.firstDirtyGroupIndex = 1
 	end
-	local function OnTargetChanged(evt, unitTag)
+	local function OnTargetChanged(eventCode, unitTag)
 		ZO_UnitFrames_UpdateWindow("reticleovertarget", UNIT_CHANGED)
 	end
 
-	local function OnUnitCharacterNameChanged(evt, unitTag)
+	local function OnUnitCharacterNameChanged(eventCode, unitTag)
 		ZO_UnitFrames_UpdateWindow(unitTag)
 	end
 
-	local function OnReticleTargetChanged(evt)
+	local function OnReticleTargetChanged()
 		ZO_UnitFrames_UpdateWindow("reticleover", UNIT_CHANGED)
 		ZO_UnitFrames_UpdateWindow("reticleovertarget", UNIT_CHANGED)
 	end
 
-	local function OnPowerUpdate(evt, unitTag, powerPoolIndex, powerType, powerPool, powerPoolMax)
+	local function OnPowerUpdate(eventCode, unitTag, powerPoolIndex, powerType, powerPool, powerPoolMax)
 		local unitFrame = UnitFrames:GetFrame(unitTag)
 
 		if unitFrame then
@@ -1905,7 +1910,7 @@ local function RegisterForEvents()
 		end
 	end
 
-	local function OnUnitCreated(evt, unitTag)
+	local function OnUnitCreated(eventCode, unitTag)
 		if (ZO_Group_IsGroupUnitTag(unitTag)) then
 			d("OnUnitCreated")
 			local groupIndex = GetGroupIndexByUnitTag(unitTag)
@@ -1915,7 +1920,7 @@ local function RegisterForEvents()
 		end
 	end
 
-	local function OnUnitDestroyed(evt, unitTag)
+	local function OnUnitDestroyed(eventCode, unitTag)
 		if ZO_Group_IsGroupUnitTag(unitTag) then
 			local unitFrame = UnitFrames:GetFrame(unitTag)
 
@@ -1955,7 +1960,7 @@ local function RegisterForEvents()
 		end
 	end
 
-	local function OnGroupSupportRangeUpdate(evt, unitTag, isNearby)
+	local function OnGroupSupportRangeUpdate(eventCode, unitTag, isNearby)
 		local unitFrame = UnitFrames:GetFrame(unitTag)
 
 		if unitFrame then
@@ -1981,19 +1986,19 @@ local function RegisterForEvents()
 		end
 	end
 
-	local function OnGroupMemberConnectedStateChanged(event, unitTag, isOnline)
+	local function OnGroupMemberConnectedStateChanged(eventCode, unitTag, isOnline)
 		d("OnGroupMemberConnectedStateChanged")
 		UpdateStatus(unitTag, IsUnitDead(unitTag), isOnline)
 	end
 
-	local function OnGroupMemberRoleChanged(event, unitTag, role)
+	local function OnGroupMemberRoleChanged(eventCode, unitTag, role)
 		local unitFrame = UnitFrames:GetFrame(unitTag)
 		if unitFrame then
 			unitFrame:UpdateAssignment()
 		end
 	end
 
-	local function OnUnitDeathStateChanged(event, unitTag, isDead)
+	local function OnUnitDeathStateChanged(eventCode, unitTag, isDead)
 		UpdateStatus(unitTag, isDead, IsUnitOnline(unitTag))
 	end
 
@@ -2028,8 +2033,10 @@ local function RegisterForEvents()
 		-- Clear cache of ZO_GetSecondaryPlayerNameWithTitleFromUnitTag
 		ZO_ResetCachedStrFormat(SI_PLAYER_NAME_WITH_TITLE_FORMAT)
 
-		-- do a full update because we probably missed events while loading
-		RequestFullRefresh()
+		if IsPlayerGrouped() or UnitFrames.groupSize > 0 then
+			-- do a full update because we probably missed events while loading
+			RequestFullRefresh()
+		end
 	end
 
 	local function OnTargetOfTargetEnabledChanged(enabled)
