@@ -11,5 +11,6 @@
 lang/strings.lua
 lang/$(language).lua
 
+HealthWarner.lua
 UnitFrames.xml
 UnitFrames.lua
