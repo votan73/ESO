@@ -189,13 +189,23 @@ function UnitFramesManager:Initialize()
 	self.groupFrames = { }
 	self.raidFrames = { }
 	self.staticFrames = { }
-	self.nameToUnitTag = { }
-	self.unitTagToName = { }
 
 	self.groupSize = 0
 	self.targetOfTargetEnabled = true
 	self.groupAndRaidHiddenReasons = ZO_HiddenReasons:New()
 	self.firstDirtyGroupIndex = nil
+
+	self.UnitFrameClass = UnitFrame
+	self.UnitFrameBarClass = UnitFrameBar
+	self.KEYBOARD_CONSTANTS = KEYBOARD_CONSTANTS
+	self.GAMEPAD_CONSTANTS = GAMEPAD_CONSTANTS
+	self.LAYOUT_DATA = UNITFRAME_LAYOUT_DATA
+	self.TargetUnitFrameTemplate = "ZO_TargetUnitFrame"
+	self.UnitFrameBarTextTemplate = "ZO_UnitFrameBarText"
+	self.GroupFrameAnchor = "ZO_GroupFrameAnchor"
+	self.RaidFrameAnchor = "ZO_RaidFrameAnchor"
+	self.GroupUnitFrame = "ZO_GroupUnitFrame"
+	self.RaidUnitFrame = "ZO_RaidUnitFrame"
 end
 
 local function ApplyVisualStyleToAllFrames(frames, gamepadMode)
@@ -358,7 +368,8 @@ local UNITFRAME_BAR_STYLES =
 				barHeight = 14,
 				barWidth = 180,
 				barAnchors = { ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 36, 42) },
-				warner = {
+				warner =
+				{
 					texture = "ZO_PlayerAttributeHealthWarnerTexture",
 					Left = "ZO_PlayerAttributeWarnerLeftArrow",
 					Right = "ZO_PlayerAttributeWarnerRight",
@@ -373,7 +384,8 @@ local UNITFRAME_BAR_STYLES =
 				barWidth = ZO_GAMEPAD_GROUP_FRAME_WIDTH,
 				barAnchors = { ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 0, 45) },
 				hideBgIfOffline = true,
-				warner = {
+				warner =
+				{
 					texture = "ZO_PlayerAttributeHealthWarnerTexture",
 					Left = "ZO_PlayerAttributeWarnerLeftArrow",
 					Right = "ZO_PlayerAttributeWarnerRight",
@@ -476,13 +488,16 @@ local function CreateBarStatusControl(baseBarName, parent, style, mechanic, show
 				if barAnchor2 then
 					barAnchor2:AddToControl(statusBar)
 				end
-				
-				local warnerControl = statusBar:GetNamedChild("Warner")
-				local warnerChild
-				for _, direction in pairs({"Left", "Right", "Center"}) do
-					warnerChild = warnerControl:GetNamedChild(direction)
-					ApplyTemplateToControl(warnerChild, ZO_GetPlatformTemplate(barData.texture))
-					ApplyTemplateToControl(warnerChild, ZO_GetPlatformTemplate(barData[direction]))
+
+				local warnerControl = statusBar.warnerContainer
+				local warner = barData.warner
+				if warnerControl and warner then
+					local warnerChild
+					for _, direction in pairs( { "Left", "Right", "Center" }) do
+						warnerChild = warnerControl:GetNamedChild(direction)
+						ApplyTemplateToControl(warnerChild, ZO_GetPlatformTemplate(warner.texture))
+						ApplyTemplateToControl(warnerChild, ZO_GetPlatformTemplate(warner[direction]))
+					end
 				end
 
 				return { statusBar }
@@ -509,7 +524,7 @@ local function CreateBarTextControls(baseBarName, parent, style, mechanic)
 	local textAnchor1, textAnchor2 = barData.textAnchors[1], barData.textAnchors[2]
 
 	local text1, text2
-	local textTemplate = barData.textTemplate or "ZO_UnitFrameBarText"
+	local textTemplate = barData.textTemplate or UnitFrames.UnitFrameBarTextTemplate
 
 	if textAnchor1 then
 		text1 = CreateControlFromVirtual(baseBarName .. "Text1", parent, textTemplate)
@@ -548,7 +563,8 @@ end
 
 do
 	-- The health bar animation is pretty slow. We gonna make it a bit faster. This is very helpful in PvP.
-	local customApproachAmountMs = 200 -- DEFAULT_ANIMATION_TIME_MS = 500
+	-- DEFAULT_ANIMATION_TIME_MS = 500
+	local customApproachAmountMs = 200
 
 	function UnitFrameBar:Update(barType, cur, max, forceInit)
 		local numBarControls = #self.barControls
@@ -679,7 +695,9 @@ local UNITFRAME_LAYOUT_DATA =
 
 			statusData = { anchor1 = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 36, 42), anchor2 = ZO_Anchor:New(TOPRIGHT, nil, TOPRIGHT, - 140, 42), height = 0, },
 
-			leaderIconData = { width = 16, height = 16, offsetX = 5, offsetY = 5 }
+			leaderIconData = { width = 16, height = 16, offsetX = 5, offsetY = 5 },
+
+			useHealthWarner = true,
 		},
 
 		gamepad =
@@ -693,7 +711,9 @@ local UNITFRAME_LAYOUT_DATA =
 			statusData = { anchor1 = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 0, 0), anchor2 = ZO_Anchor:New(TOPRIGHT, nil, TOPRIGHT, 0, 35), height = 0, },
 			hideHealthBgIfOffline = true,
 
-			leaderIconData = { width = 25, height = 25, offsetX = 0, offsetY = 12 }
+			leaderIconData = { width = 25, height = 25, offsetX = 0, offsetY = 12 },
+
+			useHealthWarner = true,
 		},
 	},
 
@@ -872,7 +892,9 @@ function UnitFrame:New(unitTag, anchors, showBarText, style)
 
 	newFrame.powerBars = { }
 
-	newFrame.healthWarner = UnitFramesRebirth_HealthWarner:New(newFrame.healthBar, unitTag, style)
+	if layoutData.useHealthWarner then
+		newFrame.healthWarner = UnitFramesRebirth_HealthWarner:New(newFrame.healthBar, unitTag, style)
+	end
 
 	return newFrame
 end
@@ -1309,7 +1331,7 @@ function UnitFrame:UpdateDifficulty()
 
 		-- show difficulty for neutral and hostile NPCs
 		local unitReaction = GetUnitReaction(unitTag)
-		local showsDifficulty = difficulty > MONSTER_DIFFICULTY_EASY and unitReaction == UNIT_REACTION_NEUTRAL or unitReaction == UNIT_REACTION_HOSTILE
+		local showsDifficulty = difficulty > MONSTER_DIFFICULTY_EASY and(unitReaction == UNIT_REACTION_NEUTRAL or unitReaction == UNIT_REACTION_HOSTILE)
 
 		self.leftBracket:SetHidden(not showsDifficulty)
 		self.rightBracket:SetHidden(not showsDifficulty)
@@ -1365,30 +1387,38 @@ do
 			return name
 		end
 	end
-	
+
 	local function GetPlatformClassIconResized(unitTag)
 		local iconSize = IsInGamepadPreferredMode() and "90%" or "120%"
 		return zo_iconFormat(GetPlatformClassIcon(GetUnitClassId(unitTag)), iconSize, iconSize)
 	end
 
-	function UnitFrame:UpdateCaption()
-		local captionLabel = self.captionLabel
-		if captionLabel then
-			local caption = ""
-			local unitTag = self:GetUnitTag()
-			if IsUnitPlayer(unitTag) then
-				-- local start = GetGameTimeSeconds()
-				caption = ZO_CachedStrFormat(SI_UNITFRAMESREBIRTH_CLASS_WITH_NAME, GetPlatformClassIconResized(unitTag), ZO_GetSecondaryPlayerNameWithTitleFromUnitTag(unitTag))
-				-- df("%.1fus", (GetGameTimeSeconds() - start) * 1000000)
-			else
-				caption = ZO_CachedStrFormat(SI_TOOLTIP_UNIT_CAPTION, GetUnitCaption(unitTag))
-			end
+	function UnitFrame:UpdatePlayerCaption(unitTag)
+		return ZO_CachedStrFormat(SI_UNITFRAMESREBIRTH_CLASS_WITH_NAME, GetPlatformClassIconResized(unitTag), ZO_GetSecondaryPlayerNameWithTitleFromUnitTag(unitTag))
+	end
+end
 
-			local hideCaption = caption == ""
-			captionLabel:SetHidden(hideCaption)
-			captionLabel:SetText(caption)
-			-- still set the caption text when empty so we collapse the label for anything anchoring off the bottom of it
+function UnitFrame:UpdateNPCCaption(unitTag)
+	return ZO_CachedStrFormat(SI_TOOLTIP_UNIT_CAPTION, GetUnitCaption(unitTag))
+end
+
+function UnitFrame:UpdateCaption()
+	local captionLabel = self.captionLabel
+	if captionLabel then
+		local caption = ""
+		local unitTag = self:GetUnitTag()
+		if IsUnitPlayer(unitTag) then
+			-- local start = GetGameTimeSeconds()
+			caption = self:UpdatePlayerCaption(unitTag)
+			-- df("%.1fus", (GetGameTimeSeconds() - start) * 1000000)
+		else
+			caption = self:UpdateNPCCaption(unitTag)
 		end
+
+		local hideCaption = caption == ""
+		captionLabel:SetHidden(hideCaption)
+		captionLabel:SetText(caption)
+		-- still set the caption text when empty so we collapse the label for anything anchoring off the bottom of it
 	end
 end
 
@@ -1470,14 +1500,14 @@ local function CreateGroupAnchorFrames()
 	local constants = GetPlatformConstants()
 
 	-- Create small group anchor frame
-	local smallFrame = CreateControlFromVirtual("ZO_SmallGroupAnchorFrame", ZO_UnitFramesGroups, "ZO_GroupFrameAnchor")
+	local smallFrame = CreateControlFromVirtual("ZO_SmallGroupAnchorFrame", ZO_UnitFramesGroups, UnitFrames.GroupFrameAnchor)
 	smallFrame:SetDimensions(constants.GROUP_FRAME_SIZE_X,(constants.GROUP_FRAME_SIZE_Y + constants.GROUP_FRAME_PAD_Y) * SMALL_GROUP_SIZE_THRESHOLD)
 	smallFrame:SetAnchor(TOPLEFT, GuiRoot, TOPLEFT, constants.GROUP_FRAME_BASE_OFFSET_X, constants.GROUP_FRAME_BASE_OFFSET_Y)
 
 	-- Create raid group anchor frames, these are positioned at the default locations
 	local raidFrame, x, y
 	for i = 1, NUM_SUBGROUPS do
-		raidFrame = CreateControlFromVirtual("ZO_LargeGroupAnchorFrame" .. i, ZO_UnitFramesGroups, "ZO_RaidFrameAnchor")
+		raidFrame = CreateControlFromVirtual("ZO_LargeGroupAnchorFrame" .. i, ZO_UnitFramesGroups, UnitFrames.RaidFrameAnchor)
 		raidFrame:SetDimensions(constants.RAID_FRAME_ANCHOR_CONTAINER_WIDTH, constants.RAID_FRAME_ANCHOR_CONTAINER_HEIGHT)
 		raidFrame:SetHidden(true)
 		largeGroupAnchorFrames[i] = raidFrame
@@ -1601,7 +1631,7 @@ local TARGET_ATTRIBUTE_VISUALIZER_SOUNDS =
 
 local function CreateTargetFrame()
 	local targetFrameAnchor = ZO_Anchor:New(TOP, GuiRoot, TOP, 0, 88)
-	local targetFrame = UnitFrames:CreateFrame("reticleover", targetFrameAnchor, HIDE_BAR_TEXT, "ZO_TargetUnitFrame")
+	local targetFrame = UnitFrames:CreateFrame("reticleover", targetFrameAnchor, HIDE_BAR_TEXT, UnitFrames.TargetUnitFrameTemplate)
 	if targetFrame then
 		targetFrame:SetData("reticleover", targetFrameAnchor, HIDE_BAR_TEXT)
 		targetFrame:SetAnimateShowHide(true)
@@ -1706,7 +1736,7 @@ end
 local function CreateGroupsAfter(startIndex)
 	local groupSize = GetGroupSize()
 
-	local style = groupSize > SMALL_GROUP_SIZE_THRESHOLD and "ZO_RaidUnitFrame" or "ZO_GroupUnitFrame"
+	local style = groupSize > SMALL_GROUP_SIZE_THRESHOLD and UnitFrames.RaidUnitFrame or UnitFrames.GroupUnitFrame
 	local unitTag
 	for i = startIndex, GROUP_SIZE_MAX do
 		unitTag = GetGroupUnitTagByIndex(i)
@@ -1731,8 +1761,8 @@ local function UpdateGroupFrameStyle(groupIndex)
 	UnitFrames:SetGroupSize(groupSize)
 
 	-- In cases where no UI has been setup, the group changes between large and small group sizes, or when
-	--	members are removed, we need to run a full update of the UI. These could also be optimized to only
-	--	run partial updates if more performance is needed.
+	-- members are removed, we need to run a full update of the UI. These could also be optimized to only
+	-- run partial updates if more performance is needed.
 	if oldLargeGroup ~= newLargeGroup or groupSize == 0 then
 		-- Create all the appropriate frames for the new group member, or in the case of a unit_destroyed
 		-- create the small group versions.
@@ -1740,7 +1770,7 @@ local function UpdateGroupFrameStyle(groupIndex)
 	end
 	if IsPlayerGrouped() or oldGroupSize > 0 then
 		-- Only update the frames of the unit being changed, and those after it in the list for performance
-		--	reasons.
+		-- reasons.
 		CreateGroupsAfter(groupIndex)
 	end
 end
@@ -2060,6 +2090,8 @@ local function RegisterForEvents()
 	ZO_UnitFrames:RegisterForEvent(EVENT_UNIT_DESTROYED, OnUnitDestroyed)
 	ZO_UnitFrames:RegisterForEvent(EVENT_LEVEL_UPDATE, OnLevelUpdate)
 	ZO_UnitFrames:RegisterForEvent(EVENT_LEADER_UPDATE, OnLeaderUpdate)
+	-- Not needed here.
+	-- ZO_UnitFrames:RegisterForEvent(EVENT_GROUPING_TOOLS_NO_LONGER_LFG, RequestFullRefresh)
 	ZO_UnitFrames:RegisterForEvent(EVENT_DISPOSITION_UPDATE, OnDispositionUpdate)
 	ZO_UnitFrames:AddFilterForEvent(EVENT_DISPOSITION_UPDATE, REGISTER_FILTER_UNIT_TAG_PREFIX, "group")
 	ZO_UnitFrames:RegisterForEvent(EVENT_GROUP_SUPPORT_RANGE_UPDATE, OnGroupSupportRangeUpdate)
@@ -2087,14 +2119,16 @@ do
 		EVENT_MANAGER:UnregisterForEvent("UnitFrames_OnAddOnLoaded", EVENT_ADD_ON_LOADED)
 
 		CalculateDynamicPlatformConstants()
-		RegisterForEvents()
-		CreateGroupAnchorFrames()
 
 		UnitFrames = UnitFramesManager:New()
-
-		CreateTargetFrame()
+		UnitFrames.UNITFRAME_BAR_STYLES = UNITFRAME_BAR_STYLES
 
 		UNIT_FRAMES = UnitFrames
+		CALLBACK_MANAGER:FireCallbacks("UnitFramesPreInit", UnitFrames)
+
+		RegisterForEvents()
+		CreateGroupAnchorFrames()
+		CreateTargetFrame()
 
 		local function OnGamepadPreferredModeChanged()
 			UnitFrames:ApplyVisualStyle()
@@ -2103,7 +2137,7 @@ do
 		end
 		ZO_PlatformStyle:New(OnGamepadPreferredModeChanged)
 
-		CALLBACK_MANAGER:FireCallbacks("UnitFramesCreated")
+		CALLBACK_MANAGER:FireCallbacks("UnitFramesCreated", UnitFrames)
 	end
 
 	EVENT_MANAGER:UnregisterForEvent("UnitFrames_OnAddOnLoaded", EVENT_ADD_ON_LOADED)

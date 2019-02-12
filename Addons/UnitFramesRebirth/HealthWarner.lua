@@ -1,5 +1,5 @@
 local HEALTH_ALPHA_PULSE_THRESHOLD = 0.25
-local HEALTH_WARNER_FLASH_TIME  = 300
+local HEALTH_WARNER_FLASH_TIME = 300
 
 UnitFramesRebirth_HealthWarner = ZO_Object:Subclass()
 
@@ -10,13 +10,12 @@ function UnitFramesRebirth_HealthWarner:New(...)
 end
 
 function UnitFramesRebirth_HealthWarner:Initialize(parent, unitTag, style)
+	local barControls = parent:GetBarControls()
+	if not barControls or #barControls <= 0 then return end
 
-	df("HealthWarner - style: %s", style)
-	
-	if not style == "ZO_GroupUnitFrame" then
-		return
-	end
-	
+	self.warning = barControls[1].warnerContainer
+	if not self.warning then return end
+
 	local function OnPowerUpdate(_, unitTag, powerIndex, powerType, health, maxHealth)
 		self:OnHealthUpdate(health, maxHealth)
 	end
@@ -25,7 +24,6 @@ function UnitFramesRebirth_HealthWarner:Initialize(parent, unitTag, style)
 		self:OnHealthUpdate(current, max)
 	end
 
-	self.warning = GetControl(parent, "Warner")
 	self.unitTag = unitTag
 
 	self.warnAnimation = ZO_AlphaAnimation:New(self.warning)
