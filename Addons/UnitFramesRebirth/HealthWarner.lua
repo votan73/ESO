@@ -21,7 +21,7 @@ function UnitFramesRebirth_HealthWarner:Initialize(parent, unitTag, style)
 		self:OnHealthUpdate(health, maxHealth)
 	end
 	local function OnPlayerActivated()
-		local current, max = GetUnitPower(unitTag, POWERTYPE_HEALTH)
+		local current, max = GetUnitPower(self.unitTag, POWERTYPE_HEALTH)
 		self:OnHealthUpdate(current, max)
 	end
 
@@ -45,7 +45,7 @@ function UnitFramesRebirth_HealthWarner:SetPaused(paused)
 				self.warnAnimation:Stop()
 			end
 		else
-			local current, max = GetUnitPower(unitTag, POWERTYPE_HEALTH)
+			local current, max = GetUnitPower(self.unitTag, POWERTYPE_HEALTH)
 			self.warning:SetAlpha(0)
 			self:UpdateAlphaPulse(current / max)
 		end
