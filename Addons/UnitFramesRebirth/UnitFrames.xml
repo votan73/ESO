@@ -1,0 +1,39 @@
+<GuiXml>
+	<Controls>
+		<!-- <Texture name="UnitFramesRebirth_PlayerAttributeHealthWarnerTexture_Keyboard_Template" textureFile="EsoUI/Art/UnitAttributeVisualizer/attributeBar_dynamic_healthGlow.dds" virtual="true" /> -->
+		<!-- <Texture name="UnitFramesRebirth_PlayerAttributeHealthWarnerTexture_Gamepad_Template" textureFile="EsoUI/Art/UnitAttributeVisualizer/Gamepad/gp_attributebar_dynamic_healthglow.dds" virtual="true" /> -->
+
+		<StatusBar name="UnitFramesRebirth_GroupUnitFrameStatus" virtual="true">
+			<OnInitialized>
+				self.gloss = self:GetNamedChild("Gloss")
+				self.warnerContainer = self:GetNamedChild("Warner")
+			</OnInitialized>
+
+			<Controls>
+				<StatusBar name="$(parent)Gloss"/>
+				
+				<Control name="$(parent)Warner" inherits="ZO_PlayerAttributeWarner">
+					<Controls>
+						<Texture name="$(parent)Left" inherits="ZO_PlayerAttributeWarnerLeft" />
+						<Texture name="$(parent)Right" inherits="ZO_PlayerAttributeWarnerRightArrow" />
+						<Texture name="$(parent)Center" inherits="ZO_PlayerAttributeWarnerCenter" />
+					</Controls>
+				</Control>
+			</Controls>
+		</StatusBar>
+
+		<StatusBar name="UnitFramesRebirth_GroupUnitFrameStatus_Keyboard_Template" inherits="ZO_ArrowStatusBarWithBG" virtual="true">
+			<Controls>
+				<Control name="$(parent)BG" hidden="false" />
+				<Control name="$(parent)Overlay" hidden="false" />
+			</Controls>
+		</StatusBar>
+
+		<StatusBar name="UnitFramesRebirth_GroupUnitFrameStatus_Gamepad_Template" inherits="ZO_DefaultStatusBar" virtual="true">
+			<Controls>
+				<Control name="$(parent)BG" hidden="true" />
+				<Control name="$(parent)Overlay" hidden="true" />
+			</Controls>
+		</StatusBar>
+	</Controls>
+</GuiXml>

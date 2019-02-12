@@ -354,19 +354,31 @@ local UNITFRAME_BAR_STYLES =
 		{
 			keyboard =
 			{
-				template = "ZO_GroupUnitFrameStatus",
+				template = "UnitFramesRebirth_GroupUnitFrameStatus",
 				barHeight = 14,
 				barWidth = 180,
 				barAnchors = { ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 36, 42) },
+				warner = {
+					texture = "ZO_PlayerAttributeHealthWarnerTexture",
+					Left = "ZO_PlayerAttributeWarnerLeftArrow",
+					Right = "ZO_PlayerAttributeWarnerRight",
+					Center = "ZO_PlayerAttributeWarnerCenter",
+				},
 			},
 
 			gamepad =
 			{
-				template = "ZO_GroupUnitFrameStatus",
+				template = "UnitFramesRebirth_GroupUnitFrameStatus",
 				barHeight = 8,
 				barWidth = ZO_GAMEPAD_GROUP_FRAME_WIDTH,
 				barAnchors = { ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 0, 45) },
 				hideBgIfOffline = true,
+				warner = {
+					texture = "ZO_PlayerAttributeHealthWarnerTexture",
+					Left = "ZO_PlayerAttributeWarnerLeftArrow",
+					Right = "ZO_PlayerAttributeWarnerRight",
+					Center = "ZO_PlayerAttributeWarnerCenter",
+				},
 			},
 		},
 	},
@@ -463,6 +475,14 @@ local function CreateBarStatusControl(baseBarName, parent, style, mechanic, show
 
 				if barAnchor2 then
 					barAnchor2:AddToControl(statusBar)
+				end
+				
+				local warnerControl = statusBar:GetNamedChild("Warner")
+				local warnerChild
+				for _, direction in pairs({"Left", "Right", "Center"}) do
+					warnerChild = warnerControl:GetNamedChild(direction)
+					ApplyTemplateToControl(warnerChild, ZO_GetPlatformTemplate(barData.texture))
+					ApplyTemplateToControl(warnerChild, ZO_GetPlatformTemplate(barData[direction]))
 				end
 
 				return { statusBar }
@@ -851,6 +871,8 @@ function UnitFrame:New(unitTag, anchors, showBarText, style)
 	newFrame.resourceBars[POWERTYPE_HEALTH] = newFrame.healthBar
 
 	newFrame.powerBars = { }
+
+	newFrame.healthWarner = UnitFramesRebirth_HealthWarner:New(newFrame.healthBar, unitTag, style)
 
 	return newFrame
 end
