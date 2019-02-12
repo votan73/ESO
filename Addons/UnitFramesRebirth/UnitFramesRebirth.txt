@@ -11,5 +11,5 @@
 lang/strings.lua
 lang/$(language).lua
 
+UnitFrames.xml
 UnitFrames.lua
-Main.lua
