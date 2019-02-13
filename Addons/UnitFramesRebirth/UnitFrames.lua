@@ -371,9 +371,9 @@ local UNITFRAME_BAR_STYLES =
 				warner =
 				{
 					texture = "ZO_PlayerAttributeHealthWarnerTexture",
-					Left = "ZO_PlayerAttributeWarnerLeftArrow",
-					Right = "ZO_PlayerAttributeWarnerRight",
-					Center = "ZO_PlayerAttributeWarnerCenter",
+					Left = "UnitFramesRebirth_PlayerAttributeWarnerLeft",
+					Right = "UnitFramesRebirth_PlayerAttributeWarnerRightArrow",
+					Center = "UnitFramesRebirth_PlayerAttributeWarnerCenter",
 				},
 			},
 
@@ -387,9 +387,9 @@ local UNITFRAME_BAR_STYLES =
 				warner =
 				{
 					texture = "ZO_PlayerAttributeHealthWarnerTexture",
-					Left = "ZO_PlayerAttributeWarnerLeftArrow",
-					Right = "ZO_PlayerAttributeWarnerRight",
-					Center = "ZO_PlayerAttributeWarnerCenter",
+					Left = "UnitFramesRebirth_PlayerAttributeWarnerLeft",
+					Right = "UnitFramesRebirth_PlayerAttributeWarnerRight",
+					Center = "UnitFramesRebirth_PlayerAttributeWarnerCenter",
 				},
 			},
 		},
@@ -574,7 +574,13 @@ do
 		local barMax = centeredBarControls and max / 2 or max
 
 		for i = 1, numBarControls do
-			ZO_StatusBar_SmoothTransition(self.barControls[i], barCur, barMax, forceInit, nil, customApproachAmountMs)
+			local barControls = self.barControls[i]
+			ZO_StatusBar_SmoothTransition(barControls, barCur, barMax, forceInit, nil, customApproachAmountMs)
+			
+			-- local warnerContainerControl = barControls.warnerContainer
+			-- if warnerContainerControl then
+				-- self.barControls[i]:OnHealthUpdate(barCur, barMax)
+			-- end
 		end
 
 		local updateBarType = false
