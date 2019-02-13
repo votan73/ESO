@@ -371,9 +371,9 @@ local UNITFRAME_BAR_STYLES =
 				warner =
 				{
 					texture = "ZO_PlayerAttributeHealthWarnerTexture",
-					Left = "ZO_PlayerAttributeWarnerLeftArrow",
-					Right = "ZO_PlayerAttributeWarnerRight",
-					Center = "ZO_PlayerAttributeWarnerCenter",
+					Left = "UnitFramesRebirth_PlayerAttributeWarnerLeft",
+					Right = "UnitFramesRebirth_PlayerAttributeWarnerRightArrow",
+					Center = "UnitFramesRebirth_PlayerAttributeWarnerCenter",
 				},
 			},
 
@@ -387,9 +387,9 @@ local UNITFRAME_BAR_STYLES =
 				warner =
 				{
 					texture = "ZO_PlayerAttributeHealthWarnerTexture",
-					Left = "ZO_PlayerAttributeWarnerLeftArrow",
-					Right = "ZO_PlayerAttributeWarnerRight",
-					Center = "ZO_PlayerAttributeWarnerCenter",
+					Left = "UnitFramesRebirth_PlayerAttributeWarnerLeft",
+					Right = "UnitFramesRebirth_PlayerAttributeWarnerRight",
+					Center = "UnitFramesRebirth_PlayerAttributeWarnerCenter",
 				},
 			},
 		},
