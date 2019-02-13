@@ -574,13 +574,7 @@ do
 		local barMax = centeredBarControls and max / 2 or max
 
 		for i = 1, numBarControls do
-			local barControls = self.barControls[i]
-			ZO_StatusBar_SmoothTransition(barControls, barCur, barMax, forceInit, nil, customApproachAmountMs)
-			
-			-- local warnerContainerControl = barControls.warnerContainer
-			-- if warnerContainerControl then
-				-- self.barControls[i]:OnHealthUpdate(barCur, barMax)
-			-- end
+			ZO_StatusBar_SmoothTransition(self.barControls[i], barCur, barMax, forceInit, nil, customApproachAmountMs)
 		end
 
 		local updateBarType = false
