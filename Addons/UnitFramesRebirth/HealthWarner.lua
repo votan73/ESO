@@ -16,12 +16,13 @@ function UnitFramesRebirth_HealthWarner:Initialize(parent, unitTag, style)
 	self.warning = barControls[1].warnerContainer
 	if not self.warning then return end
 
-	local function OnPowerUpdate(_, unitTag, powerIndex, powerType, health, maxHealth)
-		self:OnHealthUpdate(health, maxHealth)
-	end
-	local function OnPlayerActivated()
-		local current, max = GetUnitPower(self.unitTag, POWERTYPE_HEALTH)
-		self:OnHealthUpdate(current, max)
+	local orgUpdate = parent.Update
+	function parent.Update(...)
+		local powerType = select(2, ...)
+		if powerType == POWERTYPE_HEALTH then
+			self:OnHealthUpdate(select(3, ...))
+		end
+		return orgUpdate(...)
 	end
 
 	self.unitTag = unitTag
@@ -29,10 +30,6 @@ function UnitFramesRebirth_HealthWarner:Initialize(parent, unitTag, style)
 	self.warnAnimation = ZO_AlphaAnimation:New(self.warning)
 	self.statusBar = parent
 	self.paused = false
-
-	self.warning:RegisterForEvent(EVENT_POWER_UPDATE, OnPowerUpdate)
-	self.warning:AddFilterForEvent(EVENT_POWER_UPDATE, REGISTER_FILTER_POWER_TYPE, POWERTYPE_HEALTH, REGISTER_FILTER_UNIT_TAG, unitTag)
-	self.warning:RegisterForEvent(EVENT_PLAYER_ACTIVATED, OnPlayerActivated)
 end
 
 function UnitFramesRebirth_HealthWarner:SetPaused(paused)
@@ -43,9 +40,11 @@ function UnitFramesRebirth_HealthWarner:SetPaused(paused)
 				self.warnAnimation:Stop()
 			end
 		else
-			local current, max = GetUnitPower(self.unitTag, POWERTYPE_HEALTH)
+			local health, maxHealth = GetUnitPower(self.unitTag, POWERTYPE_HEALTH)
 			self.warning:SetAlpha(0)
-			self:UpdateAlphaPulse(current / max)
+			if maxHealth > 0 then
+				self:UpdateAlphaPulse(health / maxHealth)
+			end
 		end
 	end
 end
@@ -64,8 +63,7 @@ function UnitFramesRebirth_HealthWarner:UpdateAlphaPulse(healthPerc)
 end
 
 function UnitFramesRebirth_HealthWarner:OnHealthUpdate(health, maxHealth)
-	if not self.paused then
-		local healthPerc = health / maxHealth
-		self:UpdateAlphaPulse(healthPerc)
+	if not self.paused and maxHealth > 0 then
+		self:UpdateAlphaPulse(health / maxHealth)
 	end
 end
