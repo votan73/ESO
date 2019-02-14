@@ -893,7 +893,7 @@ function UnitFrame:New(unitTag, anchors, showBarText, style)
 	newFrame.powerBars = { }
 
 	if layoutData.useHealthWarner then
-		newFrame.healthWarner = UnitFramesRebirth_HealthWarner:New(newFrame.healthBar, unitTag, style)
+		newFrame.healthWarner = UnitFramesRebirth_HealthWarner:New(newFrame.healthBar, unitTag)
 	end
 
 	return newFrame
