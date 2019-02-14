@@ -915,9 +915,11 @@ function UnitFrame:ApplyVisualStyle(gamepadMode)
 			if self.style ~= TARGET_UNIT_FRAME then
 				ApplyTemplateToControl(control, ZO_GetPlatformTemplate(barData.template))
 			end
+			
+			barWidth = barData.centered and barData.barWidth / 2 or barData.barWidth
 
 			barData.barAnchors[i]:Set(control)
-			control:SetWidth(barData.centered and barData.barWidth / 2 or barData.barWidth)
+			control:SetWidth(barWidth)
 			control:SetHeight(barData.barHeight)
 			
 			local warnerControl = control.warnerContainer
