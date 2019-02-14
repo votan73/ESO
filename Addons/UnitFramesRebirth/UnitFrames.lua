@@ -9,7 +9,8 @@ local HIDE_BAR_TEXT = 0
 local SHOW_BAR_TEXT_MOUSE_OVER = 1
 local SHOW_BAR_TEXT = 2
 
-local UNIT_CHANGED, FORCE_INIT, UPDATE_BAR_TYPE, UPDATE_VALUE = true, true, true, true
+local UNIT_CHANGED, FORCE_INIT, UPDATE_BAR_TYPE, UPDATE_VALUE, INSTANT, FORCE_SHOW = true, true, true, true, true, true
+local ANIMATED, DONT_COLOR_RANK_ICON, PREVENT_SHOW = false, false, false
 
 local GROUP_UNIT_FRAME = "ZO_GroupUnitFrame"
 local RAID_UNIT_FRAME = "ZO_RaidUnitFrame"
@@ -113,9 +114,8 @@ local function CalculateDynamicPlatformConstants()
 end
 
 local function GetPlatformBarFont()
-	local groupSize = GetGroupSize()
 	local constants = GetPlatformConstants()
-	if groupSize > SMALL_GROUP_SIZE_THRESHOLD then
+	if GetGroupSize() > SMALL_GROUP_SIZE_THRESHOLD then
 		return constants.RAID_BAR_FONT
 	else
 		return constants.GROUP_BAR_FONT
@@ -249,7 +249,6 @@ end
 
 function UnitFramesManager:SetFrameHiddenForReason(unitTag, reason, hidden)
 	local unitFrame = self:GetFrame(unitTag)
-
 	if unitFrame then
 		unitFrame:SetHiddenForReason(reason, hidden)
 	end
@@ -272,7 +271,6 @@ function UnitFramesManager:SetGroupIndexDirty(groupIndex)
 	-- So we really just need to know what is the smallest groupIndex that is being changed
 	if not self.firstDirtyGroupIndex or groupIndex < self.firstDirtyGroupIndex then
 		self.firstDirtyGroupIndex = groupIndex
-		df("SetGroupIndexDirty %i", groupIndex)
 	end
 end
 
@@ -421,7 +419,6 @@ local UNITFRAME_BAR_STYLES =
 local function GetPlatformBarStyle(style, powerType)
 	local styleData = UNITFRAME_BAR_STYLES[style] or UNITFRAME_BAR_STYLES.default
 	local barData = styleData[powerType] or styleData[ANY_POWER_TYPE]
-
 	if barData then
 		-- Note: It is assumed that either all platforms are defined, or no platforms are defined.
 		local platformKey = IsInGamepadPreferredMode() and "gamepad" or "keyboard"
@@ -487,17 +484,6 @@ local function CreateBarStatusControl(baseBarName, parent, style, mechanic, show
 
 				if barAnchor2 then
 					barAnchor2:AddToControl(statusBar)
-				end
-
-				local warnerControl = statusBar.warnerContainer
-				local warner = barData.warner
-				if warnerControl and warner then
-					local warnerChild
-					for _, direction in pairs( { "Left", "Right", "Center" }) do
-						warnerChild = warnerControl:GetNamedChild(direction)
-						ApplyTemplateToControl(warnerChild, ZO_GetPlatformTemplate(warner.texture))
-						ApplyTemplateToControl(warnerChild, ZO_GetPlatformTemplate(warner[direction]))
-					end
 				end
 
 				return { statusBar }
@@ -568,17 +554,16 @@ do
 
 	function UnitFrameBar:Update(barType, cur, max, forceInit)
 		local numBarControls = #self.barControls
-		local centeredBarControls = numBarControls == 2
+		local isBarCentered = numBarControls == 2
 
-		local barCur = centeredBarControls and cur / 2 or cur
-		local barMax = centeredBarControls and max / 2 or max
+		local barCur = isBarCentered and cur / 2 or cur
+		local barMax = isBarCentered and max / 2 or max
 
 		for i = 1, numBarControls do
 			ZO_StatusBar_SmoothTransition(self.barControls[i], barCur, barMax, forceInit, nil, customApproachAmountMs)
 		end
 
 		local updateBarType = false
-		local updateValue = cur ~= self.currentValue or self.maxValue ~= max
 		self.currentValue = cur
 		self.maxValue = max
 
@@ -588,7 +573,7 @@ do
 			self.barTypeName = GetString("SI_COMBATMECHANICTYPE", self.barType)
 		end
 
-		self:UpdateText(updateBarType, updateValue)
+		self:UpdateText(updateBarType, cur ~= self.currentValue or self.maxValue ~= max)
 	end
 end
 
@@ -639,12 +624,11 @@ function UnitFrameBar:SetMouseInside(inside)
 end
 
 function UnitFrameBar:SetColor(barType)
-	local gradient = ZO_POWER_BAR_GRADIENT_COLORS[barType]
 	local colorFadeOut = GetInterfaceColor(INTERFACE_COLOR_TYPE_POWER_FADE_OUT, barType)
 	local colorFadeIn = GetInterfaceColor(INTERFACE_COLOR_TYPE_POWER_FADE_IN, barType)
 
 	for i = 1, #self.barControls do
-		ZO_StatusBar_SetGradientColor(self.barControls[i], gradient)
+		ZO_StatusBar_SetGradientColor(self.barControls[i], ZO_POWER_BAR_GRADIENT_COLORS[barType])
 		self.barControls[i]:SetFadeOutLossColor(colorFadeOut)
 		self.barControls[i]:SetFadeOutGainColor(colorFadeIn)
 	end
@@ -774,9 +758,6 @@ local function GetPlatformLayoutData(style)
 	end
 end
 
-local FORCE_SHOW = true
-local PREVENT_SHOW = false
-
 local function SetUnitFrameTexture(frame, styleData, showOption)
 	if frame and styleData then
 		frame:SetTexture(styleData.texture)
@@ -850,14 +831,13 @@ UnitFrame = ZO_Object:Subclass()
 
 function UnitFrame:New(unitTag, anchors, showBarText, style)
 	local newFrame = ZO_Object.New(self)
-	local baseWindowName = style .. unitTag
 	local parent = ZO_Group_IsGroupUnitTag(unitTag) and ZO_UnitFramesGroups or ZO_UnitFrames
 
 	local layoutData = GetPlatformLayoutData(style)
 	if not layoutData then return end
 
 	newFrame.style = style
-	newFrame.frame = CreateControlFromVirtual(baseWindowName, parent, style)
+	newFrame.frame = CreateControlFromVirtual(style .. unitTag, parent, style)
 	newFrame.fadeComponents = { }
 	newFrame.hiddenReasons = ZO_HiddenReasons:New()
 
@@ -873,7 +853,6 @@ function UnitFrame:New(unitTag, anchors, showBarText, style)
 	local statusControlName = layoutData.statusControlName or "Status"
 	newFrame.statusLabel = newFrame:AddFadeComponent(statusControlName)
 
-	local DONT_COLOR_RANK_ICON = false
 	newFrame.rankIcon = newFrame:AddFadeComponent("RankIcon", DONT_COLOR_RANK_ICON)
 	newFrame.assignmentIcon = newFrame:AddFadeComponent("AssignmentIcon", DONT_COLOR_RANK_ICON)
 	newFrame.championIcon = newFrame:AddFadeComponent("ChampionIcon")
@@ -900,8 +879,6 @@ function UnitFrame:New(unitTag, anchors, showBarText, style)
 end
 
 function UnitFrame:SetData(unitTag, anchors, showBarText)
-	df("SetData %s", unitTag)
-
 	self.hasTarget = false
 	self.unitTag = unitTag
 	self.dirty = true
@@ -922,26 +899,37 @@ function UnitFrame:ApplyVisualStyle(gamepadMode)
 	self.currentGamepadMode = gamepadMode
 
 	DoUnitFrameLayout(self, self.style)
-	local frameTemplate = ZO_GetPlatformTemplate(self.style)
-	ApplyTemplateToControl(self.frame, frameTemplate)
+	ApplyTemplateToControl(self.frame, ZO_GetPlatformTemplate(self.style))
 
-	local isLeader = IsUnitGroupLeader(self.unitTag)
 	local isOnline = IsUnitOnline(self.unitTag)
-	self:DoAlphaUpdate(IsUnitInGroupSupportRange(self.unitTag), isOnline, isLeader)
+	self:DoAlphaUpdate(IsUnitInGroupSupportRange(self.unitTag), isOnline, IsUnitGroupLeader(self.unitTag))
 	self:UpdateDifficulty()
 
 	local healthBar = self.healthBar
 	local barData = GetPlatformBarStyle(healthBar.style, healthBar.mechanic)
+	
 	if barData.template then
-		local barWidth = barData.centered and barData.barWidth / 2 or barData.barWidth
+		local barWidth
+		
 		for i, control in ipairs(healthBar.barControls) do
 			if self.style ~= TARGET_UNIT_FRAME then
 				ApplyTemplateToControl(control, ZO_GetPlatformTemplate(barData.template))
 			end
 
 			barData.barAnchors[i]:Set(control)
-			control:SetWidth(barWidth)
+			control:SetWidth(barData.centered and barData.barWidth / 2 or barData.barWidth)
 			control:SetHeight(barData.barHeight)
+			
+			local warnerControl = control.warnerContainer
+			local warner = barData.warner
+			if warnerControl and warner then
+				local warnerChild
+				for _, direction in pairs( { "Left", "Right", "Center" }) do
+					warnerChild = warnerControl:GetNamedChild(direction)
+					ApplyTemplateToControl(warnerChild, ZO_GetPlatformTemplate(warner.texture))
+					ApplyTemplateToControl(warnerChild, ZO_GetPlatformTemplate(warner[direction]))
+				end
+			end
 		end
 
 		if #healthBar.barControls == 1 then
@@ -950,7 +938,9 @@ function UnitFrame:ApplyVisualStyle(gamepadMode)
 				barAnchor2:AddToControl(healthBar.barControls[1])
 			end
 		end
+
 	end
+	
 	local statusBackground = self.frame:GetNamedChild("Background1")
 	if statusBackground then
 		statusBackground:SetHidden(not isOnline and barData.hideBgIfOffline)
@@ -1005,14 +995,12 @@ end
 
 function UnitFrame:SetHiddenForReason(reason, hidden)
 	if self.hiddenReasons:SetHiddenForReason(reason, hidden) then
-		local INSTANT = true
 		self:RefreshVisible(INSTANT)
 	end
 end
 
 function UnitFrame:SetHasTarget(hasTarget)
 	self.hasTarget = hasTarget
-	local ANIMATED = false
 	self:RefreshVisible(ANIMATED)
 end
 
@@ -1020,7 +1008,6 @@ function UnitFrame:ComputeHidden()
 	if not self.hasTarget then
 		return true
 	end
-
 	return self.hiddenReasons:IsHidden()
 end
 
@@ -1028,7 +1015,6 @@ function UnitFrame:RefreshVisible(instant)
 	local hidden = self:ComputeHidden()
 	if hidden ~= self.hidden then
 		self.hidden = hidden
-
 		if self.animateShowHide and not instant then
 			if not self.showHideTimeline then
 				self.showHideTimeline = ANIMATION_MANAGER:CreateTimelineFromVirtual("ZO_UnitFrameFadeAnimation", self.frame)
@@ -1065,7 +1051,6 @@ function UnitFrame:RefreshControls()
 		if self.hasTarget and self.dirty then
 			self.dirty = false
 			local unitTag = self:GetUnitTag()
-			-- df("UnitFrame RefreshControls %s", unitTag)
 			self:UpdateName()
 			self:UpdateUnitReaction()
 			self:UpdateLevel()
@@ -1235,7 +1220,7 @@ end
 function UnitFrame:UpdateRank()
 	if self.rankIcon then
 		local unitTag = self:GetUnitTag()
-		local rank, subRank = GetUnitAvARank(unitTag)
+		local rank = GetUnitAvARank(unitTag)
 
 		local showRank = rank ~= 0 or IsUnitPlayer(unitTag)
 		if showRank then
@@ -1356,9 +1341,8 @@ end
 function UnitFrame:UpdateUnitReaction()
 	if self.nameLabel then
 		if ZO_Group_IsGroupUnitTag(self:GetUnitTag()) then
-			local currentNameAlpha = self.nameLabel:GetControlAlpha()
 			local r, g, b = GetInterfaceColor(INTERFACE_COLOR_TYPE_TEXT_COLORS, INTERFACE_TEXT_COLOR_HIGHLIGHT)
-			self.nameLabel:SetColor(r, g, b, currentNameAlpha)
+			self.nameLabel:SetColor(r, g, b, self.nameLabel:GetControlAlpha())
 		end
 	end
 end
@@ -1405,18 +1389,15 @@ end
 function UnitFrame:UpdateCaption()
 	local captionLabel = self.captionLabel
 	if captionLabel then
-		local caption = ""
+		local caption = nil
 		local unitTag = self:GetUnitTag()
 		if IsUnitPlayer(unitTag) then
-			-- local start = GetGameTimeSeconds()
 			caption = self:UpdatePlayerCaption(unitTag)
-			-- df("%.1fus", (GetGameTimeSeconds() - start) * 1000000)
 		else
 			caption = self:UpdateNPCCaption(unitTag)
 		end
 
-		local hideCaption = caption == ""
-		captionLabel:SetHidden(hideCaption)
+		captionLabel:SetHidden(caption == nil)
 		captionLabel:SetText(caption)
 		-- still set the caption text when empty so we collapse the label for anything anchoring off the bottom of it
 	end
@@ -1425,7 +1406,7 @@ end
 function UnitFrame:UpdateStatus(isDead, isOnline)
 	local statusLabel = self.statusLabel
 	if statusLabel then
-		local hideBars =(isOnline == false) or(isDead == true)
+		local hideBars = isOnline == false or isDead == true
 		self:SetBarsHidden(hideBars and not self.neverHideStatusBar)
 		local layoutData = GetPlatformLayoutData(self.style)
 		statusLabel:SetHidden(not hideBars or not layoutData.statusData)
@@ -1768,6 +1749,7 @@ local function UpdateGroupFrameStyle(groupIndex)
 		-- create the small group versions.
 		UnitFrames:DisableGroupAndRaidFrames()
 	end
+	
 	if IsPlayerGrouped() or oldGroupSize > 0 then
 		-- Only update the frames of the unit being changed, and those after it in the list for performance
 		-- reasons.
@@ -1791,11 +1773,11 @@ local function UpdateGroupFramesVisualStyle()
 	SetAnchorOffsets(groupFrame, constants.GROUP_FRAME_BASE_OFFSET_X, constants.GROUP_FRAME_BASE_OFFSET_Y)
 
 	-- Raid group anchor frames.
-	local raidTemplate = ZO_GetPlatformTemplate("ZO_RaidFrameAnchor")
-	local raidFrame
+	-- local raidTemplate = ZO_GetPlatformTemplate("ZO_RaidFrameAnchor")
+	local raidFrame, x, y
 	for i = 1, NUM_SUBGROUPS do
 		raidFrame = largeGroupAnchorFrames[i]
-		ApplyTemplateToControl(raidFrame, raidTemplate)
+		ApplyTemplateToControl(raidFrame, ZO_GetPlatformTemplate("ZO_RaidFrameAnchor"))
 
 		-- For some reason, the ModifyTextType attribute on the template isn't being applied to the existing text on the label.
 		-- Clearing and setting the text again seems to reapply the ModifyTextType attribute.
@@ -1807,7 +1789,7 @@ local function UpdateGroupFramesVisualStyle()
 		end
 
 		raidFrame:SetDimensions(constants.RAID_FRAME_ANCHOR_CONTAINER_WIDTH, constants.RAID_FRAME_ANCHOR_CONTAINER_HEIGHT)
-		local x, y = GetGroupAnchorFrameOffsets(i, constants.GROUP_STRIDE, constants)
+		x, y = GetGroupAnchorFrameOffsets(i, constants.GROUP_STRIDE, constants)
 		SetAnchorOffsets(raidFrame, x, y)
 	end
 
@@ -1927,9 +1909,7 @@ local function RegisterForEvents()
 
 	local function OnUnitCreated(eventCode, unitTag)
 		if ZO_Group_IsGroupUnitTag(unitTag) then
-			df("OnUnitCreated")
-			local groupIndex = GetGroupIndexByUnitTag(unitTag)
-			UnitFrames:SetGroupIndexDirty(groupIndex)
+			UnitFrames:SetGroupIndexDirty(GetGroupIndexByUnitTag(unitTag))
 		else
 			ZO_UnitFrames_UpdateWindow(unitTag, UNIT_CHANGED)
 		end
@@ -1938,16 +1918,13 @@ local function RegisterForEvents()
 	local function OnUnitDestroyed(eventCode, unitTag)
 		if ZO_Group_IsGroupUnitTag(unitTag) then
 			local unitFrame = UnitFrames:GetFrame(unitTag)
-
 			if unitFrame then
 				-- OnUnitDestroyed is called, if a joining unit replaces a previous one.
 				-- In this case GetGroupIndexByUnitTag is working.
 				-- But for a leaving unit GetGroupIndexByUnitTag returns 4294967296.
 				-- The trick is to store the last used index in the unitFrame.
-				df("OnUnitDestroyed", GetGroupIndexByUnitTag(unitTag), unitFrame.index)
 				UnitFrames:SetGroupIndexDirty(unitFrame.index)
 				unitFrame.index = 4294967296
-				-- unitFrame.healthBar.currentValue = 0
 				unitFrame:SetHasTarget(false)
 			end
 		else
@@ -1957,7 +1934,6 @@ local function RegisterForEvents()
 
 	local function OnLevelUpdate(eventCode, unitTag, level)
 		local unitFrame = UnitFrames:GetFrame(unitTag)
-
 		if unitFrame then
 			unitFrame:UpdateLevel()
 		end
@@ -1969,7 +1945,6 @@ local function RegisterForEvents()
 
 	local function OnDispositionUpdate(eventCode, unitTag)
 		local unitFrame = UnitFrames:GetFrame(unitTag)
-
 		if unitFrame then
 			unitFrame:UpdateUnitReaction()
 		end
@@ -1977,7 +1952,6 @@ local function RegisterForEvents()
 
 	local function OnGroupSupportRangeUpdate(eventCode, unitTag, isNearby)
 		local unitFrame = UnitFrames:GetFrame(unitTag)
-
 		if unitFrame then
 			local isOnline = IsUnitOnline(unitTag)
 			local isLeader = IsUnitGroupLeader(unitTag)
@@ -2002,7 +1976,6 @@ local function RegisterForEvents()
 	end
 
 	local function OnGroupMemberConnectedStateChanged(eventCode, unitTag, isOnline)
-		df("OnGroupMemberConnectedStateChanged")
 		UpdateStatus(unitTag, IsUnitDead(unitTag), isOnline)
 	end
 
@@ -2027,7 +2000,6 @@ local function RegisterForEvents()
 
 	local function OnChampionPointsUpdate(eventCode, unitTag)
 		local unitFrame = UnitFrames:GetFrame(unitTag)
-
 		if unitFrame then
 			unitFrame:UpdateLevel()
 		end
@@ -2035,7 +2007,6 @@ local function RegisterForEvents()
 
 	local function OnTitleUpdated(eventCode, unitTag)
 		local unitFrame = UnitFrames:GetFrame(unitTag)
-
 		if unitFrame then
 			unitFrame:UpdateCaption()
 		end
@@ -2045,9 +2016,10 @@ local function RegisterForEvents()
 		ZO_UnitFrames_UpdateWindow("reticleover", UNIT_CHANGED)
 		ZO_UnitFrames_UpdateWindow("reticleovertarget", UNIT_CHANGED)
 
-		-- Clear cache of ZO_GetSecondaryPlayerNameWithTitleFromUnitTag
+		-- Clear cache
 		ZO_ResetCachedStrFormat(SI_PLAYER_NAME_WITH_TITLE_FORMAT)
 		ZO_ResetCachedStrFormat(SI_UNITFRAMESREBIRTH_CLASS_WITH_NAME)
+		ZO_ResetCachedStrFormat(SI_TOOLTIP_UNIT_CAPTION)
 
 		if IsPlayerGrouped() or UnitFrames.groupSize > 0 then
 			-- do a full update because we probably missed events while loading
@@ -2090,8 +2062,6 @@ local function RegisterForEvents()
 	ZO_UnitFrames:RegisterForEvent(EVENT_UNIT_DESTROYED, OnUnitDestroyed)
 	ZO_UnitFrames:RegisterForEvent(EVENT_LEVEL_UPDATE, OnLevelUpdate)
 	ZO_UnitFrames:RegisterForEvent(EVENT_LEADER_UPDATE, OnLeaderUpdate)
-	-- Not needed here.
-	-- ZO_UnitFrames:RegisterForEvent(EVENT_GROUPING_TOOLS_NO_LONGER_LFG, RequestFullRefresh)
 	ZO_UnitFrames:RegisterForEvent(EVENT_DISPOSITION_UPDATE, OnDispositionUpdate)
 	ZO_UnitFrames:AddFilterForEvent(EVENT_DISPOSITION_UPDATE, REGISTER_FILTER_UNIT_TAG_PREFIX, "group")
 	ZO_UnitFrames:RegisterForEvent(EVENT_GROUP_SUPPORT_RANGE_UPDATE, OnGroupSupportRangeUpdate)
