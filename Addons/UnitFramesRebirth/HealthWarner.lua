@@ -1,4 +1,4 @@
-local HEALTH_ALPHA_PULSE_THRESHOLD = 0.25
+local HEALTH_ALPHA_PULSE_THRESHOLD = 0.50
 local HEALTH_WARNER_FLASH_TIME = 300
 
 UnitFramesRebirth_HealthWarner = ZO_Object:Subclass()
@@ -9,7 +9,7 @@ function UnitFramesRebirth_HealthWarner:New(...)
 	return warner
 end
 
-function UnitFramesRebirth_HealthWarner:Initialize(parent, unitTag, style)
+function UnitFramesRebirth_HealthWarner:Initialize(parent, unitTag)
 	local barControls = parent:GetBarControls()
 	if not barControls or #barControls <= 0 then return end
 
@@ -32,25 +32,8 @@ function UnitFramesRebirth_HealthWarner:Initialize(parent, unitTag, style)
 	self.paused = false
 end
 
-function UnitFramesRebirth_HealthWarner:SetPaused(paused)
-	if self.paused ~= paused then
-		self.paused = paused
-		if paused then
-			if self.warnAnimation:IsPlaying() then
-				self.warnAnimation:Stop()
-			end
-		else
-			local health, maxHealth = GetUnitPower(self.unitTag, POWERTYPE_HEALTH)
-			self.warning:SetAlpha(0)
-			if maxHealth > 0 then
-				self:UpdateAlphaPulse(health / maxHealth)
-			end
-		end
-	end
-end
-
-function UnitFramesRebirth_HealthWarner:UpdateAlphaPulse(healthPerc)
-	if healthPerc <= HEALTH_ALPHA_PULSE_THRESHOLD then
+function UnitFramesRebirth_HealthWarner:OnHealthUpdate(health, maxHealth)
+	if health / maxHealth <= HEALTH_ALPHA_PULSE_THRESHOLD then
 		if not self.warnAnimation:IsPlaying() then
 			self.warnAnimation:PingPong(0, 1, HEALTH_WARNER_FLASH_TIME)
 		end
@@ -59,11 +42,5 @@ function UnitFramesRebirth_HealthWarner:UpdateAlphaPulse(healthPerc)
 			self.warnAnimation:Stop()
 			self.warning:SetAlpha(0)
 		end
-	end
-end
-
-function UnitFramesRebirth_HealthWarner:OnHealthUpdate(health, maxHealth)
-	if not self.paused and maxHealth > 0 then
-		self:UpdateAlphaPulse(health / maxHealth)
 	end
 end
