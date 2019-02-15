@@ -208,17 +208,42 @@ function UnitFramesManager:Initialize()
 	self.RaidUnitFrame = "ZO_RaidUnitFrame"
 end
 
-local function ApplyVisualStyleToAllFrames(frames, gamepadMode)
-	for _, unitFrame in pairs(frames) do
-		unitFrame:ApplyVisualStyle(gamepadMode)
+do
+	local function ApplyVisualStyleToAllFrames(frames, gamepadMode)
+		for _, unitFrame in pairs(frames) do
+			unitFrame:ApplyVisualStyle(gamepadMode)
+		end
+	end
+
+	function UnitFramesManager:ApplyVisualStyle()
+		self.gamepadMode = IsInGamepadPreferredMode()
+		ApplyVisualStyleToAllFrames(self.staticFrames, self.gamepadMode)
+		ApplyVisualStyleToAllFrames(self.groupFrames, self.gamepadMode)
+		ApplyVisualStyleToAllFrames(self.raidFrames, self.gamepadMode)
 	end
 end
 
-function UnitFramesManager:ApplyVisualStyle()
-	self.gamepadMode = IsInGamepadPreferredMode()
-	ApplyVisualStyleToAllFrames(self.staticFrames, self.gamepadMode)
-	ApplyVisualStyleToAllFrames(self.groupFrames, self.gamepadMode)
-	ApplyVisualStyleToAllFrames(self.raidFrames, self.gamepadMode)
+do
+	local function SetWarnerToAllFrames(frames, isActive)
+		for _, unitFrame in pairs(frames) do
+			local warnerControl
+			for i, control in ipairs(unitFrame.barControls) do
+				warnerControl = control.warnerContainer
+				if warnerControl then
+					if isActive then
+						warnerControl:SetPaused(false)
+					else
+						warnerControl:SetPaused(true)
+					end
+				end
+			end
+		end
+	end
+
+	function UnitFramesManager:SetWarner(isActive)
+		SetWarnerToAllFrames(self.groupFrames, isActive)
+		SetWarnerToAllFrames(self.raidFrames, isActive)
+	end
 end
 
 function UnitFramesManager:GetUnitFrameLookupTable(unitTag)
@@ -930,6 +955,7 @@ function UnitFrame:ApplyVisualStyle(gamepadMode)
 					warnerChild = warnerControl:GetNamedChild(direction)
 					ApplyTemplateToControl(warnerChild, ZO_GetPlatformTemplate(warner.texture))
 					ApplyTemplateToControl(warnerChild, ZO_GetPlatformTemplate(warner[direction]))
+					warnerControl:SetPaused(not UnitFrames.account.showHealthWarner)
 				end
 			end
 		end
@@ -1380,7 +1406,10 @@ do
 	end
 
 	function UnitFrame:UpdatePlayerCaption(unitTag)
-		return ZO_CachedStrFormat(SI_UNITFRAMESREBIRTH_CLASS_WITH_NAME, GetPlatformClassIconResized(unitTag), ZO_GetSecondaryPlayerNameWithTitleFromUnitTag(unitTag))
+		if UnitFrames.account.showClassIcon then
+			return ZO_CachedStrFormat(SI_UNITFRAMESREBIRTH_CLASS_WITH_NAME, GetPlatformClassIconResized(unitTag), ZO_GetSecondaryPlayerNameWithTitleFromUnitTag(unitTag))
+		end
+		return ZO_GetSecondaryPlayerNameWithTitleFromUnitTag(unitTag)
 	end
 end
 
@@ -2061,7 +2090,9 @@ local function RegisterForEvents()
 	ZO_UnitFrames:RegisterForEvent(EVENT_RETICLE_TARGET_CHANGED, OnReticleTargetChanged)
 	ZO_UnitFrames:RegisterForEvent(EVENT_POWER_UPDATE, OnPowerUpdate)
 	ZO_UnitFrames:RegisterForEvent(EVENT_UNIT_CREATED, OnUnitCreated)
+	ZO_UnitFrames:AddFilterForEvent(EVENT_UNIT_CREATED, REGISTER_FILTER_UNIT_TAG_PREFIX, "group")
 	ZO_UnitFrames:RegisterForEvent(EVENT_UNIT_DESTROYED, OnUnitDestroyed)
+	ZO_UnitFrames:AddFilterForEvent(EVENT_UNIT_DESTROYED, REGISTER_FILTER_UNIT_TAG_PREFIX, "group")
 	ZO_UnitFrames:RegisterForEvent(EVENT_LEVEL_UPDATE, OnLevelUpdate)
 	ZO_UnitFrames:RegisterForEvent(EVENT_LEADER_UPDATE, OnLeaderUpdate)
 	ZO_UnitFrames:RegisterForEvent(EVENT_DISPOSITION_UPDATE, OnDispositionUpdate)
@@ -2085,7 +2116,46 @@ local function RegisterForEvents()
 	CALLBACK_MANAGER:RegisterCallback("TargetOfTargetEnabledChanged", OnTargetOfTargetEnabledChanged)
 end
 
+local function CreateSettings()
+	local LibHarvensAddonSettings = LibStub("LibHarvensAddonSettings-1.0")
+
+	local settings = LibHarvensAddonSettings:AddAddon("Unit Frames Rebirth")
+	if not settings then return end
+
+	UnitFrames.account = ZO_SavedVars:NewAccountWide("UnitFramesRebirth_Data", 1, nil, DEFAULT_SETTINGS)
+
+	settings:AddSetting({
+		type = LibHarvensAddonSettings.ST_CHECKBOX,
+		label = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_CLASS_ICON),
+		tooltip = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_CLASS_ICON_TT),
+		setFunction = function(bool)
+			UnitFrames.account.showClassIcon = bool
+		end,
+		getFunction = function()
+			return UnitFrames.account.showClassIcon
+		end,
+	})
+
+	settings:AddSetting({
+		type = LibHarvensAddonSettings.ST_CHECKBOX,
+		label = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_CLASS_HEALTH_WARNER),
+		tooltip = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_CLASS_HEALTH_WARNER_TT),
+		setFunction = function(bool)
+			UnitFrames.account.showHealthWarner = bool
+			UnitFrames:SetWarner(bool)
+		end,
+		getFunction = function()
+			return UnitFrames.account.showHealthWarner
+		end,
+	})
+end
+
 do
+	local DEFAULT_SETTINGS = {
+		showClassIcon = true,
+		showHealthWarner = true,
+	}
+
 	local function OnAddOnLoaded(event, name)
 		if name ~= "ZO_Ingame" then return end
 		EVENT_MANAGER:UnregisterForEvent("UnitFrames_OnAddOnLoaded", EVENT_ADD_ON_LOADED)
@@ -2098,6 +2168,7 @@ do
 		UNIT_FRAMES = UnitFrames
 		CALLBACK_MANAGER:FireCallbacks("UnitFramesPreInit", UnitFrames)
 
+		CreateSettings()
 		RegisterForEvents()
 		CreateGroupAnchorFrames()
 		CreateTargetFrame()

@@ -1,1 +1,5 @@
 SafeAddString(SI_UNITFRAMESREBIRTH_CLASS_WITH_NAME, "<<X:1>> <<2>>", 0)
+SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_CLASS_ICON, "Class icon", 0)
+SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_CLASS_ICON_TT, "Shows a class icon next to the player name on the target frame.", 0)
+SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_CLASS_HEALTH_WARNER, "Low Health Warning", 0)
+SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_CLASS_HEALTH_WARNER_TT, "This option is only applied on group frames. If a player has low health, their health bar will glow.", 0)

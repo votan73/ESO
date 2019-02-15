@@ -1,1 +1,5 @@
 SafeAddString(SI_UNITFRAMESREBIRTH_CLASS_WITH_NAME, "<<X:1>> <<2>>", 0)
+SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_CLASS_ICON, "Klassensymbol", 0)
+SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_CLASS_ICON_TT, "Zeigt das Klassensymbol des Charakters auf Eurem Ziel an.", 0)
+SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_CLASS_HEALTH_WARNER, "Lebenswarner", 0)
+SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_CLASS_HEALTH_WARNER_TT, "Diese Einstellung wirkt nur auf Eure Gruppenanzeige. Wenn ein Spieler wenig Leben hat, wird ein leuchtender Effekt angezeigt.", 0)
