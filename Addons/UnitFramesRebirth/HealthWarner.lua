@@ -9,7 +9,7 @@ function UnitFramesRebirth_HealthWarner:New(...)
 	return warner
 end
 
-function UnitFramesRebirth_HealthWarner:Initialize(parent, unitTag, style)
+function UnitFramesRebirth_HealthWarner:Initialize(parent, unitTag)
 	local barControls = parent:GetBarControls()
 	if not barControls or #barControls <= 0 then return end
 
