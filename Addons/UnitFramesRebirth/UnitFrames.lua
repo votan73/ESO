@@ -1798,14 +1798,14 @@ local function UpdateGroupFrameStyle(groupIndex)
 	elseif groupSize < oldGroupSize then
 		if newLargeGroup then
 			-- Hide unit the raid frames
-			for unitTag, unitFrame in pairs(self.raidFrames) do
+			for unitTag, unitFrame in pairs(UnitFrames.raidFrames) do
 				if unitFrame.index > groupSize then
 					unitFrame:Remove()
 				end
 			end
 		else
 			-- Hide unit the group frames
-			for unitTag, unitFrame in pairs(self.groupFrames) do
+			for unitTag, unitFrame in pairs(UnitFrames.groupFrames) do
 				if unitFrame.index > groupSize then
 					unitFrame:Remove()
 				end
