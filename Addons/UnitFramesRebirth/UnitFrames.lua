@@ -495,7 +495,7 @@ local function CreateBarStatusControl(baseBarName, parent, style, mechanic, show
 				return { leftBar, rightBar }
 			else
 				local statusBar = CreateControlFromVirtual(baseBarName, parent, barData.template)
-				
+
 				local barWidth = barData.barWidth
 				if barWidth then
 					statusBar:SetWidth(barWidth)
@@ -935,21 +935,21 @@ function UnitFrame:ApplyVisualStyle(gamepadMode)
 
 	local healthBar = self.healthBar
 	local barData = GetPlatformBarStyle(healthBar.style, healthBar.mechanic)
-	
+
 	if barData.template then
 		local barWidth, warnerControl, warner, warnerChild
-		
+
 		for i, control in ipairs(healthBar.barControls) do
 			if self.style ~= TARGET_UNIT_FRAME then
 				ApplyTemplateToControl(control, ZO_GetPlatformTemplate(barData.template))
 			end
-			
+
 			barWidth = barData.centered and barData.barWidth / 2 or barData.barWidth
 
 			barData.barAnchors[i]:Set(control)
 			control:SetWidth(barWidth)
 			control:SetHeight(barData.barHeight)
-			
+
 			warnerControl = control.warnerContainer
 			warner = barData.warner
 			if warnerControl and warner then
@@ -970,7 +970,7 @@ function UnitFrame:ApplyVisualStyle(gamepadMode)
 		end
 
 	end
-	
+
 	local statusBackground = self.frame:GetNamedChild("Background1")
 	if statusBackground then
 		statusBackground:SetHidden(not isOnline and barData.hideBgIfOffline)
@@ -1777,13 +1777,13 @@ local function UpdateGroupFrameStyle(groupIndex)
 	-- In cases where no UI has been setup, the group changes between large and small group sizes, or when
 	-- members are removed, we need to run a full update of the UI. These could also be optimized to only
 	-- run partial updates if more performance is needed.
-	if oldLargeGroup ~= newLargeGroup or groupSize == 0 then
+	if oldLargeGroup ~= newLargeGroup or groupSize < oldGroupSize then
 		-- Create all the appropriate frames for the new group member, or in the case of a unit_destroyed
 		-- create the small group versions.
 		UnitFrames:DisableGroupAndRaidFrames()
 	end
-	
-	if IsPlayerGrouped() or oldGroupSize > 0 then
+
+	if IsPlayerGrouped() then
 		-- Only update the frames of the unit being changed, and those after it in the list for performance
 		-- reasons.
 		CreateGroupsAfter(groupIndex)
@@ -1958,6 +1958,7 @@ local function RegisterForEvents()
 				-- The trick is to store the last used index in the unitFrame.
 				UnitFrames:SetGroupIndexDirty(unitFrame.index)
 				unitFrame.index = 4294967296
+				unitFrame.healthBar:Update(POWERTYPE_HEALTH, 0, 0)
 				unitFrame:SetHasTarget(false)
 			end
 		else
@@ -2118,46 +2119,6 @@ local function RegisterForEvents()
 	CALLBACK_MANAGER:RegisterCallback("TargetOfTargetEnabledChanged", OnTargetOfTargetEnabledChanged)
 end
 
-local function CreateSettings()
-	local LibHarvensAddonSettings = LibStub("LibHarvensAddonSettings-1.0")
-
-	local settings = LibHarvensAddonSettings:AddAddon("Unit Frames Rebirth")
-	assert(settings, "settings not loaded")
-
-	local DEFAULT_SETTINGS = {
-		showClassIcon = true,
-		showHealthWarner = true,
-	}
-	UnitFrames.account = ZO_SavedVars:NewAccountWide("UnitFramesRebirth_Data", 1, nil, DEFAULT_SETTINGS)
-
-	settings:AddSetting {
-		type = LibHarvensAddonSettings.ST_CHECKBOX,
-		label = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_CLASS_ICON),
-		tooltip = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_CLASS_ICON_TT),
-		default = DEFAULT_SETTINGS.showClassIcon,
-		setFunction = function(bool)
-			UnitFrames.account.showClassIcon = bool
-		end,
-		getFunction = function()
-			return UnitFrames.account.showClassIcon
-		end,
-	}
-
-	settings:AddSetting {
-		type = LibHarvensAddonSettings.ST_CHECKBOX,
-		label = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_CLASS_HEALTH_WARNER),
-		tooltip = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_CLASS_HEALTH_WARNER_TT),
-		default = DEFAULT_SETTINGS.showHealthWarner,
-		setFunction = function(bool)
-			UnitFrames.account.showHealthWarner = bool
-			UnitFrames:SetWarner(bool)
-		end,
-		getFunction = function()
-			return UnitFrames.account.showHealthWarner
-		end,
-	}
-end
-
 do
 	local function OnAddOnLoaded(event, name)
 		if name ~= "ZO_Ingame" then return end
@@ -2171,7 +2132,6 @@ do
 		UNIT_FRAMES = UnitFrames
 		CALLBACK_MANAGER:FireCallbacks("UnitFramesPreInit", UnitFrames)
 
-		CreateSettings()
 		RegisterForEvents()
 		CreateGroupAnchorFrames()
 		CreateTargetFrame()

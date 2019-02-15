@@ -62,7 +62,7 @@ end
 
 function UnitFramesRebirth_HealthWarner:OnHealthUpdate(health, maxHealth)
 	if not self.paused then
-		local healthPerc = health / maxHealth
+		local healthPerc = maxHealth > 0 and(health / maxHealth) or 1
 		self:UpdateAlphaPulse(healthPerc)
 	end
 end

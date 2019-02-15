@@ -14,3 +14,4 @@ lang/$(language).lua
 HealthWarner.lua
 UnitFrames.xml
 UnitFrames.lua
+Main.lua
