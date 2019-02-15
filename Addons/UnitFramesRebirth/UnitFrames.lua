@@ -305,11 +305,13 @@ function UnitFramesManager:DisableGroupAndRaidFrames()
 	-- Disable the raid frames
 	for unitTag, unitFrame in pairs(self.raidFrames) do
 		unitFrame:SetHiddenForReason("disabled", true)
+		unitFrame.hasTarget = false
 	end
 
 	-- Disable the group frames
 	for unitTag, unitFrame in pairs(self.groupFrames) do
 		unitFrame:SetHiddenForReason("disabled", true)
+		unitFrame.hasTarget = false
 	end
 end
 
@@ -1034,6 +1036,14 @@ function UnitFrame:SetHasTarget(hasTarget)
 	self:RefreshVisible(ANIMATED)
 end
 
+function UnitFrame:Remove()
+	if self.index < 4294967296 then
+		self.index = 4294967296
+		self.healthBar:Update(POWERTYPE_HEALTH, 0, 0)
+		self:SetHasTarget(false)
+	end
+end
+
 function UnitFrame:ComputeHidden()
 	if not self.hasTarget then
 		return true
@@ -1748,6 +1758,8 @@ local function CreateGroupMember(frameIndex, unitTag, style, groupSize)
 end
 
 local function CreateGroupsAfter(startIndex)
+	df("CreateGroupsAfter %i", startIndex)
+
 	local groupSize = GetGroupSize()
 
 	local style = groupSize > SMALL_GROUP_SIZE_THRESHOLD and UnitFrames.RaidUnitFrame or UnitFrames.GroupUnitFrame
@@ -1766,6 +1778,7 @@ end
 -- hiding frames that are no longer applicable, and creating new frames of the correct style if the group size
 -- goes above or below the "small group" or "raid group" thresholds.
 local function UpdateGroupFrameStyle(groupIndex)
+	local start = GetGameTimeSeconds()
 	local groupSize = GetGroupSize()
 	local oldGroupSize = UnitFrames.groupSize or 0
 
@@ -1777,17 +1790,37 @@ local function UpdateGroupFrameStyle(groupIndex)
 	-- In cases where no UI has been setup, the group changes between large and small group sizes, or when
 	-- members are removed, we need to run a full update of the UI. These could also be optimized to only
 	-- run partial updates if more performance is needed.
-	if oldLargeGroup ~= newLargeGroup or groupSize < oldGroupSize then
+	if oldLargeGroup ~= newLargeGroup or groupSize == 0 then
 		-- Create all the appropriate frames for the new group member, or in the case of a unit_destroyed
 		-- create the small group versions.
 		UnitFrames:DisableGroupAndRaidFrames()
+		groupIndex = 1
+	elseif groupSize < oldGroupSize then
+		if newLargeGroup then
+			-- Hide unit the raid frames
+			for unitTag, unitFrame in pairs(self.raidFrames) do
+				if unitFrame.index > groupSize then
+					unitFrame:Remove()
+				end
+			end
+		else
+			-- Hide unit the group frames
+			for unitTag, unitFrame in pairs(self.groupFrames) do
+				if unitFrame.index > groupSize then
+					unitFrame:Remove()
+				end
+			end
+		end
 	end
 
 	if IsPlayerGrouped() then
 		-- Only update the frames of the unit being changed, and those after it in the list for performance
 		-- reasons.
 		CreateGroupsAfter(groupIndex)
+	elseif oldGroupSize > 0 then
+		UnitFrames:UpdateGroupAnchorFrames()
 	end
+	df("UpdateGroupFrameStyle %.3f",(GetGameTimeSeconds() - start) * 1000)
 end
 
 local function SetAnchorOffsets(control, offsetX, offsetY)
@@ -1957,9 +1990,7 @@ local function RegisterForEvents()
 				-- But for a leaving unit GetGroupIndexByUnitTag returns 4294967296.
 				-- The trick is to store the last used index in the unitFrame.
 				UnitFrames:SetGroupIndexDirty(unitFrame.index)
-				unitFrame.index = 4294967296
-				unitFrame.healthBar:Update(POWERTYPE_HEALTH, 0, 0)
-				unitFrame:SetHasTarget(false)
+				unitFrame:Remove()
 			end
 		else
 			ZO_UnitFrames_UpdateWindow(unitTag)
