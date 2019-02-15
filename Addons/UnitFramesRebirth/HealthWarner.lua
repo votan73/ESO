@@ -30,10 +30,6 @@ function UnitFramesRebirth_HealthWarner:Initialize(parent, unitTag)
 	self.warnAnimation = ZO_AlphaAnimation:New(self.warning)
 	self.statusBar = parent
 	self.paused = false
-
-	self.warning:RegisterForEvent(EVENT_POWER_UPDATE, OnPowerUpdate)
-	self.warning:AddFilterForEvent(EVENT_POWER_UPDATE, REGISTER_FILTER_POWER_TYPE, POWERTYPE_HEALTH, REGISTER_FILTER_UNIT_TAG, unitTag)
-	self.warning:RegisterForEvent(EVENT_PLAYER_ACTIVATED, OnPlayerActivated)
 end
 
 function UnitFramesRebirth_HealthWarner:SetPaused(paused)
