@@ -224,25 +224,23 @@ do
 end
 
 do
-	local function SetWarnerToAllFrames(frames, isActive)
+	local function SetWarnerToFrames(frames, isActive)
+		local healthWarner
 		for _, unitFrame in pairs(frames) do
-			local warnerControl
-			for i, control in ipairs(unitFrame.barControls) do
-				warnerControl = control.warnerContainer
-				if warnerControl then
-					if isActive then
-						warnerControl:SetPaused(false)
-					else
-						warnerControl:SetPaused(true)
-					end
+			healthWarner = unitFrame.healthWarner
+			if healthWarner then
+				if isActive then
+					healthWarner:SetPaused(false)
+				else
+					healthWarner:SetPaused(true)
 				end
 			end
 		end
 	end
 
 	function UnitFramesManager:SetWarner(isActive)
-		SetWarnerToAllFrames(self.groupFrames, isActive)
-		SetWarnerToAllFrames(self.raidFrames, isActive)
+		SetWarnerToFrames(self.groupFrames, isActive)
+		SetWarnerToFrames(self.raidFrames, isActive)
 	end
 end
 
@@ -480,12 +478,14 @@ local function CreateBarStatusControl(baseBarName, parent, style, mechanic, show
 					gloss:SetBarAlignment(BAR_ALIGNMENT_REVERSE)
 				end
 
-				if barData.barWidth then
+				local barWidth = barData.barWidth
+				if barWidth then
 					leftBar:SetWidth(barData.barWidth / 2)
 					rightBar:SetWidth(barData.barWidth / 2)
 				end
 
-				if barData.barHeight then
+				local barHeight = barData.barHeight
+				if barHeight then
 					leftBar:SetHeight(barData.barHeight)
 					rightBar:SetHeight(barData.barHeight)
 				end
@@ -495,12 +495,15 @@ local function CreateBarStatusControl(baseBarName, parent, style, mechanic, show
 				return { leftBar, rightBar }
 			else
 				local statusBar = CreateControlFromVirtual(baseBarName, parent, barData.template)
-				if barData.barWidth then
-					statusBar:SetWidth(barData.barWidth)
+				
+				local barWidth = barData.barWidth
+				if barWidth then
+					statusBar:SetWidth(barWidth)
 				end
 
-				if barData.barHeight then
-					statusBar:SetHeight(barData.barHeight)
+				local barHeight = barData.barHeight
+				if barHeight then
+					statusBar:SetHeight(barHeight)
 				end
 
 				if barAnchor1 then
@@ -934,7 +937,7 @@ function UnitFrame:ApplyVisualStyle(gamepadMode)
 	local barData = GetPlatformBarStyle(healthBar.style, healthBar.mechanic)
 	
 	if barData.template then
-		local barWidth
+		local barWidth, warnerControl, warner, warnerChild
 		
 		for i, control in ipairs(healthBar.barControls) do
 			if self.style ~= TARGET_UNIT_FRAME then
@@ -947,15 +950,14 @@ function UnitFrame:ApplyVisualStyle(gamepadMode)
 			control:SetWidth(barWidth)
 			control:SetHeight(barData.barHeight)
 			
-			local warnerControl = control.warnerContainer
-			local warner = barData.warner
+			warnerControl = control.warnerContainer
+			warner = barData.warner
 			if warnerControl and warner then
-				local warnerChild
 				for _, direction in pairs( { "Left", "Right", "Center" }) do
 					warnerChild = warnerControl:GetNamedChild(direction)
 					ApplyTemplateToControl(warnerChild, ZO_GetPlatformTemplate(warner.texture))
 					ApplyTemplateToControl(warnerChild, ZO_GetPlatformTemplate(warner[direction]))
-					warnerControl:SetPaused(not UnitFrames.account.showHealthWarner)
+					self.healthWarner:SetPaused(not UnitFrames.account.showHealthWarner)
 				end
 			end
 		end
@@ -2120,26 +2122,32 @@ local function CreateSettings()
 	local LibHarvensAddonSettings = LibStub("LibHarvensAddonSettings-1.0")
 
 	local settings = LibHarvensAddonSettings:AddAddon("Unit Frames Rebirth")
-	if not settings then return end
+	assert(settings, "settings not loaded")
 
+	local DEFAULT_SETTINGS = {
+		showClassIcon = true,
+		showHealthWarner = true,
+	}
 	UnitFrames.account = ZO_SavedVars:NewAccountWide("UnitFramesRebirth_Data", 1, nil, DEFAULT_SETTINGS)
 
-	settings:AddSetting({
+	settings:AddSetting {
 		type = LibHarvensAddonSettings.ST_CHECKBOX,
 		label = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_CLASS_ICON),
 		tooltip = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_CLASS_ICON_TT),
+		default = DEFAULT_SETTINGS.showClassIcon,
 		setFunction = function(bool)
 			UnitFrames.account.showClassIcon = bool
 		end,
 		getFunction = function()
 			return UnitFrames.account.showClassIcon
 		end,
-	})
+	}
 
-	settings:AddSetting({
+	settings:AddSetting {
 		type = LibHarvensAddonSettings.ST_CHECKBOX,
 		label = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_CLASS_HEALTH_WARNER),
 		tooltip = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_CLASS_HEALTH_WARNER_TT),
+		default = DEFAULT_SETTINGS.showHealthWarner,
 		setFunction = function(bool)
 			UnitFrames.account.showHealthWarner = bool
 			UnitFrames:SetWarner(bool)
@@ -2147,15 +2155,10 @@ local function CreateSettings()
 		getFunction = function()
 			return UnitFrames.account.showHealthWarner
 		end,
-	})
+	}
 end
 
 do
-	local DEFAULT_SETTINGS = {
-		showClassIcon = true,
-		showHealthWarner = true,
-	}
-
 	local function OnAddOnLoaded(event, name)
 		if name ~= "ZO_Ingame" then return end
 		EVENT_MANAGER:UnregisterForEvent("UnitFrames_OnAddOnLoaded", EVENT_ADD_ON_LOADED)

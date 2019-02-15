@@ -35,13 +35,13 @@ end
 function UnitFramesRebirth_HealthWarner:SetPaused(paused)
 	if self.paused ~= paused then
 		self.paused = paused
+		self.warning:SetAlpha(0)
 		if paused then
 			if self.warnAnimation:IsPlaying() then
 				self.warnAnimation:Stop()
 			end
 		else
 			local current, max = GetUnitPower(self.unitTag, POWERTYPE_HEALTH)
-			self.warning:SetAlpha(0)
 			self:UpdateAlphaPulse(current / max)
 		end
 	end
