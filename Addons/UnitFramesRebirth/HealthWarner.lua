@@ -16,12 +16,13 @@ function UnitFramesRebirth_HealthWarner:Initialize(parent, unitTag, style)
 	self.warning = barControls[1].warnerContainer
 	if not self.warning then return end
 
-	local function OnPowerUpdate(_, unitTag, powerIndex, powerType, health, maxHealth)
-		self:OnHealthUpdate(health, maxHealth)
-	end
-	local function OnPlayerActivated()
-		local current, max = GetUnitPower(self.unitTag, POWERTYPE_HEALTH)
-		self:OnHealthUpdate(current, max)
+	local orgUpdate = parent.Update
+	function parent.Update(...)
+		local powerType = select(2, ...)
+		if powerType == POWERTYPE_HEALTH then
+			self:OnHealthUpdate(select(3, ...))
+		end
+		return orgUpdate(...)
 	end
 
 	self.unitTag = unitTag
