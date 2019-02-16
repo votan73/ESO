@@ -371,12 +371,11 @@ end
 	UnitFrameBar class...defines one bar in the unit frame, including background/glass textures, statusbar and text
 --]]
 
-UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_INSTANT = 1
-UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_ULTRA_FAST = 2
-UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_SUPER_FAST = 3
-UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_FASTER = 4
-UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_FAST = 5
-UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_DEFAULT = 6
+UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_ULTRA_FAST = 1
+UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_SUPER_FAST = 2
+UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_FASTER = 3
+UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_FAST = 4
+UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_DEFAULT = 5
 
 local ANY_POWER_TYPE = true -- A special flag that essentially acts like a wild card, accepting any mechanic
 
@@ -593,9 +592,8 @@ end
 do
 	-- The health bar animation is pretty slow. We gonna make it a bit faster. This is very helpful in PvP.
 	-- DEFAULT_ANIMATION_TIME_MS = 500
-
+	
 	local lookupApproachAmountMs = {
-		[UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_INSTANT] = 10,
 		[UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_ULTRA_FAST] = 100,
 		[UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_SUPER_FAST] = 200,
 		[UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_FASTER] = 300,
@@ -603,8 +601,8 @@ do
 		[UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_DEFAULT] = DEFAULT_ANIMATION_TIME_MS,
 	}
 	
-	local function GetCustomApproachAmountMs()
-		return lookupApproachAmountMs[UnitFrames.account.approachAmountMs.data]
+	function GetCustomApproachAmountMs()
+		return lookupApproachAmountMs[UnitFrames.account.approachAmountMs] or DEFAULT_ANIMATION_TIME_MS
 	end
 
 	function UnitFrameBar:Update(barType, cur, max, forceInit)
@@ -614,6 +612,7 @@ do
 		local barCur = isBarCentered and cur / 2 or cur
 		local barMax = isBarCentered and max / 2 or max
 
+		local overrideForceInit
 		for i = 1, numBarControls do
 			ZO_StatusBar_SmoothTransition(self.barControls[i], barCur, barMax, forceInit, nil, GetCustomApproachAmountMs())
 		end
@@ -1153,9 +1152,8 @@ function UnitFrame:RefreshUnit(unitChanged)
 		MenuOwnerClosed(self.frame)
 	end
 
-	-- SetHasTarget calls RefreshVisible, whichs calls RefreshControls
 	self:SetHasTarget(validTarget)
-	--self:RefreshControls()
+	self:RefreshControls()
 end
 
 function UnitFrame:SetBarsHidden(hidden)
@@ -1784,6 +1782,8 @@ local function CreateGroupMember(frameIndex, unitTag, style, groupSize)
 end
 
 local function CreateGroupsAfter(startIndex)
+	-- df("CreateGroupsAfter %i", startIndex)
+
 	local groupSize = GetGroupSize()
 
 	local style = groupSize > SMALL_GROUP_SIZE_THRESHOLD and UnitFrames.RaidUnitFrame or UnitFrames.GroupUnitFrame
@@ -1802,6 +1802,7 @@ end
 -- hiding frames that are no longer applicable, and creating new frames of the correct style if the group size
 -- goes above or below the "small group" or "raid group" thresholds.
 local function UpdateGroupFrameStyle(groupIndex)
+	local start = GetGameTimeSeconds()
 	local groupSize = GetGroupSize()
 	local oldGroupSize = UnitFrames.groupSize or 0
 
@@ -1843,6 +1844,7 @@ local function UpdateGroupFrameStyle(groupIndex)
 	elseif oldGroupSize > 0 then
 		UnitFrames:UpdateGroupAnchorFrames()
 	end
+	-- df("UpdateGroupFrameStyle %.3f",(GetGameTimeSeconds() - start) * 1000)
 end
 
 local function SetAnchorOffsets(control, offsetX, offsetY)

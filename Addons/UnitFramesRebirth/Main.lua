@@ -16,7 +16,7 @@ local function CreateSettings()
 	local DEFAULT_SETTINGS = {
 		showClassIcon = true,
 		showHealthWarner = true,
-		approachAmountMs = UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_FAST,
+		approachAmountMs = UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_DEFAULT,
 	}
 	UnitFrames.account = ZO_SavedVars:NewAccountWide("UnitFramesRebirth_Data", 1, nil, DEFAULT_SETTINGS)
 
@@ -35,8 +35,8 @@ local function CreateSettings()
 
 	settings:AddSetting {
 		type = LibHarvensAddonSettings.ST_CHECKBOX,
-		label = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_CLASS_HEALTH_WARNER),
-		tooltip = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_CLASS_HEALTH_WARNER_TT),
+		label = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_HEALTH_WARNER),
+		tooltip = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_HEALTH_WARNER_TT),
 		default = DEFAULT_SETTINGS.showHealthWarner,
 		setFunction = function(bool)
 			UnitFrames.account.showHealthWarner = bool
@@ -49,7 +49,6 @@ local function CreateSettings()
 
 	do
 		local Modes = {
-			{ name = GetString(SI_UNITFRAMESREBIRTH_APPROACH_INSTANT), data = UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_INSTANT },
 			{ name = GetString(SI_UNITFRAMESREBIRTH_APPROACH_ULTRA_FAST), data = UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_ULTRA_FAST },
 			{ name = GetString(SI_UNITFRAMESREBIRTH_APPROACH_SUPER_FAST), data = UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_SUPER_FAST },
 			{ name = GetString(SI_UNITFRAMESREBIRTH_APPROACH_FASTER), data = UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_FASTER },
@@ -71,7 +70,7 @@ local function CreateSettings()
 				return (ModeToData[UnitFrames.account.approachAmountMs] or ModeToData[DEFAULT_SETTINGS.approachAmountMs]).name
 			end,
 			setFunction = function(combobox, name, item)
-				UnitFrames.account.approachAmountMs.data = item.data
+				UnitFrames.account.approachAmountMs = item.data
 			end,
 		}
 	end
