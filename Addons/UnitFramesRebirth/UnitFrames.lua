@@ -593,8 +593,7 @@ end
 do
 	-- The health bar animation is pretty slow. We gonna make it a bit faster. This is very helpful in PvP.
 	-- DEFAULT_ANIMATION_TIME_MS = 500
-	local customApproachAmountMs = 100
-	
+
 	local lookupApproachAmountMs = {
 		[UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_INSTANT] = 10,
 		[UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_ULTRA_FAST] = 100,
@@ -616,7 +615,6 @@ do
 		local barMax = isBarCentered and max / 2 or max
 
 		for i = 1, numBarControls do
-			-- ZO_StatusBar_SmoothTransition(self.barControls[i], barCur, barMax, forceInit, nil, customApproachAmountMs)
 			ZO_StatusBar_SmoothTransition(self.barControls[i], barCur, barMax, forceInit, nil, GetCustomApproachAmountMs())
 		end
 
