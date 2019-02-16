@@ -23,6 +23,8 @@ ZO_KEYBOARD_GROUP_FRAME_HEIGHT = 80
 ZO_KEYBOARD_RAID_FRAME_WIDTH = 96
 ZO_KEYBOARD_RAID_FRAME_HEIGHT = 40
 
+local GROUPINDEX_NONE = 4294967296
+
 local KEYBOARD_CONSTANTS =
 {
 	GROUP_LEADER_ICON = "EsoUI/Art/UnitFrames/groupIcon_leader.dds",
@@ -1037,8 +1039,8 @@ function UnitFrame:SetHasTarget(hasTarget)
 end
 
 function UnitFrame:Remove()
-	if self.index < 4294967296 then
-		self.index = 4294967296
+	if self.index < GROUPINDEX_NONE then
+		self.index = GROUPINDEX_NONE
 		self.healthBar:Update(POWERTYPE_HEALTH, 0, 0)
 		self:SetHasTarget(false)
 	end
@@ -2078,13 +2080,13 @@ local function RegisterForEvents()
 	end
 
 	local function OnPlayerActivated(eventCode)
-		ZO_UnitFrames_UpdateWindow("reticleover", UNIT_CHANGED)
-		ZO_UnitFrames_UpdateWindow("reticleovertarget", UNIT_CHANGED)
-
 		-- Clear cache
 		ZO_ResetCachedStrFormat(SI_PLAYER_NAME_WITH_TITLE_FORMAT)
 		ZO_ResetCachedStrFormat(SI_UNITFRAMESREBIRTH_CLASS_WITH_NAME)
 		ZO_ResetCachedStrFormat(SI_TOOLTIP_UNIT_CAPTION)
+
+		ZO_UnitFrames_UpdateWindow("reticleover", UNIT_CHANGED)
+		ZO_UnitFrames_UpdateWindow("reticleovertarget", UNIT_CHANGED)
 
 		if IsPlayerGrouped() or UnitFrames.groupSize > 0 then
 			-- do a full update because we probably missed events while loading
