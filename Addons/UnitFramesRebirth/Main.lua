@@ -16,6 +16,7 @@ local function CreateSettings()
 	local DEFAULT_SETTINGS = {
 		showClassIcon = true,
 		showHealthWarner = true,
+		approachAmountMs = UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_FAST,
 	}
 	UnitFrames.account = ZO_SavedVars:NewAccountWide("UnitFramesRebirth_Data", 1, nil, DEFAULT_SETTINGS)
 
@@ -45,6 +46,35 @@ local function CreateSettings()
 			return UnitFrames.account.showHealthWarner
 		end,
 	}
+
+	do
+		local Modes = {
+			{ name = GetString(SI_UNITFRAMESREBIRTH_APPROACH_INSTANT), data = UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_INSTANT },
+			{ name = GetString(SI_UNITFRAMESREBIRTH_APPROACH_ULTRA_FAST), data = UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_ULTRA_FAST },
+			{ name = GetString(SI_UNITFRAMESREBIRTH_APPROACH_SUPER_FAST), data = UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_SUPER_FAST },
+			{ name = GetString(SI_UNITFRAMESREBIRTH_APPROACH_FASTER), data = UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_FASTER },
+			{ name = GetString(SI_UNITFRAMESREBIRTH_APPROACH_FAST), data = UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_FAST },
+			{ name = GetString(SI_UNITFRAMESREBIRTH_APPROACH_DEFAULT), data = UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_DEFAULT },
+		}
+		
+		local ModeToData = { }
+		for i = 1, #Modes do
+			ModeToData[Modes[i].data] = Modes[i]
+		end
+		
+		settings:AddSetting {
+			type = LibHarvensAddonSettings.ST_DROPDOWN,
+			label = "Healh bar speed",
+			items = Modes,
+			default = ModeToData[DEFAULT_SETTINGS.approachAmountMs].name,
+			getFunction = function()
+				return (ModeToData[UnitFrames.account.approachAmountMs] or ModeToData[DEFAULT_SETTINGS.approachAmountMs]).name
+			end,
+			setFunction = function(combobox, name, item)
+				UnitFrames.account.approachAmountMs.data = item.data
+			end,
+		}
+	end
 end
 
 local function OnAddOnLoaded(event, name)

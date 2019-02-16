@@ -18,10 +18,11 @@ local TARGET_UNIT_FRAME = "ZO_TargetUnitFrame"
 
 local NUM_SUBGROUPS = GROUP_SIZE_MAX / SMALL_GROUP_SIZE_THRESHOLD
 
-ZO_KEYBOARD_GROUP_FRAME_WIDTH = 288
-ZO_KEYBOARD_GROUP_FRAME_HEIGHT = 80
-ZO_KEYBOARD_RAID_FRAME_WIDTH = 96
-ZO_KEYBOARD_RAID_FRAME_HEIGHT = 40
+-- Already defined in vanilla code
+-- ZO_KEYBOARD_GROUP_FRAME_WIDTH = 288
+-- ZO_KEYBOARD_GROUP_FRAME_HEIGHT = 80
+-- ZO_KEYBOARD_RAID_FRAME_WIDTH = 96
+-- ZO_KEYBOARD_RAID_FRAME_HEIGHT = 40
 
 local GROUPINDEX_NONE = 4294967296
 
@@ -58,10 +59,13 @@ local KEYBOARD_CONSTANTS =
 	SHOW_GROUP_LABELS = true,
 }
 
-ZO_GAMEPAD_GROUP_FRAME_WIDTH = 160
-ZO_GAMEPAD_GROUP_FRAME_HEIGHT = 70
-ZO_GAMEPAD_RAID_FRAME_WIDTH = 175
-ZO_GAMEPAD_RAID_FRAME_HEIGHT = 40
+
+-- Already defined in vanilla code
+-- ZO_GAMEPAD_GROUP_FRAME_WIDTH = 160
+-- ZO_GAMEPAD_GROUP_FRAME_HEIGHT = 70
+-- ZO_GAMEPAD_RAID_FRAME_WIDTH = 175
+-- ZO_GAMEPAD_RAID_FRAME_HEIGHT = 40
+
 
 local GAMEPAD_CONSTANTS =
 {
@@ -367,6 +371,13 @@ end
 	UnitFrameBar class...defines one bar in the unit frame, including background/glass textures, statusbar and text
 --]]
 
+UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_INSTANT = 1
+UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_ULTRA_FAST = 2
+UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_SUPER_FAST = 3
+UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_FASTER = 4
+UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_FAST = 5
+UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_DEFAULT = 6
+
 local ANY_POWER_TYPE = true -- A special flag that essentially acts like a wild card, accepting any mechanic
 
 local UNITFRAME_BAR_STYLES =
@@ -582,7 +593,20 @@ end
 do
 	-- The health bar animation is pretty slow. We gonna make it a bit faster. This is very helpful in PvP.
 	-- DEFAULT_ANIMATION_TIME_MS = 500
-	local customApproachAmountMs = 200
+	local customApproachAmountMs = 100
+	
+	local lookupApproachAmountMs = {
+		[UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_INSTANT] = 10,
+		[UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_ULTRA_FAST] = 100,
+		[UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_SUPER_FAST] = 200,
+		[UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_FASTER] = 300,
+		[UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_FAST] = 400,
+		[UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_DEFAULT] = DEFAULT_ANIMATION_TIME_MS,
+	}
+	
+	function GetCustomApproachAmountMs()
+		return lookupApproachAmountMs[UnitFrames.account.approachAmountMs.data]
+	end
 
 	function UnitFrameBar:Update(barType, cur, max, forceInit)
 		local numBarControls = #self.barControls
@@ -592,7 +616,8 @@ do
 		local barMax = isBarCentered and max / 2 or max
 
 		for i = 1, numBarControls do
-			ZO_StatusBar_SmoothTransition(self.barControls[i], barCur, barMax, forceInit, nil, customApproachAmountMs)
+			-- ZO_StatusBar_SmoothTransition(self.barControls[i], barCur, barMax, forceInit, nil, customApproachAmountMs)
+			ZO_StatusBar_SmoothTransition(self.barControls[i], barCur, barMax, forceInit, nil, GetCustomApproachAmountMs())
 		end
 
 		local updateBarType = false
@@ -1760,7 +1785,7 @@ local function CreateGroupMember(frameIndex, unitTag, style, groupSize)
 end
 
 local function CreateGroupsAfter(startIndex)
-	df("CreateGroupsAfter %i", startIndex)
+	-- df("CreateGroupsAfter %i", startIndex)
 
 	local groupSize = GetGroupSize()
 
@@ -1822,7 +1847,7 @@ local function UpdateGroupFrameStyle(groupIndex)
 	elseif oldGroupSize > 0 then
 		UnitFrames:UpdateGroupAnchorFrames()
 	end
-	df("UpdateGroupFrameStyle %.3f",(GetGameTimeSeconds() - start) * 1000)
+	-- df("UpdateGroupFrameStyle %.3f",(GetGameTimeSeconds() - start) * 1000)
 end
 
 local function SetAnchorOffsets(control, offsetX, offsetY)
