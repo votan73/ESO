@@ -1761,8 +1761,6 @@ local function CreateGroupMember(frameIndex, unitTag, style, groupSize)
 end
 
 local function CreateGroupsAfter(startIndex)
-	df("CreateGroupsAfter %i", startIndex)
-
 	local groupSize = GetGroupSize()
 
 	local style = groupSize > SMALL_GROUP_SIZE_THRESHOLD and UnitFrames.RaidUnitFrame or UnitFrames.GroupUnitFrame
@@ -1781,7 +1779,6 @@ end
 -- hiding frames that are no longer applicable, and creating new frames of the correct style if the group size
 -- goes above or below the "small group" or "raid group" thresholds.
 local function UpdateGroupFrameStyle(groupIndex)
-	local start = GetGameTimeSeconds()
 	local groupSize = GetGroupSize()
 	local oldGroupSize = UnitFrames.groupSize or 0
 
@@ -1823,7 +1820,6 @@ local function UpdateGroupFrameStyle(groupIndex)
 	elseif oldGroupSize > 0 then
 		UnitFrames:UpdateGroupAnchorFrames()
 	end
-	df("UpdateGroupFrameStyle %.3f",(GetGameTimeSeconds() - start) * 1000)
 end
 
 local function SetAnchorOffsets(control, offsetX, offsetY)
