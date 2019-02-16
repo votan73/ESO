@@ -1130,8 +1130,9 @@ function UnitFrame:RefreshUnit(unitChanged)
 		MenuOwnerClosed(self.frame)
 	end
 
+	-- SetHasTarget calls RefreshVisible, whichs calls RefreshControls
 	self:SetHasTarget(validTarget)
-	self:RefreshControls()
+	--self:RefreshControls()
 end
 
 function UnitFrame:SetBarsHidden(hidden)
