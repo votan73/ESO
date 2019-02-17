@@ -895,7 +895,7 @@ function UnitFrame:New(unitTag, anchors, showBarText, style)
 	newFrame.frame = frame
 	newFrame.fadeComponents = { }
 	newFrame.hiddenReasons = ZO_HiddenReasons:New()
-	newFrame.hidden = frame:IsControlHidden()
+	newFrame.hidden = false
 
 	local nameControlName = layoutData.nameControlName or "Name"
 	newFrame.nameLabel = newFrame:AddFadeComponent(nameControlName)
@@ -935,7 +935,6 @@ function UnitFrame:New(unitTag, anchors, showBarText, style)
 end
 
 function UnitFrame:SetData(unitTag, anchors, showBarText)
-	self.hasTarget = false
 	self.unitTag = unitTag
 	self.dirty = true
 	self.animateShowHide = false
@@ -1685,6 +1684,7 @@ local function CreateTargetFrame()
 	local targetFrame = UnitFrames:CreateFrame("reticleover", targetFrameAnchor, HIDE_BAR_TEXT, UnitFrames.TargetUnitFrameTemplate)
 	if targetFrame then
 		targetFrame:SetData("reticleover", targetFrameAnchor, HIDE_BAR_TEXT)
+		targetFrame.hasTarget = false
 		targetFrame:SetAnimateShowHide(true)
 	end
 	local visualizer = targetFrame:CreateAttributeVisualizer(TARGET_ATTRIBUTE_VISUALIZER_SOUNDS)
@@ -1780,6 +1780,7 @@ local function CreateGroupMember(frameIndex, unitTag, style, groupSize)
 		unitFrame.index = frameIndex
 		unitFrame:SetHiddenForReason("disabled", false)
 		unitFrame:SetData(unitTag, anchor, HIDE_BAR_TEXT)
+		unitFrame.hasTarget = true
 		ZO_UnitFrames_UpdateWindow(unitTag, UNIT_CHANGED)
 	end
 end
