@@ -63,7 +63,7 @@ local function CreateSettings()
 		
 		settings:AddSetting {
 			type = LibHarvensAddonSettings.ST_DROPDOWN,
-			label = "Healh bar speed",
+			label = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_APPROACH_HEALTHBAR),
 			items = Modes,
 			default = ModeToData[DEFAULT_SETTINGS.approachAmountMs].name,
 			getFunction = function()
