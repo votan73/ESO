@@ -592,7 +592,7 @@ end
 do
 	-- The health bar animation is pretty slow. We gonna make it a bit faster. This is very helpful in PvP.
 	-- DEFAULT_ANIMATION_TIME_MS = 500
-	
+
 	local lookupApproachAmountMs = {
 		[UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_ULTRA_FAST] = 100,
 		[UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_SUPER_FAST] = 200,
@@ -600,7 +600,7 @@ do
 		[UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_FAST] = 400,
 		[UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_DEFAULT] = DEFAULT_ANIMATION_TIME_MS,
 	}
-	
+
 	function GetCustomApproachAmountMs()
 		return lookupApproachAmountMs[UnitFrames.account.approachAmountMs] or DEFAULT_ANIMATION_TIME_MS
 	end
@@ -890,10 +890,12 @@ function UnitFrame:New(unitTag, anchors, showBarText, style)
 	local layoutData = GetPlatformLayoutData(style)
 	if not layoutData then return end
 
+	local frame = CreateControlFromVirtual(style .. unitTag, parent, style)
 	newFrame.style = style
-	newFrame.frame = CreateControlFromVirtual(style .. unitTag, parent, style)
+	newFrame.frame = frame
 	newFrame.fadeComponents = { }
 	newFrame.hiddenReasons = ZO_HiddenReasons:New()
+	newFrame.hidden = frame:IsControlHidden()
 
 	local nameControlName = layoutData.nameControlName or "Name"
 	newFrame.nameLabel = newFrame:AddFadeComponent(nameControlName)
@@ -911,13 +913,13 @@ function UnitFrame:New(unitTag, anchors, showBarText, style)
 	newFrame.assignmentIcon = newFrame:AddFadeComponent("AssignmentIcon", DONT_COLOR_RANK_ICON)
 	newFrame.championIcon = newFrame:AddFadeComponent("ChampionIcon")
 	newFrame.leftBracket = newFrame:AddFadeComponent("LeftBracket")
-	newFrame.leftBracketGlow = GetControl(newFrame.frame, "LeftBracketGlow")
-	newFrame.leftBracketUnderlay = GetControl(newFrame.frame, "LeftBracketUnderlay")
+	newFrame.leftBracketGlow = GetControl(frame, "LeftBracketGlow")
+	newFrame.leftBracketUnderlay = GetControl(frame, "LeftBracketUnderlay")
 	newFrame.rightBracket = newFrame:AddFadeComponent("RightBracket")
-	newFrame.rightBracketGlow = GetControl(newFrame.frame, "RightBracketGlow")
-	newFrame.rightBracketUnderlay = GetControl(newFrame.frame, "RightBracketUnderlay")
+	newFrame.rightBracketGlow = GetControl(frame, "RightBracketGlow")
+	newFrame.rightBracketUnderlay = GetControl(frame, "RightBracketUnderlay")
 
-	newFrame.healthBar = UnitFrameBar:New("$(parent)Hp", newFrame.frame, showBarText, style, POWERTYPE_HEALTH)
+	newFrame.healthBar = UnitFrameBar:New("$(parent)Hp", frame, showBarText, style, POWERTYPE_HEALTH)
 	newFrame.healthBar:SetColor(POWERTYPE_HEALTH)
 
 	newFrame.resourceBars = { }
@@ -1414,11 +1416,11 @@ end
 function UnitFrame:UpdateName()
 	if self.nameLabel then
 		local name
-		local tag = self.unitTag
-		if IsUnitPlayer(tag) then
-			name = ZO_GetPrimaryPlayerNameFromUnitTag(tag)
+		local unitTag = self.unitTag
+		if IsUnitPlayer(unitTag) then
+			name = string.format("%s %s", unitTag, ZO_GetPrimaryPlayerNameFromUnitTag(unitTag))
 		else
-			name = GetUnitName(tag)
+			name = GetUnitName(unitTag)
 		end
 		self.nameLabel:SetText(name)
 	end
@@ -1473,6 +1475,7 @@ end
 function UnitFrame:UpdateStatus(isDead, isOnline)
 	local statusLabel = self.statusLabel
 	if statusLabel then
+		d(self.frame:GetName(), isDead, isOnline)
 		local hideBars = isOnline == false or isDead == true
 		self:SetBarsHidden(hideBars and not self.neverHideStatusBar)
 		local layoutData = GetPlatformLayoutData(self.style)
