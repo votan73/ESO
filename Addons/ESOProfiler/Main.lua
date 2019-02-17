@@ -28,7 +28,7 @@ do
 		addon.newRun = GetGameTimeMilliseconds()
 		addon.startTime = GetTimeStamp()
 		addon.profiling = true
-		EVENT_MANAGER:RegisterForUpdate(addon.name, 0, CaptureFrameMetrics)
+		EVENT_MANAGER:RegisterForUpdate(addon.name, 500, CaptureFrameMetrics)
 		UpdateKeybind()
 		d("Start profiler....")
 		return orgStartScriptProfiler()
@@ -149,7 +149,7 @@ do
 		text[#text + 1] = string.format("%i calls => %f per frame", count, count / self.numFrames)
 		AddLineCenter(ItemTooltip, table.concat(text, "\n"))
 
-		if closure.selfTime > 0 and (closure.selfTime / closure.wallTime) < 0.5 then
+		if closure.selfTime > 0 and(closure.selfTime / closure.wallTime) < 0.5 then
 			AddLineCenter(ItemTooltip, "Expensive sub-calls.")
 		end
 		ZO_ClearNumericallyIndexedTable(text)
@@ -193,7 +193,7 @@ do
 		local statusBar = self.control:GetNamedChild("LoadingBar")
 		local content = self.control:GetNamedChild("Content")
 
-		local value, max = 0, 1
+		local value, max = 0, #stackFrames
 
 		statusBar:SetHidden(false)
 		content:SetHidden(true)
@@ -206,23 +206,23 @@ do
 		local ZO_ScrollList_CreateDataEntry = ZO_ScrollList_CreateDataEntry
 		local processed = { }
 
-		local function Step()
-			value = value + 1
-		end
 		local function addStackFrame(stackId)
+			processed[stackId] = true
 			statusBar:SetMinMax(0, max)
 			statusBar:SetValue(value)
 			local closure = profilerData:GetClosureByStackId(stackId)
 			dataList[#dataList + 1] = ZO_ScrollList_CreateDataEntry(SCRIPT_PROFILER_RECORD_TYPE_CLOSURE, { closure = closure })
-			task:For(1, #stackFrames):Do( function(index)
+			local stackId = closure.slowestRun
+			local function loop(index)
+				value = value + 1
 				local subclosure, parentId = profilerData:GetClosureByStackId(index)
 				-- find current stackId as parentId
-				if parentId and subclosure ~= closure and not processed[subclosure] and profilerData:GetClosureByStackId(parentId) == closure then
-					processed[subclosure] = true
-					max = max + 1
+				if parentId and subclosure.slowestRun == index and parentId == stackId and not processed[index] then
+					max = max + #stackFrames
 					addStackFrame(index)
 				end
-			end ):Then(Step)
+			end
+			task:For(1, #stackFrames):Do(loop)
 		end
 		addStackFrame(stackId)
 
