@@ -1806,7 +1806,7 @@ end
 -- hiding frames that are no longer applicable, and creating new frames of the correct style if the group size
 -- goes above or below the "small group" or "raid group" thresholds.
 local function UpdateGroupFrameStyle(groupIndex)
-	local start = GetGameTimeSeconds()
+	-- local start = GetGameTimeSeconds()
 	local groupSize = GetGroupSize()
 	local oldGroupSize = UnitFrames.groupSize or 0
 
