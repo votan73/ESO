@@ -2,7 +2,7 @@
 ## Author: votan
 ## APIVersion: 100025 100026
 ## AddOnVersion: 10030
-## Version: 1.0.3
+## Version: 1.0.4
 --- To be loaded as early as possible (for buffering d()-output) this addon should not depend on anything. OptionalDependsOn: LibStub LibAddonMenu-2.0
 ## DependsOn: LibStub LibHarvensAddonSettings LibAsync LibCustomMenu
 ## SavedVariables: iChatSavedVar iChatHistory
