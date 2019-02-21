@@ -1061,12 +1061,6 @@ function UnitFrame:SetHasTarget(hasTarget)
 	self:RefreshVisible(ANIMATED)
 end
 
-function UnitFrame:Remove()
-	if self.index < GROUPINDEX_NONE then
-		UnitFrames:SetGroupIndexDirty(self.index)
-	end
-end
-
 function UnitFrame:ComputeHidden()
 	if not self.hasTarget then
 		return true
@@ -1806,27 +1800,29 @@ local function UpdateGroupFrameStyle(groupIndex)
 			frames = UnitFrames.groupFrames
 		end
 
-		-- Create new frames
+		-- Create new frames based on index
 		for i = groupIndex, groupSize do
 			unitTag = GetGroupUnitTagByIndex(i)
 			if not frames[unitTag] then
 				frames[unitTag] = UnitFrame:New(unitTag, HIDE_BAR_TEXT, style)
 			end
 		end
+		-- But sync index of all frames with those of API
 		for unitTag, unitFrame in pairs(frames) do
 			newIndex = GetGroupIndexByUnitTag(unitTag)
-			if unitFrame.index ~= newIndex then
+			if unitFrame.dirty or unitFrame.index ~= newIndex then
 				hasTarget = newIndex < GROUPINDEX_NONE
+				df("unitTag %s %s", unitTag, tostring(hasTarget))
 				-- For OnUnitDestroyed
 				unitFrame.index = newIndex
 				unitFrame.dirty = true
-				-- calls RefreshVisible instant, if no target
+				-- calls RefreshVisible(INSTANT), if no target
 				unitFrame:SetHiddenForReason("disabled", not hasTarget)
 				if hasTarget then
 					anchor = GetGroupFrameAnchor(newIndex, groupSize)
 					unitFrame:SetData(unitTag, anchor, HIDE_BAR_TEXT)
 				end
-				-- Is a hook-point and calls RefreshUnit, which calls SetHasTarget, which calls RefreshVisible animated
+				-- Is a hook-point and calls RefreshUnit, which calls SetHasTarget, which calls RefreshVisible(ANIMATED)
 				ZO_UnitFrames_UpdateWindow(unitTag, UNIT_CHANGED, unitFrame)
 			end
 		end
@@ -2008,8 +2004,10 @@ local function RegisterForEvents()
 				-- In this case GetGroupIndexByUnitTag is working.
 				-- But for a leaving unit GetGroupIndexByUnitTag returns 4294967296.
 				-- The trick is to store the last used index in the unitFrame.
-				UnitFrames:SetGroupIndexDirty(unitFrame.index)
-				unitFrame:Remove()
+				if unitFrame.index < GROUPINDEX_NONE then
+					UnitFrames:SetGroupIndexDirty(unitFrame.index)
+					unitFrame.dirty = true
+				end
 			end
 		else
 			ZO_UnitFrames_UpdateWindow(unitTag)
