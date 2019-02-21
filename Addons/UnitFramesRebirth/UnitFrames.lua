@@ -266,7 +266,7 @@ function UnitFramesManager:CreateFrame(unitTag, anchors, showBarText, style)
 	local unitFrame = self:GetFrame(unitTag)
 	if not unitFrame then
 		local unitFrameTable = self:GetUnitFrameLookupTable(unitTag)
-		unitFrame = UnitFrame:New(unitTag, anchors, showBarText, style)
+		unitFrame = UnitFrame:New(unitTag, showBarText, style)
 
 		if unitFrameTable then
 			unitFrameTable[unitTag] = unitFrame
@@ -883,7 +883,7 @@ end
 
 UnitFrame = ZO_Object:Subclass()
 
-function UnitFrame:New(unitTag, anchors, showBarText, style)
+function UnitFrame:New(unitTag, showBarText, style)
 	local newFrame = ZO_Object.New(self)
 	local parent = ZO_Group_IsGroupUnitTag(unitTag) and ZO_UnitFramesGroups or ZO_UnitFrames
 
@@ -1063,9 +1063,10 @@ end
 
 function UnitFrame:Remove()
 	if self.index < GROUPINDEX_NONE then
-		self.index = GROUPINDEX_NONE
-		self.healthBar:Update(POWERTYPE_HEALTH, 0, 0)
-		self:RefreshUnit(UNIT_CHANGED)
+		UnitFrames:SetGroupIndexDirty(self.index)
+		--self.index = GROUPINDEX_NONE
+		--self.healthBar:Update(POWERTYPE_HEALTH, 0, 0)
+		-- self:RefreshUnit(UNIT_CHANGED)
 	end
 end
 
@@ -1474,7 +1475,7 @@ end
 function UnitFrame:UpdateStatus(isDead, isOnline)
 	local statusLabel = self.statusLabel
 	if statusLabel then
-		d(self.frame:GetName(), isDead, isOnline)
+		--d(self.frame:GetName(), isDead, isOnline)
 		local hideBars = isOnline == false or isDead == true
 		self:SetBarsHidden(hideBars and not self.neverHideStatusBar)
 		local layoutData = GetPlatformLayoutData(self.style)
@@ -1812,7 +1813,7 @@ local function UpdateGroupFrameStyle(groupIndex)
 		for i = groupIndex, groupSize do
 			unitTag = GetGroupUnitTagByIndex(i)
 			if not frames[unitTag] then
-				frames[unitTag] = UnitFrame:New(unitTag, nil, HIDE_BAR_TEXT, style)
+				frames[unitTag] = UnitFrame:New(unitTag, HIDE_BAR_TEXT, style)
 			end
 		end
 		for unitTag, unitFrame in pairs(frames) do
