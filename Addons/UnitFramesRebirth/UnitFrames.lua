@@ -1064,9 +1064,6 @@ end
 function UnitFrame:Remove()
 	if self.index < GROUPINDEX_NONE then
 		UnitFrames:SetGroupIndexDirty(self.index)
-		--self.index = GROUPINDEX_NONE
-		--self.healthBar:Update(POWERTYPE_HEALTH, 0, 0)
-		-- self:RefreshUnit(UNIT_CHANGED)
 	end
 end
 
@@ -1475,7 +1472,7 @@ end
 function UnitFrame:UpdateStatus(isDead, isOnline)
 	local statusLabel = self.statusLabel
 	if statusLabel then
-		--d(self.frame:GetName(), isDead, isOnline)
+		-- d(self.frame:GetName(), isDead, isOnline)
 		local hideBars = isOnline == false or isDead == true
 		self:SetBarsHidden(hideBars and not self.neverHideStatusBar)
 		local layoutData = GetPlatformLayoutData(self.style)
@@ -1825,7 +1822,6 @@ local function UpdateGroupFrameStyle(groupIndex)
 				unitFrame.dirty = true
 				-- calls RefreshVisible instant, if no target
 				unitFrame:SetHiddenForReason("disabled", not hasTarget)
-				-- unitFrame.hasTarget = hasTarget
 				if hasTarget then
 					anchor = GetGroupFrameAnchor(newIndex, groupSize)
 					unitFrame:SetData(unitTag, anchor, HIDE_BAR_TEXT)
@@ -1959,8 +1955,12 @@ end
 local function RegisterForEvents()
 
 	local function RequestFullRefresh()
+		if UnitFrames.firstDirtyGroupIndex ~= 1 then
+			d("RequestFullRefresh")
+		end
 		UnitFrames.firstDirtyGroupIndex = 1
 	end
+
 	local function OnTargetChanged(eventCode, unitTag)
 		ZO_UnitFrames_UpdateWindow("reticleovertarget", UNIT_CHANGED)
 	end
@@ -2151,8 +2151,8 @@ local function RegisterForEvents()
 	ZO_UnitFrames:RegisterForEvent(EVENT_DISPOSITION_UPDATE, OnDispositionUpdate)
 	ZO_UnitFrames:AddFilterForEvent(EVENT_DISPOSITION_UPDATE, REGISTER_FILTER_UNIT_TAG_PREFIX, "group")
 	ZO_UnitFrames:RegisterForEvent(EVENT_GROUP_SUPPORT_RANGE_UPDATE, OnGroupSupportRangeUpdate)
-	-- Not needed here. Just causing full updates for every unit zoning (via wayshrine).
-	-- ZO_UnitFrames:RegisterForEvent(EVENT_GROUP_UPDATE, OnGroupUpdate)
+	-- updates for every unit zoning (via wayshrine).
+	ZO_UnitFrames:RegisterForEvent(EVENT_GROUP_UPDATE, RequestFullRefresh)
 	ZO_UnitFrames:RegisterForEvent(EVENT_GROUP_MEMBER_LEFT, OnGroupMemberLeft)
 	ZO_UnitFrames:RegisterForEvent(EVENT_GROUP_MEMBER_CONNECTED_STATUS, OnGroupMemberConnectedStateChanged)
 	ZO_UnitFrames:RegisterForEvent(EVENT_GROUP_MEMBER_ROLE_CHANGED, OnGroupMemberRoleChanged)
