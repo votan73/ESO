@@ -1065,7 +1065,7 @@ function UnitFrame:Remove()
 	if self.index < GROUPINDEX_NONE then
 		self.index = GROUPINDEX_NONE
 		self.healthBar:Update(POWERTYPE_HEALTH, 0, 0)
-		self:SetHasTarget(false)
+		self:RefreshUnit(UNIT_CHANGED)
 	end
 end
 
@@ -1153,8 +1153,8 @@ function UnitFrame:RefreshUnit(unitChanged)
 		MenuOwnerClosed(self.frame)
 	end
 
+	-- SetHasTarget calls RefreshControls
 	self:SetHasTarget(validTarget)
-	self:RefreshControls()
 end
 
 function UnitFrame:SetBarsHidden(hidden)
@@ -1417,7 +1417,7 @@ function UnitFrame:UpdateName()
 		local name
 		local unitTag = self.unitTag
 		if IsUnitPlayer(unitTag) then
-			name = string.format("%s %s", unitTag, ZO_GetPrimaryPlayerNameFromUnitTag(unitTag))
+			name = ZO_GetPrimaryPlayerNameFromUnitTag(unitTag)
 		else
 			name = GetUnitName(unitTag)
 		end
@@ -1539,8 +1539,8 @@ end
 	UnitFrame Utility functions
 --]]
 
-function ZO_UnitFrames_UpdateWindow(unitTag, unitChanged)
-	local unitFrame = UnitFrames:GetFrame(unitTag)
+function ZO_UnitFrames_UpdateWindow(unitTag, unitChanged, unitFrame)
+	unitFrame = unitFrame or UnitFrames:GetFrame(unitTag)
 	if unitFrame then
 		unitFrame:RefreshUnit(unitChanged)
 	end
@@ -1772,36 +1772,6 @@ local function CreateTargetFrame()
 	CALLBACK_MANAGER:FireCallbacks("TargetFrameCreated", targetFrame)
 end
 
-local function CreateGroupMember(frameIndex, unitTag, style, groupSize)
-	local anchor = GetGroupFrameAnchor(frameIndex, groupSize)
-	local unitFrame = UnitFrames:CreateFrame(unitTag, anchor, HIDE_BAR_TEXT, style)
-	if unitFrame then
-		-- For OnUnitDestroyed
-		unitFrame.index = frameIndex
-		unitFrame:SetHiddenForReason("disabled", false)
-		unitFrame:SetData(unitTag, anchor, HIDE_BAR_TEXT)
-		unitFrame.hasTarget = true
-		ZO_UnitFrames_UpdateWindow(unitTag, UNIT_CHANGED)
-	end
-end
-
-local function CreateGroupsAfter(startIndex)
-	-- df("CreateGroupsAfter %i", startIndex)
-
-	local groupSize = GetGroupSize()
-
-	local style = groupSize > SMALL_GROUP_SIZE_THRESHOLD and UnitFrames.RaidUnitFrame or UnitFrames.GroupUnitFrame
-	local unitTag
-	for i = startIndex, GROUP_SIZE_MAX do
-		unitTag = GetGroupUnitTagByIndex(i)
-		if unitTag then
-			CreateGroupMember(i, unitTag, style, groupSize)
-		end
-	end
-
-	DoGroupUpdate()
-end
-
 -- Utility to update the style of the current group frames creating a new frame for the unitTag if necessary,
 -- hiding frames that are no longer applicable, and creating new frames of the correct style if the group size
 -- goes above or below the "small group" or "raid group" thresholds.
@@ -1823,28 +1793,48 @@ local function UpdateGroupFrameStyle(groupIndex)
 		-- create the small group versions.
 		UnitFrames:DisableGroupAndRaidFrames()
 		groupIndex = 1
-	elseif groupSize < oldGroupSize then
-		if newLargeGroup then
-			-- Hide unit the raid frames
-			for unitTag, unitFrame in pairs(UnitFrames.raidFrames) do
-				if unitFrame.index > groupSize then
-					unitFrame:Remove()
-				end
-			end
-		else
-			-- Hide unit the group frames
-			for unitTag, unitFrame in pairs(UnitFrames.groupFrames) do
-				if unitFrame.index > groupSize then
-					unitFrame:Remove()
-				end
-			end
-		end
 	end
 
 	if IsPlayerGrouped() then
 		-- Only update the frames of the unit being changed, and those after it in the list for performance
 		-- reasons.
-		CreateGroupsAfter(groupIndex)
+		local style = groupSize > SMALL_GROUP_SIZE_THRESHOLD and UnitFrames.RaidUnitFrame or UnitFrames.GroupUnitFrame
+		local unitTag, newIndex, frames, anchor, hasTarget
+		if newLargeGroup then
+			-- Build the raid frames
+			frames = UnitFrames.raidFrames
+		else
+			-- Build the group frames
+			frames = UnitFrames.groupFrames
+		end
+
+		-- Create new frames
+		for i = groupIndex, groupSize do
+			unitTag = GetGroupUnitTagByIndex(i)
+			if not frames[unitTag] then
+				frames[unitTag] = UnitFrame:New(unitTag, nil, HIDE_BAR_TEXT, style)
+			end
+		end
+		for unitTag, unitFrame in pairs(frames) do
+			newIndex = GetGroupIndexByUnitTag(unitTag)
+			if unitFrame.index ~= newIndex then
+				hasTarget = newIndex < GROUPINDEX_NONE
+				-- For OnUnitDestroyed
+				unitFrame.index = newIndex
+				unitFrame.dirty = true
+				-- calls RefreshVisible instant, if no target
+				unitFrame:SetHiddenForReason("disabled", not hasTarget)
+				-- unitFrame.hasTarget = hasTarget
+				if hasTarget then
+					anchor = GetGroupFrameAnchor(newIndex, groupSize)
+					unitFrame:SetData(unitTag, anchor, HIDE_BAR_TEXT)
+				end
+				-- Is a hook-point and calls RefreshUnit, which calls SetHasTarget, which calls RefreshVisible animated
+				ZO_UnitFrames_UpdateWindow(unitTag, UNIT_CHANGED, unitFrame)
+			end
+		end
+		DoGroupUpdate()
+
 	elseif oldGroupSize > 0 then
 		UnitFrames:UpdateGroupAnchorFrames()
 	end
