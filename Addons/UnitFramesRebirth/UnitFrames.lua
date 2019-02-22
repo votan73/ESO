@@ -1824,14 +1824,19 @@ local function UpdateGroupFrameStyle(groupIndex)
 			end
 		end
 		-- But sync index of all frames with those of API
+		local rawName
 		for unitTag, unitFrame in pairs(frames) do
 			newIndex = GetGroupIndexByUnitTag(unitTag)
-			if unitFrame.dirty or unitFrame.index ~= newIndex then
+			rawName = GetRawUnitName(unitTag)
+			if unitFrame.dirty or unitFrame.index ~= newIndex or unitFrame.rawName ~= rawName then
+				unitFrame.dirty = true
+
 				hasTarget = newIndex < GROUPINDEX_NONE
 				df("update unitTag %s %s", unitTag, tostring(hasTarget))
 				-- For OnUnitDestroyed
 				unitFrame.index = newIndex
-				unitFrame.dirty = true
+				unitFrame.unitName = rawName
+
 				-- calls RefreshVisible(INSTANT), if no target
 				unitFrame:SetHiddenForReason("disabled", not hasTarget)
 				if hasTarget then
@@ -2071,6 +2076,18 @@ local function RegisterForEvents()
 	local function OnGroupMemberLeft(eventCode, characterName, reason, wasLocalPlayer, amLeader)
 		if wasLocalPlayer then
 			RequestFullRefresh()
+		else
+			d(characterName)
+			local self = UnitFrames
+			local frames = self.groupSize > SMALL_GROUP_SIZE_THRESHOLD and self.raidFrames or self.groupFrames
+			for unitTag, unitFrame in pairs(frames) do
+				if characterName == unitFrame.rawName then
+					d(unitTag)
+					unitFrame.dirty = true
+					self:SetGroupIndexDirty(unitFrame.index)
+					break
+				end
+			end
 		end
 	end
 
