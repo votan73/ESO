@@ -1764,6 +1764,14 @@ local function CreateTargetFrame()
 	CALLBACK_MANAGER:FireCallbacks("TargetFrameCreated", targetFrame)
 end
 
+local function HideFrames(frames)
+	for unitTag, unitFrame in pairs(frames) do
+		-- calls RefreshVisible(ANIMATED)
+		unitFrame:SetHasTarget(false)
+		unitFrame.index = GROUPINDEX_NONE
+	end
+end
+
 -- Utility to update the style of the current group frames creating a new frame for the unitTag if necessary,
 -- hiding frames that are no longer applicable, and creating new frames of the correct style if the group size
 -- goes above or below the "small group" or "raid group" thresholds.
@@ -1783,7 +1791,15 @@ local function UpdateGroupFrameStyle(groupIndex)
 	if oldLargeGroup ~= newLargeGroup or groupSize == 0 then
 		-- Create all the appropriate frames for the new group member, or in the case of a unit_destroyed
 		-- create the small group versions.
-		UnitFrames:DisableGroupAndRaidFrames()
+		-- UnitFrames:DisableGroupAndRaidFrames()
+		if oldLargeGroup or groupSize == 0 then
+			-- Disable the raid frames
+			HideFrames(UnitFrames.raidFrames)
+		end
+		if newLargeGroup or groupSize == 0 then
+			-- Disable the group frames
+			HideFrames(UnitFrames.groupFrames)
+		end
 		groupIndex = 1
 	end
 
@@ -1812,7 +1828,7 @@ local function UpdateGroupFrameStyle(groupIndex)
 			newIndex = GetGroupIndexByUnitTag(unitTag)
 			if unitFrame.dirty or unitFrame.index ~= newIndex then
 				hasTarget = newIndex < GROUPINDEX_NONE
-				df("unitTag %s %s", unitTag, tostring(hasTarget))
+				df("update unitTag %s %s", unitTag, tostring(hasTarget))
 				-- For OnUnitDestroyed
 				unitFrame.index = newIndex
 				unitFrame.dirty = true
@@ -1925,6 +1941,7 @@ end
 local function UpdateStatus(unitTag, isDead, isOnline)
 	local unitFrame = UnitFrames:GetFrame(unitTag)
 	if unitFrame then
+		df("UpdateStatus %s %s %s", unitTag, tostring(isDead), tostring(isOnline))
 		unitFrame:UpdateStatus(isDead, isOnline)
 		unitFrame:DoAlphaUpdate(IsUnitInGroupSupportRange(unitTag), isOnline, IsUnitGroupLeader(unitTag))
 	end
