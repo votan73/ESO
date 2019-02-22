@@ -1806,8 +1806,7 @@ local function UpdateGroupFrameStyle(groupIndex)
 	if IsPlayerGrouped() then
 		-- Only update the frames of the unit being changed, and those after it in the list for performance
 		-- reasons.
-		local style = groupSize > SMALL_GROUP_SIZE_THRESHOLD and UnitFrames.RaidUnitFrame or UnitFrames.GroupUnitFrame
-		local unitTag, newIndex, frames, anchor, hasTarget
+		local frames
 		if newLargeGroup then
 			-- Build the raid frames
 			frames = UnitFrames.raidFrames
@@ -1816,6 +1815,8 @@ local function UpdateGroupFrameStyle(groupIndex)
 			frames = UnitFrames.groupFrames
 		end
 
+		local style = groupSize > SMALL_GROUP_SIZE_THRESHOLD and UnitFrames.RaidUnitFrame or UnitFrames.GroupUnitFrame
+		local unitTag
 		-- Create new frames based on index
 		for i = groupIndex, groupSize do
 			unitTag = GetGroupUnitTagByIndex(i)
@@ -1824,18 +1825,18 @@ local function UpdateGroupFrameStyle(groupIndex)
 			end
 		end
 		-- But sync index of all frames with those of API
-		local rawName
+		local newIndex, rawName, anchor, hasTarget
 		for unitTag, unitFrame in pairs(frames) do
 			newIndex = GetGroupIndexByUnitTag(unitTag)
-			rawName = GetRawUnitName(unitTag)
+			hasTarget = newIndex < GROUPINDEX_NONE
+			rawName = hasTarget and GetRawUnitName(unitTag) or ""
 			if unitFrame.dirty or unitFrame.index ~= newIndex or unitFrame.rawName ~= rawName then
 				unitFrame.dirty = true
 
-				hasTarget = newIndex < GROUPINDEX_NONE
 				df("update unitTag %s %s", unitTag, tostring(hasTarget))
 				-- For OnUnitDestroyed
 				unitFrame.index = newIndex
-				unitFrame.unitName = rawName
+				unitFrame.rawName = rawName
 
 				-- calls RefreshVisible(INSTANT), if no target
 				unitFrame:SetHiddenForReason("disabled", not hasTarget)
