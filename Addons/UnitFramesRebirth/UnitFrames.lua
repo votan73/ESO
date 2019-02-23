@@ -1844,6 +1844,8 @@ function UnitFramesManager:UpdateGroupFrames()
 					anchor = GetGroupFrameAnchor(newIndex, groupSize)
 					if unitFrame.rawName ~= rawName then
 						unitFrame:SetData(unitTag, anchor, HIDE_BAR_TEXT)
+					else
+						unitFrame:SetAnchor(anchor)
 					end
 				end
 				unitFrame.rawName = rawName
