@@ -1132,7 +1132,7 @@ function UnitFrame:RefreshUnit(unitChanged)
 	end
 
 	if unitChanged or self.hasTarget ~= validTarget then
-		-- self.dirty = true
+		self.dirty = true
 		MenuOwnerClosed(self.frame)
 	end
 
@@ -1843,6 +1843,7 @@ local function UpdateGroupFrameStyle(groupIndex)
 				isOnline = IsUnitOnline(unitTag)
 				unitFrame:UpdateStatus(IsUnitDead(unitTag), isOnline)
 				unitFrame:DoAlphaUpdate(IsUnitInGroupSupportRange(unitTag), isOnline, IsUnitGroupLeader(unitTag))
+				unitFrame.dirty = false
 			end
 		end
 		DoGroupUpdate()
