@@ -308,17 +308,7 @@ function UnitFramesManager:ClearDirty()
 end
 
 function UnitFramesManager:DisableGroupAndRaidFrames()
-	-- Disable the raid frames
-	for unitTag, unitFrame in pairs(self.raidFrames) do
-		unitFrame:SetHiddenForReason("disabled", true)
-		unitFrame.hasTarget = false
-	end
-
-	-- Disable the group frames
-	for unitTag, unitFrame in pairs(self.groupFrames) do
-		unitFrame:SetHiddenForReason("disabled", true)
-		unitFrame.hasTarget = false
-	end
+	-- Not used anymore. But maybe hooked from outside??
 end
 
 function UnitFramesManager:SetGroupAndRaidFramesHiddenForReason(reason, hidden)
@@ -1122,11 +1112,12 @@ function UnitFrame:RefreshControls()
 				self:UpdatePowerBar(i, powerType, cur, max, FORCE_INIT)
 			end
 
-			self:UpdateStatus(IsUnitDead(unitTag), IsUnitOnline(unitTag))
+			local isOnline = IsUnitOnline(unitTag)
+			self:UpdateStatus(IsUnitDead(unitTag), isOnline)
 			self:UpdateRank()
 			self:UpdateAssignment()
 			self:UpdateDifficulty()
-			self:DoAlphaUpdate(IsUnitInGroupSupportRange(unitTag), IsUnitOnline(unitTag), IsUnitGroupLeader(unitTag))
+			self:DoAlphaUpdate(IsUnitInGroupSupportRange(unitTag), isOnline, IsUnitGroupLeader(unitTag))
 		end
 	end
 end
@@ -1791,7 +1782,7 @@ local function UpdateGroupFrameStyle(groupIndex)
 	if oldLargeGroup ~= newLargeGroup or groupSize == 0 then
 		-- Create all the appropriate frames for the new group member, or in the case of a unit_destroyed
 		-- create the small group versions.
-		-- UnitFrames:DisableGroupAndRaidFrames()
+
 		if oldLargeGroup or groupSize == 0 then
 			-- Disable the raid frames
 			HideFrames(UnitFrames.raidFrames)
@@ -1825,7 +1816,7 @@ local function UpdateGroupFrameStyle(groupIndex)
 			end
 		end
 		-- But sync index of all frames with those of API
-		local newIndex, rawName, anchor, hasTarget
+		local newIndex, rawName, anchor, hasTarget, isOnline
 		for unitTag, unitFrame in pairs(frames) do
 			newIndex = GetGroupIndexByUnitTag(unitTag)
 			hasTarget = newIndex < GROUPINDEX_NONE
@@ -1838,14 +1829,16 @@ local function UpdateGroupFrameStyle(groupIndex)
 				unitFrame.index = newIndex
 				unitFrame.rawName = rawName
 
-				-- calls RefreshVisible(INSTANT), if no target
-				unitFrame:SetHiddenForReason("disabled", not hasTarget)
 				if hasTarget then
 					anchor = GetGroupFrameAnchor(newIndex, groupSize)
 					unitFrame:SetData(unitTag, anchor, HIDE_BAR_TEXT)
 				end
 				-- Is a hook-point and calls RefreshUnit, which calls SetHasTarget, which calls RefreshVisible(ANIMATED)
 				ZO_UnitFrames_UpdateWindow(unitTag, UNIT_CHANGED, unitFrame)
+			elseif hasTarget and newIndex >= groupIndex then
+				isOnline = IsUnitOnline(unitTag)
+				unitFrame:UpdateStatus(IsUnitDead(unitTag), isOnline)
+				unitFrame:DoAlphaUpdate(IsUnitInGroupSupportRange(unitTag), isOnline, IsUnitGroupLeader(unitTag))
 			end
 		end
 		DoGroupUpdate()
