@@ -1132,7 +1132,7 @@ function UnitFrame:RefreshUnit(unitChanged)
 	end
 
 	if unitChanged or self.hasTarget ~= validTarget then
-		self.dirty = true
+		-- self.dirty = true
 		MenuOwnerClosed(self.frame)
 	end
 
@@ -1821,21 +1821,25 @@ local function UpdateGroupFrameStyle(groupIndex)
 			newIndex = GetGroupIndexByUnitTag(unitTag)
 			hasTarget = newIndex < GROUPINDEX_NONE
 			rawName = hasTarget and GetRawUnitName(unitTag) or ""
-			if unitFrame.dirty or unitFrame.index ~= newIndex or unitFrame.rawName ~= rawName then
-				unitFrame.dirty = true
+			-- While zoning of local player unitTag and index can swap, but are effectively the same position. => just the controls are swapping.
+			if unitFrame.index ~= newIndex or unitFrame.rawName ~= rawName then
+				df("update unitTag %s %s %s %s %s", unitTag, tostring(hasTarget), tostring(unitFrame.dirty), tostring(unitFrame.index ~= newIndex), tostring(unitFrame.rawName ~= rawName))
+				df("index %s %s", unitFrame.index or "nil", newIndex)
+				df("rawName %s %s", unitFrame.rawName or "nil", rawName)
 
-				df("update unitTag %s %s", unitTag, tostring(hasTarget))
 				-- For OnUnitDestroyed
 				unitFrame.index = newIndex
-				unitFrame.rawName = rawName
 
 				if hasTarget then
 					anchor = GetGroupFrameAnchor(newIndex, groupSize)
-					unitFrame:SetData(unitTag, anchor, HIDE_BAR_TEXT)
+					if unitFrame.rawName ~= rawName then
+						unitFrame:SetData(unitTag, anchor, HIDE_BAR_TEXT)
+					end
 				end
+				unitFrame.rawName = rawName
 				-- Is a hook-point and calls RefreshUnit, which calls SetHasTarget, which calls RefreshVisible(ANIMATED)
 				ZO_UnitFrames_UpdateWindow(unitTag, UNIT_CHANGED, unitFrame)
-			elseif hasTarget and newIndex >= groupIndex then
+			elseif hasTarget and unitFrame.dirty and newIndex >= groupIndex then
 				isOnline = IsUnitOnline(unitTag)
 				unitFrame:UpdateStatus(IsUnitDead(unitTag), isOnline)
 				unitFrame:DoAlphaUpdate(IsUnitInGroupSupportRange(unitTag), isOnline, IsUnitGroupLeader(unitTag))
@@ -1940,9 +1944,11 @@ end
 local function UpdateStatus(unitTag, isDead, isOnline)
 	local unitFrame = UnitFrames:GetFrame(unitTag)
 	if unitFrame then
+		unitFrame.dirty = true
+		UnitFrames:SetGroupIndexDirty(unitFrame.index)
 		df("UpdateStatus %s %s %s", unitTag, tostring(isDead), tostring(isOnline))
-		unitFrame:UpdateStatus(isDead, isOnline)
-		unitFrame:DoAlphaUpdate(IsUnitInGroupSupportRange(unitTag), isOnline, IsUnitGroupLeader(unitTag))
+		-- 	unitFrame:UpdateStatus(isDead, isOnline)
+		-- 	unitFrame:DoAlphaUpdate(IsUnitInGroupSupportRange(unitTag), isOnline, IsUnitGroupLeader(unitTag))
 	end
 	if AreUnitsEqual(unitTag, "reticleover") then
 		unitFrame = UnitFrames:GetFrame("reticleover")
@@ -2022,7 +2028,7 @@ local function RegisterForEvents()
 				-- The trick is to store the last used index in the unitFrame.
 				if unitFrame.index < GROUPINDEX_NONE then
 					UnitFrames:SetGroupIndexDirty(unitFrame.index)
-					unitFrame.dirty = true
+					-- unitFrame.dirty = true
 				end
 			end
 		else
@@ -2071,13 +2077,12 @@ local function RegisterForEvents()
 		if wasLocalPlayer then
 			RequestFullRefresh()
 		else
-			d(characterName)
 			local self = UnitFrames
 			local frames = self.groupSize > SMALL_GROUP_SIZE_THRESHOLD and self.raidFrames or self.groupFrames
 			for unitTag, unitFrame in pairs(frames) do
 				if characterName == unitFrame.rawName then
-					d(unitTag)
-					unitFrame.dirty = true
+					df("%s is %s", characterName or "nil", unitTag)
+					-- unitFrame.dirty = true
 					self:SetGroupIndexDirty(unitFrame.index)
 					break
 				end
