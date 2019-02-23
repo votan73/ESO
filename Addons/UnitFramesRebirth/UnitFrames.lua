@@ -1764,6 +1764,12 @@ local function HideFrames(frames)
 	end
 end
 
+local function ForceChange(frames)
+	for unitTag, unitFrame in pairs(frames) do
+		unitFrame.rawName = ""
+	end
+end
+
 -- Utility to update the style of the current group frames creating a new frame for the unitTag if necessary,
 -- hiding frames that are no longer applicable, and creating new frames of the correct style if the group size
 -- goes above or below the "small group" or "raid group" thresholds.
@@ -1788,10 +1794,12 @@ function UnitFramesManager:UpdateGroupFrames()
 		if oldLargeGroup or groupSize == 0 then
 			-- Disable the raid frames
 			HideFrames(self.raidFrames)
+			ForceChange(self.groupFrames)
 		end
 		if newLargeGroup or groupSize == 0 then
 			-- Disable the group frames
 			HideFrames(self.groupFrames)
+			ForceChange(self.raidFrames)
 		end
 		groupIndex = 1
 	end
@@ -2126,12 +2134,6 @@ local function RegisterForEvents()
 		local unitFrame = UnitFrames:GetFrame(unitTag)
 		if unitFrame then
 			unitFrame:UpdateCaption()
-		end
-	end
-
-	local function ForceChange(frames)
-		for unitTag, unitFrame in pairs(frames) do
-			unitFrame.rawName = ""
 		end
 	end
 
