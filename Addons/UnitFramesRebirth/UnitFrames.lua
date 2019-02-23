@@ -1943,7 +1943,8 @@ end
 
 local function UpdateStatus(unitTag, isDead, isOnline)
 	local unitFrame = UnitFrames:GetFrame(unitTag)
-	if unitFrame then
+	-- unitFrame.index is not available for static frames
+	if unitFrame and unitFrame.index then
 		unitFrame.dirty = true
 		UnitFrames:SetGroupIndexDirty(unitFrame.index)
 		df("UpdateStatus %s %s %s", unitTag, tostring(isDead), tostring(isOnline))
