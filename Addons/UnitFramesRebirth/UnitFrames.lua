@@ -881,11 +881,12 @@ function UnitFrame:New(unitTag, showBarText, style)
 	if not layoutData then return end
 
 	local frame = CreateControlFromVirtual(style .. unitTag, parent, style)
+	frame:SetHidden(true)
 	newFrame.style = style
 	newFrame.frame = frame
 	newFrame.fadeComponents = { }
 	newFrame.hiddenReasons = ZO_HiddenReasons:New()
-	newFrame.hidden = false
+	newFrame.hidden = true
 
 	local nameControlName = layoutData.nameControlName or "Name"
 	newFrame.nameLabel = newFrame:AddFadeComponent(nameControlName)
@@ -1122,8 +1123,8 @@ function UnitFrame:RefreshControls()
 	end
 end
 
-function UnitFrame:RefreshUnit(unitChanged)
-	local validTarget = DoesUnitExist(self.unitTag)
+function UnitFrame:RefreshUnit(unitChanged, validTarget)
+	local validTarget = validTarget ~= nil and validTarget or DoesUnitExist(self.unitTag)
 	if validTarget then
 		if self.unitTag == "reticleovertarget" then
 			local localPlayerIsTarget = AreUnitsEqual("player", "reticleover")
@@ -1522,10 +1523,10 @@ end
 	UnitFrame Utility functions
 --]]
 
-function ZO_UnitFrames_UpdateWindow(unitTag, unitChanged, unitFrame)
+function ZO_UnitFrames_UpdateWindow(unitTag, unitChanged, unitFrame, validTarget)
 	unitFrame = unitFrame or UnitFrames:GetFrame(unitTag)
 	if unitFrame then
-		unitFrame:RefreshUnit(unitChanged)
+		unitFrame:RefreshUnit(unitChanged, validTarget)
 	end
 end
 
@@ -1766,15 +1767,16 @@ end
 -- Utility to update the style of the current group frames creating a new frame for the unitTag if necessary,
 -- hiding frames that are no longer applicable, and creating new frames of the correct style if the group size
 -- goes above or below the "small group" or "raid group" thresholds.
-local function UpdateGroupFrameStyle(groupIndex)
+function UnitFramesManager:UpdateGroupFrames()
 	-- local start = GetGameTimeSeconds()
 	local groupSize = GetGroupSize()
-	local oldGroupSize = UnitFrames.groupSize or 0
+	local groupIndex = self:GetFirstDirtyGroupIndex()
+	local oldGroupSize = self.groupSize or 0
 
 	local oldLargeGroup = oldGroupSize > SMALL_GROUP_SIZE_THRESHOLD
 	local newLargeGroup = groupSize > SMALL_GROUP_SIZE_THRESHOLD
 
-	UnitFrames:SetGroupSize(groupSize)
+	self:SetGroupSize(groupSize)
 
 	-- In cases where no UI has been setup, the group changes between large and small group sizes, or when
 	-- members are removed, we need to run a full update of the UI. These could also be optimized to only
@@ -1785,11 +1787,11 @@ local function UpdateGroupFrameStyle(groupIndex)
 
 		if oldLargeGroup or groupSize == 0 then
 			-- Disable the raid frames
-			HideFrames(UnitFrames.raidFrames)
+			HideFrames(self.raidFrames)
 		end
 		if newLargeGroup or groupSize == 0 then
 			-- Disable the group frames
-			HideFrames(UnitFrames.groupFrames)
+			HideFrames(self.groupFrames)
 		end
 		groupIndex = 1
 	end
@@ -1800,13 +1802,13 @@ local function UpdateGroupFrameStyle(groupIndex)
 		local frames
 		if newLargeGroup then
 			-- Build the raid frames
-			frames = UnitFrames.raidFrames
+			frames = self.raidFrames
 		else
 			-- Build the group frames
-			frames = UnitFrames.groupFrames
+			frames = self.groupFrames
 		end
 
-		local style = groupSize > SMALL_GROUP_SIZE_THRESHOLD and UnitFrames.RaidUnitFrame or UnitFrames.GroupUnitFrame
+		local style = groupSize > SMALL_GROUP_SIZE_THRESHOLD and self.RaidUnitFrame or self.GroupUnitFrame
 		local unitTag
 		-- Create new frames based on index
 		for i = groupIndex, groupSize do
@@ -1838,7 +1840,7 @@ local function UpdateGroupFrameStyle(groupIndex)
 				end
 				unitFrame.rawName = rawName
 				-- Is a hook-point and calls RefreshUnit, which calls SetHasTarget, which calls RefreshVisible(ANIMATED)
-				ZO_UnitFrames_UpdateWindow(unitTag, UNIT_CHANGED, unitFrame)
+				ZO_UnitFrames_UpdateWindow(unitTag, UNIT_CHANGED, unitFrame, hasTarget)
 			elseif hasTarget and unitFrame.dirty and newIndex >= groupIndex then
 				isOnline = IsUnitOnline(unitTag)
 				unitFrame:UpdateStatus(IsUnitDead(unitTag), isOnline)
@@ -1849,7 +1851,7 @@ local function UpdateGroupFrameStyle(groupIndex)
 		DoGroupUpdate()
 
 	elseif oldGroupSize > 0 then
-		UnitFrames:UpdateGroupAnchorFrames()
+		self:UpdateGroupAnchorFrames()
 	end
 	-- df("UpdateGroupFrameStyle %.3f",(GetGameTimeSeconds() - start) * 1000)
 end
@@ -1949,8 +1951,6 @@ local function UpdateStatus(unitTag, isDead, isOnline)
 		unitFrame.dirty = true
 		UnitFrames:SetGroupIndexDirty(unitFrame.index)
 		df("UpdateStatus %s %s %s", unitTag, tostring(isDead), tostring(isOnline))
-		-- 	unitFrame:UpdateStatus(isDead, isOnline)
-		-- 	unitFrame:DoAlphaUpdate(IsUnitInGroupSupportRange(unitTag), isOnline, IsUnitGroupLeader(unitTag))
 	end
 	if AreUnitsEqual(unitTag, "reticleover") then
 		unitFrame = UnitFrames:GetFrame("reticleover")
@@ -2129,6 +2129,12 @@ local function RegisterForEvents()
 		end
 	end
 
+	local function ForceChange(frames)
+		for unitTag, unitFrame in pairs(frames) do
+			unitFrame.rawName = ""
+		end
+	end
+
 	local function OnPlayerActivated(eventCode)
 		-- Clear cache
 		ZO_ResetCachedStrFormat(SI_PLAYER_NAME_WITH_TITLE_FORMAT)
@@ -2140,6 +2146,8 @@ local function RegisterForEvents()
 
 		if IsPlayerGrouped() or UnitFrames.groupSize > 0 then
 			-- do a full update because we probably missed events while loading
+			ForceChange(UnitFrames.raidFrames)
+			ForceChange(UnitFrames.groupFrames)
 			RequestFullRefresh()
 		end
 	end
@@ -2235,7 +2243,7 @@ end
 
 function ZO_UnitFrames_OnUpdate()
 	if UnitFrames and UnitFrames:GetIsDirty() then
-		UpdateGroupFrameStyle(UnitFrames:GetFirstDirtyGroupIndex())
+		UnitFrames:UpdateGroupFrames()
 		UnitFrames:ClearDirty()
 	end
 end
