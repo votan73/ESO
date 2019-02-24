@@ -1987,7 +1987,7 @@ local function RegisterForEvents()
 
 	local function RequestFullRefresh()
 		if UnitFrames.firstDirtyGroupIndex ~= 1 then
-			d("RequestFullRefresh")
+			-- d("RequestFullRefresh")
 		end
 		UnitFrames.firstDirtyGroupIndex = 1
 	end
