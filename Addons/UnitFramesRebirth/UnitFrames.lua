@@ -940,6 +940,13 @@ function UnitFrame:SetData(unitTag, anchors, showBarText)
 	self:RefreshVisible()
 end
 
+function UnitFrame:IsOnline()
+	if self.isOnline == nil then
+		self.isOnline = IsUnitOnline(self.unitTag)
+	end
+	return self.isOnline
+end
+
 function UnitFrame:ApplyVisualStyle(gamepadMode)
 	if self.currentGamepadMode == gamepadMode then return end
 	self.currentGamepadMode = gamepadMode
@@ -947,7 +954,7 @@ function UnitFrame:ApplyVisualStyle(gamepadMode)
 	DoUnitFrameLayout(self, self.style)
 	ApplyTemplateToControl(self.frame, ZO_GetPlatformTemplate(self.style))
 
-	local isOnline = IsUnitOnline(self.unitTag)
+	local isOnline = self:IsOnline()
 	self:DoAlphaUpdate(IsUnitInGroupSupportRange(self.unitTag), isOnline, IsUnitGroupLeader(self.unitTag))
 	self:UpdateDifficulty()
 
@@ -1113,7 +1120,7 @@ function UnitFrame:RefreshControls()
 				self:UpdatePowerBar(i, powerType, cur, max, FORCE_INIT)
 			end
 
-			local isOnline = IsUnitOnline(unitTag)
+			local isOnline = self:IsOnline()
 			self:UpdateStatus(IsUnitDead(unitTag), isOnline)
 			self:UpdateRank()
 			self:UpdateAssignment()
@@ -1852,7 +1859,7 @@ function UnitFramesManager:UpdateGroupFrames()
 				-- Is a hook-point and calls RefreshUnit, which calls SetHasTarget, which calls RefreshVisible(ANIMATED)
 				ZO_UnitFrames_UpdateWindow(unitTag, UNIT_CHANGED, unitFrame, hasTarget)
 			elseif hasTarget and unitFrame.dirty and newIndex >= groupIndex then
-				isOnline = IsUnitOnline(unitTag)
+				isOnline = unitFrame:IsOnline()
 				unitFrame:UpdateStatus(IsUnitDead(unitTag), isOnline)
 				unitFrame:DoAlphaUpdate(IsUnitInGroupSupportRange(unitTag), isOnline, IsUnitGroupLeader(unitTag))
 				unitFrame.dirty = false
@@ -1957,11 +1964,19 @@ end
 
 local function UpdateStatus(unitTag, isDead, isOnline)
 	local unitFrame = UnitFrames:GetFrame(unitTag)
-	-- unitFrame.index is not available for static frames
-	if unitFrame and unitFrame.index then
-		unitFrame.dirty = true
-		UnitFrames:SetGroupIndexDirty(unitFrame.index)
-		-- df("UpdateStatus %s %s %s", unitTag, tostring(isDead), tostring(isOnline))
+	if unitFrame then
+		if isOnline == nil then
+			isOnline = unitFrame:IsOnline()
+		else
+			unitFrame.isOnline = isOnline
+		end
+
+		-- unitFrame.index is not available for static frames
+		if unitFrame.index then
+			unitFrame.dirty = true
+			UnitFrames:SetGroupIndexDirty(unitFrame.index)
+			-- df("UpdateStatus %s %s %s", unitTag, tostring(isDead), tostring(isOnline))
+		end
 	end
 	if AreUnitsEqual(unitTag, "reticleover") then
 		unitFrame = UnitFrames:GetFrame("reticleover")
@@ -2070,7 +2085,7 @@ local function RegisterForEvents()
 	local function OnGroupSupportRangeUpdate(eventCode, unitTag, isNearby)
 		local unitFrame = UnitFrames:GetFrame(unitTag)
 		if unitFrame then
-			local isOnline = IsUnitOnline(unitTag)
+			local isOnline = unitFrame:IsOnline()
 			local isLeader = IsUnitGroupLeader(unitTag)
 			unitFrame:DoAlphaUpdate(isNearby, isOnline, isLeader)
 			if AreUnitsEqual(unitTag, "reticleover") then
@@ -2115,7 +2130,7 @@ local function RegisterForEvents()
 	end
 
 	local function OnUnitDeathStateChanged(eventCode, unitTag, isDead)
-		UpdateStatus(unitTag, isDead, IsUnitOnline(unitTag))
+		UpdateStatus(unitTag, isDead, nil)
 	end
 
 	local function OnRankPointUpdate(eventCode, unitTag)
