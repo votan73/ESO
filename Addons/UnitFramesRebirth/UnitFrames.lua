@@ -947,8 +947,7 @@ function UnitFrame:ApplyVisualStyle(gamepadMode)
 	DoUnitFrameLayout(self, self.style)
 	ApplyTemplateToControl(self.frame, ZO_GetPlatformTemplate(self.style))
 
-	local isOnline = IsUnitOnline(self.unitTag)
-	self:DoAlphaUpdate(IsUnitInGroupSupportRange(self.unitTag), isOnline, IsUnitGroupLeader(self.unitTag))
+	self:DoAlphaUpdate(IsUnitInGroupSupportRange(self.unitTag), IsUnitGroupLeader(self.unitTag))
 	self:UpdateDifficulty()
 
 	local healthBar = self.healthBar
@@ -991,7 +990,7 @@ function UnitFrame:ApplyVisualStyle(gamepadMode)
 
 	local statusBackground = self.frame:GetNamedChild("Background1")
 	if statusBackground then
-		statusBackground:SetHidden(not isOnline and barData.hideBgIfOffline)
+		statusBackground:SetHidden(not IsUnitOnline(self.unitTag) and barData.hideBgIfOffline)
 	end
 
 	local font = GetPlatformBarFont()
@@ -1113,12 +1112,11 @@ function UnitFrame:RefreshControls()
 				self:UpdatePowerBar(i, powerType, cur, max, FORCE_INIT)
 			end
 
-			local isOnline = IsUnitOnline(unitTag)
-			self:UpdateStatus(IsUnitDead(unitTag), isOnline)
+			self:UpdateStatus(IsUnitDead(unitTag), IsUnitOnline(unitTag))
 			self:UpdateRank()
 			self:UpdateAssignment()
 			self:UpdateDifficulty()
-			self:DoAlphaUpdate(IsUnitInGroupSupportRange(unitTag), isOnline, IsUnitGroupLeader(unitTag))
+			self:DoAlphaUpdate(IsUnitInGroupSupportRange(unitTag), IsUnitGroupLeader(unitTag))
 		end
 	end
 end
@@ -1158,7 +1156,7 @@ function UnitFrame:GetPrimaryControl()
 	return self.frame
 end
 
-function UnitFrame:DoAlphaUpdate(isNearby, isOnline, isLeader)
+function UnitFrame:DoAlphaUpdate(isNearby, isLeader)
 	-- Don't fade out just the frame, because that needs to appear correctly (along with BG, etc...)
 	-- Just make the status bars and any text on the frame fade out.
 	local color
@@ -1825,7 +1823,7 @@ function UnitFramesManager:UpdateGroupFrames()
 			end
 		end
 		-- But sync index of all frames with those of API
-		local newIndex, rawName, anchor, hasTarget, isOnline
+		local newIndex, rawName, anchor, hasTarget
 		for unitTag, unitFrame in pairs(frames) do
 			newIndex = GetGroupIndexByUnitTag(unitTag)
 			hasTarget = newIndex < GROUPINDEX_NONE
@@ -1852,9 +1850,8 @@ function UnitFramesManager:UpdateGroupFrames()
 				-- Is a hook-point and calls RefreshUnit, which calls SetHasTarget, which calls RefreshVisible(ANIMATED)
 				ZO_UnitFrames_UpdateWindow(unitTag, UNIT_CHANGED, unitFrame, hasTarget)
 			elseif hasTarget and unitFrame.dirty and newIndex >= groupIndex then
-				isOnline = IsUnitOnline(unitTag)
-				unitFrame:UpdateStatus(IsUnitDead(unitTag), isOnline)
-				unitFrame:DoAlphaUpdate(IsUnitInGroupSupportRange(unitTag), isOnline, IsUnitGroupLeader(unitTag))
+				unitFrame:UpdateStatus(IsUnitDead(unitTag), IsUnitOnline(unitTag))
+				unitFrame:DoAlphaUpdate(IsUnitInGroupSupportRange(unitTag), IsUnitGroupLeader(unitTag))
 				unitFrame.dirty = false
 			end
 		end
@@ -1956,12 +1953,15 @@ function UnitFrame_HandleMouseExit(frame)
 end
 
 local function UpdateStatus(unitTag, isDead, isOnline)
+
+	df("UpdateStatus %s - %s = %s ?", unitTag, tostring(isOnline), tostring(IsUnitOnline(unitTag)))
+
 	local unitFrame = UnitFrames:GetFrame(unitTag)
 	-- unitFrame.index is not available for static frames
 	if unitFrame and unitFrame.index then
 		unitFrame.dirty = true
 		UnitFrames:SetGroupIndexDirty(unitFrame.index)
-		-- df("UpdateStatus %s %s %s", unitTag, tostring(isDead), tostring(isOnline))
+		
 	end
 	if AreUnitsEqual(unitTag, "reticleover") then
 		unitFrame = UnitFrames:GetFrame("reticleover")
@@ -2070,17 +2070,16 @@ local function RegisterForEvents()
 	local function OnGroupSupportRangeUpdate(eventCode, unitTag, isNearby)
 		local unitFrame = UnitFrames:GetFrame(unitTag)
 		if unitFrame then
-			local isOnline = IsUnitOnline(unitTag)
 			local isLeader = IsUnitGroupLeader(unitTag)
-			unitFrame:DoAlphaUpdate(isNearby, isOnline, isLeader)
+			unitFrame:DoAlphaUpdate(isNearby, isLeader)
 			if AreUnitsEqual(unitTag, "reticleover") then
-				UnitFrames:GetFrame("reticleover"):DoAlphaUpdate(isNearby, isOnline, isLeader)
+				UnitFrames:GetFrame("reticleover"):DoAlphaUpdate(isNearby, isLeader)
 			end
 
 			if AreUnitsEqual(unitTag, "reticleovertarget") then
 				local targetOfTarget = UnitFrames:GetFrame("reticleovertarget")
 				if targetOfTarget then
-					targetOfTarget:DoAlphaUpdate(isNearby, isOnline, isLeader)
+					targetOfTarget:DoAlphaUpdate(isNearby, isLeader)
 				end
 			end
 		end
