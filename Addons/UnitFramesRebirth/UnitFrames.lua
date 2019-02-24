@@ -929,6 +929,7 @@ function UnitFrame:SetData(unitTag, anchors, showBarText)
 	self.unitTag = unitTag
 	self.dirty = true
 	self.animateShowHide = false
+	self.isOnline = nil
 
 	self.showBarText = showBarText
 
