@@ -1833,9 +1833,9 @@ function UnitFramesManager:UpdateGroupFrames()
 			rawName = hasTarget and GetRawUnitName(unitTag) or ""
 			-- While zoning of local player unitTag and index can swap, but are effectively the same position. => just the controls are swapping.
 			if unitFrame.index ~= newIndex or unitFrame.rawName ~= rawName then
-				df("update unitTag %s %s %s %s %s", unitTag, tostring(hasTarget), tostring(unitFrame.dirty), tostring(unitFrame.index ~= newIndex), tostring(unitFrame.rawName ~= rawName))
-				df("index %s %s", unitFrame.index or "nil", newIndex)
-				df("rawName %s %s", unitFrame.rawName or "nil", rawName)
+				-- df("update unitTag %s %s %s %s %s", unitTag, tostring(hasTarget), tostring(unitFrame.dirty), tostring(unitFrame.index ~= newIndex), tostring(unitFrame.rawName ~= rawName))
+				-- df("index %s %s", unitFrame.index or "nil", newIndex)
+				-- df("rawName %s %s", unitFrame.rawName or "nil", rawName)
 
 				-- For OnUnitDestroyed
 				unitFrame.index = newIndex
@@ -1845,6 +1845,7 @@ function UnitFramesManager:UpdateGroupFrames()
 					if unitFrame.rawName ~= rawName then
 						unitFrame:SetData(unitTag, anchor, HIDE_BAR_TEXT)
 					else
+						-- just anchor at new index position
 						unitFrame:SetAnchor(anchor)
 					end
 				end
@@ -1960,7 +1961,7 @@ local function UpdateStatus(unitTag, isDead, isOnline)
 	if unitFrame and unitFrame.index then
 		unitFrame.dirty = true
 		UnitFrames:SetGroupIndexDirty(unitFrame.index)
-		df("UpdateStatus %s %s %s", unitTag, tostring(isDead), tostring(isOnline))
+		-- df("UpdateStatus %s %s %s", unitTag, tostring(isDead), tostring(isOnline))
 	end
 	if AreUnitsEqual(unitTag, "reticleover") then
 		unitFrame = UnitFrames:GetFrame("reticleover")
@@ -2093,7 +2094,7 @@ local function RegisterForEvents()
 			local frames = self.groupSize > SMALL_GROUP_SIZE_THRESHOLD and self.raidFrames or self.groupFrames
 			for unitTag, unitFrame in pairs(frames) do
 				if characterName == unitFrame.rawName then
-					df("%s is %s", characterName or "nil", unitTag)
+					-- df("%s is %s", characterName or "nil", unitTag)
 					-- unitFrame.dirty = true
 					self:SetGroupIndexDirty(unitFrame.index)
 					break
