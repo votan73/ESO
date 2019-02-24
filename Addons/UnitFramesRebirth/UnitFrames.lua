@@ -1124,12 +1124,13 @@ function UnitFrame:RefreshControls()
 end
 
 function UnitFrame:RefreshUnit(unitChanged, validTarget)
-	local validTarget = validTarget ~= nil and validTarget or DoesUnitExist(self.unitTag)
-	if validTarget then
-		if self.unitTag == "reticleovertarget" then
-			local localPlayerIsTarget = AreUnitsEqual("player", "reticleover")
-			validTarget = UnitFrames:IsTargetOfTargetEnabled() and not localPlayerIsTarget
-		end
+	if validTarget == nil then
+		-- validTarget is not false or true
+		validTarget = DoesUnitExist(self.unitTag)
+	end
+	if validTarget and self.unitTag == "reticleovertarget" then
+		-- AreUnitsEqual may not executed at all
+		validTarget = UnitFrames:IsTargetOfTargetEnabled() and not AreUnitsEqual("player", "reticleover")
 	end
 
 	if unitChanged or self.hasTarget ~= validTarget then
@@ -1163,19 +1164,18 @@ function UnitFrame:DoAlphaUpdate(isNearby, isOnline, isLeader)
 	local color
 	if self.unitTag == "reticleover" then
 		color = ZO_SELECTED_TEXT
+	elseif isLeader then
+		color = ZO_HIGHLIGHT_TEXT
 	else
-		if isLeader then
-			color = ZO_HIGHLIGHT_TEXT
-		else
-			color = ZO_NORMAL_TEXT
-		end
+		color = ZO_NORMAL_TEXT
 	end
 
 	local alphaValue = isNearby and FULL_ALPHA_VALUE or FADED_ALPHA_VALUE
 	self.healthBar:SetAlpha(alphaValue)
 
+	local fadeComponent
 	for i = 1, #self.fadeComponents do
-		local fadeComponent = self.fadeComponents[i]
+		fadeComponent = self.fadeComponents[i]
 		if fadeComponent.setColor then
 			fadeComponent:SetColor(color:UnpackRGBA())
 		end
@@ -1202,10 +1202,11 @@ function UnitFrame:UpdatePowerBar(index, powerType, cur, max, forceInit)
 end
 
 -- Global to allow for outside manipulation
-ZO_UNIT_FRAMES_SHOW_LEVEL_REACTIONS =
-{
-	[UNIT_REACTION_PLAYER_ALLY] = true,
-}
+-- Already defined in vanilla code
+-- ZO_UNIT_FRAMES_SHOW_LEVEL_REACTIONS =
+-- {
+-- [UNIT_REACTION_PLAYER_ALLY] = true,
+-- }
 
 local HIDE_LEVEL_TYPES =
 {
@@ -1415,6 +1416,7 @@ do
 		local title = GetUnitTitle(unitTag)
 		if title ~= "" then
 			-- Will this fill up the memory? And if so, who cares in an x64 env?
+			-- Caching localization result is 10x faster, less garbage.
 			return ZO_CachedStrFormat(SI_PLAYER_NAME_WITH_TITLE_FORMAT, name, title)
 		else
 			return name
@@ -1435,13 +1437,14 @@ do
 end
 
 function UnitFrame:UpdateNPCCaption(unitTag)
+	-- Caching localization result is 100x faster, less garbage.
 	return ZO_CachedStrFormat(SI_TOOLTIP_UNIT_CAPTION, GetUnitCaption(unitTag))
 end
 
 function UnitFrame:UpdateCaption()
 	local captionLabel = self.captionLabel
 	if captionLabel then
-		local caption = nil
+		local caption
 		local unitTag = self:GetUnitTag()
 		if IsUnitPlayer(unitTag) then
 			caption = self:UpdatePlayerCaption(unitTag)
@@ -1553,40 +1556,36 @@ local function CreateGroupAnchorFrames()
 	end
 end
 
-local function UpdateLeaderIndicator()
+local function UpdateLeaderIndicator(frames)
 	ZO_UnitFrames_Leader:SetHidden(true)
 
-	local unitTag, unitFrame
-	for i = 1, GROUP_SIZE_MAX do
-		unitTag = GetGroupUnitTagByIndex(i)
-		unitFrame = unitTag and UnitFrames:GetFrame(unitTag)
-		if unitFrame then
-			if IsUnitGroupLeader(unitTag) then
-				ZO_UnitFrames_Leader:ClearAnchors()
-				local layoutData = GetPlatformLayoutData(unitFrame.style)
-				if layoutData.leaderIconData then
-					local data = layoutData.leaderIconData
-					ZO_UnitFrames_Leader:SetDimensions(data.width, data.height)
-					ZO_UnitFrames_Leader:SetAnchor(TOPLEFT, unitFrame.frame, TOPLEFT, data.offsetX, data.offsetY)
-					unitFrame:SetTextIndented(true)
-				else
-					unitFrame:SetTextIndented(false)
-				end
-
-				ZO_UnitFrames_Leader:SetParent(unitFrame.frame)
-				ZO_UnitFrames_Leader:SetHidden(not layoutData.leaderIconData)
+	-- Just one call to GetGroupLeaderUnitTag instead of multiple calls to IsUnitGroupLeader
+	local leaderUnitTag = GetGroupLeaderUnitTag()
+	if not frames then
+		frames = UnitFrames:GetUnitFrameLookupTable(leaderUnitTag)
+		if not frames then return end
+	end
+	for unitTag, unitFrame in pairs(frames) do
+		if unitTag == leaderUnitTag then
+			ZO_UnitFrames_Leader:ClearAnchors()
+			local layoutData = GetPlatformLayoutData(unitFrame.style)
+			if layoutData.leaderIconData then
+				local data = layoutData.leaderIconData
+				ZO_UnitFrames_Leader:SetDimensions(data.width, data.height)
+				ZO_UnitFrames_Leader:SetAnchor(TOPLEFT, unitFrame.frame, TOPLEFT, data.offsetX, data.offsetY)
+				unitFrame:SetTextIndented(true)
 			else
 				unitFrame:SetTextIndented(false)
 			end
 
-			unitFrame:UpdateUnitReaction()
+			ZO_UnitFrames_Leader:SetParent(unitFrame.frame)
+			ZO_UnitFrames_Leader:SetHidden(not layoutData.leaderIconData)
+		else
+			unitFrame:SetTextIndented(false)
 		end
-	end
-end
 
-local function DoGroupUpdate(eventCode)
-	UpdateLeaderIndicator()
-	UnitFrames:UpdateGroupAnchorFrames()
+		unitFrame:UpdateUnitReaction()
+	end
 end
 
 local unitTypesWhoUseCastInfo =
@@ -1859,7 +1858,8 @@ function UnitFramesManager:UpdateGroupFrames()
 				unitFrame.dirty = false
 			end
 		end
-		DoGroupUpdate()
+		UpdateLeaderIndicator(frames)
+		self:UpdateGroupAnchorFrames()
 
 	elseif oldGroupSize > 0 then
 		self:UpdateGroupAnchorFrames()
