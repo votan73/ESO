@@ -1559,6 +1559,10 @@ local function UpdateLeaderIndicator(frames)
 	-- Just one call to GetGroupLeaderUnitTag instead of multiple calls to IsUnitGroupLeader
 	local leaderUnitTag = GetGroupLeaderUnitTag()
 	if not frames then
+		if not ZO_Group_IsGroupUnitTag(leaderUnitTag) then
+			d("soso", leaderUnitTag, "---")
+			return
+		end
 		frames = UnitFrames:GetUnitFrameLookupTable(leaderUnitTag)
 		if not frames then return end
 	end
