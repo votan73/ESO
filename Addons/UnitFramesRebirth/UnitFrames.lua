@@ -2058,6 +2058,10 @@ local function RegisterForEvents()
 		end
 	end
 
+	local function OnLeaderUpdate()
+		UpdateLeaderIndicator()
+	end
+	
 	local function OnDispositionUpdate(eventCode, unitTag)
 		local unitFrame = UnitFrames:GetFrame(unitTag)
 		if unitFrame then
@@ -2186,7 +2190,7 @@ local function RegisterForEvents()
 	ZO_UnitFrames:RegisterForEvent(EVENT_UNIT_CREATED, OnUnitCreated)
 	ZO_UnitFrames:RegisterForEvent(EVENT_UNIT_DESTROYED, OnUnitDestroyed)
 	ZO_UnitFrames:RegisterForEvent(EVENT_LEVEL_UPDATE, OnLevelUpdate)
-	ZO_UnitFrames:RegisterForEvent(EVENT_LEADER_UPDATE, UpdateLeaderIndicator)
+	ZO_UnitFrames:RegisterForEvent(EVENT_LEADER_UPDATE, OnLeaderUpdate)
 	ZO_UnitFrames:RegisterForEvent(EVENT_DISPOSITION_UPDATE, OnDispositionUpdate)
 	ZO_UnitFrames:RegisterForEvent(EVENT_GROUP_SUPPORT_RANGE_UPDATE, OnGroupSupportRangeUpdate)
 	ZO_UnitFrames:RegisterForEvent(EVENT_GROUP_UPDATE, RequestFullRefresh)
