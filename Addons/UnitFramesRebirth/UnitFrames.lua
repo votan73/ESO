@@ -18,12 +18,6 @@ local TARGET_UNIT_FRAME = "ZO_TargetUnitFrame"
 
 local NUM_SUBGROUPS = GROUP_SIZE_MAX / SMALL_GROUP_SIZE_THRESHOLD
 
--- Already defined in vanilla code
--- ZO_KEYBOARD_GROUP_FRAME_WIDTH = 288
--- ZO_KEYBOARD_GROUP_FRAME_HEIGHT = 80
--- ZO_KEYBOARD_RAID_FRAME_WIDTH = 96
--- ZO_KEYBOARD_RAID_FRAME_HEIGHT = 40
-
 local GROUPINDEX_NONE = 4294967296
 
 local KEYBOARD_CONSTANTS =
@@ -59,8 +53,11 @@ local KEYBOARD_CONSTANTS =
 	SHOW_GROUP_LABELS = true,
 }
 
-
 -- Already defined in vanilla code
+-- ZO_KEYBOARD_GROUP_FRAME_WIDTH = 288
+-- ZO_KEYBOARD_GROUP_FRAME_HEIGHT = 80
+-- ZO_KEYBOARD_RAID_FRAME_WIDTH = 96
+-- ZO_KEYBOARD_RAID_FRAME_HEIGHT = 40
 -- ZO_GAMEPAD_GROUP_FRAME_WIDTH = 160
 -- ZO_GAMEPAD_GROUP_FRAME_HEIGHT = 70
 -- ZO_GAMEPAD_RAID_FRAME_WIDTH = 175
@@ -265,14 +262,13 @@ end
 function UnitFramesManager:CreateFrame(unitTag, anchors, showBarText, style)
 	local unitFrame = self:GetFrame(unitTag)
 	if not unitFrame then
-		local unitFrameTable = self:GetUnitFrameLookupTable(unitTag)
 		unitFrame = UnitFrame:New(unitTag, showBarText, style)
-
+		
+		local unitFrameTable = self:GetUnitFrameLookupTable(unitTag)
 		if unitFrameTable then
 			unitFrameTable[unitTag] = unitFrame
 		end
 	end
-
 	return unitFrame
 end
 
@@ -305,10 +301,6 @@ end
 
 function UnitFramesManager:ClearDirty()
 	self.firstDirtyGroupIndex = nil
-end
-
-function UnitFramesManager:DisableGroupAndRaidFrames()
-	-- Not used anymore. But maybe hooked from outside??
 end
 
 function UnitFramesManager:SetGroupAndRaidFramesHiddenForReason(reason, hidden)
@@ -602,7 +594,6 @@ do
 		local barCur = isBarCentered and cur / 2 or cur
 		local barMax = isBarCentered and max / 2 or max
 
-		local overrideForceInit
 		for i = 1, numBarControls do
 			ZO_StatusBar_SmoothTransition(self.barControls[i], barCur, barMax, forceInit, nil, GetCustomApproachAmountMs())
 		end
@@ -955,8 +946,7 @@ function UnitFrame:ApplyVisualStyle(gamepadMode)
 	DoUnitFrameLayout(self, self.style)
 	ApplyTemplateToControl(self.frame, ZO_GetPlatformTemplate(self.style))
 
-	local isOnline = self:IsOnline()
-	self:DoAlphaUpdate(IsUnitInGroupSupportRange(self.unitTag), isOnline, IsUnitGroupLeader(self.unitTag))
+	self:DoAlphaUpdate(IsUnitInGroupSupportRange(self.unitTag), IsUnitGroupLeader(self.unitTag))
 	self:UpdateDifficulty()
 
 	local healthBar = self.healthBar
@@ -999,7 +989,7 @@ function UnitFrame:ApplyVisualStyle(gamepadMode)
 
 	local statusBackground = self.frame:GetNamedChild("Background1")
 	if statusBackground then
-		statusBackground:SetHidden(not isOnline and barData.hideBgIfOffline)
+		statusBackground:SetHidden(not self:IsOnline() and barData.hideBgIfOffline)
 	end
 
 	local font = GetPlatformBarFont()
@@ -1121,12 +1111,11 @@ function UnitFrame:RefreshControls()
 				self:UpdatePowerBar(i, powerType, cur, max, FORCE_INIT)
 			end
 
-			local isOnline = self:IsOnline()
-			self:UpdateStatus(IsUnitDead(unitTag), isOnline)
+			self:UpdateStatus(IsUnitDead(unitTag), self:IsOnline())
 			self:UpdateRank()
 			self:UpdateAssignment()
 			self:UpdateDifficulty()
-			self:DoAlphaUpdate(IsUnitInGroupSupportRange(unitTag), isOnline, IsUnitGroupLeader(unitTag))
+			self:DoAlphaUpdate(IsUnitInGroupSupportRange(unitTag), IsUnitGroupLeader(unitTag))
 		end
 	end
 end
@@ -1166,7 +1155,7 @@ function UnitFrame:GetPrimaryControl()
 	return self.frame
 end
 
-function UnitFrame:DoAlphaUpdate(isNearby, isOnline, isLeader)
+function UnitFrame:DoAlphaUpdate(isNearby, isLeader)
 	-- Don't fade out just the frame, because that needs to appear correctly (along with BG, etc...)
 	-- Just make the status bars and any text on the frame fade out.
 	local color
@@ -1233,12 +1222,10 @@ function UnitFrame:ShouldShowLevel()
 	elseif IsUnitInvulnerableGuard(unitTag) then
 		return false
 	else
-		local unitType = GetUnitType(unitTag)
-		if HIDE_LEVEL_TYPES[unitType] then
+		if HIDE_LEVEL_TYPES[GetUnitType(unitTag)] then
 			return false
 		else
-			local unitReaction = GetUnitReaction(unitTag)
-			if ZO_UNIT_FRAMES_SHOW_LEVEL_REACTIONS[unitReaction] then
+			if ZO_UNIT_FRAMES_SHOW_LEVEL_REACTIONS[GetUnitReaction(unitTag)] then
 				return true
 			end
 		end
@@ -1444,25 +1431,27 @@ do
 	end
 end
 
-function UnitFrame:UpdateNPCCaption(unitTag)
-	-- Caching localization result is 100x faster, less garbage.
-	return ZO_CachedStrFormat(SI_TOOLTIP_UNIT_CAPTION, GetUnitCaption(unitTag))
-end
+do
+	local function UpdateNPCCaption(unitTag)
+		-- Caching localization result is 100x faster, less garbage.
+		return ZO_CachedStrFormat(SI_TOOLTIP_UNIT_CAPTION, GetUnitCaption(unitTag))
+	end
 
-function UnitFrame:UpdateCaption()
-	local captionLabel = self.captionLabel
-	if captionLabel then
-		local caption
-		local unitTag = self:GetUnitTag()
-		if IsUnitPlayer(unitTag) then
-			caption = self:UpdatePlayerCaption(unitTag)
-		else
-			caption = self:UpdateNPCCaption(unitTag)
+	function UnitFrame:UpdateCaption()
+		local captionLabel = self.captionLabel
+		if captionLabel then
+			local caption
+			local unitTag = self:GetUnitTag()
+			if IsUnitPlayer(unitTag) then
+				caption = self:UpdatePlayerCaption(unitTag)
+			else
+				caption = UpdateNPCCaption(unitTag)
+			end
+
+			captionLabel:SetHidden(caption == nil)
+			captionLabel:SetText(caption)
+			-- still set the caption text when empty so we collapse the label for anything anchoring off the bottom of it
 		end
-
-		captionLabel:SetHidden(caption == nil)
-		captionLabel:SetText(caption)
-		-- still set the caption text when empty so we collapse the label for anything anchoring off the bottom of it
 	end
 end
 
@@ -1860,9 +1849,8 @@ function UnitFramesManager:UpdateGroupFrames()
 				-- Is a hook-point and calls RefreshUnit, which calls SetHasTarget, which calls RefreshVisible(ANIMATED)
 				ZO_UnitFrames_UpdateWindow(unitTag, UNIT_CHANGED, unitFrame, hasTarget)
 			elseif hasTarget and unitFrame.dirty and newIndex >= groupIndex then
-				isOnline = unitFrame:IsOnline()
-				unitFrame:UpdateStatus(IsUnitDead(unitTag), isOnline)
-				unitFrame:DoAlphaUpdate(IsUnitInGroupSupportRange(unitTag), isOnline, IsUnitGroupLeader(unitTag))
+				unitFrame:UpdateStatus(IsUnitDead(unitTag), unitFrame:IsOnline())
+				unitFrame:DoAlphaUpdate(IsUnitInGroupSupportRange(unitTag), IsUnitGroupLeader(unitTag))
 				unitFrame.dirty = false
 			end
 		end
@@ -1892,18 +1880,18 @@ local function UpdateGroupFramesVisualStyle()
 
 	-- Raid group anchor frames.
 	-- local raidTemplate = ZO_GetPlatformTemplate("ZO_RaidFrameAnchor")
-	local raidFrame, x, y
+	local raidFrame, groupNameControl, x, y
 	for i = 1, NUM_SUBGROUPS do
 		raidFrame = largeGroupAnchorFrames[i]
 		ApplyTemplateToControl(raidFrame, ZO_GetPlatformTemplate("ZO_RaidFrameAnchor"))
 
 		-- For some reason, the ModifyTextType attribute on the template isn't being applied to the existing text on the label.
 		-- Clearing and setting the text again seems to reapply the ModifyTextType attribute.
-		local groupNameControl = GetControl(raidFrame, "GroupName")
-		groupNameControl:SetText("")
-
+		groupNameControl = GetControl(raidFrame, "GroupName")
 		if constants.SHOW_GROUP_LABELS then
 			groupNameControl:SetText(zo_strformat(SI_GROUP_SUBGROUP_LABEL, i))
+		else
+			groupNameControl:SetText("")
 		end
 
 		raidFrame:SetDimensions(constants.RAID_FRAME_ANCHOR_CONTAINER_WIDTH, constants.RAID_FRAME_ANCHOR_CONTAINER_HEIGHT)
@@ -2002,9 +1990,7 @@ end
 local function RegisterForEvents()
 
 	local function RequestFullRefresh()
-		if UnitFrames.firstDirtyGroupIndex ~= 1 then
-			-- d("RequestFullRefresh")
-		end
+		-- updates for every unit zoning (via wayshrine).
 		UnitFrames.firstDirtyGroupIndex = 1
 	end
 
@@ -2072,10 +2058,6 @@ local function RegisterForEvents()
 		end
 	end
 
-	local function OnLeaderUpdate()
-		UpdateLeaderIndicator()
-	end
-
 	local function OnDispositionUpdate(eventCode, unitTag)
 		local unitFrame = UnitFrames:GetFrame(unitTag)
 		if unitFrame then
@@ -2086,17 +2068,17 @@ local function RegisterForEvents()
 	local function OnGroupSupportRangeUpdate(eventCode, unitTag, isNearby)
 		local unitFrame = UnitFrames:GetFrame(unitTag)
 		if unitFrame then
-			local isOnline = unitFrame:IsOnline()
 			local isLeader = IsUnitGroupLeader(unitTag)
-			unitFrame:DoAlphaUpdate(isNearby, isOnline, isLeader)
+			unitFrame:DoAlphaUpdate(isNearby, isLeader)
+
 			if AreUnitsEqual(unitTag, "reticleover") then
-				UnitFrames:GetFrame("reticleover"):DoAlphaUpdate(isNearby, isOnline, isLeader)
+				UnitFrames:GetFrame("reticleover"):DoAlphaUpdate(isNearby, isLeader)
 			end
 
 			if AreUnitsEqual(unitTag, "reticleovertarget") then
 				local targetOfTarget = UnitFrames:GetFrame("reticleovertarget")
 				if targetOfTarget then
-					targetOfTarget:DoAlphaUpdate(isNearby, isOnline, isLeader)
+					targetOfTarget:DoAlphaUpdate(isNearby, isLeader)
 				end
 			end
 		end
@@ -2110,8 +2092,6 @@ local function RegisterForEvents()
 			local frames = self.groupSize > SMALL_GROUP_SIZE_THRESHOLD and self.raidFrames or self.groupFrames
 			for unitTag, unitFrame in pairs(frames) do
 				if characterName == unitFrame.rawName then
-					-- df("%s is %s", characterName or "nil", unitTag)
-					-- unitFrame.dirty = true
 					self:SetGroupIndexDirty(unitFrame.index)
 					break
 				end
@@ -2198,22 +2178,17 @@ local function RegisterForEvents()
 		end
 	end
 
+	-- Register events
 	ZO_UnitFrames:RegisterForEvent(EVENT_TARGET_CHANGED, OnTargetChanged)
-	ZO_UnitFrames:AddFilterForEvent(EVENT_TARGET_CHANGED, REGISTER_FILTER_UNIT_TAG, "reticleover")
 	ZO_UnitFrames:RegisterForEvent(EVENT_UNIT_CHARACTER_NAME_CHANGED, OnUnitCharacterNameChanged)
-	ZO_UnitFrames:AddFilterForEvent(EVENT_UNIT_CHARACTER_NAME_CHANGED, REGISTER_FILTER_UNIT_TAG, "reticleover")
 	ZO_UnitFrames:RegisterForEvent(EVENT_RETICLE_TARGET_CHANGED, OnReticleTargetChanged)
 	ZO_UnitFrames:RegisterForEvent(EVENT_POWER_UPDATE, OnPowerUpdate)
 	ZO_UnitFrames:RegisterForEvent(EVENT_UNIT_CREATED, OnUnitCreated)
-	ZO_UnitFrames:AddFilterForEvent(EVENT_UNIT_CREATED, REGISTER_FILTER_UNIT_TAG_PREFIX, "group")
 	ZO_UnitFrames:RegisterForEvent(EVENT_UNIT_DESTROYED, OnUnitDestroyed)
-	ZO_UnitFrames:AddFilterForEvent(EVENT_UNIT_DESTROYED, REGISTER_FILTER_UNIT_TAG_PREFIX, "group")
 	ZO_UnitFrames:RegisterForEvent(EVENT_LEVEL_UPDATE, OnLevelUpdate)
-	ZO_UnitFrames:RegisterForEvent(EVENT_LEADER_UPDATE, OnLeaderUpdate)
+	ZO_UnitFrames:RegisterForEvent(EVENT_LEADER_UPDATE, UpdateLeaderIndicator)
 	ZO_UnitFrames:RegisterForEvent(EVENT_DISPOSITION_UPDATE, OnDispositionUpdate)
-	ZO_UnitFrames:AddFilterForEvent(EVENT_DISPOSITION_UPDATE, REGISTER_FILTER_UNIT_TAG_PREFIX, "group")
 	ZO_UnitFrames:RegisterForEvent(EVENT_GROUP_SUPPORT_RANGE_UPDATE, OnGroupSupportRangeUpdate)
-	-- updates for every unit zoning (via wayshrine).
 	ZO_UnitFrames:RegisterForEvent(EVENT_GROUP_UPDATE, RequestFullRefresh)
 	ZO_UnitFrames:RegisterForEvent(EVENT_GROUP_MEMBER_LEFT, OnGroupMemberLeft)
 	ZO_UnitFrames:RegisterForEvent(EVENT_GROUP_MEMBER_CONNECTED_STATUS, OnGroupMemberConnectedStateChanged)
@@ -2226,7 +2201,14 @@ local function RegisterForEvents()
 	ZO_UnitFrames:RegisterForEvent(EVENT_INTERFACE_SETTING_CHANGED, OnInterfaceSettingChanged)
 	ZO_UnitFrames:RegisterForEvent(EVENT_GUILD_NAME_AVAILABLE, OnGuildNameAvailable)
 	ZO_UnitFrames:RegisterForEvent(EVENT_GUILD_ID_CHANGED, OnGuildIdChanged)
+	
+	-- Filter events
+	ZO_UnitFrames:AddFilterForEvent(EVENT_TARGET_CHANGED, REGISTER_FILTER_UNIT_TAG, "reticleover")
+	ZO_UnitFrames:AddFilterForEvent(EVENT_UNIT_CHARACTER_NAME_CHANGED, REGISTER_FILTER_UNIT_TAG, "reticleover")
 	ZO_UnitFrames:AddFilterForEvent(EVENT_GUILD_ID_CHANGED, REGISTER_FILTER_UNIT_TAG, "reticleover")
+	ZO_UnitFrames:AddFilterForEvent(EVENT_UNIT_CREATED, REGISTER_FILTER_UNIT_TAG_PREFIX, "group")
+	ZO_UnitFrames:AddFilterForEvent(EVENT_UNIT_DESTROYED, REGISTER_FILTER_UNIT_TAG_PREFIX, "group")
+	ZO_UnitFrames:AddFilterForEvent(EVENT_DISPOSITION_UPDATE, REGISTER_FILTER_UNIT_TAG_PREFIX, "group")
 
 	CALLBACK_MANAGER:RegisterCallback("TargetOfTargetEnabledChanged", OnTargetOfTargetEnabledChanged)
 end
