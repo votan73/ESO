@@ -53,17 +53,6 @@ local KEYBOARD_CONSTANTS =
 	SHOW_GROUP_LABELS = true,
 }
 
--- Already defined in vanilla code
--- ZO_KEYBOARD_GROUP_FRAME_WIDTH = 288
--- ZO_KEYBOARD_GROUP_FRAME_HEIGHT = 80
--- ZO_KEYBOARD_RAID_FRAME_WIDTH = 96
--- ZO_KEYBOARD_RAID_FRAME_HEIGHT = 40
--- ZO_GAMEPAD_GROUP_FRAME_WIDTH = 160
--- ZO_GAMEPAD_GROUP_FRAME_HEIGHT = 70
--- ZO_GAMEPAD_RAID_FRAME_WIDTH = 175
--- ZO_GAMEPAD_RAID_FRAME_HEIGHT = 40
-
-
 local GAMEPAD_CONSTANTS =
 {
 	GROUP_LEADER_ICON = "EsoUI/Art/UnitFrames/Gamepad/gp_Group_Leader.dds",
@@ -291,9 +280,9 @@ function UnitFramesManager:GetIsDirty()
 	return self.firstDirtyGroupIndex ~= nil
 end
 
-function UnitFramesManager:SetGroupIndexDirty(groupIndex)
 	-- The update we call will update all unit frames after and including the one being modified
 	-- So we really just need to know what is the smallest groupIndex that is being changed
+function UnitFramesManager:SetGroupIndexDirty(groupIndex)
 	if not self.firstDirtyGroupIndex or groupIndex < self.firstDirtyGroupIndex then
 		self.firstDirtyGroupIndex = groupIndex
 	end
@@ -359,34 +348,28 @@ UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_FASTER = 3
 UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_FAST = 4
 UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_DEFAULT = 5
 
-local ANY_POWER_TYPE = true -- A special flag that essentially acts like a wild card, accepting any mechanic
+-- A special flag that essentially acts like a wild card, accepting any mechanic
+local ANY_POWER_TYPE = true
 
 local UNITFRAME_BAR_STYLES =
 {
-	[TARGET_UNIT_FRAME] =
-	{
-		[POWERTYPE_HEALTH] =
-		{
-			textAnchors =
-			{
+	[TARGET_UNIT_FRAME] = {
+		[POWERTYPE_HEALTH] = {
+			textAnchors = {
 				ZO_Anchor:New(TOP,nil,BOTTOM,0,- 22),
 			},
 			centered = true,
 		},
 	},
 
-	[GROUP_UNIT_FRAME] =
-	{
-		[POWERTYPE_HEALTH] =
-		{
-			keyboard =
-			{
+	[GROUP_UNIT_FRAME] = {
+		[POWERTYPE_HEALTH] = {
+			keyboard = {
 				template = "UnitFramesRebirth_GroupUnitFrameStatus",
 				barHeight = 14,
 				barWidth = 180,
 				barAnchors = { ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 36, 42) },
-				warner =
-				{
+				warner = {
 					texture = "ZO_PlayerAttributeHealthWarnerTexture",
 					Left = "UnitFramesRebirth_PlayerAttributeWarnerLeft",
 					Right = "UnitFramesRebirth_PlayerAttributeWarnerRightArrow",
@@ -394,15 +377,13 @@ local UNITFRAME_BAR_STYLES =
 				},
 			},
 
-			gamepad =
-			{
+			gamepad = {
 				template = "UnitFramesRebirth_GroupUnitFrameStatus",
 				barHeight = 8,
 				barWidth = ZO_GAMEPAD_GROUP_FRAME_WIDTH,
 				barAnchors = { ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 0, 45) },
 				hideBgIfOffline = true,
-				warner =
-				{
+				warner = {
 					texture = "ZO_PlayerAttributeHealthWarnerTexture",
 					Left = "UnitFramesRebirth_PlayerAttributeWarnerLeft",
 					Right = "UnitFramesRebirth_PlayerAttributeWarnerRight",
@@ -412,20 +393,16 @@ local UNITFRAME_BAR_STYLES =
 		},
 	},
 
-	[RAID_UNIT_FRAME] =
-	{
-		[POWERTYPE_HEALTH] =
-		{
-			keyboard =
-			{
+	[RAID_UNIT_FRAME] = {
+		[POWERTYPE_HEALTH] = {
+			keyboard = {
 				template = "ZO_UnitFrameStatus",
 				barHeight = 34,
 				barWidth = 90,
 				barAnchors = { ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 2, 2) },
 			},
 
-			gamepad =
-			{
+			gamepad = {
 				template = "ZO_UnitFrameStatus",
 				barHeight = ZO_GAMEPAD_RAID_FRAME_HEIGHT - 2,
 				barWidth = ZO_GAMEPAD_RAID_FRAME_WIDTH - 2,
@@ -555,7 +532,6 @@ UnitFrameBar = ZO_Object:Subclass()
 
 function UnitFrameBar:New(baseBarName, parent, showFrameBarText, style, mechanic)
 	local barControls = CreateBarStatusControl(baseBarName, parent, style, mechanic, showFrameBarText)
-
 	if barControls then
 		local newFrameBar = ZO_Object.New(self)
 		newFrameBar.barControls = barControls
@@ -567,6 +543,7 @@ function UnitFrameBar:New(baseBarName, parent, showFrameBarText, style, mechanic
 		if showFrameBarText ~= HIDE_BAR_TEXT then
 			newFrameBar.leftText, newFrameBar.rightText = CreateBarTextControls(baseBarName, parent, style, mechanic)
 		end
+
 		return newFrameBar
 	end
 end
@@ -574,7 +551,6 @@ end
 do
 	-- The health bar animation is pretty slow. We gonna make it a bit faster. This is very helpful in PvP.
 	-- DEFAULT_ANIMATION_TIME_MS = 500
-
 	local lookupApproachAmountMs = {
 		[UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_ULTRA_FAST] = 100,
 		[UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_SUPER_FAST] = 200,
@@ -704,10 +680,8 @@ end
 
 local UNITFRAME_LAYOUT_DATA =
 {
-	[GROUP_UNIT_FRAME] =
-	{
-		keyboard =
-		{
+	[GROUP_UNIT_FRAME] = {
+		keyboard = {
 			nameAnchor = ZO_Anchor:New(TOPLEFT,nil,TOPLEFT,35,19),
 			nameWidth = 215,
 			nameWrapMode = TEXT_WRAP_MODE_ELLIPSIS,
@@ -719,8 +693,7 @@ local UNITFRAME_LAYOUT_DATA =
 			useHealthWarner = true,
 		},
 
-		gamepad =
-		{
+		gamepad = {
 			nameAnchor = ZO_Anchor:New(TOPLEFT,nil,TOPLEFT,0,1),
 			nameWidth = 306,
 			nameWrapMode = TEXT_WRAP_MODE_ELLIPSIS,
@@ -736,12 +709,9 @@ local UNITFRAME_LAYOUT_DATA =
 		},
 	},
 
-	[RAID_UNIT_FRAME] =
-	{
-		keyboard =
-		{
-			highPriorityBuffHighlight =
-			{
+	[RAID_UNIT_FRAME] = {
+		keyboard = {
+			highPriorityBuffHighlight = {
 				left = { texture = "EsoUI/Art/UnitFrames/unitframe_raid_outline_left.dds", width = 64, height = 64, },
 				right = { texture = "EsoUI/Art/UnitFrames/unitframe_raid_outline_right.dds", width = 32, height = 64, },
 				icon = { width = 14, height = 14, customAnchor = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 76, 15) },
@@ -758,10 +728,8 @@ local UNITFRAME_LAYOUT_DATA =
 			leaderIconData = { width = 16, height = 16, offsetX = 5, offsetY = 5 }
 		},
 
-		gamepad =
-		{
-			highPriorityBuffHighlight =
-			{
+		gamepad = {
+			highPriorityBuffHighlight = {
 				left = { texture = "EsoUI/Art/UnitFrames/unitframe_raid_outline_left.dds", width = 54, height = 44, },
 				right = { texture = "EsoUI/Art/UnitFrames/unitframe_raid_outline_right.dds", width = 32, height = 44, },
 				icon = { width = 14, height = 14, customAnchor = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 66, 7) },
@@ -776,8 +744,7 @@ local UNITFRAME_LAYOUT_DATA =
 		},
 	},
 
-	[TARGET_UNIT_FRAME] =
-	{
+	[TARGET_UNIT_FRAME] = {
 		neverHideStatusBar = true,
 		showStatusInName = true,
 		captionControlName = "Caption",
@@ -1155,9 +1122,10 @@ function UnitFrame:GetPrimaryControl()
 	return self.frame
 end
 
+-- Don't fade out just the frame, because that needs to appear correctly (along with BG, etc...)
+-- Just make the status bars and any text on the frame fade out.
+-- The vanilla code has isOnline as argument, but it wasn't in use. So we deleted it.
 function UnitFrame:DoAlphaUpdate(isNearby, isLeader)
-	-- Don't fade out just the frame, because that needs to appear correctly (along with BG, etc...)
-	-- Just make the status bars and any text on the frame fade out.
 	local color
 	if self.unitTag == "reticleover" then
 		color = ZO_SELECTED_TEXT
@@ -1198,13 +1166,6 @@ function UnitFrame:UpdatePowerBar(index, powerType, cur, max, forceInit)
 	end
 end
 
--- Global to allow for outside manipulation
--- Already defined in vanilla code
--- ZO_UNIT_FRAMES_SHOW_LEVEL_REACTIONS =
--- {
--- [UNIT_REACTION_PLAYER_ALLY] = true,
--- }
-
 local HIDE_LEVEL_TYPES =
 {
 	[UNIT_TYPE_SIEGEWEAPON] = true,
@@ -1214,8 +1175,8 @@ local HIDE_LEVEL_TYPES =
 	[UNIT_TYPE_SIMPLEINTERACTOBJ] = true,
 }
 
+-- show level for players and non-friendly NPCs
 function UnitFrame:ShouldShowLevel()
-	-- show level for players and non-friendly NPCs
 	local unitTag = self:GetUnitTag()
 	if IsUnitPlayer(unitTag) then
 		return true
@@ -1224,10 +1185,8 @@ function UnitFrame:ShouldShowLevel()
 	else
 		if HIDE_LEVEL_TYPES[GetUnitType(unitTag)] then
 			return false
-		else
-			if ZO_UNIT_FRAMES_SHOW_LEVEL_REACTIONS[GetUnitReaction(unitTag)] then
-				return true
-			end
+		elseif ZO_UNIT_FRAMES_SHOW_LEVEL_REACTIONS[GetUnitReaction(unitTag)] then
+			return true
 		end
 	end
 end
@@ -1302,36 +1261,31 @@ function UnitFrame:UpdateAssignment()
 	end
 end
 
-local DIFFICULTY_BRACKET_LEFT_TEXTURE =
-{
+local DIFFICULTY_BRACKET_LEFT_TEXTURE = {
 	[MONSTER_DIFFICULTY_NORMAL] = "EsoUI/Art/UnitFrames/targetUnitFrame_bracket_level2_left.dds",
 	[MONSTER_DIFFICULTY_HARD] = "EsoUI/Art/UnitFrames/targetUnitFrame_bracket_level3_left.dds",
 	[MONSTER_DIFFICULTY_DEADLY] = "EsoUI/Art/UnitFrames/targetUnitFrame_bracket_level4_left.dds",
 }
 
-local DIFFICULTY_BRACKET_RIGHT_TEXTURE =
-{
+local DIFFICULTY_BRACKET_RIGHT_TEXTURE = {
 	[MONSTER_DIFFICULTY_NORMAL] = "EsoUI/Art/UnitFrames/targetUnitFrame_bracket_level2_right.dds",
 	[MONSTER_DIFFICULTY_HARD] = "EsoUI/Art/UnitFrames/targetUnitFrame_bracket_level3_right.dds",
 	[MONSTER_DIFFICULTY_DEADLY] = "EsoUI/Art/UnitFrames/targetUnitFrame_bracket_level4_right.dds",
 }
 
-local DIFFICULTY_BRACKET_GLOW_LEFT_TEXTURE =
-{
+local DIFFICULTY_BRACKET_GLOW_LEFT_TEXTURE = {
 	[MONSTER_DIFFICULTY_NORMAL] = "EsoUI/Art/UnitFrames/targetUnitFrame_glowOverlay_level2_left.dds",
 	[MONSTER_DIFFICULTY_HARD] = "EsoUI/Art/UnitFrames/targetUnitFrame_glowOverlay_level3_left.dds",
 	[MONSTER_DIFFICULTY_DEADLY] = "EsoUI/Art/UnitFrames/targetUnitFrame_glowOverlay_level4_left.dds",
 }
 
-local DIFFICULTY_BRACKET_GLOW_RIGHT_TEXTURE =
-{
+local DIFFICULTY_BRACKET_GLOW_RIGHT_TEXTURE = {
 	[MONSTER_DIFFICULTY_NORMAL] = "EsoUI/Art/UnitFrames/targetUnitFrame_glowOverlay_level2_right.dds",
 	[MONSTER_DIFFICULTY_HARD] = "EsoUI/Art/UnitFrames/targetUnitFrame_glowOverlay_level3_right.dds",
 	[MONSTER_DIFFICULTY_DEADLY] = "EsoUI/Art/UnitFrames/targetUnitFrame_glowOverlay_level4_right.dds",
 }
 
-local GAMEPAD_DIFFICULTY_BRACKET_TEXTURE =
-{
+local GAMEPAD_DIFFICULTY_BRACKET_TEXTURE = {
 	[MONSTER_DIFFICULTY_NORMAL] = "EsoUI/Art/UnitFrames/Gamepad/gp_targetUnitFrame_bracket_level2.dds",
 	[MONSTER_DIFFICULTY_HARD] = "EsoUI/Art/UnitFrames/Gamepad/gp_targetUnitFrame_bracket_level3.dds",
 	[MONSTER_DIFFICULTY_DEADLY] = "EsoUI/Art/UnitFrames/Gamepad/gp_targetUnitFrame_bracket_level4.dds",
@@ -1406,12 +1360,12 @@ function UnitFrame:UpdateName()
 end
 
 do
+	-- Will this fill up the memory? And if so, who cares in an x64 env?
+	-- Caching localization result is 10x faster, less garbage.
 	local function ZO_GetSecondaryPlayerNameWithTitleFromUnitTag(unitTag)
 		local name = ZO_GetSecondaryPlayerNameFromUnitTag(unitTag)
 		local title = GetUnitTitle(unitTag)
 		if title ~= "" then
-			-- Will this fill up the memory? And if so, who cares in an x64 env?
-			-- Caching localization result is 10x faster, less garbage.
 			return ZO_CachedStrFormat(SI_PLAYER_NAME_WITH_TITLE_FORMAT, name, title)
 		else
 			return name
@@ -1432,11 +1386,12 @@ do
 end
 
 do
+	-- Caching localization result is 100x faster, less garbage.
 	local function UpdateNPCCaption(unitTag)
-		-- Caching localization result is 100x faster, less garbage.
 		return ZO_CachedStrFormat(SI_TOOLTIP_UNIT_CAPTION, GetUnitCaption(unitTag))
 	end
 
+	-- still set the caption text when empty so we collapse the label for anything anchoring off the bottom of it
 	function UnitFrame:UpdateCaption()
 		local captionLabel = self.captionLabel
 		if captionLabel then
@@ -1450,7 +1405,6 @@ do
 
 			captionLabel:SetHidden(caption == nil)
 			captionLabel:SetText(caption)
-			-- still set the caption text when empty so we collapse the label for anything anchoring off the bottom of it
 		end
 	end
 end
@@ -1458,7 +1412,6 @@ end
 function UnitFrame:UpdateStatus(isDead, isOnline)
 	local statusLabel = self.statusLabel
 	if statusLabel then
-		-- d(self.frame:GetName(), isDead, isOnline)
 		local hideBars = isOnline == false or isDead == true
 		self:SetBarsHidden(hideBars and not self.neverHideStatusBar)
 		local layoutData = GetPlatformLayoutData(self.style)
@@ -1537,6 +1490,8 @@ local function CreateGroupAnchorFrames()
 	local smallFrame = CreateControlFromVirtual("ZO_SmallGroupAnchorFrame", ZO_UnitFramesGroups, UnitFrames.GroupFrameAnchor)
 	smallFrame:SetDimensions(constants.GROUP_FRAME_SIZE_X,(constants.GROUP_FRAME_SIZE_Y + constants.GROUP_FRAME_PAD_Y) * SMALL_GROUP_SIZE_THRESHOLD)
 	smallFrame:SetAnchor(TOPLEFT, GuiRoot, TOPLEFT, constants.GROUP_FRAME_BASE_OFFSET_X, constants.GROUP_FRAME_BASE_OFFSET_Y)
+	smallFrame:SetMouseEnabled(true)
+	smallFrame:SetMovable(true)
 
 	-- Create raid group anchor frames, these are positioned at the default locations
 	local raidFrame, x, y
@@ -1585,69 +1540,58 @@ local function UpdateLeaderIndicator(frames)
 	end
 end
 
-local unitTypesWhoUseCastInfo =
-{
+local unitTypesWhoUseCastInfo = {
 	[UNIT_REACTION_HOSTILE] = true,
 	[UNIT_REACTION_NEUTRAL] = true,
 }
 
-local TARGET_ATTRIBUTE_VISUALIZER_SOUNDS =
-{
-	[STAT_HEALTH_MAX] =
-	{
+local TARGET_ATTRIBUTE_VISUALIZER_SOUNDS = {
+	[STAT_HEALTH_MAX] = {
 		[ATTRIBUTE_BAR_STATE_NORMAL] = SOUNDS.UAV_MAX_HEALTH_NORMAL_TARGET,
 		[ATTRIBUTE_BAR_STATE_EXPANDED] = SOUNDS.UAV_MAX_HEALTH_INCREASED_TARGET,
 		[ATTRIBUTE_BAR_STATE_SHRUNK] = SOUNDS.UAV_MAX_HEALTH_DECREASED_TARGET,
 	},
-	[STAT_MAGICKA_MAX] =
-	{
+	[STAT_MAGICKA_MAX] = {
 		[ATTRIBUTE_BAR_STATE_NORMAL] = SOUNDS.UAV_MAX_MAGICKA_NORMAL_TARGET,
 		[ATTRIBUTE_BAR_STATE_EXPANDED] = SOUNDS.UAV_MAX_MAGICKA_INCREASED_TARGET,
 		[ATTRIBUTE_BAR_STATE_SHRUNK] = SOUNDS.UAV_MAX_MAGICKA_DECREASED_TARGET,
 	},
-	[STAT_STAMINA_MAX] =
-	{
+	[STAT_STAMINA_MAX] = {
 		[ATTRIBUTE_BAR_STATE_NORMAL] = SOUNDS.UAV_MAX_STAMINA_NORMAL_TARGET,
 		[ATTRIBUTE_BAR_STATE_EXPANDED] = SOUNDS.UAV_MAX_STAMINA_INCREASED_TARGET,
 		[ATTRIBUTE_BAR_STATE_SHRUNK] = SOUNDS.UAV_MAX_STAMINA_DECREASED_TARGET,
 	},
-	[STAT_HEALTH_REGEN_COMBAT] =
-	{
+	[STAT_HEALTH_REGEN_COMBAT] = {
 		[STAT_STATE_INCREASE_GAINED] = SOUNDS.UAV_INCREASED_HEALTH_REGEN_ADDED_TARGET,
 		[STAT_STATE_INCREASE_LOST] = SOUNDS.UAV_INCREASED_HEALTH_REGEN_LOST_TARGET,
 		[STAT_STATE_DECREASE_GAINED] = SOUNDS.UAV_DECREASED_HEALTH_REGEN_ADDED_TARGET,
 		[STAT_STATE_DECREASE_LOST] = SOUNDS.UAV_DECREASED_HEALTH_REGEN_LOST_TARGET,
 	},
-	[STAT_MAGICKA_REGEN_COMBAT] =
-	{
+	[STAT_MAGICKA_REGEN_COMBAT] = {
 		[STAT_STATE_INCREASE_GAINED] = SOUNDS.UAV_INCREASED_MAGICKA_REGEN_ADDED_TARGET,
 		[STAT_STATE_INCREASE_LOST] = SOUNDS.UAV_INCREASED_MAGICKA_REGEN_LOST_TARGET,
 		[STAT_STATE_DECREASE_GAINED] = SOUNDS.UAV_DECREASED_MAGICKA_REGEN_ADDED_TARGET,
 		[STAT_STATE_DECREASE_LOST] = SOUNDS.UAV_DECREASED_MAGICKA_REGEN_LOST_TARGET,
 	},
-	[STAT_STAMINA_REGEN_COMBAT] =
-	{
+	[STAT_STAMINA_REGEN_COMBAT] = {
 		[STAT_STATE_INCREASE_GAINED] = SOUNDS.UAV_INCREASED_STAMINA_REGEN_ADDED_TARGET,
 		[STAT_STATE_INCREASE_LOST] = SOUNDS.UAV_INCREASED_STAMINA_REGEN_LOST_TARGET,
 		[STAT_STATE_DECREASE_GAINED] = SOUNDS.UAV_DECREASED_STAMINA_REGEN_ADDED_TARGET,
 		[STAT_STATE_DECREASE_LOST] = SOUNDS.UAV_DECREASED_STAMINA_REGEN_LOST_TARGET,
 	},
-	[STAT_ARMOR_RATING] =
-	{
+	[STAT_ARMOR_RATING] = {
 		[STAT_STATE_INCREASE_GAINED] = SOUNDS.UAV_INCREASED_ARMOR_ADDED_TARGET,
 		[STAT_STATE_INCREASE_LOST] = SOUNDS.UAV_INCREASED_ARMOR_LOST_TARGET,
 		[STAT_STATE_DECREASE_GAINED] = SOUNDS.UAV_DECREASED_ARMOR_ADDED_TARGET,
 		[STAT_STATE_DECREASE_LOST] = SOUNDS.UAV_DECREASED_ARMOR_LOST_TARGET,
 	},
-	[STAT_POWER] =
-	{
+	[STAT_POWER] = {
 		[STAT_STATE_INCREASE_GAINED] = SOUNDS.UAV_INCREASED_POWER_ADDED_TARGET,
 		[STAT_STATE_INCREASE_LOST] = SOUNDS.UAV_INCREASED_POWER_LOST_TARGET,
 		[STAT_STATE_DECREASE_GAINED] = SOUNDS.UAV_DECREASED_POWER_ADDED_TARGET,
 		[STAT_STATE_DECREASE_LOST] = SOUNDS.UAV_DECREASED_POWER_LOST_TARGET,
 	},
-	[STAT_MITIGATION] =
-	{
+	[STAT_MITIGATION] = {
 		[STAT_STATE_IMMUNITY_GAINED] = SOUNDS.UAV_IMMUNITY_ADDED_TARGET,
 		[STAT_STATE_IMMUNITY_LOST] = SOUNDS.UAV_IMMUNITY_LOST_TARGET,
 		[STAT_STATE_SHIELD_GAINED] = SOUNDS.UAV_DAMAGE_SHIELD_ADDED_TARGET,
@@ -1676,8 +1620,7 @@ local function CreateTargetFrame()
 	VISUALIZER_ANGLE_SHRUNK_WIDTH = 180
 	visualizer:AddModule(ZO_UnitVisualizer_ShrinkExpandModule:New(VISUALIZER_ANGLE_NORMAL_WIDTH, VISUALIZER_ANGLE_EXPANDED_WIDTH, VISUALIZER_ANGLE_SHRUNK_WIDTH))
 
-	VISUALIZER_ANGLE_ARMOR_DAMAGE_LAYOUT_DATA =
-	{
+	VISUALIZER_ANGLE_ARMOR_DAMAGE_LAYOUT_DATA = {
 		type = "Angle",
 		increasedArmorBgContainerTemplate = "ZO_IncreasedArmorBgContainerAngle",
 		increasedArmorFrameContainerTemplate = "ZO_IncreasedArmorFrameContainerAngle",
@@ -1685,15 +1628,13 @@ local function CreateTargetFrame()
 		increasedPowerGlowTemplate = "ZO_IncreasedPowerGlowAngle",
 		increasedArmorOffsets =
 		{
-			keyboard =
-			{
+			keyboard = {
 				top = - 7,
 				bottom = 8,
 				left = - 15,
 				right = 15,
 			},
-			gamepad =
-			{
+			gamepad = {
 				top = - 8,
 				bottom = 9,
 				left = - 12,
@@ -1704,20 +1645,16 @@ local function CreateTargetFrame()
 
 	visualizer:AddModule(ZO_UnitVisualizer_ArmorDamage:New(VISUALIZER_ANGLE_ARMOR_DAMAGE_LAYOUT_DATA))
 
-	VISUALIZER_ANGLE_UNWAVERING_LAYOUT_DATA =
-	{
+	VISUALIZER_ANGLE_UNWAVERING_LAYOUT_DATA = {
 		overlayContainerTemplate = "ZO_UnwaveringOverlayContainerAngle",
-		overlayOffsets =
-		{
-			keyboard =
-			{
+		overlayOffsets = {
+			keyboard = {
 				top = 2,
 				bottom = - 3,
 				left = 6,
 				right = - 7,
 			},
-			gamepad =
-			{
+			gamepad = {
 				top = 4,
 				bottom = - 2,
 				left = 8,
@@ -1728,8 +1665,7 @@ local function CreateTargetFrame()
 	}
 	visualizer:AddModule(ZO_UnitVisualizer_UnwaveringModule:New(VISUALIZER_ANGLE_UNWAVERING_LAYOUT_DATA))
 
-	VISUALIZER_ANGLE_POSSESSION_LAYOUT_DATA =
-	{
+	VISUALIZER_ANGLE_POSSESSION_LAYOUT_DATA = {
 		type = "Angle",
 		overlayContainerTemplate = "ZO_PossessionOverlayContainerAngle",
 		possessionHaloGlowTemplate = "ZO_PossessionHaloGlowAngle",
@@ -1740,8 +1676,7 @@ local function CreateTargetFrame()
 	}
 	visualizer:AddModule(ZO_UnitVisualizer_PossessionModule:New(VISUALIZER_ANGLE_POSSESSION_LAYOUT_DATA))
 
-	VISUALIZER_ANGLE_POWER_SHIELD_LAYOUT_DATA =
-	{
+	VISUALIZER_ANGLE_POWER_SHIELD_LAYOUT_DATA = {
 		barLeftOverlayTemplate = "ZO_PowerShieldBarLeftOverlayAngle",
 		barRightOverlayTemplate = "ZO_PowerShieldBarRightOverlayAngle",
 	}
@@ -1770,7 +1705,6 @@ end
 -- hiding frames that are no longer applicable, and creating new frames of the correct style if the group size
 -- goes above or below the "small group" or "raid group" thresholds.
 function UnitFramesManager:UpdateGroupFrames()
-	-- local start = GetGameTimeSeconds()
 	local groupSize = GetGroupSize()
 	local groupIndex = self:GetFirstDirtyGroupIndex()
 	local oldGroupSize = self.groupSize or 0
@@ -1829,10 +1763,6 @@ function UnitFramesManager:UpdateGroupFrames()
 			rawName = hasTarget and GetRawUnitName(unitTag) or ""
 			-- While zoning of local player unitTag and index can swap, but are effectively the same position. => just the controls are swapping.
 			if unitFrame.index ~= newIndex or unitFrame.rawName ~= rawName then
-				-- df("update unitTag %s %s %s %s %s", unitTag, tostring(hasTarget), tostring(unitFrame.dirty), tostring(unitFrame.index ~= newIndex), tostring(unitFrame.rawName ~= rawName))
-				-- df("index %s %s", unitFrame.index or "nil", newIndex)
-				-- df("rawName %s %s", unitFrame.rawName or "nil", rawName)
-
 				-- For OnUnitDestroyed
 				unitFrame.index = newIndex
 
@@ -1860,7 +1790,6 @@ function UnitFramesManager:UpdateGroupFrames()
 	elseif oldGroupSize > 0 then
 		self:UpdateGroupAnchorFrames()
 	end
-	-- df("UpdateGroupFrameStyle %.3f",(GetGameTimeSeconds() - start) * 1000)
 end
 
 local function SetAnchorOffsets(control, offsetX, offsetY)
@@ -1879,7 +1808,6 @@ local function UpdateGroupFramesVisualStyle()
 	SetAnchorOffsets(groupFrame, constants.GROUP_FRAME_BASE_OFFSET_X, constants.GROUP_FRAME_BASE_OFFSET_Y)
 
 	-- Raid group anchor frames.
-	-- local raidTemplate = ZO_GetPlatformTemplate("ZO_RaidFrameAnchor")
 	local raidFrame, groupNameControl, x, y
 	for i = 1, NUM_SUBGROUPS do
 		raidFrame = largeGroupAnchorFrames[i]
@@ -1964,7 +1892,6 @@ local function UpdateStatus(unitTag, isDead, isOnline)
 		if unitFrame.index then
 			unitFrame.dirty = true
 			UnitFrames:SetGroupIndexDirty(unitFrame.index)
-			-- df("UpdateStatus %s %s %s", unitTag, tostring(isDead), tostring(isOnline))
 		end
 	end
 	if AreUnitsEqual(unitTag, "reticleover") then
@@ -1989,8 +1916,8 @@ end
 
 local function RegisterForEvents()
 
+	-- updates for every unit zoning (via wayshrine).
 	local function RequestFullRefresh()
-		-- updates for every unit zoning (via wayshrine).
 		UnitFrames.firstDirtyGroupIndex = 1
 	end
 
@@ -2011,10 +1938,9 @@ local function RegisterForEvents()
 		local unitFrame = UnitFrames:GetFrame(unitTag)
 		if unitFrame then
 			if powerType == POWERTYPE_HEALTH then
-				local oldHealth = unitFrame.healthBar.currentValue
-
 				unitFrame.healthBar:Update(POWERTYPE_HEALTH, powerPool, powerPoolMax)
 
+				local oldHealth = unitFrame.healthBar.currentValue
 				if oldHealth and oldHealth == 0 then
 					-- Unit went from dead to non dead...update reaction
 					unitFrame:UpdateUnitReaction()
@@ -2033,17 +1959,16 @@ local function RegisterForEvents()
 		end
 	end
 
+	-- OnUnitDestroyed is called, if a joining unit replaces a previous one.
+	-- In this case GetGroupIndexByUnitTag is working.
+	-- But for a leaving unit GetGroupIndexByUnitTag returns 4294967296.
+	-- The trick is to store the last used index in the unitFrame.
 	local function OnUnitDestroyed(eventCode, unitTag)
 		if ZO_Group_IsGroupUnitTag(unitTag) then
 			local unitFrame = UnitFrames:GetFrame(unitTag)
 			if unitFrame then
-				-- OnUnitDestroyed is called, if a joining unit replaces a previous one.
-				-- In this case GetGroupIndexByUnitTag is working.
-				-- But for a leaving unit GetGroupIndexByUnitTag returns 4294967296.
-				-- The trick is to store the last used index in the unitFrame.
 				if unitFrame.index < GROUPINDEX_NONE then
 					UnitFrames:SetGroupIndexDirty(unitFrame.index)
-					-- unitFrame.dirty = true
 				end
 			end
 		else
@@ -2140,8 +2065,8 @@ local function RegisterForEvents()
 		end
 	end
 
+	-- Clear cache first and do a full update because we probably missed events while loading
 	local function OnPlayerActivated(eventCode)
-		-- Clear cache
 		ZO_ResetCachedStrFormat(SI_PLAYER_NAME_WITH_TITLE_FORMAT)
 		ZO_ResetCachedStrFormat(SI_UNITFRAMESREBIRTH_CLASS_WITH_NAME)
 		ZO_ResetCachedStrFormat(SI_TOOLTIP_UNIT_CAPTION)
@@ -2150,7 +2075,6 @@ local function RegisterForEvents()
 		ZO_UnitFrames_UpdateWindow("reticleovertarget", UNIT_CHANGED)
 
 		if IsPlayerGrouped() or UnitFrames.groupSize > 0 then
-			-- do a full update because we probably missed events while loading
 			ForceChange(UnitFrames.raidFrames)
 			ForceChange(UnitFrames.groupFrames)
 			RequestFullRefresh()
@@ -2161,21 +2085,21 @@ local function RegisterForEvents()
 		ZO_UnitFrames_UpdateWindow("reticleovertarget", UNIT_CHANGED)
 	end
 
+	-- Groups do not update every frame (they wait for events), so refresh if the primary name option may have changed
 	local function OnInterfaceSettingChanged(eventCode)
-		-- Groups do not update every frame (they wait for events), so refresh if the primary name option may have changed
 		RequestFullRefresh()
 	end
 
+	-- only reticle over can show a guild name in a caption
 	local function OnGuildNameAvailable()
-		-- only reticle over can show a guild name in a caption
 		local unitFrame = UnitFrames:GetFrame("reticleover")
 		if unitFrame then
 			unitFrame:UpdateCaption()
 		end
 	end
 
+	-- this is filtered to only fire on reticle over unit tag
 	local function OnGuildIdChanged()
-		-- this is filtered to only fire on reticle over unit tag
 		local unitFrame = UnitFrames:GetFrame("reticleover")
 		if unitFrame then
 			unitFrame:UpdateCaption()
