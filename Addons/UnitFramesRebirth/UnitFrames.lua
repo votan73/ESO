@@ -1,7 +1,3 @@
-local BARS_PADDING_X = 8
-local BAR1_TOP_PADDING_Y = 16
-local BAR2_BOTTOM_PADDING_Y = -2
-
 local FULL_ALPHA_VALUE = 1
 local FADED_ALPHA_VALUE = 0.4
 
