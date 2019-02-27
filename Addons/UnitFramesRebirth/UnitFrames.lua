@@ -1486,8 +1486,6 @@ local function CreateGroupAnchorFrames()
 	local smallFrame = CreateControlFromVirtual("ZO_SmallGroupAnchorFrame", ZO_UnitFramesGroups, UnitFrames.GroupFrameAnchor)
 	smallFrame:SetDimensions(constants.GROUP_FRAME_SIZE_X,(constants.GROUP_FRAME_SIZE_Y + constants.GROUP_FRAME_PAD_Y) * SMALL_GROUP_SIZE_THRESHOLD)
 	smallFrame:SetAnchor(TOPLEFT, GuiRoot, TOPLEFT, constants.GROUP_FRAME_BASE_OFFSET_X, constants.GROUP_FRAME_BASE_OFFSET_Y)
-	smallFrame:SetMouseEnabled(true)
-	smallFrame:SetMovable(true)
 
 	-- Create raid group anchor frames, these are positioned at the default locations
 	local raidFrame, x, y
