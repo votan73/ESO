@@ -16,8 +16,7 @@ local NUM_SUBGROUPS = GROUP_SIZE_MAX / SMALL_GROUP_SIZE_THRESHOLD
 
 local GROUPINDEX_NONE = 4294967296
 
-local KEYBOARD_CONSTANTS =
-{
+local KEYBOARD_CONSTANTS = {
 	GROUP_LEADER_ICON = "EsoUI/Art/UnitFrames/groupIcon_leader.dds",
 
 	GROUP_FRAMES_PER_COLUMN = SMALL_GROUP_SIZE_THRESHOLD,
@@ -49,8 +48,7 @@ local KEYBOARD_CONSTANTS =
 	SHOW_GROUP_LABELS = true,
 }
 
-local GAMEPAD_CONSTANTS =
-{
+local GAMEPAD_CONSTANTS = {
 	GROUP_LEADER_ICON = "EsoUI/Art/UnitFrames/Gamepad/gp_Group_Leader.dds",
 
 	GROUP_FRAMES_PER_COLUMN = 12,
@@ -248,7 +246,7 @@ function UnitFramesManager:CreateFrame(unitTag, anchors, showBarText, style)
 	local unitFrame = self:GetFrame(unitTag)
 	if not unitFrame then
 		unitFrame = UnitFrame:New(unitTag, showBarText, style)
-
+		
 		local unitFrameTable = self:GetUnitFrameLookupTable(unitTag)
 		if unitFrameTable then
 			unitFrameTable[unitTag] = unitFrame
@@ -349,30 +347,23 @@ local ANY_POWER_TYPE = true
 
 local UNITFRAME_BAR_STYLES =
 {
-	[TARGET_UNIT_FRAME] =
-	{
-		[POWERTYPE_HEALTH] =
-		{
-			textAnchors =
-			{
+	[TARGET_UNIT_FRAME] = {
+		[POWERTYPE_HEALTH] = {
+			textAnchors = {
 				ZO_Anchor:New(TOP,nil,BOTTOM,0,- 22),
 			},
 			centered = true,
 		},
 	},
 
-	[GROUP_UNIT_FRAME] =
-	{
-		[POWERTYPE_HEALTH] =
-		{
-			keyboard =
-			{
+	[GROUP_UNIT_FRAME] = {
+		[POWERTYPE_HEALTH] = {
+			keyboard = {
 				template = "UnitFramesRebirth_GroupUnitFrameStatus",
 				barHeight = 14,
 				barWidth = 180,
 				barAnchors = { ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 36, 42) },
-				warner =
-				{
+				warner = {
 					texture = "ZO_PlayerAttributeHealthWarnerTexture",
 					Left = "UnitFramesRebirth_PlayerAttributeWarnerLeft",
 					Right = "UnitFramesRebirth_PlayerAttributeWarnerRightArrow",
@@ -380,15 +371,13 @@ local UNITFRAME_BAR_STYLES =
 				},
 			},
 
-			gamepad =
-			{
+			gamepad = {
 				template = "UnitFramesRebirth_GroupUnitFrameStatus",
 				barHeight = 8,
 				barWidth = ZO_GAMEPAD_GROUP_FRAME_WIDTH,
 				barAnchors = { ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 0, 45) },
 				hideBgIfOffline = true,
-				warner =
-				{
+				warner = {
 					texture = "ZO_PlayerAttributeHealthWarnerTexture",
 					Left = "UnitFramesRebirth_PlayerAttributeWarnerLeft",
 					Right = "UnitFramesRebirth_PlayerAttributeWarnerRight",
@@ -398,20 +387,16 @@ local UNITFRAME_BAR_STYLES =
 		},
 	},
 
-	[RAID_UNIT_FRAME] =
-	{
-		[POWERTYPE_HEALTH] =
-		{
-			keyboard =
-			{
+	[RAID_UNIT_FRAME] = {
+		[POWERTYPE_HEALTH] = {
+			keyboard = {
 				template = "ZO_UnitFrameStatus",
 				barHeight = 34,
 				barWidth = 90,
 				barAnchors = { ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 2, 2) },
 			},
 
-			gamepad =
-			{
+			gamepad = {
 				template = "ZO_UnitFrameStatus",
 				barHeight = ZO_GAMEPAD_RAID_FRAME_HEIGHT - 2,
 				barWidth = ZO_GAMEPAD_RAID_FRAME_WIDTH - 2,
@@ -689,10 +674,8 @@ end
 
 local UNITFRAME_LAYOUT_DATA =
 {
-	[GROUP_UNIT_FRAME] =
-	{
-		keyboard =
-		{
+	[GROUP_UNIT_FRAME] = {
+		keyboard = {
 			nameAnchor = ZO_Anchor:New(TOPLEFT,nil,TOPLEFT,35,19),
 			nameWidth = 215,
 			nameWrapMode = TEXT_WRAP_MODE_ELLIPSIS,
@@ -704,8 +687,7 @@ local UNITFRAME_LAYOUT_DATA =
 			useHealthWarner = true,
 		},
 
-		gamepad =
-		{
+		gamepad = {
 			nameAnchor = ZO_Anchor:New(TOPLEFT,nil,TOPLEFT,0,1),
 			nameWidth = 306,
 			nameWrapMode = TEXT_WRAP_MODE_ELLIPSIS,
@@ -721,12 +703,9 @@ local UNITFRAME_LAYOUT_DATA =
 		},
 	},
 
-	[RAID_UNIT_FRAME] =
-	{
-		keyboard =
-		{
-			highPriorityBuffHighlight =
-			{
+	[RAID_UNIT_FRAME] = {
+		keyboard = {
+			highPriorityBuffHighlight = {
 				left = { texture = "EsoUI/Art/UnitFrames/unitframe_raid_outline_left.dds", width = 64, height = 64, },
 				right = { texture = "EsoUI/Art/UnitFrames/unitframe_raid_outline_right.dds", width = 32, height = 64, },
 				icon = { width = 14, height = 14, customAnchor = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 76, 15) },
@@ -743,10 +722,8 @@ local UNITFRAME_LAYOUT_DATA =
 			leaderIconData = { width = 16, height = 16, offsetX = 5, offsetY = 5 }
 		},
 
-		gamepad =
-		{
-			highPriorityBuffHighlight =
-			{
+		gamepad = {
+			highPriorityBuffHighlight = {
 				left = { texture = "EsoUI/Art/UnitFrames/unitframe_raid_outline_left.dds", width = 54, height = 44, },
 				right = { texture = "EsoUI/Art/UnitFrames/unitframe_raid_outline_right.dds", width = 32, height = 44, },
 				icon = { width = 14, height = 14, customAnchor = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 66, 7) },
@@ -761,8 +738,7 @@ local UNITFRAME_LAYOUT_DATA =
 		},
 	},
 
-	[TARGET_UNIT_FRAME] =
-	{
+	[TARGET_UNIT_FRAME] = {
 		neverHideStatusBar = true,
 		showStatusInName = true,
 		captionControlName = "Caption",
@@ -1562,61 +1538,52 @@ local unitTypesWhoUseCastInfo = {
 }
 
 local TARGET_ATTRIBUTE_VISUALIZER_SOUNDS = {
-	[STAT_HEALTH_MAX] =
-	{
+	[STAT_HEALTH_MAX] = {
 		[ATTRIBUTE_BAR_STATE_NORMAL] = SOUNDS.UAV_MAX_HEALTH_NORMAL_TARGET,
 		[ATTRIBUTE_BAR_STATE_EXPANDED] = SOUNDS.UAV_MAX_HEALTH_INCREASED_TARGET,
 		[ATTRIBUTE_BAR_STATE_SHRUNK] = SOUNDS.UAV_MAX_HEALTH_DECREASED_TARGET,
 	},
-	[STAT_MAGICKA_MAX] =
-	{
+	[STAT_MAGICKA_MAX] = {
 		[ATTRIBUTE_BAR_STATE_NORMAL] = SOUNDS.UAV_MAX_MAGICKA_NORMAL_TARGET,
 		[ATTRIBUTE_BAR_STATE_EXPANDED] = SOUNDS.UAV_MAX_MAGICKA_INCREASED_TARGET,
 		[ATTRIBUTE_BAR_STATE_SHRUNK] = SOUNDS.UAV_MAX_MAGICKA_DECREASED_TARGET,
 	},
-	[STAT_STAMINA_MAX] =
-	{
+	[STAT_STAMINA_MAX] = {
 		[ATTRIBUTE_BAR_STATE_NORMAL] = SOUNDS.UAV_MAX_STAMINA_NORMAL_TARGET,
 		[ATTRIBUTE_BAR_STATE_EXPANDED] = SOUNDS.UAV_MAX_STAMINA_INCREASED_TARGET,
 		[ATTRIBUTE_BAR_STATE_SHRUNK] = SOUNDS.UAV_MAX_STAMINA_DECREASED_TARGET,
 	},
-	[STAT_HEALTH_REGEN_COMBAT] =
-	{
+	[STAT_HEALTH_REGEN_COMBAT] = {
 		[STAT_STATE_INCREASE_GAINED] = SOUNDS.UAV_INCREASED_HEALTH_REGEN_ADDED_TARGET,
 		[STAT_STATE_INCREASE_LOST] = SOUNDS.UAV_INCREASED_HEALTH_REGEN_LOST_TARGET,
 		[STAT_STATE_DECREASE_GAINED] = SOUNDS.UAV_DECREASED_HEALTH_REGEN_ADDED_TARGET,
 		[STAT_STATE_DECREASE_LOST] = SOUNDS.UAV_DECREASED_HEALTH_REGEN_LOST_TARGET,
 	},
-	[STAT_MAGICKA_REGEN_COMBAT] =
-	{
+	[STAT_MAGICKA_REGEN_COMBAT] = {
 		[STAT_STATE_INCREASE_GAINED] = SOUNDS.UAV_INCREASED_MAGICKA_REGEN_ADDED_TARGET,
 		[STAT_STATE_INCREASE_LOST] = SOUNDS.UAV_INCREASED_MAGICKA_REGEN_LOST_TARGET,
 		[STAT_STATE_DECREASE_GAINED] = SOUNDS.UAV_DECREASED_MAGICKA_REGEN_ADDED_TARGET,
 		[STAT_STATE_DECREASE_LOST] = SOUNDS.UAV_DECREASED_MAGICKA_REGEN_LOST_TARGET,
 	},
-	[STAT_STAMINA_REGEN_COMBAT] =
-	{
+	[STAT_STAMINA_REGEN_COMBAT] = {
 		[STAT_STATE_INCREASE_GAINED] = SOUNDS.UAV_INCREASED_STAMINA_REGEN_ADDED_TARGET,
 		[STAT_STATE_INCREASE_LOST] = SOUNDS.UAV_INCREASED_STAMINA_REGEN_LOST_TARGET,
 		[STAT_STATE_DECREASE_GAINED] = SOUNDS.UAV_DECREASED_STAMINA_REGEN_ADDED_TARGET,
 		[STAT_STATE_DECREASE_LOST] = SOUNDS.UAV_DECREASED_STAMINA_REGEN_LOST_TARGET,
 	},
-	[STAT_ARMOR_RATING] =
-	{
+	[STAT_ARMOR_RATING] = {
 		[STAT_STATE_INCREASE_GAINED] = SOUNDS.UAV_INCREASED_ARMOR_ADDED_TARGET,
 		[STAT_STATE_INCREASE_LOST] = SOUNDS.UAV_INCREASED_ARMOR_LOST_TARGET,
 		[STAT_STATE_DECREASE_GAINED] = SOUNDS.UAV_DECREASED_ARMOR_ADDED_TARGET,
 		[STAT_STATE_DECREASE_LOST] = SOUNDS.UAV_DECREASED_ARMOR_LOST_TARGET,
 	},
-	[STAT_POWER] =
-	{
+	[STAT_POWER] = {
 		[STAT_STATE_INCREASE_GAINED] = SOUNDS.UAV_INCREASED_POWER_ADDED_TARGET,
 		[STAT_STATE_INCREASE_LOST] = SOUNDS.UAV_INCREASED_POWER_LOST_TARGET,
 		[STAT_STATE_DECREASE_GAINED] = SOUNDS.UAV_DECREASED_POWER_ADDED_TARGET,
 		[STAT_STATE_DECREASE_LOST] = SOUNDS.UAV_DECREASED_POWER_LOST_TARGET,
 	},
-	[STAT_MITIGATION] =
-	{
+	[STAT_MITIGATION] = {
 		[STAT_STATE_IMMUNITY_GAINED] = SOUNDS.UAV_IMMUNITY_ADDED_TARGET,
 		[STAT_STATE_IMMUNITY_LOST] = SOUNDS.UAV_IMMUNITY_LOST_TARGET,
 		[STAT_STATE_SHIELD_GAINED] = SOUNDS.UAV_DAMAGE_SHIELD_ADDED_TARGET,
@@ -1653,15 +1620,13 @@ local function CreateTargetFrame()
 		increasedPowerGlowTemplate = "ZO_IncreasedPowerGlowAngle",
 		increasedArmorOffsets =
 		{
-			keyboard =
-			{
+			keyboard = {
 				top = - 7,
 				bottom = 8,
 				left = - 15,
 				right = 15,
 			},
-			gamepad =
-			{
+			gamepad = {
 				top = - 8,
 				bottom = 9,
 				left = - 12,
@@ -1674,17 +1639,14 @@ local function CreateTargetFrame()
 
 	VISUALIZER_ANGLE_UNWAVERING_LAYOUT_DATA = {
 		overlayContainerTemplate = "ZO_UnwaveringOverlayContainerAngle",
-		overlayOffsets =
-		{
-			keyboard =
-			{
+		overlayOffsets = {
+			keyboard = {
 				top = 2,
 				bottom = - 3,
 				left = 6,
 				right = - 7,
 			},
-			gamepad =
-			{
+			gamepad = {
 				top = 4,
 				bottom = - 2,
 				left = 8,
@@ -2017,7 +1979,7 @@ local function RegisterForEvents()
 	local function OnLeaderUpdate()
 		UpdateLeaderIndicator()
 	end
-
+	
 	local function OnDispositionUpdate(eventCode, unitTag)
 		local unitFrame = UnitFrames:GetFrame(unitTag)
 		if unitFrame then
@@ -2160,7 +2122,7 @@ local function RegisterForEvents()
 	ZO_UnitFrames:RegisterForEvent(EVENT_INTERFACE_SETTING_CHANGED, OnInterfaceSettingChanged)
 	ZO_UnitFrames:RegisterForEvent(EVENT_GUILD_NAME_AVAILABLE, OnGuildNameAvailable)
 	ZO_UnitFrames:RegisterForEvent(EVENT_GUILD_ID_CHANGED, OnGuildIdChanged)
-
+	
 	-- Filter events
 	ZO_UnitFrames:AddFilterForEvent(EVENT_TARGET_CHANGED, REGISTER_FILTER_UNIT_TAG, "reticleover")
 	ZO_UnitFrames:AddFilterForEvent(EVENT_UNIT_CHARACTER_NAME_CHANGED, REGISTER_FILTER_UNIT_TAG, "reticleover")
