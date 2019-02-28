@@ -1528,7 +1528,9 @@ local function UpdateLeaderIndicator(frames)
 			unitFrame:SetTextIndented(false)
 		end
 
-		unitFrame:UpdateUnitReaction()
+		if unitFrame.hasTarget then
+			unitFrame:UpdateUnitReaction()
+		end
 	end
 end
 
