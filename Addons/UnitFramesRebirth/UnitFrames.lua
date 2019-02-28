@@ -2012,11 +2012,11 @@ local function RegisterForEvents()
 		if wasLocalPlayer then
 			RequestFullRefresh()
 		else
-			local self = UnitFrames
-			local frames = self.groupSize > SMALL_GROUP_SIZE_THRESHOLD and self.raidFrames or self.groupFrames
+			local frames = UnitFrames.groupSize > SMALL_GROUP_SIZE_THRESHOLD and UnitFrames.raidFrames or UnitFrames.groupFrames
 			for unitTag, unitFrame in pairs(frames) do
 				if characterName == unitFrame.rawName then
-					self:SetGroupIndexDirty(unitFrame.index)
+					UnitFrames:SetGroupIndexDirty(unitFrame.index)
+					unitFrame.dirty = true
 					break
 				end
 			end
