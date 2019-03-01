@@ -1340,20 +1340,31 @@ function UnitFrame:UpdateUnitReaction()
 	end
 end
 
-function UnitFrame:UpdateName()
-	if self.nameLabel then
-		local name
-		local unitTag = self.unitTag
-		if IsUnitPlayer(unitTag) then
-			if unitTag == "reticleover" or unitTag == "reticleovertarget" then
-				name = UnitFrames.account.switchNames and ZO_GetSecondaryPlayerNameFromUnitTag(unitTag) or ZO_GetPrimaryPlayerNameFromUnitTag(unitTag)
+do
+	local TARGET_FRAME_UNITS = {
+		["reticleover"] = true,
+		["reticleovertarget"] = true,
+	}
+
+	local function IsUnitTarget(unitTag)
+		return TARGET_FRAME_UNITS[unitTag]
+	end
+
+	function UnitFrame:UpdateName()
+		if self.nameLabel then
+			local name
+			local unitTag = self.unitTag
+			if IsUnitPlayer(unitTag) then
+				if IsUnitTarget(unitTag) then
+					name = UnitFrames.account.switchNames and ZO_GetSecondaryPlayerNameFromUnitTag(unitTag) or ZO_GetPrimaryPlayerNameFromUnitTag(unitTag)
+				else
+					name = ZO_GetPrimaryPlayerNameFromUnitTag(unitTag)
+				end
 			else
-				name = ZO_GetPrimaryPlayerNameFromUnitTag(unitTag)
+				name = GetUnitName(unitTag)
 			end
-		else
-			name = GetUnitName(unitTag)
+			self.nameLabel:SetText(name)
 		end
-		self.nameLabel:SetText(name)
 	end
 end
 
