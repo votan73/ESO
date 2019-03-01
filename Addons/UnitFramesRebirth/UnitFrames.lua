@@ -1345,7 +1345,7 @@ function UnitFrame:UpdateName()
 		local name
 		local unitTag = self.unitTag
 		if IsUnitPlayer(unitTag) then
-			name = ZO_GetPrimaryPlayerNameFromUnitTag(unitTag)
+			name = UnitFrames.account.switchNames and ZO_GetSecondaryPlayerNameFromUnitTag(unitTag) or ZO_GetPrimaryPlayerNameFromUnitTag(unitTag)
 		else
 			name = GetUnitName(unitTag)
 		end
@@ -1356,8 +1356,8 @@ end
 do
 	-- Will this fill up the memory? And if so, who cares in an x64 env?
 	-- Caching localization result is 10x faster, less garbage.
-	local function ZO_GetSecondaryPlayerNameWithTitleFromUnitTag(unitTag)
-		local name = ZO_GetSecondaryPlayerNameFromUnitTag(unitTag)
+	local function UpdatePlayerCaptionName(unitTag)
+		local name = UnitFrames.account.switchNames and ZO_GetPrimaryPlayerNameFromUnitTag(unitTag) or ZO_GetSecondaryPlayerNameFromUnitTag(unitTag)
 		local title = GetUnitTitle(unitTag)
 		if title ~= "" and not UnitFrames.account.hideTitle then
 			return ZO_CachedStrFormat(SI_PLAYER_NAME_WITH_TITLE_FORMAT, name, title)
@@ -1373,15 +1373,15 @@ do
 
 	function UnitFrame:UpdatePlayerCaption(unitTag)
 		if UnitFrames.account.showClassIcon then
-			return ZO_CachedStrFormat(SI_UNITFRAMESREBIRTH_CLASS_WITH_NAME, GetPlatformClassIconResized(unitTag), ZO_GetSecondaryPlayerNameWithTitleFromUnitTag(unitTag))
+			return ZO_CachedStrFormat(SI_UNITFRAMESREBIRTH_CLASS_WITH_NAME, GetPlatformClassIconResized(unitTag), UpdatePlayerCaptionName(unitTag))
 		end
-		return ZO_GetSecondaryPlayerNameWithTitleFromUnitTag(unitTag)
+		return UpdatePlayerCaptionName(unitTag)
 	end
 end
 
 do
 	-- Caching localization result is 100x faster, less garbage.
-	local function UpdateNPCCaption(unitTag)
+	local function UpdateNPCCaptionName(unitTag)
 		return ZO_CachedStrFormat(SI_TOOLTIP_UNIT_CAPTION, GetUnitCaption(unitTag))
 	end
 
@@ -1394,7 +1394,7 @@ do
 			if IsUnitPlayer(unitTag) then
 				caption = self:UpdatePlayerCaption(unitTag)
 			else
-				caption = UpdateNPCCaption(unitTag)
+				caption = UpdateNPCCaptionName(unitTag)
 			end
 
 			captionLabel:SetHidden(caption == nil)
