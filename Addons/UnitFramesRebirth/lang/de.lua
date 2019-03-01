@@ -8,6 +8,8 @@ SafeAddString(SI_UNITFRAMESREBIRTH_APPROACH_DEFAULT, "[500ms] standard", 0)
 
 SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_CLASS_ICON, "Klassensymbol", 0)
 SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_CLASS_ICON_TT, "Zeigt das Klassensymbol des Charakters auf Eurem Ziel an.", 0)
+SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_HIDE_TITLE, "Titel verbergen", 0)
+SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_HIDE_TITLE_TT, "Der Titel eures Ziels wird verborgen.", 0)
 SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_HEALTH_WARNER, "Lebenswarner", 0)
 SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_HEALTH_WARNER_TT, "Diese Einstellung wirkt nur auf Eure Gruppenanzeige. Wenn ein Spieler wenig Leben hat, wird ein leuchtender Effekt angezeigt.", 0)
 SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_APPROACH_HEALTHBAR, "Aktualisierungsrate der Lebensleisten", 0)

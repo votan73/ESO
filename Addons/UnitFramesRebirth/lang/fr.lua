@@ -8,6 +8,8 @@ SafeAddString(SI_UNITFRAMESREBIRTH_APPROACH_DEFAULT, "[500ms] défaut", 0)
 
 SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_CLASS_ICON, "Icône de classe", 0)
 SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_CLASS_ICON_TT, "Affiche une icône de classe à côté du nom du joueur dans la cadre de cible.", 0)
+SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_HIDE_TITLE, "Masquer le titre", 0)
+SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_HIDE_TITLE_TT, "Masque le titre à côté du nom du joueur dans le cadre de cible.", 0)
 SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_HEALTH_WARNER, "Alerte Santé Basse", 0)
 SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_HEALTH_WARNER_TT, "Cette option s'applique uniquement aux cadres de groupe. Si un joueur a sa santé basse, sa barre de santé brillera.", 0)
 SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_APPROACH_HEALTHBAR, "Taux de mise à jour des barres de santé", 0)
