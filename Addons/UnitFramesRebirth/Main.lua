@@ -70,12 +70,8 @@ local function CreateSettings()
 			label = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_APPROACH_HEALTHBAR),
 			items = Modes,
 			default = ModeToData[DEFAULT_SETTINGS.approachAmountMs].name,
-			getFunction = function()
-				return (ModeToData[UnitFrames.account.approachAmountMs] or ModeToData[DEFAULT_SETTINGS.approachAmountMs]).name
-			end,
-			setFunction = function(combobox, name, item)
-				UnitFrames.account.approachAmountMs = item.data
-			end,
+			getFunction = function() return (ModeToData[UnitFrames.account.approachAmountMs] or ModeToData[DEFAULT_SETTINGS.approachAmountMs]).name end,
+			setFunction = function(combobox, name, item) UnitFrames.account.approachAmountMs = item.data end,
 		}
 	end
 end
