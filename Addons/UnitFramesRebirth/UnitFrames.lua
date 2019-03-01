@@ -1345,7 +1345,11 @@ function UnitFrame:UpdateName()
 		local name
 		local unitTag = self.unitTag
 		if IsUnitPlayer(unitTag) then
-			name = UnitFrames.account.switchNames and ZO_GetSecondaryPlayerNameFromUnitTag(unitTag) or ZO_GetPrimaryPlayerNameFromUnitTag(unitTag)
+			if unitTag == "reticleover" or unitTag == "reticleovertarget" then
+				name = UnitFrames.account.switchNames and ZO_GetSecondaryPlayerNameFromUnitTag(unitTag) or ZO_GetPrimaryPlayerNameFromUnitTag(unitTag)
+			else
+				name = ZO_GetPrimaryPlayerNameFromUnitTag(unitTag)
+			end
 		else
 			name = GetUnitName(unitTag)
 		end
