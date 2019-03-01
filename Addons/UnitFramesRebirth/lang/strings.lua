@@ -8,6 +8,8 @@ ZO_CreateStringId("SI_UNITFRAMESREBIRTH_APPROACH_DEFAULT", "[500ms] default")
 
 ZO_CreateStringId("SI_UNITFRAMESREBIRTH_SETTINGS_CLASS_ICON", "Class icon")
 ZO_CreateStringId("SI_UNITFRAMESREBIRTH_SETTINGS_CLASS_ICON_TT", "Shows a class icon next to the player name on the target frame.")
+ZO_CreateStringId("SI_UNITFRAMESREBIRTH_SETTINGS_HIDE_TITLE", "Hide title")
+ZO_CreateStringId("SI_UNITFRAMESREBIRTH_SETTINGS_HIDE_TITLE_TT", "Hides the title next to the player name on the target frame.")
 ZO_CreateStringId("SI_UNITFRAMESREBIRTH_SETTINGS_HEALTH_WARNER", "Low Health Warning")
 ZO_CreateStringId("SI_UNITFRAMESREBIRTH_SETTINGS_HEALTH_WARNER_TT", "This option is only applied on group frames. If a player has low health, their health bar will glow.")
 ZO_CreateStringId("SI_UNITFRAMESREBIRTH_SETTINGS_APPROACH_HEALTHBAR", "Health bar update rate")

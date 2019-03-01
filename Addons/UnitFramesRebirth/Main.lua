@@ -16,6 +16,7 @@ local function CreateSettings()
 	local DEFAULT_SETTINGS = {
 		showClassIcon = true,
 		showHealthWarner = true,
+		hideTitle = true,
 		approachAmountMs = UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_DEFAULT,
 	}
 	UnitFrames.account = ZO_SavedVars:NewAccountWide("UnitFramesRebirth_Data", 1, nil, DEFAULT_SETTINGS)
@@ -25,12 +26,17 @@ local function CreateSettings()
 		label = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_CLASS_ICON),
 		tooltip = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_CLASS_ICON_TT),
 		default = DEFAULT_SETTINGS.showClassIcon,
-		setFunction = function(bool)
-			UnitFrames.account.showClassIcon = bool
-		end,
-		getFunction = function()
-			return UnitFrames.account.showClassIcon
-		end,
+		setFunction = function(bool) UnitFrames.account.showClassIcon = bool end,
+		getFunction = function() return UnitFrames.account.showClassIcon end,
+	}
+
+	settings:AddSetting {
+		type = LibHarvensAddonSettings.ST_CHECKBOX,
+		label = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_HIDE_TITLE),
+		tooltip = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_HIDE_TITLE_TT),
+		default = DEFAULT_SETTINGS.hideTitle,
+		setFunction = function(bool) UnitFrames.account.hideTitle = bool end,
+		getFunction = function() return UnitFrames.account.hideTitle end,
 	}
 
 	settings:AddSetting {
@@ -42,9 +48,7 @@ local function CreateSettings()
 			UnitFrames.account.showHealthWarner = bool
 			UnitFrames:SetWarner(bool)
 		end,
-		getFunction = function()
-			return UnitFrames.account.showHealthWarner
-		end,
+		getFunction = function() return UnitFrames.account.showHealthWarner end,
 	}
 
 	do

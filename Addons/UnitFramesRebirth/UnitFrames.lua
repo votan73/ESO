@@ -1359,7 +1359,7 @@ do
 	local function ZO_GetSecondaryPlayerNameWithTitleFromUnitTag(unitTag)
 		local name = ZO_GetSecondaryPlayerNameFromUnitTag(unitTag)
 		local title = GetUnitTitle(unitTag)
-		if title ~= "" then
+		if title ~= "" and not UnitFrames.account.hideTitle then
 			return ZO_CachedStrFormat(SI_PLAYER_NAME_WITH_TITLE_FORMAT, name, title)
 		else
 			return name
