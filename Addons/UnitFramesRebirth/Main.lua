@@ -11,11 +11,11 @@ local function CreateSettings()
 	local LibHarvensAddonSettings = LibStub("LibHarvensAddonSettings-1.0")
 
 	local settings = LibHarvensAddonSettings:AddAddon("Unit Frames Rebirth")
-	assert(settings, "settings not loaded")
 
 	local DEFAULT_SETTINGS = {
 		showClassIcon = true,
 		showHealthWarner = true,
+		switchNames = true,
 		hideTitle = true,
 		approachAmountMs = UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_DEFAULT,
 	}
@@ -28,6 +28,15 @@ local function CreateSettings()
 		default = DEFAULT_SETTINGS.showClassIcon,
 		setFunction = function(bool) UnitFrames.account.showClassIcon = bool end,
 		getFunction = function() return UnitFrames.account.showClassIcon end,
+	}
+
+	settings:AddSetting {
+		type = LibHarvensAddonSettings.ST_CHECKBOX,
+		label = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_SWITCH_NAMES),
+		tooltip = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_SWITCH_NAMES_TT),
+		default = DEFAULT_SETTINGS.switchNames,
+		setFunction = function(bool) UnitFrames.account.switchNames = bool end,
+		getFunction = function() return UnitFrames.account.switchNames end,
 	}
 
 	settings:AddSetting {
@@ -70,7 +79,9 @@ local function CreateSettings()
 			label = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_APPROACH_HEALTHBAR),
 			items = Modes,
 			default = ModeToData[DEFAULT_SETTINGS.approachAmountMs].name,
-			getFunction = function() return (ModeToData[UnitFrames.account.approachAmountMs] or ModeToData[DEFAULT_SETTINGS.approachAmountMs]).name end,
+			getFunction = function()
+				return (ModeToData[UnitFrames.account.approachAmountMs] or ModeToData[DEFAULT_SETTINGS.approachAmountMs]).name
+			end,
 			setFunction = function(combobox, name, item) UnitFrames.account.approachAmountMs = item.data end,
 		}
 	end
