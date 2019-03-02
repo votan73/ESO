@@ -6,8 +6,10 @@ local addonName = "UnitFramesRebirth"
 CALLBACK_MANAGER:RegisterCallback("UnitFramesPreInit", function(unitFrames) UnitFrames = unitFrames end)
 
 local function CreateSettings()
-	local LibHarvensAddonSettings = LibStub("LibHarvensAddonSettings-1.0")
 
+	local UNIT_CHANGED = true
+
+	local LibHarvensAddonSettings = LibStub("LibHarvensAddonSettings-1.0")
 	local settings = LibHarvensAddonSettings:AddAddon("Unit Frames Rebirth")
 
 	local DEFAULT_SETTINGS = {
@@ -24,7 +26,11 @@ local function CreateSettings()
 		label = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_CLASS_ICON),
 		tooltip = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_CLASS_ICON_TT),
 		default = DEFAULT_SETTINGS.showClassIcon,
-		setFunction = function(bool) UnitFrames.account.showClassIcon = bool end,
+		setFunction = function(bool)
+			UnitFrames.account.showClassIcon = bool
+			ZO_UnitFrames_UpdateWindow("reticleover", UNIT_CHANGED)
+			ZO_UnitFrames_UpdateWindow("reticleovertarget", UNIT_CHANGED)
+		end,
 		getFunction = function() return UnitFrames.account.showClassIcon end,
 	}
 
@@ -33,7 +39,11 @@ local function CreateSettings()
 		label = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_SWITCH_NAMES),
 		tooltip = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_SWITCH_NAMES_TT),
 		default = DEFAULT_SETTINGS.switchNames,
-		setFunction = function(bool) UnitFrames.account.switchNames = bool end,
+		setFunction = function(bool)
+			UnitFrames.account.switchNames = bool
+			ZO_UnitFrames_UpdateWindow("reticleover", UNIT_CHANGED)
+			ZO_UnitFrames_UpdateWindow("reticleovertarget", UNIT_CHANGED)
+		end,
 		getFunction = function() return UnitFrames.account.switchNames end,
 	}
 
@@ -42,7 +52,11 @@ local function CreateSettings()
 		label = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_HIDE_TITLE),
 		tooltip = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_HIDE_TITLE_TT),
 		default = DEFAULT_SETTINGS.hideTitle,
-		setFunction = function(bool) UnitFrames.account.hideTitle = bool end,
+		setFunction = function(bool)
+			UnitFrames.account.hideTitle = bool
+			ZO_UnitFrames_UpdateWindow("reticleover", UNIT_CHANGED)
+			ZO_UnitFrames_UpdateWindow("reticleovertarget", UNIT_CHANGED)
+		end,
 		getFunction = function() return UnitFrames.account.hideTitle end,
 	}
 
