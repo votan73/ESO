@@ -19,7 +19,7 @@ local function CreateSettings()
 		hideTitle = true,
 		approachAmountMs = UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_DEFAULT,
 	}
-	UnitFrames.account = ZO_SavedVars:NewAccountWide("UnitFramesRebirth_Data", 1, nil, DEFAULT_SETTINGS)
+	UnitFrames.account = ZO_SavedVars:NewAccountWide(addonName.."_Data", 1, nil, DEFAULT_SETTINGS)
 
 	settings:AddSetting {
 		type = LibHarvensAddonSettings.ST_CHECKBOX,
@@ -70,9 +70,7 @@ local function CreateSettings()
 		}
 		
 		local ModeToData = { }
-		for i = 1, #Modes do
-			ModeToData[Modes[i].data] = Modes[i]
-		end
+		for i = 1, #Modes do ModeToData[Modes[i].data] = Modes[i] end
 		
 		settings:AddSetting {
 			type = LibHarvensAddonSettings.ST_DROPDOWN,
