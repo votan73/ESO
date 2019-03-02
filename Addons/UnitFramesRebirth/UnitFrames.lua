@@ -1160,27 +1160,29 @@ function UnitFrame:UpdatePowerBar(index, powerType, cur, max, forceInit)
 	end
 end
 
-local HIDE_LEVEL_TYPES =
-{
-	[UNIT_TYPE_SIEGEWEAPON] = true,
-	[UNIT_TYPE_INTERACTFIXTURE] = true,
-	[UNIT_TYPE_INTERACTOBJ] = true,
-	[UNIT_TYPE_SIMPLEINTERACTFIXTURE] = true,
-	[UNIT_TYPE_SIMPLEINTERACTOBJ] = true,
-}
+do
+	local HIDE_LEVEL_TYPES =
+	{
+		[UNIT_TYPE_SIEGEWEAPON] = true,
+		[UNIT_TYPE_INTERACTFIXTURE] = true,
+		[UNIT_TYPE_INTERACTOBJ] = true,
+		[UNIT_TYPE_SIMPLEINTERACTFIXTURE] = true,
+		[UNIT_TYPE_SIMPLEINTERACTOBJ] = true,
+	}
 
--- show level for players and non-friendly NPCs
-function UnitFrame:ShouldShowLevel()
-	local unitTag = self:GetUnitTag()
-	if IsUnitPlayer(unitTag) then
-		return true
-	elseif IsUnitInvulnerableGuard(unitTag) then
-		return false
-	else
-		if HIDE_LEVEL_TYPES[GetUnitType(unitTag)] then
-			return false
-		elseif ZO_UNIT_FRAMES_SHOW_LEVEL_REACTIONS[GetUnitReaction(unitTag)] then
+	-- show level for players and non-friendly NPCs
+	function UnitFrame:ShouldShowLevel()
+		local unitTag = self:GetUnitTag()
+		if IsUnitPlayer(unitTag) then
 			return true
+		elseif IsUnitInvulnerableGuard(unitTag) then
+			return false
+		else
+			if HIDE_LEVEL_TYPES[GetUnitType(unitTag)] then
+				return false
+			elseif ZO_UNIT_FRAMES_SHOW_LEVEL_REACTIONS[GetUnitReaction(unitTag)] then
+				return true
+			end
 		end
 	end
 end
@@ -1255,50 +1257,52 @@ function UnitFrame:UpdateAssignment()
 	end
 end
 
-local DIFFICULTY_BRACKET_LEFT_TEXTURE = {
-	[MONSTER_DIFFICULTY_NORMAL] = "EsoUI/Art/UnitFrames/targetUnitFrame_bracket_level2_left.dds",
-	[MONSTER_DIFFICULTY_HARD] = "EsoUI/Art/UnitFrames/targetUnitFrame_bracket_level3_left.dds",
-	[MONSTER_DIFFICULTY_DEADLY] = "EsoUI/Art/UnitFrames/targetUnitFrame_bracket_level4_left.dds",
-}
+do
+	local DIFFICULTY_BRACKET_LEFT_TEXTURE = {
+		[MONSTER_DIFFICULTY_NORMAL] = "EsoUI/Art/UnitFrames/targetUnitFrame_bracket_level2_left.dds",
+		[MONSTER_DIFFICULTY_HARD] = "EsoUI/Art/UnitFrames/targetUnitFrame_bracket_level3_left.dds",
+		[MONSTER_DIFFICULTY_DEADLY] = "EsoUI/Art/UnitFrames/targetUnitFrame_bracket_level4_left.dds",
+	}
 
-local DIFFICULTY_BRACKET_RIGHT_TEXTURE = {
-	[MONSTER_DIFFICULTY_NORMAL] = "EsoUI/Art/UnitFrames/targetUnitFrame_bracket_level2_right.dds",
-	[MONSTER_DIFFICULTY_HARD] = "EsoUI/Art/UnitFrames/targetUnitFrame_bracket_level3_right.dds",
-	[MONSTER_DIFFICULTY_DEADLY] = "EsoUI/Art/UnitFrames/targetUnitFrame_bracket_level4_right.dds",
-}
+	local DIFFICULTY_BRACKET_RIGHT_TEXTURE = {
+		[MONSTER_DIFFICULTY_NORMAL] = "EsoUI/Art/UnitFrames/targetUnitFrame_bracket_level2_right.dds",
+		[MONSTER_DIFFICULTY_HARD] = "EsoUI/Art/UnitFrames/targetUnitFrame_bracket_level3_right.dds",
+		[MONSTER_DIFFICULTY_DEADLY] = "EsoUI/Art/UnitFrames/targetUnitFrame_bracket_level4_right.dds",
+	}
 
-local DIFFICULTY_BRACKET_GLOW_LEFT_TEXTURE = {
-	[MONSTER_DIFFICULTY_NORMAL] = "EsoUI/Art/UnitFrames/targetUnitFrame_glowOverlay_level2_left.dds",
-	[MONSTER_DIFFICULTY_HARD] = "EsoUI/Art/UnitFrames/targetUnitFrame_glowOverlay_level3_left.dds",
-	[MONSTER_DIFFICULTY_DEADLY] = "EsoUI/Art/UnitFrames/targetUnitFrame_glowOverlay_level4_left.dds",
-}
+	local DIFFICULTY_BRACKET_GLOW_LEFT_TEXTURE = {
+		[MONSTER_DIFFICULTY_NORMAL] = "EsoUI/Art/UnitFrames/targetUnitFrame_glowOverlay_level2_left.dds",
+		[MONSTER_DIFFICULTY_HARD] = "EsoUI/Art/UnitFrames/targetUnitFrame_glowOverlay_level3_left.dds",
+		[MONSTER_DIFFICULTY_DEADLY] = "EsoUI/Art/UnitFrames/targetUnitFrame_glowOverlay_level4_left.dds",
+	}
 
-local DIFFICULTY_BRACKET_GLOW_RIGHT_TEXTURE = {
-	[MONSTER_DIFFICULTY_NORMAL] = "EsoUI/Art/UnitFrames/targetUnitFrame_glowOverlay_level2_right.dds",
-	[MONSTER_DIFFICULTY_HARD] = "EsoUI/Art/UnitFrames/targetUnitFrame_glowOverlay_level3_right.dds",
-	[MONSTER_DIFFICULTY_DEADLY] = "EsoUI/Art/UnitFrames/targetUnitFrame_glowOverlay_level4_right.dds",
-}
+	local DIFFICULTY_BRACKET_GLOW_RIGHT_TEXTURE = {
+		[MONSTER_DIFFICULTY_NORMAL] = "EsoUI/Art/UnitFrames/targetUnitFrame_glowOverlay_level2_right.dds",
+		[MONSTER_DIFFICULTY_HARD] = "EsoUI/Art/UnitFrames/targetUnitFrame_glowOverlay_level3_right.dds",
+		[MONSTER_DIFFICULTY_DEADLY] = "EsoUI/Art/UnitFrames/targetUnitFrame_glowOverlay_level4_right.dds",
+	}
 
-local GAMEPAD_DIFFICULTY_BRACKET_TEXTURE = {
-	[MONSTER_DIFFICULTY_NORMAL] = "EsoUI/Art/UnitFrames/Gamepad/gp_targetUnitFrame_bracket_level2.dds",
-	[MONSTER_DIFFICULTY_HARD] = "EsoUI/Art/UnitFrames/Gamepad/gp_targetUnitFrame_bracket_level3.dds",
-	[MONSTER_DIFFICULTY_DEADLY] = "EsoUI/Art/UnitFrames/Gamepad/gp_targetUnitFrame_bracket_level4.dds",
-}
+	local GAMEPAD_DIFFICULTY_BRACKET_TEXTURE = {
+		[MONSTER_DIFFICULTY_NORMAL] = "EsoUI/Art/UnitFrames/Gamepad/gp_targetUnitFrame_bracket_level2.dds",
+		[MONSTER_DIFFICULTY_HARD] = "EsoUI/Art/UnitFrames/Gamepad/gp_targetUnitFrame_bracket_level3.dds",
+		[MONSTER_DIFFICULTY_DEADLY] = "EsoUI/Art/UnitFrames/Gamepad/gp_targetUnitFrame_bracket_level4.dds",
+	}
 
-function UnitFrame:SetPlatformDifficultyTextures(difficulty)
-	if IsInGamepadPreferredMode() then
-		local texture = GAMEPAD_DIFFICULTY_BRACKET_TEXTURE[difficulty]
-		self.leftBracket:SetTexture(texture)
-		self.rightBracket:SetTexture(texture)
-		self.leftBracketGlow:SetHidden(true)
-		self.rightBracketGlow:SetHidden(true)
-	else
-		self.leftBracket:SetTexture(DIFFICULTY_BRACKET_LEFT_TEXTURE[difficulty])
-		self.rightBracket:SetTexture(DIFFICULTY_BRACKET_RIGHT_TEXTURE[difficulty])
-		self.leftBracketGlow:SetTexture(DIFFICULTY_BRACKET_GLOW_LEFT_TEXTURE[difficulty])
-		self.rightBracketGlow:SetTexture(DIFFICULTY_BRACKET_GLOW_RIGHT_TEXTURE[difficulty])
-		self.leftBracketGlow:SetHidden(false)
-		self.rightBracketGlow:SetHidden(false)
+	function UnitFrame:SetPlatformDifficultyTextures(difficulty)
+		if IsInGamepadPreferredMode() then
+			local texture = GAMEPAD_DIFFICULTY_BRACKET_TEXTURE[difficulty]
+			self.leftBracket:SetTexture(texture)
+			self.rightBracket:SetTexture(texture)
+			self.leftBracketGlow:SetHidden(true)
+			self.rightBracketGlow:SetHidden(true)
+		else
+			self.leftBracket:SetTexture(DIFFICULTY_BRACKET_LEFT_TEXTURE[difficulty])
+			self.rightBracket:SetTexture(DIFFICULTY_BRACKET_RIGHT_TEXTURE[difficulty])
+			self.leftBracketGlow:SetTexture(DIFFICULTY_BRACKET_GLOW_LEFT_TEXTURE[difficulty])
+			self.rightBracketGlow:SetTexture(DIFFICULTY_BRACKET_GLOW_RIGHT_TEXTURE[difficulty])
+			self.leftBracketGlow:SetHidden(false)
+			self.rightBracketGlow:SetHidden(false)
+		end
 	end
 end
 
@@ -1382,7 +1386,7 @@ do
 	end
 
 	local function GetPlatformClassIconResized(unitTag)
-		local iconSize = IsInGamepadPreferredMode() and "90%" or "120%"
+		local iconSize = IsInGamepadPreferredMode() and "90%" or "130%"
 		return zo_iconFormat(GetPlatformClassIcon(GetUnitClassId(unitTag)), iconSize, iconSize)
 	end
 
