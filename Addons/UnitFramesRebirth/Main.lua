@@ -3,9 +3,7 @@ local UnitFrames
 
 local addonName = "UnitFramesRebirth"
 
-CALLBACK_MANAGER:RegisterCallback("UnitFramesPreInit", function(unitFrames)
-	UnitFrames = unitFrames
-end )
+CALLBACK_MANAGER:RegisterCallback("UnitFramesPreInit", function(unitFrames) UnitFrames = unitFrames end)
 
 local function CreateSettings()
 	local LibHarvensAddonSettings = LibStub("LibHarvensAddonSettings-1.0")
