@@ -3,9 +3,7 @@ local UnitFrames
 
 local addonName = "UnitFramesRebirth"
 
-CALLBACK_MANAGER:RegisterCallback("UnitFramesPreInit", function(unitFrames)
-	UnitFrames = unitFrames
-end )
+CALLBACK_MANAGER:RegisterCallback("UnitFramesPreInit", function(unitFrames) UnitFrames = unitFrames end)
 
 local function CreateSettings()
 	local LibHarvensAddonSettings = LibStub("LibHarvensAddonSettings-1.0")
@@ -19,7 +17,7 @@ local function CreateSettings()
 		hideTitle = true,
 		approachAmountMs = UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_DEFAULT,
 	}
-	UnitFrames.account = ZO_SavedVars:NewAccountWide("UnitFramesRebirth_Data", 1, nil, DEFAULT_SETTINGS)
+	UnitFrames.account = ZO_SavedVars:NewAccountWide(addonName.."_Data", 1, nil, DEFAULT_SETTINGS)
 
 	settings:AddSetting {
 		type = LibHarvensAddonSettings.ST_CHECKBOX,
@@ -70,18 +68,14 @@ local function CreateSettings()
 		}
 		
 		local ModeToData = { }
-		for i = 1, #Modes do
-			ModeToData[Modes[i].data] = Modes[i]
-		end
+		for i = 1, #Modes do ModeToData[Modes[i].data] = Modes[i] end
 		
 		settings:AddSetting {
 			type = LibHarvensAddonSettings.ST_DROPDOWN,
 			label = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_APPROACH_HEALTHBAR),
 			items = Modes,
 			default = ModeToData[DEFAULT_SETTINGS.approachAmountMs].name,
-			getFunction = function()
-				return (ModeToData[UnitFrames.account.approachAmountMs] or ModeToData[DEFAULT_SETTINGS.approachAmountMs]).name
-			end,
+			getFunction = function() return (ModeToData[UnitFrames.account.approachAmountMs] or ModeToData[DEFAULT_SETTINGS.approachAmountMs]).name end,
 			setFunction = function(combobox, name, item) UnitFrames.account.approachAmountMs = item.data end,
 		}
 	end
