@@ -8,6 +8,10 @@ CALLBACK_MANAGER:RegisterCallback("UnitFramesPreInit", function(unitFrames) Unit
 local function CreateSettings()
 
 	local UNIT_CHANGED = true
+	local function UpdateTargetWindow()
+		ZO_UnitFrames_UpdateWindow("reticleover", UNIT_CHANGED)
+		ZO_UnitFrames_UpdateWindow("reticleovertarget", UNIT_CHANGED)
+	end
 
 	local LibHarvensAddonSettings = LibStub("LibHarvensAddonSettings-1.0")
 	local settings = LibHarvensAddonSettings:AddAddon("Unit Frames Rebirth")
@@ -28,8 +32,7 @@ local function CreateSettings()
 		default = DEFAULT_SETTINGS.showClassIcon,
 		setFunction = function(bool)
 			UnitFrames.account.showClassIcon = bool
-			ZO_UnitFrames_UpdateWindow("reticleover", UNIT_CHANGED)
-			ZO_UnitFrames_UpdateWindow("reticleovertarget", UNIT_CHANGED)
+			UpdateTargetWindow()
 		end,
 		getFunction = function() return UnitFrames.account.showClassIcon end,
 	}
@@ -41,8 +44,7 @@ local function CreateSettings()
 		default = DEFAULT_SETTINGS.switchNames,
 		setFunction = function(bool)
 			UnitFrames.account.switchNames = bool
-			ZO_UnitFrames_UpdateWindow("reticleover", UNIT_CHANGED)
-			ZO_UnitFrames_UpdateWindow("reticleovertarget", UNIT_CHANGED)
+			UpdateTargetWindow()
 		end,
 		getFunction = function() return UnitFrames.account.switchNames end,
 	}
@@ -54,8 +56,7 @@ local function CreateSettings()
 		default = DEFAULT_SETTINGS.hideTitle,
 		setFunction = function(bool)
 			UnitFrames.account.hideTitle = bool
-			ZO_UnitFrames_UpdateWindow("reticleover", UNIT_CHANGED)
-			ZO_UnitFrames_UpdateWindow("reticleovertarget", UNIT_CHANGED)
+			UpdateTargetWindow()
 		end,
 		getFunction = function() return UnitFrames.account.hideTitle end,
 	}
