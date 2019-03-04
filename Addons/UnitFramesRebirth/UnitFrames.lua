@@ -553,7 +553,7 @@ do
 		[UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_DEFAULT] = DEFAULT_ANIMATION_TIME_MS,
 	}
 
-	function GetCustomApproachAmountMs()
+	local function GetCustomApproachAmountMs()
 		return lookupApproachAmountMs[UnitFrames.account.approachAmountMs] or DEFAULT_ANIMATION_TIME_MS
 	end
 
