@@ -185,7 +185,6 @@ function UnitFramesManager:Initialize()
 	self.UnitFrameBarClass = UnitFrameBar
 	self.KEYBOARD_CONSTANTS = KEYBOARD_CONSTANTS
 	self.GAMEPAD_CONSTANTS = GAMEPAD_CONSTANTS
-	self.LAYOUT_DATA = UNITFRAME_LAYOUT_DATA
 	self.TargetUnitFrameTemplate = "ZO_TargetUnitFrame"
 	self.UnitFrameBarTextTemplate = "ZO_UnitFrameBarText"
 	self.GroupFrameAnchor = "ZO_GroupFrameAnchor"
@@ -246,7 +245,7 @@ function UnitFramesManager:CreateFrame(unitTag, anchors, showBarText, style)
 	local unitFrame = self:GetFrame(unitTag)
 	if not unitFrame then
 		unitFrame = UnitFrame:New(unitTag, showBarText, style)
-		
+
 		local unitFrameTable = self:GetUnitFrameLookupTable(unitTag)
 		if unitFrameTable then
 			unitFrameTable[unitTag] = unitFrame
@@ -2000,7 +1999,7 @@ local function RegisterForEvents()
 	local function OnLeaderUpdate()
 		UpdateLeaderIndicator()
 	end
-	
+
 	local function OnDispositionUpdate(eventCode, unitTag)
 		local unitFrame = UnitFrames:GetFrame(unitTag)
 		if unitFrame then
@@ -2143,7 +2142,7 @@ local function RegisterForEvents()
 	ZO_UnitFrames:RegisterForEvent(EVENT_INTERFACE_SETTING_CHANGED, OnInterfaceSettingChanged)
 	ZO_UnitFrames:RegisterForEvent(EVENT_GUILD_NAME_AVAILABLE, OnGuildNameAvailable)
 	ZO_UnitFrames:RegisterForEvent(EVENT_GUILD_ID_CHANGED, OnGuildIdChanged)
-	
+
 	-- Filter events
 	ZO_UnitFrames:AddFilterForEvent(EVENT_TARGET_CHANGED, REGISTER_FILTER_UNIT_TAG, "reticleover")
 	ZO_UnitFrames:AddFilterForEvent(EVENT_UNIT_CHARACTER_NAME_CHANGED, REGISTER_FILTER_UNIT_TAG, "reticleover")
@@ -2164,6 +2163,7 @@ do
 
 		UnitFrames = UnitFramesManager:New()
 		UnitFrames.UNITFRAME_BAR_STYLES = UNITFRAME_BAR_STYLES
+		UnitFrames.LAYOUT_DATA = UNITFRAME_LAYOUT_DATA
 
 		UNIT_FRAMES = UnitFrames
 		CALLBACK_MANAGER:FireCallbacks("UnitFramesPreInit", UnitFrames)
