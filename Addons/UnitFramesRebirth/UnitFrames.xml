@@ -1,131 +1,343 @@
 <GuiXml>
-  <Controls>
-    <Control name="UnitFramesRebirth_PlayerAttributeWarner" virtual="true" alpha="0" layer="OVERLAY" tier="HIGH" level="500">
-      <Dimensions y="44" />
-      <Anchor point="LEFT" offsetX="-18" />
-      <Anchor point="RIGHT" offsetX="18"/>
-    </Control>
+	<Controls>
+		<Control name="UnitFramesRebirth_PlayerAttributeWarner" virtual="true" alpha="0" layer="OVERLAY" tier="HIGH" level="500">
+			<Dimensions y="44" />
+			<Anchor point="LEFT" offsetX="-18" />
+			<Anchor point="RIGHT" offsetX="18"/>
+		</Control>
 
-    <Texture name="UnitFramesRebirth_PlayerAttributeWarnerLeftArrow" level="500" layer="OVERLAY" blendMode="ADD" virtual="true">
-      <Dimensions x="37" y="44" />
-      <TextureCoords left="0.2265625" right="0.515625" top="0" bottom="1"/>
-      <Anchor point="LEFT" offsetY="0" />
-    </Texture>
+		<Texture name="UnitFramesRebirth_PlayerAttributeWarnerLeftArrow" level="500" layer="OVERLAY" blendMode="ADD" virtual="true">
+			<Dimensions x="37" y="44" />
+			<TextureCoords left="0.2265625" right="0.515625" top="0" bottom="1"/>
+			<Anchor point="LEFT" offsetY="0" />
+		</Texture>
 
-    <Texture name="UnitFramesRebirth_PlayerAttributeWarnerLeftArrow_Keyboard_Template" virtual="true">
-      <Dimensions x="37" y="44" />
-      <TextureCoords left="0.2265625" right="0.515625" top="0" bottom="1"/>
-      <Anchor point="LEFT" offsetY="0" />
-    </Texture>
+		<Texture name="UnitFramesRebirth_PlayerAttributeWarnerLeftArrow_Keyboard_Template" virtual="true">
+			<Dimensions x="37" y="44" />
+			<TextureCoords left="0.2265625" right="0.515625" top="0" bottom="1"/>
+			<Anchor point="LEFT" offsetY="0" />
+		</Texture>
 
-    <Texture name="UnitFramesRebirth_PlayerAttributeWarnerLeftArrow_Gamepad_Template" virtual="true">
-      <Dimensions x="40" y="41" />
-      <TextureCoords left="0.28125" right="0.515625" top="0" bottom="1"/>
-      <Anchor point="LEFT" offsetX="10" offsetY="-1" />
-    </Texture>
+		<Texture name="UnitFramesRebirth_PlayerAttributeWarnerLeftArrow_Gamepad_Template" virtual="true">
+			<Dimensions x="40" y="41" />
+			<TextureCoords left="0.28125" right="0.515625" top="0" bottom="1"/>
+			<Anchor point="LEFT" offsetX="10" offsetY="-1" />
+		</Texture>
 
-    <Texture name="UnitFramesRebirth_PlayerAttributeWarnerRightArrow" level="500" layer="OVERLAY" blendMode="ADD" virtual="true">
-      <Dimensions x="37" y="44" />
-      <TextureCoords left="0.515625" right="0.2265625" top="0" bottom="1"/>
-      <Anchor point="RIGHT" offsetY="0" />
-    </Texture>
+		<Texture name="UnitFramesRebirth_PlayerAttributeWarnerRightArrow" level="500" layer="OVERLAY" blendMode="ADD" virtual="true">
+			<Dimensions x="37" y="44" />
+			<TextureCoords left="0.515625" right="0.2265625" top="0" bottom="1"/>
+			<Anchor point="RIGHT" offsetY="0" />
+		</Texture>
 
-    <Texture name="UnitFramesRebirth_PlayerAttributeWarnerRightArrow_Keyboard_Template" virtual="true">
-      <Dimensions x="37" y="44" />
-      <TextureCoords left="0.515625" right="0.2265625" top="0" bottom="1"/>
-      <Anchor point="RIGHT" offsetY="0" />
-    </Texture>
+		<Texture name="UnitFramesRebirth_PlayerAttributeWarnerRightArrow_Keyboard_Template" virtual="true">
+			<Dimensions x="37" y="44" />
+			<TextureCoords left="0.515625" right="0.2265625" top="0" bottom="1"/>
+			<Anchor point="RIGHT" offsetY="0" />
+		</Texture>
 
-    <Texture name="UnitFramesRebirth_PlayerAttributeWarnerRightArrow_Gamepad_Template" virtual="true">
-      <Dimensions x="40" y="41" />
-      <TextureCoords left="0.515625" right="0.28125" top="0" bottom="1"/>
-      <Anchor point="RIGHT" offsetX="-11" offsetY="-1" />
-    </Texture>
+		<Texture name="UnitFramesRebirth_PlayerAttributeWarnerRightArrow_Gamepad_Template" virtual="true">
+			<Dimensions x="40" y="41" />
+			<TextureCoords left="0.515625" right="0.28125" top="0" bottom="1"/>
+			<Anchor point="RIGHT" offsetX="-11" offsetY="-1" />
+		</Texture>
 
-    <Texture name="UnitFramesRebirth_PlayerAttributeWarnerLeft" level="500" layer="OVERLAY" blendMode="ADD" virtual="true">
-      <Dimensions x="40" y="44" />
-      <TextureCoords left="0.7578125" right="0.5234375" top="0" bottom="1"/>
-      <Anchor point="LEFT" offsetY="0" />
-    </Texture>
+		<Texture name="UnitFramesRebirth_PlayerAttributeWarnerLeft" level="500" layer="OVERLAY" blendMode="ADD" virtual="true">
+			<Dimensions x="40" y="44" />
+			<TextureCoords left="0.7578125" right="0.5234375" top="0" bottom="1"/>
+			<Anchor point="LEFT" offsetY="0" />
+		</Texture>
 
-    <Texture name="UnitFramesRebirth_PlayerAttributeWarnerLeft_Keyboard_Template" virtual="true">
-      <Dimensions x="40" y="44" />
-      <TextureCoords left="0.7578125" right="0.5234375" top="0" bottom="1"/>
-      <Anchor point="LEFT" offsetX="-8" offsetY="0" />
-    </Texture>
+		<Texture name="UnitFramesRebirth_PlayerAttributeWarnerLeft_Keyboard_Template" virtual="true">
+			<Dimensions x="40" y="44" />
+			<TextureCoords left="0.7578125" right="0.5234375" top="0" bottom="1"/>
+			<Anchor point="LEFT" offsetX="-8" offsetY="0" />
+		</Texture>
 
-    <Texture name="UnitFramesRebirth_PlayerAttributeWarnerLeft_Gamepad_Template" virtual="true">
-      <Dimensions x="22" y="41" />
-      <TextureCoords left="0.7344" right="0.5234" top="0" bottom="1" />
-      <Anchor point="LEFT" offsetX="4" offsetY="-1" />
-    </Texture>
+		<Texture name="UnitFramesRebirth_PlayerAttributeWarnerLeft_Gamepad_Template" virtual="true">
+			<Dimensions x="22" y="41" />
+			<TextureCoords left="0.7344" right="0.5234" top="0" bottom="1" />
+			<Anchor point="LEFT" offsetX="4" offsetY="-1" />
+		</Texture>
 
-    <Texture name="UnitFramesRebirth_PlayerAttributeWarnerRight" level="500" layer="OVERLAY" blendMode="ADD" virtual="true">
-      <Dimensions x="40" y="44" />
-      <TextureCoords left="0.5234" right="0.7344" top="0" bottom="1" />
-      <Anchor point="RIGHT" offsetY="0" />
-    </Texture>
+		<Texture name="UnitFramesRebirth_PlayerAttributeWarnerRight" level="500" layer="OVERLAY" blendMode="ADD" virtual="true">
+			<Dimensions x="40" y="44" />
+			<TextureCoords left="0.5234" right="0.7344" top="0" bottom="1" />
+			<Anchor point="RIGHT" offsetY="0" />
+		</Texture>
 
-    <Texture name="UnitFramesRebirth_PlayerAttributeWarnerRight_Keyboard_Template" virtual="true">
-      <Dimensions x="40" y="44" />
-      <TextureCoords left="0.5234375" right="0.7578125" top="0" bottom="1"/>
-      <Anchor point="RIGHT" offsetY="0" />
-    </Texture>
+		<Texture name="UnitFramesRebirth_PlayerAttributeWarnerRight_Keyboard_Template" virtual="true">
+			<Dimensions x="40" y="44" />
+			<TextureCoords left="0.5234375" right="0.7578125" top="0" bottom="1"/>
+			<Anchor point="RIGHT" offsetY="0" />
+		</Texture>
 
-    <Texture name="UnitFramesRebirth_PlayerAttributeWarnerRight_Gamepad_Template" virtual="true">
-      <Dimensions x="22" y="41" />
-      <TextureCoords left="0.5" right="0.734375" top="0" bottom="1"/>
-      <Anchor point="RIGHT" offsetX="-5" offsetY="-1" />
-    </Texture>
+		<Texture name="UnitFramesRebirth_PlayerAttributeWarnerRight_Gamepad_Template" virtual="true">
+			<Dimensions x="22" y="41" />
+			<TextureCoords left="0.5" right="0.734375" top="0" bottom="1"/>
+			<Anchor point="RIGHT" offsetX="-5" offsetY="-1" />
+		</Texture>
 
-    <Texture name="UnitFramesRebirth_PlayerAttributeWarnerCenter" level="500" layer="OVERLAY" blendMode="ADD" virtual="true">
-      <TextureCoords left="0.515625" right="0.5234375" top="0" bottom="1"/>
-      <Anchor point="TOPLEFT" relativeTo="$(parent)Left" relativePoint="TOPRIGHT"/>
-      <Anchor point="BOTTOMRIGHT" relativeTo="$(parent)Right" relativePoint="BOTTOMLEFT"/>
-    </Texture>
+		<Texture name="UnitFramesRebirth_PlayerAttributeWarnerCenter" level="500" layer="OVERLAY" blendMode="ADD" virtual="true">
+			<TextureCoords left="0.515625" right="0.5234375" top="0" bottom="1"/>
+			<Anchor point="TOPLEFT" relativeTo="$(parent)Left" relativePoint="TOPRIGHT"/>
+			<Anchor point="BOTTOMRIGHT" relativeTo="$(parent)Right" relativePoint="BOTTOMLEFT"/>
+		</Texture>
 
-    <Texture name="UnitFramesRebirth_PlayerAttributeWarnerCenter_Keyboard_Template" virtual="true">
-      <TextureCoords left="0.515625" right="0.5234375" top="0" bottom="1"/>
-    </Texture>
+		<Texture name="UnitFramesRebirth_PlayerAttributeWarnerCenter_Keyboard_Template" virtual="true">
+			<TextureCoords left="0.515625" right="0.5234375" top="0" bottom="1"/>
+		</Texture>
 
-    <Texture name="UnitFramesRebirth_PlayerAttributeWarnerCenter_Gamepad_Template" virtual="true">
-      <TextureCoords left="0.515625" right="0.5234375" top="0" bottom="1"/>
-    </Texture>
+		<Texture name="UnitFramesRebirth_PlayerAttributeWarnerCenter_Gamepad_Template" virtual="true">
+			<TextureCoords left="0.515625" right="0.5234375" top="0" bottom="1"/>
+		</Texture>
 
+		<StatusBar name="UnitFramesRebirth_GroupUnitFrameStatus" virtual="true">
+			<OnInitialized>
+				self.gloss = self:GetNamedChild("Gloss")
+				self.warnerContainer = self:GetNamedChild("Warner")
+			</OnInitialized>
 
+			<Controls>
+				<StatusBar name="$(parent)Gloss"/>
 
+				<Control name="$(parent)Warner" inherits="UnitFramesRebirth_PlayerAttributeWarner">
+					<Controls>
+					<Texture name="$(parent)Left" inherits="UnitFramesRebirth_PlayerAttributeWarnerLeft" />
+					<Texture name="$(parent)Right" inherits="UnitFramesRebirth_PlayerAttributeWarnerRight" />
+					<Texture name="$(parent)Center" inherits="UnitFramesRebirth_PlayerAttributeWarnerCenter" />
+					</Controls>
+				</Control>
+			</Controls>
+		</StatusBar>
 
-    <StatusBar name="UnitFramesRebirth_GroupUnitFrameStatus" virtual="true">
-      <OnInitialized>
-        self.gloss = self:GetNamedChild("Gloss")
-        self.warnerContainer = self:GetNamedChild("Warner")
-      </OnInitialized>
+		<StatusBar name="UnitFramesRebirth_GroupUnitFrameStatus_Keyboard_Template" inherits="ZO_ArrowStatusBarWithBG" virtual="true">
+			<Controls>
+				<Control name="$(parent)BG" hidden="false" />
+				<Control name="$(parent)Overlay" hidden="false" />
+			</Controls>
+		</StatusBar>
 
-      <Controls>
-        <StatusBar name="$(parent)Gloss"/>
+		<StatusBar name="UnitFramesRebirth_GroupUnitFrameStatus_Gamepad_Template" inherits="ZO_DefaultStatusBar" virtual="true">
+			<Controls>
+				<Control name="$(parent)BG" hidden="true" />
+				<Control name="$(parent)Overlay" hidden="true" />
+			</Controls>
+		</StatusBar>
+		
+		<Control name="UnitFramesRebirth_TargetUnitFrame_Keyboard_Template" virtual="true">
+			<Anchor point="TOP" relativeTo="GuiRoot" offsetY="88" />
+			<Controls>
+				<Control name="$(parent)TextArea">
+					<Controls>
+						<Label name="$(grandparent)Level" font="ZoFontGameShadow" />
+						<Label name="$(grandparent)Name" font="ZoFontGameShadow" />
+					</Controls>
+				</Control>
 
-        <Control name="$(parent)Warner" inherits="UnitFramesRebirth_PlayerAttributeWarner">
-          <Controls>
-            <Texture name="$(parent)Left" inherits="UnitFramesRebirth_PlayerAttributeWarnerLeft" />
-            <Texture name="$(parent)Right" inherits="UnitFramesRebirth_PlayerAttributeWarnerRight" />
-            <Texture name="$(parent)Center" inherits="UnitFramesRebirth_PlayerAttributeWarnerCenter" />
-          </Controls>
-        </Control>
-      </Controls>
-    </StatusBar>
+				<Texture name="$(parent)ChampionIcon">
+					<Anchor point="RIGHT" relativeTo="$(parent)TextArea" relativePoint="LEFT" offsetX="-2"/>
+					<Dimensions x="22" y="22"/>
+				</Texture>
 
-    <StatusBar name="UnitFramesRebirth_GroupUnitFrameStatus_Keyboard_Template" inherits="ZO_ArrowStatusBarWithBG" virtual="true">
-      <Controls>
-        <Control name="$(parent)BG" hidden="false" />
-        <Control name="$(parent)Overlay" hidden="false" />
-      </Controls>
-    </StatusBar>
+				<Texture name="$(parent)IgnoreIcon">
+					<Anchor point="RIGHT" relativeTo="$(parent)ChampionIcon" relativePoint="LEFT" offsetX="0"/>
+					<Dimensions x="40" y="40"/>
+				</Texture>
 
-    <StatusBar name="UnitFramesRebirth_GroupUnitFrameStatus_Gamepad_Template" inherits="ZO_DefaultStatusBar" virtual="true">
-      <Controls>
-        <Control name="$(parent)BG" hidden="true" />
-        <Control name="$(parent)Overlay" hidden="true" />
-      </Controls>
-    </StatusBar>
-  </Controls>
+				<Texture name="$(parent)RankIcon">
+					<Anchor point="TOPLEFT" relativeTo="$(parent)TextArea" relativePoint="TOPRIGHT" offsetX="2" offsetY="-4"/>
+					<Dimensions x="32" y="32"/>
+				</Texture>
+
+				<Control name="$(parent)BgContainer">
+					<Controls>
+						<Texture name="$(parent)BgLeft" inherits="ZO_TargetAttributeBgLeftAngle_Keyboard_Template" />
+						<Texture name="$(parent)BgRight" inherits="ZO_TargetAttributeBgRightAngle_Keyboard_Template" />
+						<Texture name="$(parent)BgCenter" inherits="ZO_TargetAttributeBgCenter_Keyboard_Template" />
+					</Controls>
+				</Control>
+
+				<Label name="$(parent)Caption" font="ZoFontGameShadow" modifyTextType="NONE" />
+
+				<Texture name="$(parent)RightBracket">
+					<TextureCoords left="0" right="1" top="0" bottom="1" />
+				</Texture>
+
+				<StatusBar name="$(parent)BarLeft" inherits="ZO_TargetAttributeStatusBar_Keyboard_Template">
+					<Anchor point="LEFT" offsetX="7"/>
+					<Anchor point="RIGHT" relativePoint="CENTER" />
+					<Controls>
+						<StatusBar name="$(parent)Gloss" inherits="ZO_TargetAttributeStatusBarGloss_Keyboard_Template" />
+					</Controls>
+				</StatusBar>
+				<StatusBar name="$(parent)BarRight" inherits="ZO_TargetAttributeStatusBar_Keyboard_Template">
+					<Anchor point="RIGHT" offsetX="-7"/>
+					<Anchor point="LEFT" relativePoint="CENTER" />
+					<Controls>
+						<StatusBar name="$(parent)Gloss" inherits="ZO_TargetAttributeStatusBarGloss_Keyboard_Template" />
+					</Controls>
+				</StatusBar>
+
+				<Texture name="$(parent)FrameLeft" inherits="ZO_TargetAttributeFrameLeftAngle_Keyboard_Template" />
+				<Texture name="$(parent)FrameRight" inherits="ZO_TargetAttributeFrameRightAngle_Keyboard_Template" />
+				<Texture name="$(parent)FrameCenter" inherits="ZO_TargetAttributeFrameCenter_Keyboard_Template" />
+
+				<Label name="$(parent)ResourceNumbers" inherits="ZO_PlayerAttributeResourceNumbers_Keyboard_Template" />
+			</Controls>
+		</Control>
+
+		<Control name="UnitFramesRebirth_TargetUnitFrame_Gamepad_Template" virtual="true">
+			<Anchor point="TOP" relativeTo="ZO_CompassFrame" relativePoint="BOTTOM" offsetY="20" />
+			<Controls>
+				<Control name="$(parent)TextArea">
+					<Controls>
+						<Label name="$(grandparent)Level" font="ZoFontGamepad36" />
+						<Label name="$(grandparent)Name" font="ZoFontGamepad36" />
+					</Controls>
+				</Control>
+
+				<Texture name="$(parent)ChampionIcon">
+					<Anchor point="RIGHT" relativeTo="$(parent)TextArea" relativePoint="LEFT" offsetX="-2"/>
+					<Dimensions x="32" y="32"/>
+				</Texture>
+
+				<Texture name="$(parent)IgnoreIcon">
+					<Anchor point="RIGHT" relativeTo="$(parent)ChampionIcon" relativePoint="LEFT" offsetX="0"/>
+					<Dimensions x="48" y="48"/>
+				</Texture>
+
+				<Texture name="$(parent)RankIcon">
+					<Anchor point="LEFT" relativeTo="$(parent)TextArea" relativePoint="RIGHT" offsetX="2" />
+					<Dimensions x="40" y="40"/>
+				</Texture>
+
+				<Control name="$(parent)BgContainer">
+					<Controls>
+						<Texture name="$(parent)BgLeft" inherits="ZO_TargetAttributeBgLeftAngle_Gamepad_Template" />
+						<Texture name="$(parent)BgRight" inherits="ZO_TargetAttributeBgRightAngle_Gamepad_Template" />
+						<Texture name="$(parent)BgCenter" inherits="ZO_TargetAttributeBgCenter_Gamepad_Template" />
+					</Controls>
+				</Control>
+
+				<Label name="$(parent)Caption" font="ZoFontGamepad27" modifyTextType="UPPERCASE" />
+
+				<Texture name="$(parent)RightBracket">
+					<!-- Mirror the right bracket -->
+					<TextureCoords left="1" right="0" top="0" bottom="1" />
+				</Texture>
+
+				<StatusBar name="$(parent)BarLeft" inherits="ZO_TargetAttributeStatusBar_Gamepad_Template">
+					<Anchor point="LEFT" offsetX="10" />
+					<Anchor point="RIGHT" relativePoint="CENTER" />
+					<Controls>
+						<StatusBar name="$(parent)Gloss" inherits="ZO_TargetAttributeStatusBarGloss_Gamepad_Template" />
+					</Controls>
+				</StatusBar>
+				<StatusBar name="$(parent)BarRight" inherits="ZO_TargetAttributeStatusBar_Gamepad_Template">
+					<Anchor point="RIGHT" offsetX="-9" />
+					<Anchor point="LEFT" relativePoint="CENTER" />
+					<Controls>
+						<StatusBar name="$(parent)Gloss" inherits="ZO_TargetAttributeStatusBarGloss_Gamepad_Template" />
+					</Controls>
+				</StatusBar>
+
+				<Texture name="$(parent)FrameLeft" inherits="ZO_TargetAttributeFrameLeftAngle_Gamepad_Template" />
+				<Texture name="$(parent)FrameRight" inherits="ZO_TargetAttributeFrameRightAngle_Gamepad_Template" />
+				<Texture name="$(parent)FrameCenter" inherits="ZO_TargetAttributeFrameCenter_Gamepad_Template" />
+
+				<Label name="$(parent)ResourceNumbers" inherits="ZO_UnitFrameResourceNumbers_Gamepad_Template" />
+			</Controls>
+		</Control>
+
+		<Control name="UnitFramesRebirth_TargetUnitFrame" inherits="ZO_PlayerAttributeContainer" virtual="true">
+			<Dimensions x="281"/>
+			<Controls>
+				<Control name="$(parent)TextArea" resizeToFitDescendents="true">
+					<Anchor point="TOP" relativePoint="BOTTOM" offsetY="7"/>
+					<Controls>
+						<Label name="$(grandparent)Level">
+							<Anchor point="TOPLEFT"/>
+						</Label>
+						<Label name="$(grandparent)Name">
+							<Anchor point="TOPLEFT"/>
+						</Label>
+					</Controls>
+				</Control>
+
+				<Texture name="$(parent)ChampionIcon" hidden="true" textureFile="EsoUI/Art/Champion/champion_icon_32.dds">
+					<Anchor point="RIGHT" relativeTo="$(parent)TextArea" relativePoint="LEFT" offsetX="-2"/>
+					<Dimensions x="22" y="22"/>
+				</Texture>
+
+				<Texture name="$(parent)IgnoreIcon" hidden="true" textureFile="EsoUI/Art/Compass/ava_murderball_aldmeri.dds">
+					<Anchor point="RIGHT" relativeTo="$(parent)ChampionIcon" relativePoint="LEFT" offsetX="0"/>
+					<Dimensions x="40" y="40"/>
+				</Texture>
+
+				<Texture name="$(parent)RankIcon" hidden="true">
+					<Anchor point="TOPLEFT" relativeTo="$(parent)TextArea" relativePoint="TOPRIGHT" offsetX="2" offsetY="-4"/>
+					<Dimensions x="32" y="32"/>
+				</Texture>
+				
+				<Label name="$(parent)Caption" hidden="true">
+					<Anchor point="TOP" relativeTo="$(parent)TextArea" relativePoint="BOTTOM" offsetY="1"/>
+				</Label>
+				
+				<Control name="$(parent)BgContainer" inherits="ZO_PlayerAttributeBgContainer">
+					<Dimensions x="281"/>
+					<Anchor point="CENTER" />
+					<Controls>
+						<Texture name="$(parent)BgLeft" inherits="ZO_TargetAttributeBgLeftAngle" />
+						<Texture name="$(parent)BgRight" inherits="ZO_TargetAttributeBgRightAngle" />
+						<Texture name="$(parent)BgCenter" inherits="ZO_TargetAttributeBgCenter" />
+					</Controls>
+				</Control>
+
+				<Texture name="$(parent)LeftBracket" tier="MEDIUM">
+					<Dimensions x="256" y="64" />
+					<Anchor point="TOPRIGHT" relativeTo="$(parent)BgContainer" relativePoint="TOPLEFT" offsetX="26" offsetY="-20"/>
+					<Controls>
+						<Texture name="$(parent)Underlay" tier="LOW" textureFile="EsoUI/Art/UnitFrames/targetUnitFrame_glowUnderlay_level4_left.dds" inherits="ZO_DifficultyBracketGlow" hidden="true">
+							<Anchor point="RIGHT"/>
+						</Texture>
+						<Texture name="$(parent)Glow" inherits="ZO_DifficultyBracketGlow">
+							<Anchor point="RIGHT"/>
+						</Texture>
+					</Controls>
+				</Texture>
+				<Texture name="$(parent)RightBracket" tier="MEDIUM">
+					<Dimensions x="256" y="64" />
+					<Anchor point="TOPLEFT" relativeTo="$(parent)BgContainer" relativePoint="TOPRIGHT" offsetX="-26" offsetY="-20"/>
+					<Controls>
+						<Texture name="$(parent)Underlay" tier="LOW" textureFile="EsoUI/Art/UnitFrames/targetUnitFrame_glowUnderlay_level4_right.dds" inherits="ZO_DifficultyBracketGlow" hidden="true">
+							<Anchor point="RIGHT"/>
+						</Texture>
+						<Texture name="$(parent)Glow" inherits="ZO_DifficultyBracketGlow">
+							<Anchor point="LEFT"/>
+						</Texture>
+					</Controls>
+				</Texture>
+
+				<StatusBar name="$(parent)BarLeft" inherits="ZO_TargetAttributeStatusBar" barAlignment="REVERSE">
+					<Controls>
+						<StatusBar name="$(parent)Gloss" inherits="ZO_TargetAttributeStatusBarGloss" barAlignment="REVERSE" />
+					</Controls>
+				</StatusBar>
+				<StatusBar name="$(parent)BarRight" inherits="ZO_TargetAttributeStatusBar">
+					<Controls>
+						<StatusBar name="$(parent)Gloss" inherits="ZO_TargetAttributeStatusBarGloss" />
+					</Controls>
+				</StatusBar>
+
+				<Texture name="$(parent)FrameLeft" inherits="ZO_TargetAttributeFrameLeftAngle" />
+				<Texture name="$(parent)FrameRight" inherits="ZO_TargetAttributeFrameRightAngle" />
+				<Texture name="$(parent)FrameCenter" inherits="ZO_TargetAttributeFrameCenter" />
+
+				<Control name="$(parent)Warner" inherits="ZO_PlayerAttributeWarner"/>
+
+				<Label name="$(parent)ResourceNumbers" inherits="ZO_PlayerAttributeBarText" />
+			</Controls>
+		</Control>
+	</Controls>
 </GuiXml>
