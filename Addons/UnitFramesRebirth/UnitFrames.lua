@@ -10,7 +10,7 @@ local ANIMATED, DONT_COLOR_RANK_ICON, PREVENT_SHOW = false, false, false
 
 local GROUP_UNIT_FRAME = "ZO_GroupUnitFrame"
 local RAID_UNIT_FRAME = "ZO_RaidUnitFrame"
-local TARGET_UNIT_FRAME = "ZO_TargetUnitFrame"
+local TARGET_UNIT_FRAME = "UnitFramesRebirth_TargetUnitFrame"
 
 local NUM_SUBGROUPS = GROUP_SIZE_MAX / SMALL_GROUP_SIZE_THRESHOLD
 
@@ -140,7 +140,7 @@ local function GetGroupAnchorFrameOffsets(subgroupIndex, groupStride, constants)
 	local row = zo_floor(zeroBasedIndex / groupStride)
 	local column = zeroBasedIndex -(row * groupStride)
 
-	return constants.RAID_FRAME_BASE_OFFSET_X +(column * constants.RAID_FRAME_OFFSET_X), constants.RAID_FRAME_BASE_OFFSET_Y +(row * constants.RAID_FRAME_ANCHOR_CONTAINER_HEIGHT)
+	return constants.RAID_FRAME_BASE_OFFSET_X + column * constants.RAID_FRAME_OFFSET_X, constants.RAID_FRAME_BASE_OFFSET_Y + row * constants.RAID_FRAME_ANCHOR_CONTAINER_HEIGHT
 end
 
 local function IsPlayerGrouped()
@@ -185,7 +185,7 @@ function UnitFramesManager:Initialize()
 	self.UnitFrameBarClass = UnitFrameBar
 	self.KEYBOARD_CONSTANTS = KEYBOARD_CONSTANTS
 	self.GAMEPAD_CONSTANTS = GAMEPAD_CONSTANTS
-	self.TargetUnitFrameTemplate = "ZO_TargetUnitFrame"
+	self.TargetUnitFrameTemplate = "UnitFramesRebirth_TargetUnitFrame"
 	self.UnitFrameBarTextTemplate = "ZO_UnitFrameBarText"
 	self.GroupFrameAnchor = "ZO_GroupFrameAnchor"
 	self.RaidFrameAnchor = "ZO_RaidFrameAnchor"
@@ -417,7 +417,7 @@ end
 
 local function IsValidBarStyle(style, powerType)
 	local styleData = UNITFRAME_BAR_STYLES[style] or UNITFRAME_BAR_STYLES.default
-	return styleData and(styleData[powerType] ~= nil or styleData[ANY_POWER_TYPE] ~= nil)
+	return styleData and (styleData[powerType] ~= nil or styleData[ANY_POWER_TYPE] ~= nil)
 end
 
 local function CreateBarStatusControl(baseBarName, parent, style, mechanic, showBarText)
@@ -425,6 +425,7 @@ local function CreateBarStatusControl(baseBarName, parent, style, mechanic, show
 	if barData then
 		if barData.template then
 			local barAnchor1, barAnchor2 = barData.barAnchors[1], barData.barAnchors[2]
+			local barWidth, barHeight = barData.barWidth, barData.barHeight
 
 			if barData.centered then
 				local leftBar = CreateControlFromVirtual(baseBarName .. "Left", parent, barData.template)
@@ -444,13 +445,11 @@ local function CreateBarStatusControl(baseBarName, parent, style, mechanic, show
 					gloss:SetBarAlignment(BAR_ALIGNMENT_REVERSE)
 				end
 
-				local barWidth = barData.barWidth
 				if barWidth then
 					leftBar:SetWidth(barData.barWidth / 2)
 					rightBar:SetWidth(barData.barWidth / 2)
 				end
 
-				local barHeight = barData.barHeight
 				if barHeight then
 					leftBar:SetHeight(barData.barHeight)
 					rightBar:SetHeight(barData.barHeight)
@@ -462,12 +461,10 @@ local function CreateBarStatusControl(baseBarName, parent, style, mechanic, show
 			else
 				local statusBar = CreateControlFromVirtual(baseBarName, parent, barData.template)
 
-				local barWidth = barData.barWidth
 				if barWidth then
 					statusBar:SetWidth(barWidth)
 				end
 
-				local barHeight = barData.barHeight
 				if barHeight then
 					statusBar:SetHeight(barHeight)
 				end
@@ -675,7 +672,7 @@ local UNITFRAME_LAYOUT_DATA =
 {
 	[GROUP_UNIT_FRAME] = {
 		keyboard = {
-			nameAnchor = ZO_Anchor:New(TOPLEFT,nil,TOPLEFT,35,19),
+			nameAnchor = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 35, 19),
 			nameWidth = 215,
 			nameWrapMode = TEXT_WRAP_MODE_ELLIPSIS,
 
@@ -687,11 +684,11 @@ local UNITFRAME_LAYOUT_DATA =
 		},
 
 		gamepad = {
-			nameAnchor = ZO_Anchor:New(TOPLEFT,nil,TOPLEFT,0,1),
+			nameAnchor = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 0, 1),
 			nameWidth = 306,
 			nameWrapMode = TEXT_WRAP_MODE_ELLIPSIS,
 
-			indentedNameAnchor = ZO_Anchor:New(TOPLEFT,nil,TOPLEFT,25,3),
+			indentedNameAnchor = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 25, 3),
 
 			statusData = { anchor1 = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 0, 0), anchor2 = ZO_Anchor:New(TOPRIGHT, nil, TOPRIGHT, 0, 35), height = 0, },
 			hideHealthBgIfOffline = true,
@@ -710,10 +707,10 @@ local UNITFRAME_LAYOUT_DATA =
 				icon = { width = 14, height = 14, customAnchor = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 76, 15) },
 			},
 
-			nameAnchor = ZO_Anchor:New(TOPLEFT,nil,TOPLEFT,5,4),
+			nameAnchor = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 5, 4),
 			nameWidth = 86,
 
-			indentedNameAnchor = ZO_Anchor:New(TOPLEFT,nil,TOPLEFT,19,4),
+			indentedNameAnchor = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 19, 4),
 			indentedNameWidth = 75,
 
 			statusData = { anchor1 = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 5, 20), anchor2 = ZO_Anchor:New(TOPRIGHT, nil, TOPRIGHT, - 4, 20), height = 15, },
@@ -728,9 +725,9 @@ local UNITFRAME_LAYOUT_DATA =
 				icon = { width = 14, height = 14, customAnchor = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 66, 7) },
 			},
 
-			nameAnchor = ZO_Anchor:New(TOPLEFT,nil,TOPLEFT,6,2),
+			nameAnchor = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 6, 2),
 			nameWidth = ZO_GAMEPAD_RAID_FRAME_WIDTH - 6,
-			indentedNameAnchor = ZO_Anchor:New(TOPLEFT,nil,TOPLEFT,20,3),
+			indentedNameAnchor = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 20, 3),
 			indentedNameWidth = ZO_GAMEPAD_RAID_FRAME_WIDTH - 20 - 2,
 
 			leaderIconData = { width = 18, height = 18, offsetX = 2, offsetY = 7 }
@@ -822,6 +819,30 @@ local function DoUnitFrameLayout(unitFrame, style)
 	end
 end
 
+local function SwitchNames()
+	return UnitFrames.account.switchNames
+end
+
+local function HideTitle()
+	return UnitFrames.account.hideTitle
+end
+
+local function ShowHealthWarner()
+	return UnitFrames.account.showHealthWarner
+end
+
+local function ShowIgnoreIcon()
+	return UnitFrames.account.showIgnoredPlayers
+end
+
+local function ShowClassIcon()
+	return UnitFrames.account.showClassIcon
+end
+
+local function ShowUnitChampionPoints()
+	return UnitFrames.account.showRealChampionPoints
+end
+
 UnitFrame = ZO_Object:Subclass()
 
 function UnitFrame:New(unitTag, showBarText, style)
@@ -854,6 +875,7 @@ function UnitFrame:New(unitTag, showBarText, style)
 	newFrame.rankIcon = newFrame:AddFadeComponent("RankIcon", DONT_COLOR_RANK_ICON)
 	newFrame.assignmentIcon = newFrame:AddFadeComponent("AssignmentIcon", DONT_COLOR_RANK_ICON)
 	newFrame.championIcon = newFrame:AddFadeComponent("ChampionIcon")
+	newFrame.ignoreIcon = newFrame:AddFadeComponent("IgnoreIcon")
 	newFrame.leftBracket = newFrame:AddFadeComponent("LeftBracket")
 	newFrame.leftBracketGlow = GetControl(frame, "LeftBracketGlow")
 	newFrame.leftBracketUnderlay = GetControl(frame, "LeftBracketUnderlay")
@@ -907,7 +929,7 @@ function UnitFrame:ApplyVisualStyle(gamepadMode)
 	ApplyTemplateToControl(self.frame, ZO_GetPlatformTemplate(self.style))
 
 	self:DoAlphaUpdate(IsUnitInGroupSupportRange(self.unitTag), IsUnitGroupLeader(self.unitTag))
-	self:UpdateDifficulty()
+	self:UpdateDifficulty(self.unitTag)
 
 	local healthBar = self.healthBar
 	local barData = GetPlatformBarStyle(healthBar.style, healthBar.mechanic)
@@ -933,7 +955,7 @@ function UnitFrame:ApplyVisualStyle(gamepadMode)
 					warnerChild = warnerControl:GetNamedChild(direction)
 					ApplyTemplateToControl(warnerChild, ZO_GetPlatformTemplate(warner.texture))
 					ApplyTemplateToControl(warnerChild, ZO_GetPlatformTemplate(warner[direction]))
-					self.healthWarner:SetPaused(not UnitFrames.account.showHealthWarner)
+					self.healthWarner:SetPaused(not ShowHealthWarner())
 				end
 			end
 		end
@@ -1057,10 +1079,10 @@ function UnitFrame:RefreshControls()
 		if self.hasTarget and self.dirty then
 			self.dirty = false
 			local unitTag = self:GetUnitTag()
-			self:UpdateName()
-			self:UpdateUnitReaction()
-			self:UpdateLevel()
-			self:UpdateCaption()
+			self:UpdateName(unitTag)
+			self:UpdateUnitReaction(unitTag)
+			self:UpdateLevel(unitTag)
+			self:UpdateCaption(unitTag)
 
 			local health, maxHealth = GetUnitPower(unitTag, POWERTYPE_HEALTH)
 			self.healthBar:Update(POWERTYPE_HEALTH, health, maxHealth, FORCE_INIT)
@@ -1072,9 +1094,9 @@ function UnitFrame:RefreshControls()
 			end
 
 			self:UpdateStatus(IsUnitDead(unitTag), self:IsOnline())
-			self:UpdateRank()
-			self:UpdateAssignment()
-			self:UpdateDifficulty()
+			self:UpdateRank(unitTag)
+			self:UpdateAssignment(unitTag)
+			self:UpdateDifficulty(unitTag)
 			self:DoAlphaUpdate(IsUnitInGroupSupportRange(unitTag), IsUnitGroupLeader(unitTag))
 		end
 	end
@@ -1170,73 +1192,86 @@ do
 	}
 
 	-- show level for players and non-friendly NPCs
-	function UnitFrame:ShouldShowLevel()
-		local unitTag = self:GetUnitTag()
-		if IsUnitPlayer(unitTag) then
+	function UnitFrame:ShouldShowLevel(unitTag)
+		if IsUnitPlayer(unitTag) and (not HIDE_LEVEL_TYPES[GetUnitType(unitTag)] or ZO_UNIT_FRAMES_SHOW_LEVEL_REACTIONS[GetUnitReaction(unitTag)]) then
 			return true
-		elseif IsUnitInvulnerableGuard(unitTag) then
-			return false
 		else
-			if HIDE_LEVEL_TYPES[GetUnitType(unitTag)] then
-				return false
-			elseif ZO_UNIT_FRAMES_SHOW_LEVEL_REACTIONS[GetUnitReaction(unitTag)] then
-				return true
+			return false
+		end
+	end
+end
+
+function UnitFrame:UpdateIgnore(unitTag, showLevel, hiddenChampionIcon)
+	if IsUnitIgnored(unitTag) and showLevel and ShowIgnoreIcon() then
+		self.ignoreIcon:SetHidden(false)
+		if hiddenChampionIcon then
+			self.ignoreIcon:SetAnchor(RIGHT, self.levelLabel, LEFT)
+		else
+			self.ignoreIcon:SetAnchor(RIGHT, self.championIcon, LEFT)
+		end
+	else
+		self.ignoreIcon:SetHidden(true)
+	end
+end
+
+do
+	local function GetPreferedChampionPoints(unitTag)
+		return ShowUnitChampionPoints() and GetUnitChampionPoints(unitTag) or GetUnitEffectiveChampionPoints(unitTag)
+	end
+
+	local function GetChampionPointsOrLevel(unitTag)
+		return IsUnitChampion(unitTag) and GetPreferedChampionPoints(unitTag) or GetUnitLevel(unitTag)
+	end
+
+	function UnitFrame:UpdateLevel(unitTag)
+		local showLevel = self:ShouldShowLevel(unitTag)
+
+		if self.levelLabel then
+			local unitLevel = GetChampionPointsOrLevel(unitTag)
+			if showLevel and unitLevel > 0 then
+				self.levelLabel:SetHidden(false)
+				self.levelLabel:SetText(tostring(unitLevel))
+				self.nameLabel:SetAnchor(TOPLEFT, self.levelLabel, TOPRIGHT, 10, 0)
+			else
+				self.levelLabel:SetHidden(true)
+				self.nameLabel:SetAnchor(TOPLEFT)
 			end
 		end
+
+		local showChampionIcon
+		if self.championIcon then
+			if showLevel and IsUnitChampion(unitTag) then
+				showChampionIcon = true
+			else
+				showChampionIcon = false
+			end
+			self.championIcon:SetHidden(not showChampionIcon)
+		end
+
+		if self.ignoreIcon then
+			self:UpdateIgnore(unitTag, showLevel, not showChampionIcon)
+		end
+
 	end
 end
 
-function UnitFrame:UpdateLevel()
-	local unitLevel
-	local isChampion = IsUnitChampion(self:GetUnitTag())
-	if isChampion then
-		unitLevel = GetUnitEffectiveChampionPoints(self:GetUnitTag())
-	else
-		unitLevel = GetUnitLevel(self:GetUnitTag())
-	end
-
-	local showLevel = self:ShouldShowLevel()
-	if self.levelLabel then
-		if showLevel and unitLevel > 0 then
-			self.levelLabel:SetHidden(false)
-			self.levelLabel:SetText(tostring(unitLevel))
-			self.nameLabel:SetAnchor(TOPLEFT, self.levelLabel, TOPRIGHT, 10, 0)
-		else
-			self.levelLabel:SetHidden(true)
-			self.nameLabel:SetAnchor(TOPLEFT)
-		end
-	end
-
-	if self.championIcon then
-		if showLevel and isChampion then
-			self.championIcon:SetHidden(false)
-		else
-			self.championIcon:SetHidden(true)
-		end
-	end
-end
-
-function UnitFrame:UpdateRank()
+function UnitFrame:UpdateRank(unitTag)
 	if self.rankIcon then
-		local unitTag = self:GetUnitTag()
 		local rank = GetUnitAvARank(unitTag)
-
 		local showRank = rank ~= 0 or IsUnitPlayer(unitTag)
 		if showRank then
-			local rankIconFile = GetAvARankIcon(rank)
-			self.rankIcon:SetTexture(rankIconFile)
-
-			local alliance = GetUnitAlliance(unitTag)
-			self.rankIcon:SetColor(GetAllianceColor(alliance):UnpackRGBA())
+			self.rankIcon:SetTexture(GetAvARankIcon(rank))
+			self.rankIcon:SetColor(GetAllianceColor(GetUnitAlliance(unitTag)):UnpackRGBA())
 		end
 		self.rankIcon:SetHidden(not showRank)
 	end
 end
 
-function UnitFrame:UpdateAssignment()
+function UnitFrame:UpdateAssignment(unitTag)
 	if self.assignmentIcon then
-		local unitTag = self:GetUnitTag()
+		-- local unitTag = self:GetUnitTag()
 		local assignmentTexture = nil
+
 		if IsActiveWorldBattleground() then
 			local battlegroundAlliance = GetUnitBattlegroundAlliance(unitTag)
 			if battlegroundAlliance ~= BATTLEGROUND_ALLIANCE_NONE then
@@ -1252,6 +1287,7 @@ function UnitFrame:UpdateAssignment()
 		if assignmentTexture then
 			self.assignmentIcon:SetTexture(assignmentTexture)
 		end
+
 		self.assignmentIcon:SetHidden(assignmentTexture == nil)
 	end
 end
@@ -1305,9 +1341,8 @@ do
 	end
 end
 
-function UnitFrame:UpdateDifficulty()
+function UnitFrame:UpdateDifficulty(unitTag)
 	if self.leftBracket then
-		local unitTag = self:GetUnitTag()
 		local difficulty = GetUnitDifficulty(unitTag)
 
 		-- show difficulty for neutral and hostile NPCs
@@ -1334,9 +1369,9 @@ function UnitFrame:UpdateDifficulty()
 	end
 end
 
-function UnitFrame:UpdateUnitReaction()
+function UnitFrame:UpdateUnitReaction(unitTag)
 	if self.nameLabel then
-		if ZO_Group_IsGroupUnitTag(self:GetUnitTag()) then
+		if ZO_Group_IsGroupUnitTag(unitTag or self:GetUnitTag()) then
 			local r, g, b = GetInterfaceColor(INTERFACE_COLOR_TYPE_TEXT_COLORS, INTERFACE_TEXT_COLOR_HIGHLIGHT)
 			self.nameLabel:SetColor(r, g, b, self.nameLabel:GetControlAlpha())
 		end
@@ -1349,17 +1384,13 @@ do
 		["reticleovertarget"] = true,
 	}
 
-	local function IsUnitTarget(unitTag)
-		return TARGET_FRAME_UNITS[unitTag]
-	end
-
-	function UnitFrame:UpdateName()
+	function UnitFrame:UpdateName(unitTag)
 		if self.nameLabel then
 			local name
-			local unitTag = self.unitTag
+			-- local unitTag = self.unitTag
 			if IsUnitPlayer(unitTag) then
-				if IsUnitTarget(unitTag) then
-					name = UnitFrames.account.switchNames and ZO_GetSecondaryPlayerNameFromUnitTag(unitTag) or ZO_GetPrimaryPlayerNameFromUnitTag(unitTag)
+				if TARGET_FRAME_UNITS[unitTag] then
+					name = SwitchNames() and ZO_GetSecondaryPlayerNameFromUnitTag(unitTag) or ZO_GetPrimaryPlayerNameFromUnitTag(unitTag)
 				else
 					name = ZO_GetPrimaryPlayerNameFromUnitTag(unitTag)
 				end
@@ -1375,9 +1406,9 @@ do
 	-- Will this fill up the memory? And if so, who cares in an x64 env?
 	-- Caching localization result is 10x faster, less garbage.
 	local function UpdatePlayerCaptionName(unitTag)
-		local name = UnitFrames.account.switchNames and ZO_GetPrimaryPlayerNameFromUnitTag(unitTag) or ZO_GetSecondaryPlayerNameFromUnitTag(unitTag)
+		local name = SwitchNames() and ZO_GetPrimaryPlayerNameFromUnitTag(unitTag) or ZO_GetSecondaryPlayerNameFromUnitTag(unitTag)
 		local title = GetUnitTitle(unitTag)
-		if title ~= "" and not UnitFrames.account.hideTitle then
+		if title ~= "" and not HideTitle() then
 			return ZO_CachedStrFormat(SI_PLAYER_NAME_WITH_TITLE_FORMAT, name, title)
 		else
 			return name
@@ -1390,7 +1421,7 @@ do
 	end
 
 	function UnitFrame:UpdatePlayerCaption(unitTag)
-		if UnitFrames.account.showClassIcon then
+		if ShowClassIcon() then
 			return ZO_CachedStrFormat(SI_UNITFRAMESREBIRTH_CLASS_WITH_NAME, GetPlatformClassIconResized(unitTag), UpdatePlayerCaptionName(unitTag))
 		end
 		return UpdatePlayerCaptionName(unitTag)
@@ -1404,11 +1435,11 @@ do
 	end
 
 	-- still set the caption text when empty so we collapse the label for anything anchoring off the bottom of it
-	function UnitFrame:UpdateCaption()
+	function UnitFrame:UpdateCaption(unitTag)
 		local captionLabel = self.captionLabel
 		if captionLabel then
 			local caption
-			local unitTag = self:GetUnitTag()
+			unitTag = unitTag or self:GetUnitTag()
 			if IsUnitPlayer(unitTag) then
 				caption = self:UpdatePlayerCaption(unitTag)
 			else
@@ -1955,7 +1986,7 @@ local function RegisterForEvents()
 				local oldHealth = unitFrame.healthBar.currentValue
 				if oldHealth and oldHealth == 0 then
 					-- Unit went from dead to non dead...update reaction
-					unitFrame:UpdateUnitReaction()
+					unitFrame:UpdateUnitReaction(unitTag)
 				end
 			else
 				unitFrame:UpdatePowerBar(powerPoolIndex, powerType, powerPool, powerPoolMax)
@@ -1992,8 +2023,13 @@ local function RegisterForEvents()
 	local function OnLevelUpdate(eventCode, unitTag, level)
 		local unitFrame = UnitFrames:GetFrame(unitTag)
 		if unitFrame then
-			unitFrame:UpdateLevel()
+			unitFrame:UpdateLevel(unitTag)
 		end
+	end
+
+	local function OnIgnoreUpdate()
+		ZO_UnitFrames_UpdateWindow("reticleover", UNIT_CHANGED)
+		ZO_UnitFrames_UpdateWindow("reticleovertarget", UNIT_CHANGED)
 	end
 
 	local function OnLeaderUpdate()
@@ -2003,7 +2039,7 @@ local function RegisterForEvents()
 	local function OnDispositionUpdate(eventCode, unitTag)
 		local unitFrame = UnitFrames:GetFrame(unitTag)
 		if unitFrame then
-			unitFrame:UpdateUnitReaction()
+			unitFrame:UpdateUnitReaction(unitTag)
 		end
 	end
 
@@ -2048,7 +2084,7 @@ local function RegisterForEvents()
 	local function OnGroupMemberRoleChanged(eventCode, unitTag, role)
 		local unitFrame = UnitFrames:GetFrame(unitTag)
 		if unitFrame then
-			unitFrame:UpdateAssignment()
+			unitFrame:UpdateAssignment(unitTag)
 		end
 	end
 
@@ -2060,21 +2096,21 @@ local function RegisterForEvents()
 		local unitFrame = UnitFrames:GetFrame(unitTag)
 
 		if unitFrame then
-			unitFrame:UpdateRank()
+			unitFrame:UpdateRank(unitTag)
 		end
 	end
 
 	local function OnChampionPointsUpdate(eventCode, unitTag)
 		local unitFrame = UnitFrames:GetFrame(unitTag)
 		if unitFrame then
-			unitFrame:UpdateLevel()
+			unitFrame:UpdateLevel(unitTag)
 		end
 	end
 
 	local function OnTitleUpdated(eventCode, unitTag)
 		local unitFrame = UnitFrames:GetFrame(unitTag)
 		if unitFrame then
-			unitFrame:UpdateCaption()
+			unitFrame:UpdateCaption(unitTag)
 		end
 	end
 
@@ -2126,6 +2162,8 @@ local function RegisterForEvents()
 	ZO_UnitFrames:RegisterForEvent(EVENT_POWER_UPDATE, OnPowerUpdate)
 	ZO_UnitFrames:RegisterForEvent(EVENT_UNIT_CREATED, OnUnitCreated)
 	ZO_UnitFrames:RegisterForEvent(EVENT_UNIT_DESTROYED, OnUnitDestroyed)
+	ZO_UnitFrames:RegisterForEvent(EVENT_IGNORE_ADDED, OnIgnoreUpdate)
+	ZO_UnitFrames:RegisterForEvent(EVENT_IGNORE_REMOVED, OnIgnoreUpdate)
 	ZO_UnitFrames:RegisterForEvent(EVENT_LEVEL_UPDATE, OnLevelUpdate)
 	ZO_UnitFrames:RegisterForEvent(EVENT_LEADER_UPDATE, OnLeaderUpdate)
 	ZO_UnitFrames:RegisterForEvent(EVENT_DISPOSITION_UPDATE, OnDispositionUpdate)
