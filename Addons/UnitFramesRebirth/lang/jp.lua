@@ -12,8 +12,6 @@ SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_SWITCH_NAMES, "名前を切り替え
 SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_SWITCH_NAMES_TT, "ターゲットフレームのキャラクター名とESOーIDを切り替えます。", 0)
 SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_HIDE_TITLE, "タイトルを非表示", 0)
 SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_HIDE_TITLE_TT, "ターゲットフレームのプレーヤー名の横にあるタイトルを非表示にします。", 0)
-SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_CHAMPION_POINTS, "実際のチャンピオンポイント", 0)
-SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_CHAMPION_POINTS_TT, "このオプションは、LV上限値の代わりに、プレイヤーの現在のチャンピオンポイントの数値を表示します。", 0)
 SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_IGNORE_ICON, "ブロックしているプレイヤー", 0)
 SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_IGNORE_ICON_TT, "このプレイヤーがブロックリストにある場合、プレイヤー名の横にアイコンを表示します。", 0)
 SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_HEALTH_WARNER, "体力低下を警告する", 0)

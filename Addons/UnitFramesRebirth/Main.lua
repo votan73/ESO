@@ -20,7 +20,7 @@ local function CreateSettings()
 		showHealthWarner = true,
 		switchNames = true,
 		hideTitle = true,
-		showRealChampionPoints = true,
+		showRealChampionPoints = false,
 		showIgnoredPlayers = true,
 		approachAmountMs = UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_DEFAULT,
 	}
@@ -71,18 +71,6 @@ local function CreateSettings()
 		setFunction = function(bool)
 			UnitFrames.account.showHealthWarner = bool
 			UnitFrames:SetWarner(bool)
-		end,
-	}
-
-	settings:AddSetting {
-		type = LibHarvensAddonSettings.ST_CHECKBOX,
-		label = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_CHAMPION_POINTS),
-		tooltip = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_CHAMPION_POINTS_TT),
-		default = DEFAULT_SETTINGS.showRealChampionPoints,
-		getFunction = function() return UnitFrames.account.showRealChampionPoints end,
-		setFunction = function(bool)
-			UnitFrames.account.showRealChampionPoints = bool
-			UpdateTargetWindow()
 		end,
 	}
 
