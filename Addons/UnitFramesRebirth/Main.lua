@@ -20,7 +20,6 @@ local function CreateSettings()
 		showHealthWarner = true,
 		switchNames = true,
 		hideTitle = true,
-		showRealChampionPoints = false,
 		showIgnoredPlayers = true,
 		approachAmountMs = UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_DEFAULT,
 	}
