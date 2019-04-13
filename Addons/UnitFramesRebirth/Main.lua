@@ -1,7 +1,8 @@
 
+local UnitFrames
+
 local addonName = "UnitFramesRebirth"
 
-local UnitFrames
 CALLBACK_MANAGER:RegisterCallback("UnitFramesPreInit", function(unitFrames) UnitFrames = unitFrames end)
 
 local function CreateSettings()
@@ -20,7 +21,6 @@ local function CreateSettings()
 		showHealthWarner = true,
 		switchNames = true,
 		hideTitle = true,
-		showIgnoredPlayers = true,
 		approachAmountMs = UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_DEFAULT,
 	}
 	UnitFrames.account = ZO_SavedVars:NewAccountWide(addonName.."_Data", 1, nil, DEFAULT_SETTINGS)
@@ -30,11 +30,11 @@ local function CreateSettings()
 		label = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_CLASS_ICON),
 		tooltip = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_CLASS_ICON_TT),
 		default = DEFAULT_SETTINGS.showClassIcon,
-		getFunction = function() return UnitFrames.account.showClassIcon end,
 		setFunction = function(bool)
 			UnitFrames.account.showClassIcon = bool
 			UpdateTargetWindow()
 		end,
+		getFunction = function() return UnitFrames.account.showClassIcon end,
 	}
 
 	settings:AddSetting {
@@ -42,11 +42,11 @@ local function CreateSettings()
 		label = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_SWITCH_NAMES),
 		tooltip = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_SWITCH_NAMES_TT),
 		default = DEFAULT_SETTINGS.switchNames,
-		getFunction = function() return UnitFrames.account.switchNames end,
 		setFunction = function(bool)
 			UnitFrames.account.switchNames = bool
 			UpdateTargetWindow()
 		end,
+		getFunction = function() return UnitFrames.account.switchNames end,
 	}
 
 	settings:AddSetting {
@@ -54,11 +54,11 @@ local function CreateSettings()
 		label = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_HIDE_TITLE),
 		tooltip = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_HIDE_TITLE_TT),
 		default = DEFAULT_SETTINGS.hideTitle,
-		getFunction = function() return UnitFrames.account.hideTitle end,
 		setFunction = function(bool)
 			UnitFrames.account.hideTitle = bool
 			UpdateTargetWindow()
 		end,
+		getFunction = function() return UnitFrames.account.hideTitle end,
 	}
 
 	settings:AddSetting {
@@ -66,23 +66,11 @@ local function CreateSettings()
 		label = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_HEALTH_WARNER),
 		tooltip = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_HEALTH_WARNER_TT),
 		default = DEFAULT_SETTINGS.showHealthWarner,
-		getFunction = function() return UnitFrames.account.showHealthWarner end,
 		setFunction = function(bool)
 			UnitFrames.account.showHealthWarner = bool
 			UnitFrames:SetWarner(bool)
 		end,
-	}
-
-	settings:AddSetting {
-		type = LibHarvensAddonSettings.ST_CHECKBOX,
-		label = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_IGNORE_ICON),
-		tooltip = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_IGNORE_ICON_TT),
-		default = DEFAULT_SETTINGS.showIgnoredPlayers,
-		getFunction = function() return UnitFrames.account.showIgnoredPlayers end,
-		setFunction = function(bool)
-			UnitFrames.account.showIgnoredPlayers = bool
-			UpdateTargetWindow()
-		end,
+		getFunction = function() return UnitFrames.account.showHealthWarner end,
 	}
 
 	do

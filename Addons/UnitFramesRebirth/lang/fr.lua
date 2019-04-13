@@ -12,8 +12,6 @@ SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_SWITCH_NAMES, "Permutation des noms"
 SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_SWITCH_NAMES_TT, "Permute le personnage et l'id utilisateur sur le cadre de cible.", 0)
 SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_HIDE_TITLE, "Masquer le titre", 0)
 SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_HIDE_TITLE_TT, "Masque le titre à côté du nom du joueur dans le cadre de cible.", 0)
-SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_IGNORE_ICON, "Joueurs Ignorés", 0)
-SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_IGNORE_ICON_TT, "Affiche une icône à côté du nom du joueur quand il est présent dans votre liste de joueurs ignorés.", 0)
 SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_HEALTH_WARNER, "Alerte Santé Basse", 0)
 SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_HEALTH_WARNER_TT, "Cette option s'applique uniquement aux cadres de groupe. Si un joueur a sa santé basse, sa barre de santé brillera.", 0)
 SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_APPROACH_HEALTHBAR, "Taux de mise à jour des barres de santé", 0)
