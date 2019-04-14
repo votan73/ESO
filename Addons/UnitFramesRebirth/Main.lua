@@ -20,7 +20,6 @@ local function CreateSettings()
 		showHealthWarner = true,
 		switchNames = true,
 		hideTitle = true,
-		showIgnoredPlayers = true,
 		approachAmountMs = UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_DEFAULT,
 	}
 	UnitFrames.account = ZO_SavedVars:NewAccountWide(addonName.."_Data", 1, nil, DEFAULT_SETTINGS)
@@ -70,18 +69,6 @@ local function CreateSettings()
 		setFunction = function(bool)
 			UnitFrames.account.showHealthWarner = bool
 			UnitFrames:SetWarner(bool)
-		end,
-	}
-
-	settings:AddSetting {
-		type = LibHarvensAddonSettings.ST_CHECKBOX,
-		label = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_IGNORE_ICON),
-		tooltip = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_IGNORE_ICON_TT),
-		default = DEFAULT_SETTINGS.showIgnoredPlayers,
-		getFunction = function() return UnitFrames.account.showIgnoredPlayers end,
-		setFunction = function(bool)
-			UnitFrames.account.showIgnoredPlayers = bool
-			UpdateTargetWindow()
 		end,
 	}
 
