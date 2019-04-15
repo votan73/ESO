@@ -1,7 +1,8 @@
 
+local UnitFrames
+
 local addonName = "UnitFramesRebirth"
 
-local UnitFrames
 CALLBACK_MANAGER:RegisterCallback("UnitFramesPreInit", function(unitFrames) UnitFrames = unitFrames end)
 
 local function CreateSettings()

@@ -140,7 +140,7 @@ local function GetGroupAnchorFrameOffsets(subgroupIndex, groupStride, constants)
 	local row = zo_floor(zeroBasedIndex / groupStride)
 	local column = zeroBasedIndex -(row * groupStride)
 
-	return constants.RAID_FRAME_BASE_OFFSET_X + column * constants.RAID_FRAME_OFFSET_X, constants.RAID_FRAME_BASE_OFFSET_Y + row * constants.RAID_FRAME_ANCHOR_CONTAINER_HEIGHT
+	return constants.RAID_FRAME_BASE_OFFSET_X +(column * constants.RAID_FRAME_OFFSET_X), constants.RAID_FRAME_BASE_OFFSET_Y +(row * constants.RAID_FRAME_ANCHOR_CONTAINER_HEIGHT)
 end
 
 local function IsPlayerGrouped()
