@@ -1422,14 +1422,15 @@ end
 do
 	-- Caching localization result is 100x faster, less garbage.
 	local function UpdateNPCCaptionName(unitTag)
-		return ZO_CachedStrFormat(SI_TOOLTIP_UNIT_CAPTION, GetUnitCaption(unitTag))
+		local unitCaption = GetUnitCaption(unitTag)
+		return unitCaption and ZO_CachedStrFormat(SI_TOOLTIP_UNIT_CAPTION, unitCaption) or ""
 	end
 
 	-- still set the caption text when empty so we collapse the label for anything anchoring off the bottom of it
 	function UnitFrame:UpdateCaption()
 		local captionLabel = self.captionLabel
 		if captionLabel then
-			local caption
+			local caption = ""
 			local unitTag = self:GetUnitTag()
 			if IsUnitPlayer(unitTag) then
 				caption = self:UpdatePlayerCaption(unitTag)
@@ -1437,7 +1438,7 @@ do
 				caption = UpdateNPCCaptionName(unitTag)
 			end
 
-			captionLabel:SetHidden(caption == nil)
+			captionLabel:SetHidden(caption == "")
 			captionLabel:SetText(caption)
 		end
 	end
@@ -1982,13 +1983,13 @@ local function RegisterForEvents()
 		ZO_UnitFrames_UpdateWindow("reticleovertarget", UNIT_CHANGED)
 	end
 
-	local function OnPowerUpdate(eventCode, unitTag, powerPoolIndex, powerType, powerPool, powerPoolMax)
+	local function PowerUpdateHandlerFunction(unitTag, powerPoolIndex, powerType, powerPool, powerPoolMax)
 		local unitFrame = UnitFrames:GetFrame(unitTag)
 		if unitFrame then
 			if powerType == POWERTYPE_HEALTH then
+				local oldHealth = unitFrame.healthBar.currentValue
 				unitFrame.healthBar:Update(POWERTYPE_HEALTH, powerPool, powerPoolMax)
 
-				local oldHealth = unitFrame.healthBar.currentValue
 				if oldHealth and oldHealth == 0 then
 					-- Unit went from dead to non dead...update reaction
 					unitFrame:UpdateUnitReaction()
@@ -1997,6 +1998,14 @@ local function RegisterForEvents()
 				unitFrame:UpdatePowerBar(powerPoolIndex, powerType, powerPool, powerPoolMax)
 			end
 		end
+	end
+	if GetAPIVersion() >= 100027 then
+		ZO_MostRecentPowerUpdateHandler:New("UnitFrames", PowerUpdateHandlerFunction)
+	else
+		local function OnPowerUpdate(eventCode, unitTag, powerPoolIndex, powerType, powerPool, powerPoolMax)
+			PowerUpdateHandlerFunction(unitTag, powerPoolIndex, powerType, powerPool, powerPoolMax)
+		end
+		ZO_UnitFrames:RegisterForEvent(EVENT_POWER_UPDATE, OnPowerUpdate)
 	end
 
 	local function OnUnitCreated(eventCode, unitTag)
@@ -2159,7 +2168,6 @@ local function RegisterForEvents()
 	ZO_UnitFrames:RegisterForEvent(EVENT_TARGET_CHANGED, OnTargetChanged)
 	ZO_UnitFrames:RegisterForEvent(EVENT_UNIT_CHARACTER_NAME_CHANGED, OnUnitCharacterNameChanged)
 	ZO_UnitFrames:RegisterForEvent(EVENT_RETICLE_TARGET_CHANGED, OnReticleTargetChanged)
-	ZO_UnitFrames:RegisterForEvent(EVENT_POWER_UPDATE, OnPowerUpdate)
 	ZO_UnitFrames:RegisterForEvent(EVENT_UNIT_CREATED, OnUnitCreated)
 	ZO_UnitFrames:RegisterForEvent(EVENT_UNIT_DESTROYED, OnUnitDestroyed)
 	ZO_UnitFrames:RegisterForEvent(EVENT_LEVEL_UPDATE, OnLevelUpdate)
