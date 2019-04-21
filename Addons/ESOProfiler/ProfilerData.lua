@@ -1,4 +1,13 @@
-if GetAPIVersion() < 100025 then return end
+local legacy = GetAPIVersion() < 100027
+
+-- ToDo: Remove
+if legacy then
+	local orgGetScriptProfilerRecordInfo = GetScriptProfilerRecordInfo
+	function GetScriptProfilerRecordInfo(...)
+		local recordDataIndex, startTimeNS, endTimeNS, calledByRecordIndex = orgGetScriptProfilerRecordInfo(...)
+		return recordDataIndex, startTimeNS, endTimeNS, calledByRecordIndex, SCRIPT_PROFILER_RECORD_DATA_TYPE_CLOSURE
+	end
+end
 
 local ProfilerData = ZO_Object:Subclass()
 ESO_PROFILER.ProfilerData = ProfilerData
@@ -12,7 +21,18 @@ end
 function ProfilerData:Initialize(startTime, upTime)
 	self.nextStackFrameId = 1
 	self.frameIdLookup = { }
-	self.closureInfo = { }
+	if legacy then
+		self.closureInfo = {
+			[SCRIPT_PROFILER_RECORD_DATA_TYPE_CLOSURE] = { },
+		}
+	else
+		self.closureInfo = {
+			[SCRIPT_PROFILER_RECORD_DATA_TYPE_CLOSURE] = { },
+			[SCRIPT_PROFILER_RECORD_DATA_TYPE_CFUNCTION] = { },
+			[SCRIPT_PROFILER_RECORD_DATA_TYPE_GARBAGE_COLLECTION] = { },
+			[SCRIPT_PROFILER_RECORD_DATA_TYPE_USER_EVENT] = { },
+		}
+	end
 	self.events = { }
 	self.stackFrames = { }
 	self.frameStats = { }
@@ -20,12 +40,34 @@ function ProfilerData:Initialize(startTime, upTime)
 	self.upTime = upTime
 end
 
-function ProfilerData:GetClosureInfo(recordDataIndex, frameIndex, startTime)
-	if(not self.closureInfo[recordDataIndex]) then
-		local name, file, line = GetScriptProfilerClosureInfo(recordDataIndex)
-		local fps, latency, memory = file:match("statsF(%d+)L(%d+)M(%d+)")
+function ProfilerData:GetClosureInfo(recordDataIndex, recordDataType, frameIndex, startTime)
+	if(not self.closureInfo[recordDataType][recordDataIndex]) then
+		local name, file, line
+		local fps, latency, memory
+
+		if recordDataType == SCRIPT_PROFILER_RECORD_DATA_TYPE_CLOSURE then
+			name, file, line = GetScriptProfilerClosureInfo(recordDataIndex)
+			fps, latency, memory = file:match("statsF(%d+)L(%d+)M(%d+)")
+		else
+			line = 0
+			if recordDataType == SCRIPT_PROFILER_RECORD_DATA_TYPE_CFUNCTION then
+				-- C Functions are functions defined by ZOS as part of the game's API.
+				name = GetScriptProfilerCFunctionInfo(recordDataIndex)
+				file = "@Client"
+			elseif recordDataType == SCRIPT_PROFILER_RECORD_DATA_TYPE_GARBAGE_COLLECTION then
+				-- At arbitrary times, the lua intepreter will automatically try to reclaim memory you are no longer using. When it does this we generate a GC event to track it.
+				name = GetScriptProfilerGarbageCollectionInfo(recordDataIndex) == SCRIPT_PROFILER_GARBAGE_COLLECTION_TYPE_AUTOMATIC and "Lua GC Step" or "Manual collectgarbage() GC step"
+				file = "@Lua"
+			elseif recordDataType == SCRIPT_PROFILER_RECORD_DATA_TYPE_USER_EVENT then
+				-- You can fire off your own custom events using RecordScriptProfilerUserEvent(myEventString). Events with the same eventString will share a recordDataIndex.
+				name = string.format("%q", GetScriptProfilerUserEventInfo(recordDataIndex))
+				file = "@UserEvent"
+			end
+			fps = nil
+		end
 		if(not fps or not frameIndex) then
-			self.closureInfo[recordDataIndex] = {
+			self.closureInfo[recordDataType][recordDataIndex] = {
+				recordDataType = recordDataType,
 				info = { name, file, line },
 				callCount = 0,
 				wallTime = 0,
@@ -44,32 +86,32 @@ function ProfilerData:GetClosureInfo(recordDataIndex, frameIndex, startTime)
 			}
 		end
 	end
-	return self.closureInfo[recordDataIndex]
+	return self.closureInfo[recordDataType][recordDataIndex]
 end
 
 function ProfilerData:ProcessRecord(frameIndex, recordIndex)
-	local recordDataIndex, startTimeNS, endTimeNS, calledByRecordIndex = GetScriptProfilerRecordInfo(frameIndex, recordIndex)
+	local recordDataIndex, startTimeNS, endTimeNS, calledByRecordIndex, recordDataType = GetScriptProfilerRecordInfo(frameIndex, recordIndex)
 	local start = (startTimeNS - self.upTime) / 1000
 
-	local closureInfo = self:GetClosureInfo(recordDataIndex, frameIndex, start)
+	local closureInfo = self:GetClosureInfo(recordDataIndex, recordDataType, frameIndex, start)
 	if(not closureInfo) then return end
 
 	local duration = (endTimeNS - startTimeNS) / 1000
 
 	local stackId, parentId
 	if (calledByRecordIndex) then
-		local parentRecordDataIndex, _, _, grandParentRecordIndex = GetScriptProfilerRecordInfo(frameIndex, calledByRecordIndex)
-		local calledByInfo = self:GetClosureInfo(parentRecordDataIndex)
+		local parentRecordDataIndex, _, _, grandParentRecordIndex, parentRecordDataType = GetScriptProfilerRecordInfo(frameIndex, calledByRecordIndex)
+		local calledByInfo = self:GetClosureInfo(parentRecordDataIndex, parentRecordDataType)
 		calledByInfo.selfTime = calledByInfo.selfTime - duration
 
-		stackId = self:GetStackFrameId(recordDataIndex, parentRecordDataIndex)
-		local grandParentDataRecordIndex
+		stackId = self:GetStackFrameId(recordDataIndex, recordDataType, parentRecordDataIndex, parentRecordDataType)
+		local grandParentDataRecordIndex, grandParentRecordDataType
 		if(grandParentRecordIndex) then
-			grandParentDataRecordIndex = GetScriptProfilerRecordInfo(frameIndex, grandParentRecordIndex)
+			grandParentDataRecordIndex, _, _, _, grandParentRecordDataType = GetScriptProfilerRecordInfo(frameIndex, grandParentRecordIndex)
 		end
-		parentId = self:GetStackFrameId(parentRecordDataIndex, grandParentDataRecordIndex)
+		parentId = self:GetStackFrameId(parentRecordDataIndex, parentRecordDataType, grandParentDataRecordIndex, grandParentRecordDataType)
 	else
-		stackId = self:GetStackFrameId(recordDataIndex)
+		stackId = self:GetStackFrameId(recordDataIndex, recordDataType)
 	end
 
 	closureInfo.callCount = closureInfo.callCount + 1
@@ -81,11 +123,11 @@ function ProfilerData:ProcessRecord(frameIndex, recordIndex)
 		closureInfo.slowestRun = stackId
 	end
 	self.events[#self.events + 1] = { start, duration, stackId }
-	self.stackFrames[stackId] = { recordDataIndex, parentId }
+	self.stackFrames[stackId] = { recordDataIndex, recordDataType, parentId }
 end
 
-function ProfilerData:GetStackFrameId(recordDataIndex, parentRecordDataIndex)
-	local key = string.format("%d_%d", recordDataIndex, parentRecordDataIndex or 0)
+function ProfilerData:GetStackFrameId(recordDataIndex, recordDataType, parentRecordDataIndex, parentRecordDataType)
+	local key = string.format(parentRecordDataIndex and "%d_%d_%d_%d" or "%d_%d", recordDataIndex, recordDataType, parentRecordDataIndex, parentRecordDataType)
 	if (not self.frameIdLookup[key]) then
 		self.frameIdLookup[key] = self.nextStackFrameId
 		self.nextStackFrameId = self.nextStackFrameId + 1
@@ -98,8 +140,8 @@ function ProfilerData:GetClosureInfoList()
 end
 
 function ProfilerData:GetClosureByStackId(stackId)
-	local recordDataIndex, parentId = unpack(self.stackFrames[stackId])
-	return self.closureInfo[recordDataIndex], parentId
+	local recordDataIndex, recordDataType, parentId = unpack(self.stackFrames[stackId])
+	return self.closureInfo[recordDataType][recordDataIndex], parentId
 end
 
 local function GetEmptySaveData(startTime, upTime)
@@ -129,16 +171,18 @@ function ProfilerData:Export(task)
 		events[i] = string.format("%.3f,%.3f,%d", unpack(self.events[i]))
 	end )
 	task:For(pairs(self.stackFrames)):Do( function(id, frame)
-		local recordDataIndex, parentId = unpack(frame)
+		local recordDataIndex, recordDataType, parentId = unpack(frame)
 		if (parentId) then
-			stackFrames[id] = string.format("%d,%d", recordDataIndex, parentId)
+			stackFrames[id] = string.format("%d,%d", recordDataIndex * 10 + recordDataType, parentId)
 		else
-			stackFrames[id] = string.format("%d", recordDataIndex)
+			stackFrames[id] = string.format("%d", recordDataIndex * 10 + recordDataType)
 		end
 	end )
-	task:For(pairs(self.closureInfo)):Do( function(recordDataIndex, closureInfo)
-		local name, file, line = unpack(closureInfo.info)
-		closures[recordDataIndex] = string.format("%s,%s,%d", name, file, line)
+	task:For(pairs(self.closureInfo)):Do( function(recordDataType, recordTable)
+		task:For(pairs(recordTable)):Do( function(recordDataIndex, closureInfo)
+			local name, file, line = unpack(closureInfo.info)
+			closures[recordDataIndex * 10 + recordDataType] = string.format("%s,%s,%d", name, file, line)
+		end )
 	end )
 	task:For(pairs(self.frameStats)):Do( function(frameIndex, stats)
 		frameStats[frameIndex] = string.format("%.3f,%d,%d,%d", stats.start, stats.fps, stats.latency, stats.memory)

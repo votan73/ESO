@@ -1,4 +1,9 @@
-﻿if GetAPIVersion() < 100025 then return end
+﻿local legacy = GetAPIVersion() < 100027
+
+-- ToDo: Remove
+if legacy then
+	SCRIPT_PROFILER_RECORD_DATA_TYPE_CLOSURE = 1
+end
 
 local addon = {
 	name = "ESOProfiler",
@@ -43,8 +48,6 @@ do
 	end
 end
 
--- TODO: Someday there will be multiple record types, and they will be delineated by a SCRIPT_PROFILER_RECORD_TYPE enum.
-local SCRIPT_PROFILER_RECORD_TYPE_CLOSURE = 1
 local CLOSURE_NAME_INDEX = 1
 local CLOSURE_FILE_INDEX = 2
 local CLOSURE_LINE_INDEX = 3
@@ -53,7 +56,7 @@ function addon:GenerateReport()
 	if self.lastProfile == self.newRun or self.profiling then return end
 	self.lastProfile = self.newRun
 
-	local statusBar = self.control:GetNamedChild("LoadingBar")
+	local statusBar = self.statusBar
 	local content = self.control:GetNamedChild("Content")
 	local function PrintReport()
 		self:PrintReport()
@@ -89,10 +92,12 @@ function addon:PrintReport()
 	local ZO_ScrollList_CreateDataEntry = ZO_ScrollList_CreateDataEntry
 	local text = self.searchBox:GetText():lower()
 	local line = tonumber(text)
-	task:For(pairs(self.profilerData:GetClosureInfoList())):Do( function(recordDataIndex, closure)
-		if text == "" or line == closure.info[CLOSURE_LINE_INDEX] or zo_plainstrfind(closure.info[CLOSURE_NAME_INDEX]:lower(), text) or zo_plainstrfind(closure.info[CLOSURE_FILE_INDEX]:lower(), text) then
-			dataList[#dataList + 1] = ZO_ScrollList_CreateDataEntry(SCRIPT_PROFILER_RECORD_TYPE_CLOSURE, { closure = closure })
-		end
+	task:For(pairs(self.profilerData:GetClosureInfoList())):Do( function(recordDataType, recordTable)
+		task:For(pairs(recordTable)):Do( function(recordDataIndex, closure)
+			if text == "" or line == closure.info[CLOSURE_LINE_INDEX] or zo_plainstrfind(closure.info[CLOSURE_NAME_INDEX]:lower(), text) or zo_plainstrfind(closure.info[CLOSURE_FILE_INDEX]:lower(), text) then
+				dataList[#dataList + 1] = ZO_ScrollList_CreateDataEntry(recordDataType, { closure = closure })
+			end
+		end )
 	end )
 	task:Then( function()
 		local sortHeaders = self.sortHeaders
@@ -141,7 +146,11 @@ do
 		local closure = selectedData.closure
 		local count = closure.callCount
 		ZO_ClearNumericallyIndexedTable(text)
-		text[#text + 1] = string.format("%s in %s:%i", closure.info[CLOSURE_NAME_INDEX], closure.info[CLOSURE_FILE_INDEX], closure.info[CLOSURE_LINE_INDEX])
+		if closure.recordDataType == SCRIPT_PROFILER_RECORD_DATA_TYPE_CLOSURE then
+			text[#text + 1] = string.format("%s in %s:%i", closure.info[CLOSURE_NAME_INDEX], closure.info[CLOSURE_FILE_INDEX], closure.info[CLOSURE_LINE_INDEX])
+		else
+			text[#text + 1] = string.format("%s (%s)", closure.info[CLOSURE_NAME_INDEX], closure.info[CLOSURE_FILE_INDEX])
+		end
 		text[#text + 1] = ""
 		text[#text + 1] = string.format("wall-time: %.3fµs / avg: %.3fµs", closure.wallTime, closure.wallTime / count)
 		text[#text + 1] = string.format("self-time: %.3fµs / avg: %.3fµs", closure.selfTime, closure.selfTime / count)
@@ -163,7 +172,11 @@ do
 		while num > 0 and stackId and stackId > 0 do
 			parent, stackId = profilerData:GetClosureByStackId(stackId)
 			num = num - 1
-			text[#text + 1] = string.format("%s (|cefefef%s:%i|r)", parent.info[CLOSURE_NAME_INDEX], parent.info[CLOSURE_FILE_INDEX], parent.info[CLOSURE_LINE_INDEX])
+			if parent.recordDataType == SCRIPT_PROFILER_RECORD_DATA_TYPE_CLOSURE then
+				text[#text + 1] = string.format("%s (|cefefef%s:%i|r)", parent.info[CLOSURE_NAME_INDEX], parent.info[CLOSURE_FILE_INDEX], parent.info[CLOSURE_LINE_INDEX])
+			else
+				text[#text + 1] = string.format("%s (|cefefef%s|r)", parent.info[CLOSURE_NAME_INDEX], parent.info[CLOSURE_FILE_INDEX])
+			end
 		end
 
 		AddLine(ItemTooltip, table.concat(text, "\n"), ZO_TOOLTIP_DEFAULT_COLOR, TEXT_ALIGN_LEFT)
@@ -211,7 +224,7 @@ do
 			statusBar:SetMinMax(0, max)
 			statusBar:SetValue(value)
 			local closure = profilerData:GetClosureByStackId(stackId)
-			dataList[#dataList + 1] = ZO_ScrollList_CreateDataEntry(SCRIPT_PROFILER_RECORD_TYPE_CLOSURE, { closure = closure })
+			dataList[#dataList + 1] = ZO_ScrollList_CreateDataEntry(closure.recordDataType, { closure = closure })
 			local stackId = closure.slowestRun
 			local function loop(index)
 				value = value + 1
@@ -279,13 +292,21 @@ function addon:OnSearchEnterKeyPressed(editBox)
 end
 ------------------------------------------
 function addon:AddKeybind()
-	self.keybindButtonGroup = {
+	local function AutoStartEnabled()
+		return GetCVar("StartLuaProfilingOnUILoad") ~= "0"
+	end
+	local function SetAutoStartEnabled(on)
+		SetCVar("StartLuaProfilingOnUILoad", on and "1" or "0")
+	end
+
+	self.keybindButtonGroupRight = {
 		alignment = KEYBIND_STRIP_ALIGN_RIGHT,
 		{
 			name = function() return GetString(self.profiling and SI_JOURNAL_MENU_ESO_PROFILER_STOP or SI_JOURNAL_MENU_ESO_PROFILER_START) end,
 			keybind = "ESO_PROFILER_TOGGLE",
 			order = 100,
 			callback = function()
+				PlaySound(SOUNDS.DEFAULT_CLICK)
 				if self.profiling then
 					StopScriptProfiler()
 					self:GenerateReport()
@@ -295,11 +316,33 @@ function addon:AddKeybind()
 			end,
 		},
 	}
+	-- ToDo: Remove
+	if legacy then
+		self.keybindButtonGroupAutoStart = {
+			alignment = KEYBIND_STRIP_ALIGN_CENTER,
+		}
+	else
+		self.keybindButtonGroupAutoStart = {
+			alignment = KEYBIND_STRIP_ALIGN_CENTER,
+			{
+				name = function() return GetString(AutoStartEnabled() and SI_JOURNAL_MENU_ESO_PROFILER_AUTOSTART_ON or SI_JOURNAL_MENU_ESO_PROFILER_AUTOSTART_OFF) end,
+				keybind = "ESO_PROFILER_AUTOSTART_TOGGLE",
+				order = 0,
+				callback = function()
+					PlaySound(SOUNDS.DEFAULT_CLICK)
+					SetAutoStartEnabled(not AutoStartEnabled())
+					KEYBIND_STRIP:UpdateKeybindButtonGroup(self.keybindButtonGroupAutoStart)
+				end,
+			},
+		}
+	end
 	ESO_PROFILER_FRAGMENT:RegisterCallback("StateChange", function(oldState, newState)
 		if newState == SCENE_FRAGMENT_SHOWN then
-			KEYBIND_STRIP:AddKeybindButtonGroup(self.keybindButtonGroup)
+			KEYBIND_STRIP:AddKeybindButtonGroup(self.keybindButtonGroupRight)
+			KEYBIND_STRIP:AddKeybindButtonGroup(self.keybindButtonGroupAutoStart)
 		elseif newState == SCENE_HIDING then
-			KEYBIND_STRIP:RemoveKeybindButtonGroup(self.keybindButtonGroup)
+			KEYBIND_STRIP:RemoveKeybindButtonGroup(self.keybindButtonGroupRight)
+			KEYBIND_STRIP:RemoveKeybindButtonGroup(self.keybindButtonGroupAutoStart)
 		end
 	end )
 end
@@ -309,11 +352,15 @@ function addon:InitializeWindow()
 	self.content = self.control:GetNamedChild("Content")
 	self.contentList = self.content:GetNamedChild("List")
 	self.searchBox = self.content:GetNamedChild("SearchBox")
+	self.statusBar = self.control:GetNamedChild("LoadingBar")
+
+	self.statusBar:SetHidden(true)
+	self.content:SetHidden(true)
 
 	local function formatValue(value)
 		return string.format("%d", value)
 	end
-	local function setupDataRow(rowControl, rowData, scrollList)
+	local function setupDataRowBase(rowControl, closure, text)
 		local nameCtl = rowControl:GetNamedChild("Name")
 		local includeTimeCtl = rowControl:GetNamedChild("IncludeTime")
 		local includeTimeMinCtl = rowControl:GetNamedChild("IncludeTimeMin")
@@ -321,16 +368,37 @@ function addon:InitializeWindow()
 		local excludeTimeCtl = rowControl:GetNamedChild("ExcludeTime")
 		local countCtl = rowControl:GetNamedChild("Count")
 
-		local closure = rowData.closure
-		nameCtl:SetText(string.format("%s (%s:%d)", closure.info[CLOSURE_NAME_INDEX], closure.info[CLOSURE_FILE_INDEX], closure.info[CLOSURE_LINE_INDEX]))
+		nameCtl:SetText(text)
 		includeTimeCtl:SetText(formatValue(closure.wallTime))
 		includeTimeMinCtl:SetText(formatValue(closure.minTime))
 		includeTimeMaxCtl:SetText(formatValue(closure.maxTime))
 		excludeTimeCtl:SetText(formatValue(closure.selfTime))
 		countCtl:SetText(closure.callCount)
 	end
-	ZO_ScrollList_AddDataType(self.contentList, SCRIPT_PROFILER_RECORD_TYPE_CLOSURE, "ESOProfilerRow", 24, setupDataRow)
-	ZO_ScrollList_SetTypeSelectable(self.contentList, SCRIPT_PROFILER_RECORD_TYPE_CLOSURE, true)
+
+	local function setupDataRowClosure(rowControl, rowData, scrollList)
+		local closure = rowData.closure
+		setupDataRowBase(rowControl, closure, string.format("%s (%s:%d)", closure.info[CLOSURE_NAME_INDEX], closure.info[CLOSURE_FILE_INDEX], closure.info[CLOSURE_LINE_INDEX]))
+	end
+	local function setupDataRowOther(rowControl, rowData, scrollList)
+		local closure = rowData.closure
+		setupDataRowBase(rowControl, closure, string.format("%s (%s)", closure.info[CLOSURE_NAME_INDEX], closure.info[CLOSURE_FILE_INDEX]))
+	end
+
+	ZO_ScrollList_AddDataType(self.contentList, SCRIPT_PROFILER_RECORD_DATA_TYPE_CLOSURE, "ESOProfilerRow", 24, setupDataRowClosure)
+	ZO_ScrollList_SetTypeSelectable(self.contentList, SCRIPT_PROFILER_RECORD_DATA_TYPE_CLOSURE, true)
+
+	if not legacy then
+		ZO_ScrollList_AddDataType(self.contentList, SCRIPT_PROFILER_RECORD_DATA_TYPE_CFUNCTION, "ESOProfilerRow", 24, setupDataRowOther)
+		ZO_ScrollList_SetTypeSelectable(self.contentList, SCRIPT_PROFILER_RECORD_DATA_TYPE_CFUNCTION, true)
+
+		ZO_ScrollList_AddDataType(self.contentList, SCRIPT_PROFILER_RECORD_DATA_TYPE_GARBAGE_COLLECTION, "ESOProfilerRow", 24, setupDataRowOther)
+		ZO_ScrollList_SetTypeSelectable(self.contentList, SCRIPT_PROFILER_RECORD_DATA_TYPE_GARBAGE_COLLECTION, true)
+
+		ZO_ScrollList_AddDataType(self.contentList, SCRIPT_PROFILER_RECORD_DATA_TYPE_USER_EVENT, "ESOProfilerRow", 24, setupDataRowOther)
+		ZO_ScrollList_SetTypeSelectable(self.contentList, SCRIPT_PROFILER_RECORD_DATA_TYPE_USER_EVENT, true)
+	end
+
 	ZO_ScrollList_SetDeselectOnReselect(self.contentList, true)
 	ZO_ScrollList_EnableSelection(self.contentList, "ZO_ThinListHighlight", function(...) self:OnSelectionChanged(...) end)
 	ZO_ScrollList_EnableHighlight(self.contentList, "ZO_ThinListHighlight")
@@ -413,10 +481,10 @@ function addon:CreateJournalTab()
 	ESO_PROFILER_SCENE:AddFragmentGroup(FRAGMENT_GROUP.PLAYER_PROGRESS_BAR_KEYBOARD_CURRENT)
 	ESO_PROFILER_SCENE:AddFragmentGroup(FRAGMENT_GROUP.MOUSE_DRIVEN_UI_WINDOW)
 	ESO_PROFILER_SCENE:AddFragment(FRAME_TARGET_BLUR_STANDARD_RIGHT_PANEL_FRAGMENT)
-	-- ESO_PROFILER_SCENE:AddFragmentGroup(FRAGMENT_GROUP.FRAME_TARGET_STANDARD_RIGHT_PANEL)
 	ESO_PROFILER_SCENE:AddFragment(FRAME_EMOTE_FRAGMENT_JOURNAL)
+	ESO_PROFILER_SCENE:AddFragment(FRAME_PLAYER_FRAGMENT)
+	-- ESO_PROFILER_SCENE:AddFragmentGroup(FRAGMENT_GROUP.FRAME_TARGET_CENTERED_NO_BLUR)
 	ESO_PROFILER_SCENE:AddFragment(RIGHT_BG_FRAGMENT)
-	-- ESO_PROFILER_SCENE:AddFragment(TREE_UNDERLAY_FRAGMENT)
 	ESO_PROFILER_SCENE:AddFragment(TITLE_FRAGMENT)
 	ESO_PROFILER_SCENE:AddFragment(JOURNAL_TITLE_FRAGMENT)
 	ESO_PROFILER_SCENE:AddFragment(CODEX_WINDOW_SOUNDS)
@@ -466,10 +534,12 @@ end
 
 em:RegisterForEvent(addon.name, EVENT_ADD_ON_LOADED, OnAddonLoaded)
 
-StartScriptProfiler()
-em:RegisterForEvent(addon.name, EVENT_PLAYER_ACTIVATED, function()
-	em:UnregisterForEvent(addon.name, EVENT_PLAYER_ACTIVATED)
-	task:Delay(2000, StopScriptProfiler)
-end )
+if GetCVar("StartLuaProfilingOnUILoad") ~= "0" then
+	StartScriptProfiler()
+	em:RegisterForEvent(addon.name, EVENT_PLAYER_ACTIVATED, function()
+		em:UnregisterForEvent(addon.name, EVENT_PLAYER_ACTIVATED)
+		task:Delay(2000, StopScriptProfiler)
+	end )
+end
 
 ESO_PROFILER = addon

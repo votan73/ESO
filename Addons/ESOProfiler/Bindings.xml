@@ -4,6 +4,9 @@
       <Action name="ESO_PROFILER_TOGGLE">
         <Down>return ZO_KeybindStrip_HandleKeybindDown(keybind)</Down>
       </Action>
+      <Action name="ESO_PROFILER_AUTOSTART_TOGGLE">
+        <Down>return ZO_KeybindStrip_HandleKeybindDown(keybind)</Down>
+      </Action>
     </Category>
   </Layer>
 </Bindings>

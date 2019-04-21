@@ -1,8 +1,12 @@
 ZO_CreateStringId("SI_KEYBINDINGS_CATEGORY_ESO_PROFILER", "ESO Profiler")
 ZO_CreateStringId("SI_BINDING_NAME_ESO_PROFILER_TOGGLE", "Toggle Profiling")
+ZO_CreateStringId("SI_BINDING_NAME_ESO_PROFILER_AUTOSTART_TOGGLE", "Toggle Auto Start Profiling")
 
 ZO_CreateStringId("SI_JOURNAL_MENU_ESO_PROFILER_START", "Start Profiler")
 ZO_CreateStringId("SI_JOURNAL_MENU_ESO_PROFILER_STOP", "Stop Profiler")
+
+ZO_CreateStringId("SI_JOURNAL_MENU_ESO_PROFILER_AUTOSTART_ON", "Auto Start: On")
+ZO_CreateStringId("SI_JOURNAL_MENU_ESO_PROFILER_AUTOSTART_OFF", "Auto Start: Off")
 
 ZO_CreateStringId("SI_JOURNAL_MENU_ESO_PROFILER", "ESO Profiler")
 ZO_CreateStringId("SI_JOURNAL_MENU_ESO_PROFILER_NAME", "Source Location")
