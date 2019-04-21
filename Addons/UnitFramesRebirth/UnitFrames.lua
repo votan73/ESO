@@ -11,6 +11,7 @@ local ANIMATED, DONT_COLOR_RANK_ICON, PREVENT_SHOW = false, false, false
 local GROUP_UNIT_FRAME = "ZO_GroupUnitFrame"
 local RAID_UNIT_FRAME = "ZO_RaidUnitFrame"
 local TARGET_UNIT_FRAME = "ZO_TargetUnitFrame"
+local PET_UNIT_FRAME = "ZO_GroupUnitFrame"
 
 local NUM_SUBGROUPS = GROUP_SIZE_MAX / SMALL_GROUP_SIZE_THRESHOLD
 
@@ -109,6 +110,7 @@ local function GetPlatformBarFont()
 end
 
 local groupFrameAnchor = ZO_Anchor:New(TOPLEFT, GuiRoot, TOPLEFT, 0, 0)
+local petFrameAnchor = ZO_Anchor:New(TOPLEFT, GuiRoot, TOPLEFT, 0, 0)
 
 local largeGroupAnchorFrames = { }
 
@@ -175,11 +177,15 @@ function UnitFramesManager:Initialize()
 	self.groupFrames = { }
 	self.raidFrames = { }
 	self.staticFrames = { }
+	self.petFrames = { }
 
 	self.groupSize = 0
 	self.targetOfTargetEnabled = true
 	self.groupAndRaidHiddenReasons = ZO_HiddenReasons:New()
 	self.firstDirtyGroupIndex = nil
+	
+	self.petHiddenReasons = ZO_HiddenReasons:New()
+	self.firstDirtyPetGroupIndex = nil
 
 	self.UnitFrameClass = UnitFrame
 	self.UnitFrameBarClass = UnitFrameBar
@@ -189,8 +195,10 @@ function UnitFramesManager:Initialize()
 	self.UnitFrameBarTextTemplate = "ZO_UnitFrameBarText"
 	self.GroupFrameAnchor = "ZO_GroupFrameAnchor"
 	self.RaidFrameAnchor = "ZO_RaidFrameAnchor"
+	self.PetFrameAnchor = "UnitFramesRebirth_GroupFrameAnchor"
 	self.GroupUnitFrame = "ZO_GroupUnitFrame"
 	self.RaidUnitFrame = "ZO_RaidUnitFrame"
+	self.PetUnitFrame = "UnitFramesRebirth_PetUnitFrame"
 end
 
 do
@@ -205,6 +213,7 @@ do
 		ApplyVisualStyleToAllFrames(self.staticFrames, self.gamepadMode)
 		ApplyVisualStyleToAllFrames(self.groupFrames, self.gamepadMode)
 		ApplyVisualStyleToAllFrames(self.raidFrames, self.gamepadMode)
+		ApplyVisualStyleToAllFrames(self.petFrames, self.gamepadMode)
 	end
 end
 
@@ -226,12 +235,18 @@ do
 	function UnitFramesManager:SetWarner(isActive)
 		SetWarnerToFrames(self.groupFrames, isActive)
 		SetWarnerToFrames(self.raidFrames, isActive)
+		SetWarnerToFrames(self.petFrames, isActive)
 	end
 end
 
 function UnitFramesManager:GetUnitFrameLookupTable(unitTag)
-	if unitTag and ZO_Group_IsGroupUnitTag(unitTag) then
-		return self.groupSize > SMALL_GROUP_SIZE_THRESHOLD and self.raidFrames or self.groupFrames
+	if unitTag then
+		if ZO_Group_IsGroupUnitTag(unitTag) then
+			return self.groupSize > SMALL_GROUP_SIZE_THRESHOLD and self.raidFrames or self.groupFrames
+		end
+		if IsValidPetUnitTag(unitTag) then
+			return self.petFrames
+		end
 	end
 	return self.staticFrames
 end
@@ -273,6 +288,18 @@ function UnitFramesManager:GetIsDirty()
 	return self.firstDirtyGroupIndex ~= nil
 end
 
+function UnitFramesManager:SetPetSize(petSize)
+	self.petSize = petSize or GetPetGroupSize()
+end
+
+function UnitFramesManager:GetFirstDirtyPetGroupIndex()
+	return self.firstDirtyPetGroupIndex
+end
+
+function UnitFramesManager:GetIsDirtyPetGroup()
+	return self.firstDirtyPetGroupIndex ~= nil
+end
+
 -- The update we call will update all unit frames after and including the one being modified
 -- So we really just need to know what is the smallest groupIndex that is being changed
 function UnitFramesManager:SetGroupIndexDirty(groupIndex)
@@ -285,12 +312,58 @@ function UnitFramesManager:ClearDirty()
 	self.firstDirtyGroupIndex = nil
 end
 
+function UnitFramesManager:SetPetIndexDirty(groupIndex)
+	if not self.firstDirtyGroupIndex or groupIndex < self.firstDirtyGroupIndex then
+		self.firstDirtyGroupIndex = groupIndex
+	end
+end
+
+function UnitFramesManager:ClearDirty()
+	self.firstDirtyGroupIndex = nil
+end
+
 function UnitFramesManager:SetGroupAndRaidFramesHiddenForReason(reason, hidden)
 	UNIT_FRAMES_FRAGMENT:SetHiddenForReason(reason, hidden)
 	self.groupAndRaidHiddenReasons:SetHiddenForReason(reason, hidden)
+	self.petHiddenReasons:SetHiddenForReason(reason, hidden)
 end
 
 function UnitFramesManager:UpdateGroupAnchorFrames()
+	-- Only the raid frame anchors need updates for now and it's only for whether or not the group name labels are showing and which one is highlighted
+	if self.groupSize <= SMALL_GROUP_SIZE_THRESHOLD or self.groupAndRaidHiddenReasons:IsHidden() then
+		-- Small groups never show the raid frame anchors
+		for subgroupIndex = 1, NUM_SUBGROUPS do
+			largeGroupAnchorFrames[subgroupIndex]:SetHidden(true)
+		end
+	else
+		local unitTag, frameIsHidden, isLocalPlayerInSubgroup
+		for subgroupIndex = 1, NUM_SUBGROUPS do
+			frameIsHidden = true
+			-- Label starts out hidden...
+			isLocalPlayerInSubgroup = false
+			for groupMemberIndex = 1, SMALL_GROUP_SIZE_THRESHOLD do
+				unitTag = GetGroupUnitTagByIndex(((subgroupIndex - 1) * SMALL_GROUP_SIZE_THRESHOLD) + groupMemberIndex)
+				if unitTag then
+					frameIsHidden = false
+					if AreUnitsEqual("player", unitTag) then
+						isLocalPlayerInSubgroup = true
+						break
+						-- Found a reason to show the label, and determined if this is the local player's subgroup, so bail out
+					end
+				end
+			end
+
+			largeGroupAnchorFrames[subgroupIndex]:SetHidden(frameIsHidden)
+		end
+	end
+end
+
+-------------------------------
+-------------------------------
+-- MUSS NOCH GEÄNDERT WERDEN --
+-------------------------------
+-------------------------------
+function UnitFramesManager:UpdatePetGroupAnchorFrames()
 	-- Only the raid frame anchors need updates for now and it's only for whether or not the group name labels are showing and which one is highlighted
 	if self.groupSize <= SMALL_GROUP_SIZE_THRESHOLD or self.groupAndRaidHiddenReasons:IsHidden() then
 		-- Small groups never show the raid frame anchors
@@ -413,6 +486,43 @@ local UNITFRAME_BAR_STYLES =
 				barHeight = ZO_GAMEPAD_RAID_FRAME_HEIGHT - 2,
 				barWidth = ZO_GAMEPAD_RAID_FRAME_WIDTH - 2,
 				barAnchors = { ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 1, 1) },
+			},
+		},
+	},
+
+	[PET_UNIT_FRAME] =
+	{
+		[POWERTYPE_HEALTH] =
+		{
+			keyboard =
+			{
+				template = "UnitFramesRebirth_GroupUnitFrameStatus",
+				barHeight = 14,
+				barWidth = 180,
+				barAnchors = { ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 36, 42) },
+				warner =
+				{
+					texture = "ZO_PlayerAttributeHealthWarnerTexture",
+					Left = "UnitFramesRebirth_PlayerAttributeWarnerLeft",
+					Right = "UnitFramesRebirth_PlayerAttributeWarnerRightArrow",
+					Center = "UnitFramesRebirth_PlayerAttributeWarnerCenter",
+				},
+			},
+
+			gamepad =
+			{
+				template = "UnitFramesRebirth_GroupUnitFrameStatus",
+				barHeight = 8,
+				barWidth = ZO_GAMEPAD_GROUP_FRAME_WIDTH,
+				barAnchors = { ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 0, 45) },
+				hideBgIfOffline = true,
+				warner =
+				{
+					texture = "ZO_PlayerAttributeHealthWarnerTexture",
+					Left = "UnitFramesRebirth_PlayerAttributeWarnerLeft",
+					Right = "UnitFramesRebirth_PlayerAttributeWarnerRight",
+					Center = "UnitFramesRebirth_PlayerAttributeWarnerCenter",
+				},
 			},
 		},
 	},
@@ -763,6 +873,34 @@ local UNITFRAME_LAYOUT_DATA =
 		neverHideStatusBar = true,
 		showStatusInName = true,
 		captionControlName = "Caption",
+	},
+
+	[PET_UNIT_FRAME] =
+	{
+		keyboard =
+		{
+			nameAnchor = ZO_Anchor:New(TOPLEFT,nil,TOPLEFT,35,19),
+			nameWidth = 215,
+			nameWrapMode = TEXT_WRAP_MODE_ELLIPSIS,
+
+			statusData = { anchor1 = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 36, 42), anchor2 = ZO_Anchor:New(TOPRIGHT, nil, TOPRIGHT, - 140, 42), height = 0, },
+
+			useHealthWarner = true,
+		},
+
+		gamepad =
+		{
+			nameAnchor = ZO_Anchor:New(TOPLEFT,nil,TOPLEFT,0,1),
+			nameWidth = 306,
+			nameWrapMode = TEXT_WRAP_MODE_ELLIPSIS,
+
+			indentedNameAnchor = ZO_Anchor:New(TOPLEFT,nil,TOPLEFT,25,3),
+
+			statusData = { anchor1 = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 0, 0), anchor2 = ZO_Anchor:New(TOPRIGHT, nil, TOPRIGHT, 0, 35), height = 0, },
+			hideHealthBgIfOffline = true,
+
+			useHealthWarner = true,
+		},
 	},
 }
 
@@ -1358,7 +1496,8 @@ end
 
 function UnitFrame:UpdateUnitReaction()
 	if self.nameLabel then
-		if ZO_Group_IsGroupUnitTag(self:GetUnitTag()) then
+		local unitTag = self:GetUnitTag()
+		if ZO_Group_IsGroupUnitTag(unitTag) or IsValidPetUnitTag(unitTag) then
 			local r, g, b = GetInterfaceColor(INTERFACE_COLOR_TYPE_TEXT_COLORS, INTERFACE_TEXT_COLOR_HIGHLIGHT)
 			self.nameLabel:SetColor(r, g, b, self.nameLabel:GetControlAlpha())
 		end
@@ -1511,76 +1650,7 @@ end
 	UnitFrame Utility functions
 --]]
 
-function ZO_UnitFrames_UpdateWindow(unitTag, unitChanged, unitFrame, validTarget)
-	unitFrame = unitFrame or UnitFrames:GetFrame(unitTag)
-	if unitFrame then
-		unitFrame:RefreshUnit(unitChanged, validTarget)
-	end
-end
-
-local function CreateGroupAnchorFrames()
-	local constants = GetPlatformConstants()
-
-	-- Create small group anchor frame
-	local smallFrame = CreateControlFromVirtual("ZO_SmallGroupAnchorFrame", ZO_UnitFramesGroups, UnitFrames.GroupFrameAnchor)
-	smallFrame:SetDimensions(constants.GROUP_FRAME_SIZE_X,(constants.GROUP_FRAME_SIZE_Y + constants.GROUP_FRAME_PAD_Y) * SMALL_GROUP_SIZE_THRESHOLD)
-	smallFrame:SetAnchor(TOPLEFT, GuiRoot, TOPLEFT, constants.GROUP_FRAME_BASE_OFFSET_X, constants.GROUP_FRAME_BASE_OFFSET_Y)
-
-	-- Create raid group anchor frames, these are positioned at the default locations
-	local raidFrame, x, y
-	for i = 1, NUM_SUBGROUPS do
-		raidFrame = CreateControlFromVirtual("ZO_LargeGroupAnchorFrame" .. i, ZO_UnitFramesGroups, UnitFrames.RaidFrameAnchor)
-		raidFrame:SetDimensions(constants.RAID_FRAME_ANCHOR_CONTAINER_WIDTH, constants.RAID_FRAME_ANCHOR_CONTAINER_HEIGHT)
-		raidFrame:SetHidden(true)
-		largeGroupAnchorFrames[i] = raidFrame
-
-		GetControl(raidFrame, "GroupName"):SetText(zo_strformat(SI_GROUP_SUBGROUP_LABEL, i))
-
-		x, y = GetGroupAnchorFrameOffsets(i, constants.GROUP_STRIDE, constants)
-		raidFrame:SetAnchor(TOPLEFT, GuiRoot, TOPLEFT, x, y)
-	end
-end
-
-local function UpdateLeaderIndicator(frames)
-	ZO_UnitFrames_Leader:SetHidden(true)
-
-	-- Just one call to GetGroupLeaderUnitTag instead of multiple calls to IsUnitGroupLeader
-	local leaderUnitTag = GetGroupLeaderUnitTag()
-	if not frames then
-		frames = ZO_Group_IsGroupUnitTag(leaderUnitTag) and UnitFrames:GetUnitFrameLookupTable(leaderUnitTag)
-		if not frames then return end
-	end
-	for unitTag, unitFrame in pairs(frames) do
-		if unitTag == leaderUnitTag then
-			ZO_UnitFrames_Leader:ClearAnchors()
-			local layoutData = GetPlatformLayoutData(unitFrame.style)
-			if layoutData.leaderIconData then
-				local data = layoutData.leaderIconData
-				ZO_UnitFrames_Leader:SetDimensions(data.width, data.height)
-				ZO_UnitFrames_Leader:SetAnchor(TOPLEFT, unitFrame.frame, TOPLEFT, data.offsetX, data.offsetY)
-				unitFrame:SetTextIndented(true)
-			else
-				unitFrame:SetTextIndented(false)
-			end
-
-			ZO_UnitFrames_Leader:SetParent(unitFrame.frame)
-			ZO_UnitFrames_Leader:SetHidden(not layoutData.leaderIconData)
-		else
-			unitFrame:SetTextIndented(false)
-		end
-
-		if unitFrame.hasTarget then
-			unitFrame:UpdateUnitReaction()
-		end
-	end
-end
-
-local unitTypesWhoUseCastInfo = {
-	[UNIT_REACTION_HOSTILE] = true,
-	[UNIT_REACTION_NEUTRAL] = true,
-}
-
-local TARGET_ATTRIBUTE_VISUALIZER_SOUNDS = {
+local ATTRIBUTE_VISUALIZER_SOUNDS = {
 	[STAT_HEALTH_MAX] =
 	{
 		[ATTRIBUTE_BAR_STATE_NORMAL] = SOUNDS.UAV_MAX_HEALTH_NORMAL_TARGET,
@@ -1647,6 +1717,80 @@ local TARGET_ATTRIBUTE_VISUALIZER_SOUNDS = {
 	},
 }
 
+function ZO_UnitFrames_UpdateWindow(unitTag, unitChanged, unitFrame, validTarget)
+	unitFrame = unitFrame or UnitFrames:GetFrame(unitTag)
+	if unitFrame then
+		unitFrame:RefreshUnit(unitChanged, validTarget)
+	end
+end
+
+local function CreateGroupAnchorFrames()
+	local constants = GetPlatformConstants()
+
+	-- Create small group anchor frame
+	local smallFrame = CreateControlFromVirtual("ZO_SmallGroupAnchorFrame", ZO_UnitFramesGroups, UnitFrames.GroupFrameAnchor)
+	smallFrame:SetDimensions(constants.GROUP_FRAME_SIZE_X,(constants.GROUP_FRAME_SIZE_Y + constants.GROUP_FRAME_PAD_Y) * SMALL_GROUP_SIZE_THRESHOLD)
+	smallFrame:SetAnchor(TOPLEFT, GuiRoot, TOPLEFT, constants.GROUP_FRAME_BASE_OFFSET_X, constants.GROUP_FRAME_BASE_OFFSET_Y)
+
+	-- Create raid group anchor frames, these are positioned at the default locations
+	local raidFrame, x, y
+	for i = 1, NUM_SUBGROUPS do
+		raidFrame = CreateControlFromVirtual("ZO_LargeGroupAnchorFrame" .. i, ZO_UnitFramesGroups, UnitFrames.RaidFrameAnchor)
+		raidFrame:SetDimensions(constants.RAID_FRAME_ANCHOR_CONTAINER_WIDTH, constants.RAID_FRAME_ANCHOR_CONTAINER_HEIGHT)
+		raidFrame:SetHidden(true)
+		largeGroupAnchorFrames[i] = raidFrame
+
+		GetControl(raidFrame, "GroupName"):SetText(zo_strformat(SI_GROUP_SUBGROUP_LABEL, i))
+
+		x, y = GetGroupAnchorFrameOffsets(i, constants.GROUP_STRIDE, constants)
+		raidFrame:SetAnchor(TOPLEFT, GuiRoot, TOPLEFT, x, y)
+	end
+
+	-- Create pet group anchor frame
+	local petFrame = CreateControlFromVirtual("PetGroupAnchorFrame", ZO_SmallGroupAnchorFrame, UnitFrames.PetFrameAnchor)
+	petFrame:SetDimensions(constants.GROUP_FRAME_SIZE_X,(constants.GROUP_FRAME_SIZE_Y + constants.GROUP_FRAME_PAD_Y) * PET_GROUP_SIZE_THRESHOLD)
+	petFrame:SetAnchor(TOPLEFT, GuiRoot, TOPLEFT, constants.GROUP_FRAME_BASE_OFFSET_X, constants.GROUP_FRAME_BASE_OFFSET_Y)
+end
+
+local function UpdateLeaderIndicator(frames)
+	ZO_UnitFrames_Leader:SetHidden(true)
+
+	-- Just one call to GetGroupLeaderUnitTag instead of multiple calls to IsUnitGroupLeader
+	local leaderUnitTag = GetGroupLeaderUnitTag()
+	if not frames then
+		frames = ZO_Group_IsGroupUnitTag(leaderUnitTag) and UnitFrames:GetUnitFrameLookupTable(leaderUnitTag)
+		if not frames then return end
+	end
+	for unitTag, unitFrame in pairs(frames) do
+		if unitTag == leaderUnitTag then
+			ZO_UnitFrames_Leader:ClearAnchors()
+			local layoutData = GetPlatformLayoutData(unitFrame.style)
+			if layoutData.leaderIconData then
+				local data = layoutData.leaderIconData
+				ZO_UnitFrames_Leader:SetDimensions(data.width, data.height)
+				ZO_UnitFrames_Leader:SetAnchor(TOPLEFT, unitFrame.frame, TOPLEFT, data.offsetX, data.offsetY)
+				unitFrame:SetTextIndented(true)
+			else
+				unitFrame:SetTextIndented(false)
+			end
+
+			ZO_UnitFrames_Leader:SetParent(unitFrame.frame)
+			ZO_UnitFrames_Leader:SetHidden(not layoutData.leaderIconData)
+		else
+			unitFrame:SetTextIndented(false)
+		end
+
+		if unitFrame.hasTarget then
+			unitFrame:UpdateUnitReaction()
+		end
+	end
+end
+
+local unitTypesWhoUseCastInfo = {
+	[UNIT_REACTION_HOSTILE] = true,
+	[UNIT_REACTION_NEUTRAL] = true,
+}
+
 local function CreateTargetFrame()
 	local targetFrameAnchor = ZO_Anchor:New(TOP, GuiRoot, TOP, 0, 88)
 	local targetFrame = UnitFrames:CreateFrame("reticleover", targetFrameAnchor, HIDE_BAR_TEXT, UnitFrames.TargetUnitFrameTemplate)
@@ -1655,7 +1799,7 @@ local function CreateTargetFrame()
 		targetFrame.hasTarget = false
 		targetFrame:SetAnimateShowHide(true)
 	end
-	local visualizer = targetFrame:CreateAttributeVisualizer(TARGET_ATTRIBUTE_VISUALIZER_SOUNDS)
+	local visualizer = targetFrame:CreateAttributeVisualizer(ATTRIBUTE_VISUALIZER_SOUNDS)
 
 	visualizer:AddModule(ZO_UnitVisualizer_ArrowRegenerationModule:New())
 
@@ -1784,8 +1928,7 @@ function UnitFramesManager:UpdateGroupFrames()
 	end
 
 	if IsPlayerGrouped() then
-		-- Only update the frames of the unit being changed, and those after it in the list for performance
-		-- reasons.
+		-- Only update the frames of the unit being changed, and those after it in the list for performance reasons.
 		local frames
 		if newLargeGroup then
 			-- Build the raid frames
@@ -1841,6 +1984,68 @@ function UnitFramesManager:UpdateGroupFrames()
 	end
 end
 
+
+-------------------------------
+-------------------------------
+-- MUSS NOCH GEÄNDERT WERDEN --
+-------------------------------
+-------------------------------
+function UnitFramesManager:UpdatePetFrames()
+	local petSize = GetGroupSize()
+	local petIndex = self:GetFirstDirtyPetGroupIndex()
+	local oldPetGroupSize = self.petSize or 0
+
+	self:SetPetSize(petSize)
+
+	if IsPetActive() then
+		-- Only update the frames of the unit being changed, and those after it in the list for performance reasons.
+		local frames = self.petFrames
+
+		local unitTag
+		-- Create new frames based on index
+		for i = petIndex, petSize do
+			unitTag = GetPetUnitTagByIndex(i)
+			if not frames[unitTag] then
+				frames[unitTag] = UnitFrame:New(unitTag, HIDE_BAR_TEXT, self.PetUnitFrame)
+			end
+		end
+		-- But sync index of all frames with those of API
+		local newIndex, rawName, anchor, hasTarget, isOnline
+		for unitTag, unitFrame in pairs(frames) do
+			newIndex = GetPetUnitTagByIndex(unitTag)
+			hasTarget = newIndex < GROUPINDEX_NONE
+			rawName = hasTarget and GetRawUnitName(unitTag) or ""
+			-- While zoning of local player unitTag and index can swap, but are effectively the same position. => just the controls are swapping.
+			if unitFrame.index ~= newIndex or unitFrame.rawName ~= rawName then
+				-- For OnUnitDestroyed
+				unitFrame.index = newIndex
+
+				if hasTarget then
+					anchor = GetGroupFrameAnchor(newIndex, petSize)
+					if unitFrame.rawName ~= rawName then
+						unitFrame:SetData(unitTag, anchor, HIDE_BAR_TEXT)
+					else
+						-- just anchor at new index position
+						unitFrame:SetAnchor(anchor)
+					end
+				end
+				unitFrame.rawName = rawName
+				-- Is a hook-point and calls RefreshUnit, which calls SetHasTarget, which calls RefreshVisible(ANIMATED)
+				ZO_UnitFrames_UpdateWindow(unitTag, UNIT_CHANGED, unitFrame, hasTarget)
+			elseif hasTarget and unitFrame.dirty and newIndex >= petIndex then
+				unitFrame:UpdateStatus(IsUnitDead(unitTag), unitFrame:IsOnline())
+				unitFrame:DoAlphaUpdate(IsUnitInGroupSupportRange(unitTag), IsUnitGroupLeader(unitTag))
+				unitFrame.dirty = false
+			end
+		end
+
+		self:UpdatePetGroupAnchorFrames()
+
+	elseif oldPetGroupSize > 0 then
+		self:UpdatePetGroupAnchorFrames()
+	end
+end
+
 local function SetAnchorOffsets(control, offsetX, offsetY)
 	local isValid, point, target, relPoint = control:GetAnchor(0)
 	if isValid then
@@ -1893,6 +2098,31 @@ local function UpdateGroupFramesVisualStyle()
 
 	-- Update the Group Leader Icon Texture
 	ZO_UnitFrames_LeaderIcon:SetTexture(constants.GROUP_LEADER_ICON)
+end
+
+local function UpdatePetGroupFramesVisualStyle()
+	local constants = GetPlatformConstants()
+
+	-- Note: Small group anchor frame is currently the same for all platforms.
+	local groupFrame = ZO_SmallGroupAnchorFrame
+	groupFrame:SetDimensions(constants.GROUP_FRAME_SIZE_X,(constants.GROUP_FRAME_SIZE_Y + constants.GROUP_FRAME_PAD_Y) * SMALL_GROUP_SIZE_THRESHOLD)
+	SetAnchorOffsets(groupFrame, constants.GROUP_FRAME_BASE_OFFSET_X, constants.GROUP_FRAME_BASE_OFFSET_Y)
+
+	-- Update all UnitFrame anchors.
+	local groupSize = UnitFrames.groupSize or GetGroupSize()
+	local unitTag, unitFrame
+	for i = 1, GROUP_SIZE_MAX do
+		unitTag = GetPetUnitTagByIndex(i)
+		if unitTag then
+			unitFrame = UnitFrames:GetFrame(unitTag)
+			if unitFrame then
+				-- For OnUnitDestroyed
+				unitFrame.index = i
+				unitFrame:SetAnchor(GetGroupFrameAnchor(i, groupSize))
+			end
+		end
+	end
+
 end
 
 function UnitFrame_HandleMouseReceiveDrag(frame)
@@ -2219,6 +2449,7 @@ do
 		local function OnGamepadPreferredModeChanged()
 			UnitFrames:ApplyVisualStyle()
 			UpdateGroupFramesVisualStyle()
+			UpdatePetGroupFramesVisualStyle()
 			UpdateLeaderIndicator()
 		end
 		ZO_PlatformStyle:New(OnGamepadPreferredModeChanged)
