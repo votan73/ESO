@@ -415,6 +415,10 @@ function addon:InitializeWindow()
 	sortHeaders:SelectHeaderByKey("includeTimeMax", ZO_SortHeaderGroup.SUPPRESS_CALLBACKS)
 
 	self.sortHeaders = sortHeaders
+
+	self.script = ESOProfilerScriptTopLevel
+	self.loopCount = self.script:GetNamedChild("LoopCount")
+	self.loopCount:SetText("1")
 end
 
 do
@@ -474,9 +478,12 @@ do
 	end
 end
 
+local scriptFragmentGroup
+
 function addon:CreateJournalTab()
 	local sceneName = "eso_profiler"
 	ESO_PROFILER_FRAGMENT = ZO_HUDFadeSceneFragment:New(self.control)
+	ESO_PROFILER_SCRIPT_FRAGMENT = ZO_HUDFadeSceneFragment:New(ESOProfilerScriptTopLevel)
 	ESO_PROFILER_SCENE = ZO_Scene:New(sceneName, SCENE_MANAGER)
 	ESO_PROFILER_SCENE:AddFragmentGroup(FRAGMENT_GROUP.PLAYER_PROGRESS_BAR_KEYBOARD_CURRENT)
 	ESO_PROFILER_SCENE:AddFragmentGroup(FRAGMENT_GROUP.MOUSE_DRIVEN_UI_WINDOW)
@@ -489,6 +496,9 @@ function addon:CreateJournalTab()
 	ESO_PROFILER_SCENE:AddFragment(JOURNAL_TITLE_FRAGMENT)
 	ESO_PROFILER_SCENE:AddFragment(CODEX_WINDOW_SOUNDS)
 	ESO_PROFILER_SCENE:AddFragment(ESO_PROFILER_FRAGMENT)
+
+	scriptFragmentGroup = { MINIMIZE_CHAT_FRAGMENT, LEFT_PANEL_BG_FRAGMENT, ESO_PROFILER_SCRIPT_FRAGMENT }
+	ESO_PROFILER_SCENE:AddFragmentGroup(scriptFragmentGroup)
 
 	SYSTEMS:RegisterKeyboardRootScene(sceneName, ESO_PROFILER_SCENE)
 
@@ -521,6 +531,50 @@ function addon:Initialize()
 			ClearTooltip(ItemTooltip)
 		end
 	end )
+end
+
+do
+	local runner = async:Create("ESO_PROFILER_RUNSCRIPT")
+	local function finallyStop()
+		addon:GenerateReport()
+	end
+	runner:Finally(finallyStop)
+	local function stop(runner)
+		-- The frame, StopScriptProfiler is called in, seems to be excluded
+		runner:Delay(20, StopScriptProfiler)
+	end
+	function addon:RunCode(control, button, upInside)
+		if not upInside then return end
+
+		local code = ESOProfilerScriptTopLevelScriptEditBox:GetText()
+		-- code = string.format("function script() %s\nend\nscript()", code)
+		code = assert(zo_loadstring(code, "test"))
+		if code then
+			local statusBar = self.statusBar
+			local content = self.control:GetNamedChild("Content")
+
+			-- search for the pseudo "file path"
+			self.searchBox:SetText("@test")
+
+			local count = self.loopCount:GetText()
+			count = count and #count > 0 and tonumber(count) or 1
+
+			statusBar:SetHidden(true)
+			content:SetHidden(true)
+
+			StartScriptProfiler()
+			local function script(runner)
+				if count > 1 then
+					runner:For(1, count):Do(code):Then(stop)
+				else
+					code()
+					stop(runner)
+				end
+			end
+			-- We need a new frame for the profiler to record
+			runner:Delay(20, script)
+		end
+	end
 end
 
 local function OnAddonLoaded(event, name)

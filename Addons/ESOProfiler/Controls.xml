@@ -79,8 +79,8 @@
               </Controls>
             </EditBox>
             <Button name="$(parent)ExportButton" inherits="ZO_DefaultButton" text="Export">
-                <Anchor point="TOPRIGHT"/>
-                <OnClicked>ESO_PROFILER:Export()</OnClicked>
+              <Anchor point="TOPRIGHT"/>
+              <OnClicked>ESO_PROFILER:Export()</OnClicked>
             </Button>
             <Control name="$(parent)SortBy" inherits="ZO_InventorySortHeaders">
               <Anchor point="TOPLEFT" />
@@ -146,6 +146,47 @@
           <Anchor point="BOTTOMLEFT" offsetX="24" />
           <Anchor point="BOTTOMRIGHT" offsetX="-24" />
         </StatusBar>
+      </Controls>
+    </TopLevelControl>
+
+    <TopLevelControl name="ESOProfilerScriptTopLevel" hidden="true">
+      <Anchor point="TOPLEFT" relativeTo="ZO_SharedLeftPanelBackground" relativePoint="TOPLEFT"  offsetX="0" offsetY="0"/>
+      <Anchor point="BOTTOMRIGHT" relativeTo="ZO_SharedLeftPanelBackground" relativePoint="BOTTOMRIGHT" offsetX="-30" offsetY="0"/>
+
+      <Controls>
+        <Label name="$(parent)ScriptLabel" font="ZoFontWinH4" color="FFFFFF" wrapMode="ELLIPSIS" text="Script:">
+          <Dimensions x="100" y="30" />
+          <Anchor point="TOPLEFT" relativeTo="$(parent)" relativePoint="TOPLEFT" offsetX="0" offsetY="0"/>
+        </Label>
+
+        <Backdrop name="$(parent)Script" inherits="ZO_EditBackdrop">
+          <Anchor point="TOPLEFT" relativeTo="$(parent)ScriptLabel" relativePoint="BOTTOMLEFT"/>
+          <Anchor point="BOTTOMRIGHT" relativeTo="$(parent)" relativePoint="BOTTOMRIGHT"  offsetX="0" offsetY="-40" />
+          <Controls>
+            <EditBox name="$(parent)EditBox" font="ZoFontChat" editEnabled="true" maxInputCharacters="3000" multiLine="true" newLineEnabled="true" inherits="ZO_DefaultEditMultiLineForBackdrop">
+              <AnchorFill />
+            </EditBox>
+          </Controls>
+        </Backdrop>
+
+        <Button name="$(parent)RunCode" inherits="ZO_DefaultButton" font="ZoFontWinH4" text="Run Code">
+          <Dimensions x="150" y="30" />
+          <Anchor point="BOTTOMLEFT" relativeTo="$(parent)" relativePoint="BOTTOMLEFT" offsetX="10" offsetY="0"/>
+          <OnMouseUp>
+            ESO_PROFILER:RunCode(self, button, upInside)
+          </OnMouseUp>
+        </Button>
+        <Label name="$(parent)LoopLabel" font="ZoFontWinH4" color="FFFFFF" wrapMode="ELLIPSIS" text="Loop:">
+          <Dimensions y="30" />
+          <Anchor point="LEFTTOP" relativeTo="$(parent)RunCode" relativePoint="TOPRIGHT" offsetX="10" />
+        </Label>
+        <Backdrop name="$(parent)Loop" tier="HIGH" inherits="ZO_SingleLineEditBackdrop_Keyboard">
+          <Anchor point="LEFTTOP" relativeTo="$(parent)LoopLabel" relativePoint="TOPRIGHT" offsetX="5" />
+          <Dimensions x="100" y="30" />
+          <Controls>
+            <EditBox name="$(parent)Count" inherits="ZO_DefaultEditForBackdrop ZO_DefaultEdit" textType="NUMERIC_UNSIGNED_INT"/>
+          </Controls>
+        </Backdrop>
       </Controls>
     </TopLevelControl>
   </Controls>
