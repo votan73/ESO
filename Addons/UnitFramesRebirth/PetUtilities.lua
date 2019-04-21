@@ -1,13 +1,11 @@
 MAX_PLAYER_PET = 7
 PET_GROUP_SIZE_THRESHOLD = 2
 
-local PREFIX_PET = "playerpet"
-
 local function GetPetNameLower(abilityId)
 	return zo_strformat("<<z:1>>", GetAbilityName(abilityId))
 end
 
-local VALID_PETS = {
+local PET_NAMES = {
 	-- Familiar
 	[GetPetNameLower(18602)] = true,
 	
@@ -44,7 +42,7 @@ local VALID_PETS = {
 function IsValidPetUnitTag(unitTag)
 	if unitTag then
 		local unitName = zo_strformat("<<z:1>>", GetUnitName(unitTag))
-		return VALID_PETS[unitName]
+		return PET_NAMES[unitName]
 	end
 	return false
 end
