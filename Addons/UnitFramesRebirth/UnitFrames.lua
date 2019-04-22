@@ -21,6 +21,7 @@ local KEYBOARD_CONSTANTS = {
 	GROUP_LEADER_ICON = "EsoUI/Art/UnitFrames/groupIcon_leader.dds",
 
 	GROUP_FRAMES_PER_COLUMN = SMALL_GROUP_SIZE_THRESHOLD,
+	PET_GROUP_FRAMES_PER_COLUMN = 2,
 	NUM_COLUMNS = NUM_SUBGROUPS,
 
 	GROUP_STRIDE = NUM_SUBGROUPS,
@@ -53,6 +54,7 @@ local GAMEPAD_CONSTANTS = {
 	GROUP_LEADER_ICON = "EsoUI/Art/UnitFrames/Gamepad/gp_Group_Leader.dds",
 
 	GROUP_FRAMES_PER_COLUMN = 12,
+	PET_GROUP_FRAMES_PER_COLUMN = 2,
 	NUM_COLUMNS = GROUP_SIZE_MAX / 12,
 
 	GROUP_STRIDE = 3,
@@ -134,6 +136,18 @@ local function GetGroupFrameAnchor(groupIndex, groupSize)
 		groupFrameAnchor:SetOffsets(0, row * constants.GROUP_FRAME_OFFSET_Y)
 		return groupFrameAnchor
 	end
+end
+
+local function GetPetGroupFrameAnchor(groupIndex, petGroupSize)
+	local constants = GetPlatformConstants()
+
+	-- petGroupSize currently not in use
+	-- petGroupSize = petGroupSize or GetPetGroupSize()
+	local row = zo_mod(groupIndex - 1, constants.PET_GROUP_FRAMES_PER_COLUMN)
+
+	groupFrameAnchor:SetTarget(PetGroupAnchorFrame)
+	groupFrameAnchor:SetOffsets(0, row * constants.GROUP_FRAME_OFFSET_Y)
+	return groupFrameAnchor
 end
 
 local function GetGroupAnchorFrameOffsets(subgroupIndex, groupStride, constants)
@@ -288,8 +302,8 @@ function UnitFramesManager:GetIsDirty()
 	return self.firstDirtyGroupIndex ~= nil
 end
 
-function UnitFramesManager:SetPetSize(petSize)
-	self.petSize = petSize or GetPetGroupSize()
+function UnitFramesManager:SetPetSize(petGroupSize)
+	self.petGroupSize = petGroupSize or GetPetGroupSize()
 end
 
 function UnitFramesManager:GetFirstDirtyPetGroupIndex()
@@ -1991,11 +2005,11 @@ end
 -------------------------------
 -------------------------------
 function UnitFramesManager:UpdatePetFrames()
-	local petSize = GetGroupSize()
+	local petGroupSize = GetPetGroupSize()
 	local petIndex = self:GetFirstDirtyPetGroupIndex()
-	local oldPetGroupSize = self.petSize or 0
+	local oldPetGroupSize = self.petGroupSize or 0
 
-	self:SetPetSize(petSize)
+	self:SetPetSize(petGroupSize)
 
 	if IsPetActive() then
 		-- Only update the frames of the unit being changed, and those after it in the list for performance reasons.
@@ -2003,7 +2017,7 @@ function UnitFramesManager:UpdatePetFrames()
 
 		local unitTag
 		-- Create new frames based on index
-		for i = petIndex, petSize do
+		for i = petIndex, petGroupSize do
 			unitTag = GetPetUnitTagByIndex(i)
 			if not frames[unitTag] then
 				frames[unitTag] = UnitFrame:New(unitTag, HIDE_BAR_TEXT, self.PetUnitFrame)
@@ -2021,7 +2035,7 @@ function UnitFramesManager:UpdatePetFrames()
 				unitFrame.index = newIndex
 
 				if hasTarget then
-					anchor = GetGroupFrameAnchor(newIndex, petSize)
+					anchor = GetPetGroupFrameAnchor(newIndex, petGroupSize)
 					if unitFrame.rawName ~= rawName then
 						unitFrame:SetData(unitTag, anchor, HIDE_BAR_TEXT)
 					else
@@ -2104,12 +2118,12 @@ local function UpdatePetGroupFramesVisualStyle()
 	local constants = GetPlatformConstants()
 
 	-- Note: Small group anchor frame is currently the same for all platforms.
-	local groupFrame = ZO_SmallGroupAnchorFrame
+	local groupFrame = PetGroupAnchorFrame
 	groupFrame:SetDimensions(constants.GROUP_FRAME_SIZE_X,(constants.GROUP_FRAME_SIZE_Y + constants.GROUP_FRAME_PAD_Y) * SMALL_GROUP_SIZE_THRESHOLD)
 	SetAnchorOffsets(groupFrame, constants.GROUP_FRAME_BASE_OFFSET_X, constants.GROUP_FRAME_BASE_OFFSET_Y)
 
 	-- Update all UnitFrame anchors.
-	local groupSize = UnitFrames.groupSize or GetGroupSize()
+	local petGroupSize = UnitFrames.groupSize or GetPetGroupSize()
 	local unitTag, unitFrame
 	for i = 1, GROUP_SIZE_MAX do
 		unitTag = GetPetUnitTagByIndex(i)
@@ -2118,7 +2132,7 @@ local function UpdatePetGroupFramesVisualStyle()
 			if unitFrame then
 				-- For OnUnitDestroyed
 				unitFrame.index = i
-				unitFrame:SetAnchor(GetGroupFrameAnchor(i, groupSize))
+				unitFrame:SetAnchor(GetPetGroupFrameAnchor(i, petGroupSize))
 			end
 		end
 	end
