@@ -11,7 +11,7 @@ local ANIMATED, DONT_COLOR_RANK_ICON, PREVENT_SHOW, IS_NOT_LEADER = false, false
 local GROUP_UNIT_FRAME = "ZO_GroupUnitFrame"
 local RAID_UNIT_FRAME = "ZO_RaidUnitFrame"
 local TARGET_UNIT_FRAME = "ZO_TargetUnitFrame"
-local PET_UNIT_FRAME = "UnitFramesRebirth_GroupUnitFrame"
+local PET_UNIT_FRAME = "UnitFramesRebirth_PetGroupUnitFrame"
 
 local NUM_SUBGROUPS = GROUP_SIZE_MAX / SMALL_GROUP_SIZE_THRESHOLD
 
