@@ -1987,6 +1987,11 @@ function UnitFramesManager:UpdatePetFrames()
 
 	self:SetPetSize(petGroupSize)
 
+	if petGroupSize == 0 then
+		HideFrames(self.petFrames)
+		ForceChange(self.petFrames)
+		petIndex = 1
+	end
 	if petIndex and IsPetActive() then
 		-- Only update the frames of the unit being changed, and those after it in the list for performance reasons.
 		local frames = self.petFrames
