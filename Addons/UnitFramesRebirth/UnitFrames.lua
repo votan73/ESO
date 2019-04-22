@@ -5,13 +5,13 @@ local HIDE_BAR_TEXT = 0
 local SHOW_BAR_TEXT_MOUSE_OVER = 1
 local SHOW_BAR_TEXT = 2
 
-local UNIT_CHANGED, FORCE_INIT, UPDATE_BAR_TYPE, UPDATE_VALUE, INSTANT, FORCE_SHOW = true, true, true, true, true, true
-local ANIMATED, DONT_COLOR_RANK_ICON, PREVENT_SHOW = false, false, false
+local UNIT_CHANGED, FORCE_INIT, UPDATE_BAR_TYPE, UPDATE_VALUE, INSTANT, FORCE_SHOW, IS_ONLINE, IS_IN_RANGE = true, true, true, true, true, true, true, true
+local ANIMATED, DONT_COLOR_RANK_ICON, PREVENT_SHOW, IS_NOT_LEADER = false, false, false, false
 
 local GROUP_UNIT_FRAME = "ZO_GroupUnitFrame"
 local RAID_UNIT_FRAME = "ZO_RaidUnitFrame"
 local TARGET_UNIT_FRAME = "ZO_TargetUnitFrame"
-local PET_UNIT_FRAME = "ZO_GroupUnitFrame"
+local PET_UNIT_FRAME = "UnitFramesRebirth_GroupUnitFrame"
 
 local NUM_SUBGROUPS = GROUP_SIZE_MAX / SMALL_GROUP_SIZE_THRESHOLD
 
@@ -327,13 +327,13 @@ function UnitFramesManager:ClearDirty()
 end
 
 function UnitFramesManager:SetPetIndexDirty(groupIndex)
-	if not self.firstDirtyGroupIndex or groupIndex < self.firstDirtyGroupIndex then
-		self.firstDirtyGroupIndex = groupIndex
+	if not self.firstDirtyPetGroupIndex or groupIndex < self.firstDirtyPetGroupIndex then
+		self.firstDirtyPetGroupIndex = groupIndex
 	end
 end
 
-function UnitFramesManager:ClearDirty()
-	self.firstDirtyGroupIndex = nil
+function UnitFramesManager:ClearDirtyPet()
+	self.firstDirtyPetGroupIndex = nil
 end
 
 function UnitFramesManager:SetGroupAndRaidFramesHiddenForReason(reason, hidden)
@@ -1998,12 +1998,6 @@ function UnitFramesManager:UpdateGroupFrames()
 	end
 end
 
-
--------------------------------
--------------------------------
--- MUSS NOCH GEÄNDERT WERDEN --
--------------------------------
--------------------------------
 function UnitFramesManager:UpdatePetFrames()
 	local petGroupSize = GetPetGroupSize()
 	local petIndex = self:GetFirstDirtyPetGroupIndex()
@@ -2047,8 +2041,8 @@ function UnitFramesManager:UpdatePetFrames()
 				-- Is a hook-point and calls RefreshUnit, which calls SetHasTarget, which calls RefreshVisible(ANIMATED)
 				ZO_UnitFrames_UpdateWindow(unitTag, UNIT_CHANGED, unitFrame, hasTarget)
 			elseif hasTarget and unitFrame.dirty and newIndex >= petIndex then
-				unitFrame:UpdateStatus(IsUnitDead(unitTag), unitFrame:IsOnline())
-				unitFrame:DoAlphaUpdate(IsUnitInGroupSupportRange(unitTag), IsUnitGroupLeader(unitTag))
+				unitFrame:UpdateStatus(IsPetUnitDead(unitTag), IS_ONLINE)
+				unitFrame:DoAlphaUpdate(IS_IN_RANGE, IS_NOT_LEADER)
 				unitFrame.dirty = false
 			end
 		end
@@ -2136,7 +2130,6 @@ local function UpdatePetGroupFramesVisualStyle()
 			end
 		end
 	end
-
 end
 
 function UnitFrame_HandleMouseReceiveDrag(frame)
@@ -2175,16 +2168,24 @@ end
 local function UpdateStatus(unitTag, isDead, isOnline)
 	local unitFrame = UnitFrames:GetFrame(unitTag)
 	if unitFrame then
-		if isOnline == nil then
-			isOnline = unitFrame:IsOnline()
-		else
-			unitFrame.isOnline = isOnline
-		end
+		if not IsPetUnitTag(unitTag) then
+			if isOnline == nil then
+				isOnline = unitFrame:IsOnline()
+			else
+				unitFrame.isOnline = isOnline
+			end
 
-		-- unitFrame.index is not available for static frames
-		if unitFrame.index then
-			unitFrame.dirty = true
-			UnitFrames:SetGroupIndexDirty(unitFrame.index)
+			-- unitFrame.index is not available for static frames
+			if unitFrame.index then
+				unitFrame.dirty = true
+				UnitFrames:SetGroupIndexDirty(unitFrame.index)
+			end
+		else
+			unitFrame.isOnline = IS_ONLINE
+			if unitFrame.index then
+				unitFrame.dirty = true
+				UnitFrames:SetPetIndexDirty(unitFrame.index)
+			end
 		end
 	end
 	if AreUnitsEqual(unitTag, "reticleover") then
