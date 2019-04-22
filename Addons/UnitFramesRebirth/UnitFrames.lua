@@ -212,7 +212,7 @@ function UnitFramesManager:Initialize()
 	self.PetFrameAnchor = "ZO_GroupFrameAnchor"
 	self.GroupUnitFrame = "ZO_GroupUnitFrame"
 	self.RaidUnitFrame = "ZO_RaidUnitFrame"
-	self.PetUnitFrame = "UnitFramesRebirth_PetUnitFrame"
+	self.PetUnitFrame = "UnitFramesRebirth_PetGroupUnitFrame"
 end
 
 do
@@ -2001,7 +2001,7 @@ function UnitFramesManager:UpdatePetFrames()
 		for i = petIndex, petGroupSize do
 			unitTag = GetPetUnitTagByIndex(i)
 			if not frames[unitTag] then
-				frames[unitTag] = UnitFrame:New(unitTag, HIDE_BAR_TEXT, PET_UNIT_FRAME)
+				frames[unitTag] = UnitFrame:New(unitTag, HIDE_BAR_TEXT, self.PetUnitFrame)
 			end
 		end
 		-- But sync index of all frames with those of API
@@ -2052,7 +2052,7 @@ local function UpdateGroupFramesVisualStyle()
 
 	-- Note: Small group anchor frame is currently the same for all platforms.
 	local groupFrame = ZO_SmallGroupAnchorFrame
-	groupFrame:SetDimensions(constants.GROUP_FRAME_SIZE_X,(constants.GROUP_FRAME_SIZE_Y + constants.GROUP_FRAME_PAD_Y) * SMALL_GROUP_SIZE_THRESHOLD)
+	groupFrame:SetDimensions(constants.GROUP_FRAME_SIZE_X, (constants.GROUP_FRAME_SIZE_Y + constants.GROUP_FRAME_PAD_Y) * SMALL_GROUP_SIZE_THRESHOLD)
 	SetAnchorOffsets(groupFrame, constants.GROUP_FRAME_BASE_OFFSET_X, constants.GROUP_FRAME_BASE_OFFSET_Y)
 
 	-- Raid group anchor frames.
@@ -2100,7 +2100,7 @@ local function UpdatePetGroupFramesVisualStyle()
 	-- Note: Small group anchor frame is currently the same for all platforms.
 	local groupFrame = PetGroupAnchorFrame
 	groupFrame:SetDimensions(constants.GROUP_FRAME_SIZE_X,(constants.GROUP_FRAME_SIZE_Y + constants.GROUP_FRAME_PAD_Y) * SMALL_GROUP_SIZE_THRESHOLD)
-	SetAnchorOffsets(groupFrame, 0, constants.GROUP_FRAME_SIZE_Y)
+	SetAnchorOffsets(groupFrame, 0, constants.GROUP_FRAME_SIZE_Y / 4)
 
 	-- Update all UnitFrame anchors.
 	local petGroupSize = UnitFrames.groupSize or GetPetGroupSize()
