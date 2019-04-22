@@ -2434,7 +2434,7 @@ local function RegisterForEvents()
 	end
 
 	local function OnUnitDestroyed(eventCode, unitTag)
-		if IsPetUnitTag(unitTag) then
+		if IsPetUnitTag(unitTag) and IsTrackedPet(unitTag) then
 			local unitFrame = UnitFrames:GetFrame(unitTag)
 			if unitFrame then
 				if unitFrame.index < GROUPINDEX_NONE then
