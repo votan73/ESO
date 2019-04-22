@@ -554,6 +554,7 @@ end
 do
 	local runner = async:Create("ESO_PROFILER_RUNSCRIPT")
 	local function finallyStop()
+		ESOProfilerScriptTopLevelRunCode:SetEnabled(true)
 		addon:GenerateReport()
 	end
 	runner:Finally(finallyStop)
@@ -579,6 +580,7 @@ do
 
 			statusBar:SetHidden(true)
 			content:SetHidden(true)
+			ESOProfilerScriptTopLevelRunCode:SetEnabled(false)
 
 			StartScriptProfiler()
 			local function script(runner)
