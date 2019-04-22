@@ -63,8 +63,9 @@ function IsPetUnitDead(unitTag)
 		if GetUnitPower(unitTag, POWERTYPE_HEALTH) <= 0 then
 			return true
 		end
+		return false
 	end
-	return false
+	return true
 end
 
 function GetPetGroupSize()

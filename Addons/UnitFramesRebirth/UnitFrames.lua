@@ -258,7 +258,7 @@ function UnitFramesManager:GetUnitFrameLookupTable(unitTag)
 		if ZO_Group_IsGroupUnitTag(unitTag) then
 			return self.groupSize > SMALL_GROUP_SIZE_THRESHOLD and self.raidFrames or self.groupFrames
 		end
-		if IsValidPetUnitTag(unitTag) then
+		if IsPetUnitTag(unitTag) then
 			return self.petFrames
 		end
 	end
@@ -378,7 +378,7 @@ end
 -------------------------------
 -------------------------------
 function UnitFramesManager:UpdatePetGroupAnchorFrames()
-
+	PetGroupAnchorFrame:SetHidden(not IsPetActive())
 end
 
 function UnitFramesManager:IsTargetOfTargetEnabled()
@@ -974,7 +974,14 @@ UnitFrame = ZO_Object:Subclass()
 
 function UnitFrame:New(unitTag, showBarText, style)
 	local newFrame = ZO_Object.New(self)
-	local parent = ZO_Group_IsGroupUnitTag(unitTag) and ZO_UnitFramesGroups or ZO_UnitFrames
+	local parent
+	if ZO_Group_IsGroupUnitTag(unitTag) then
+		parent = ZO_UnitFramesGroups
+	elseif IsPetUnitTag(unitTag) then
+		parent = PetGroupAnchorFrame
+	else
+		parent = ZO_UnitFrames
+	end
 
 	local layoutData = GetPlatformLayoutData(style)
 	if not layoutData then return end
@@ -1738,6 +1745,7 @@ local function CreateGroupAnchorFrames()
 	local petFrame = CreateControlFromVirtual("PetGroupAnchorFrame", ZO_UnitFramesGroups, UnitFrames.PetFrameAnchor)
 	petFrame:SetDimensions(constants.GROUP_FRAME_SIZE_X,(constants.GROUP_FRAME_SIZE_Y + constants.GROUP_FRAME_PAD_Y) * PET_GROUP_SIZE_THRESHOLD)
 	petFrame:SetAnchor(TOPLEFT, ZO_SmallGroupAnchorFrame, BOTTOMLEFT, 0, 0)
+	petFrame:SetHidden(true)
 end
 
 local function UpdateLeaderIndicator(frames)
@@ -2087,7 +2095,7 @@ local function UpdatePetGroupFramesVisualStyle()
 	-- Note: Small group anchor frame is currently the same for all platforms.
 	local groupFrame = PetGroupAnchorFrame
 	groupFrame:SetDimensions(constants.GROUP_FRAME_SIZE_X,(constants.GROUP_FRAME_SIZE_Y + constants.GROUP_FRAME_PAD_Y) * SMALL_GROUP_SIZE_THRESHOLD)
-	SetAnchorOffsets(groupFrame, constants.GROUP_FRAME_BASE_OFFSET_X, constants.GROUP_FRAME_BASE_OFFSET_Y)
+	SetAnchorOffsets(groupFrame, 0, constants.GROUP_FRAME_SIZE_Y)
 
 	-- Update all UnitFrame anchors.
 	local petGroupSize = UnitFrames.groupSize or GetPetGroupSize()
@@ -2417,8 +2425,6 @@ local function RegisterForEvents()
 	local function OnUnitCreated(eventCode, unitTag)
 		if IsPetUnitTag(unitTag) then
 			UnitFrames:SetPetIndexDirty(GetPetIndexFromUnitTag(unitTag))
-		else
-			ZO_UnitFrames_UpdateWindow(unitTag, UNIT_CHANGED)
 		end
 	end
 
@@ -2431,17 +2437,17 @@ local function RegisterForEvents()
 					unitFrame.dirty = true
 				end
 			end
-		else
-			ZO_UnitFrames_UpdateWindow(unitTag)
 		end
 	end
 
 	EVENT_MANAGER:RegisterForEvent("PetUnits", EVENT_UNIT_CREATED, OnUnitCreated)
 	EVENT_MANAGER:RegisterForEvent("PetUnits", EVENT_UNIT_DESTROYED, OnUnitDestroyed)
 	EVENT_MANAGER:RegisterForEvent("PetUnits", EVENT_DISPOSITION_UPDATE, OnDispositionUpdate)
+	EVENT_MANAGER:RegisterForEvent("PetUnits", EVENT_UNIT_DEATH_STATE_CHANGED, OnUnitDeathStateChanged)
 	EVENT_MANAGER:AddFilterForEvent("PetUnits", EVENT_UNIT_CREATED, REGISTER_FILTER_UNIT_TAG_PREFIX, "playerpet")
 	EVENT_MANAGER:AddFilterForEvent("PetUnits", EVENT_UNIT_DESTROYED, REGISTER_FILTER_UNIT_TAG_PREFIX, "playerpet")
 	EVENT_MANAGER:AddFilterForEvent("PetUnits", EVENT_DISPOSITION_UPDATE, REGISTER_FILTER_UNIT_TAG_PREFIX, "playerpet")
+	EVENT_MANAGER:AddFilterForEvent("PetUnits", EVENT_UNIT_DEATH_STATE_CHANGED, REGISTER_FILTER_UNIT_TAG_PREFIX, "playerpet")
 
 	CALLBACK_MANAGER:RegisterCallback("TargetOfTargetEnabledChanged", OnTargetOfTargetEnabledChanged)
 end
