@@ -11,6 +11,7 @@ local addon = {
 local em = GetEventManager()
 local async = LibStub("LibAsync")
 local task = async:Create("ESO_PROFILER")
+local extrasFragmentGroup
 
 do
 	local function CaptureFrameMetrics()
@@ -336,13 +337,33 @@ function addon:AddKeybind()
 			},
 		}
 	end
+
+	self.keybindButtonGroupExtras = {
+		alignment = KEYBIND_STRIP_ALIGN_LEFT,
+		{
+			name = "Extras",
+			keybind = "UI_SHORTCUT_TERTIARY",
+			order = 0,
+			callback = function()
+				PlaySound(SOUNDS.DEFAULT_CLICK)
+				if ESO_PROFILER_SCENE:HasFragment(LEFT_PANEL_BG_FRAGMENT) then
+					ESO_PROFILER_SCENE:RemoveFragmentGroup(extrasFragmentGroup)
+				else
+					ESO_PROFILER_SCENE:AddFragmentGroup(extrasFragmentGroup)
+				end
+			end,
+		},
+	}
+
 	ESO_PROFILER_FRAGMENT:RegisterCallback("StateChange", function(oldState, newState)
 		if newState == SCENE_FRAGMENT_SHOWN then
+			KEYBIND_STRIP:AddKeybindButtonGroup(self.keybindButtonGroupExtras)
 			KEYBIND_STRIP:AddKeybindButtonGroup(self.keybindButtonGroupRight)
 			KEYBIND_STRIP:AddKeybindButtonGroup(self.keybindButtonGroupAutoStart)
 		elseif newState == SCENE_HIDING then
 			KEYBIND_STRIP:RemoveKeybindButtonGroup(self.keybindButtonGroupRight)
 			KEYBIND_STRIP:RemoveKeybindButtonGroup(self.keybindButtonGroupAutoStart)
+			KEYBIND_STRIP:RemoveKeybindButtonGroup(self.keybindButtonGroupExtras)
 		end
 	end )
 end
@@ -478,8 +499,6 @@ do
 	end
 end
 
-local scriptFragmentGroup
-
 function addon:CreateJournalTab()
 	local sceneName = "eso_profiler"
 	ESO_PROFILER_FRAGMENT = ZO_HUDFadeSceneFragment:New(self.control)
@@ -497,8 +516,7 @@ function addon:CreateJournalTab()
 	ESO_PROFILER_SCENE:AddFragment(CODEX_WINDOW_SOUNDS)
 	ESO_PROFILER_SCENE:AddFragment(ESO_PROFILER_FRAGMENT)
 
-	scriptFragmentGroup = { MINIMIZE_CHAT_FRAGMENT, LEFT_PANEL_BG_FRAGMENT, ESO_PROFILER_SCRIPT_FRAGMENT }
-	ESO_PROFILER_SCENE:AddFragmentGroup(scriptFragmentGroup)
+	extrasFragmentGroup = { MINIMIZE_CHAT_FRAGMENT, LEFT_PANEL_BG_FRAGMENT, ESO_PROFILER_SCRIPT_FRAGMENT }
 
 	SYSTEMS:RegisterKeyboardRootScene(sceneName, ESO_PROFILER_SCENE)
 
