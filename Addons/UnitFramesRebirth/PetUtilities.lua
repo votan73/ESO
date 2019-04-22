@@ -58,6 +58,15 @@ function IsPetActive()
 	return false
 end
 
+function IsPetUnitDead(unitTag)
+	if DoesUnitExist(unitTag) and IsPetUnitTag(unitTag) then
+		if GetUnitPower(unitTag, POWERTYPE_HEALTH) <= 0 then
+			return true
+		end
+	end
+	return false
+end
+
 function GetPetGroupSize()
 	local count = 0
 	for i = 1, MAX_PLAYER_PET do
@@ -90,7 +99,6 @@ do
 	end
 
 	local petIndices = {}
-
 	for i = 1, MAX_PLAYER_PET do
 		petIndices[i] = "playerpet" .. i
 	end
@@ -98,6 +106,4 @@ do
 	function GetPetUnitTagByIndex(petIndex)
 		return petIndices[petIndex]
 	end
-
-
 end
