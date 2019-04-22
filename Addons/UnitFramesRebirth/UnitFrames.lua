@@ -1492,7 +1492,7 @@ end
 function UnitFrame:UpdateUnitReaction()
 	if self.nameLabel then
 		local unitTag = self:GetUnitTag()
-		if ZO_Group_IsGroupUnitTag(unitTag) or IsValidPetUnitTag(unitTag) then
+		if ZO_Group_IsGroupUnitTag(unitTag) or IsPetUnitTag(unitTag) then
 			local r, g, b = GetInterfaceColor(INTERFACE_COLOR_TYPE_TEXT_COLORS, INTERFACE_TEXT_COLOR_HIGHLIGHT)
 			self.nameLabel:SetColor(r, g, b, self.nameLabel:GetControlAlpha())
 		end
@@ -2428,7 +2428,7 @@ local function RegisterForEvents()
 	ZO_UnitFrames:AddFilterForEvent(EVENT_DISPOSITION_UPDATE, REGISTER_FILTER_UNIT_TAG_PREFIX, "group")
 
 	local function OnUnitCreated(eventCode, unitTag)
-		if IsPetUnitTag(unitTag) then
+		if IsPetUnitTag(unitTag) and IsTrackedPet(unitTag) then
 			UnitFrames:SetPetIndexDirty(GetPetIndexFromUnitTag(unitTag))
 		end
 	end

@@ -39,7 +39,7 @@ local PET_NAMES = {
 	[GetPetNameLower(94408)] = true,
 }
 
-function IsValidPetUnitTag(unitTag)
+function IsTrackedPet(unitTag)
 	if unitTag then
 		local unitName = ZO_CachedStrFormat("<<z:1>>", GetUnitName(unitTag))
 		return PET_NAMES[unitName] == true
@@ -51,7 +51,7 @@ end
 function IsPetActive()
 	for i = 1, MAX_PLAYER_PET do
 		local unitTag = GetPetUnitTagByIndex(i)
-		if DoesUnitExist(unitTag) and IsValidPetUnitTag(unitTag) then
+		if DoesUnitExist(unitTag) and IsTrackedPet(unitTag) then
 			return true
 		end
 	end
@@ -72,7 +72,7 @@ function GetPetGroupSize()
 	local count = 0
 	for i = 1, MAX_PLAYER_PET do
 		local unitTag = GetPetUnitTagByIndex(i)
-		if DoesUnitExist(unitTag) and IsValidPetUnitTag(unitTag) then
+		if DoesUnitExist(unitTag) and IsTrackedPet(unitTag) then
 			count = count + 1
 		end
 	end
