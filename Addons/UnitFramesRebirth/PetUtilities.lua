@@ -96,7 +96,7 @@ do
 	end
 
 	function GetPetIndexFromUnitTag(unitTag)
-		return petUnitTags[unitTag] or nil
+		return DoesUnitExist(unitTag) and petUnitTags[unitTag] or 4294967296
 	end
 
 	local petIndices = {}
