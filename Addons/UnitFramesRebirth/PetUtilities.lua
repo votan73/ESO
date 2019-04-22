@@ -41,8 +41,8 @@ local PET_NAMES = {
 
 function IsValidPetUnitTag(unitTag)
 	if unitTag then
-		local unitName = zo_strformat("<<z:1>>", GetUnitName(unitTag))
-		return PET_NAMES[unitName]
+		local unitName = ZO_CachedStrFormat("<<z:1>>", GetUnitName(unitTag))
+		return PET_NAMES[unitName] == true
 	end
 	return false
 end

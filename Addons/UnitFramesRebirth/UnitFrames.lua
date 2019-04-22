@@ -197,7 +197,7 @@ function UnitFramesManager:Initialize()
 	self.targetOfTargetEnabled = true
 	self.groupAndRaidHiddenReasons = ZO_HiddenReasons:New()
 	self.firstDirtyGroupIndex = nil
-	
+
 	self.petHiddenReasons = ZO_HiddenReasons:New()
 	self.firstDirtyPetGroupIndex = nil
 
@@ -209,7 +209,7 @@ function UnitFramesManager:Initialize()
 	self.UnitFrameBarTextTemplate = "ZO_UnitFrameBarText"
 	self.GroupFrameAnchor = "ZO_GroupFrameAnchor"
 	self.RaidFrameAnchor = "ZO_RaidFrameAnchor"
-	self.PetFrameAnchor = "UnitFramesRebirth_GroupFrameAnchor"
+	self.PetFrameAnchor = "ZO_GroupFrameAnchor"
 	self.GroupUnitFrame = "ZO_GroupUnitFrame"
 	self.RaidUnitFrame = "ZO_RaidUnitFrame"
 	self.PetUnitFrame = "UnitFramesRebirth_PetUnitFrame"
@@ -378,33 +378,7 @@ end
 -------------------------------
 -------------------------------
 function UnitFramesManager:UpdatePetGroupAnchorFrames()
-	-- Only the raid frame anchors need updates for now and it's only for whether or not the group name labels are showing and which one is highlighted
-	if self.groupSize <= SMALL_GROUP_SIZE_THRESHOLD or self.groupAndRaidHiddenReasons:IsHidden() then
-		-- Small groups never show the raid frame anchors
-		for subgroupIndex = 1, NUM_SUBGROUPS do
-			largeGroupAnchorFrames[subgroupIndex]:SetHidden(true)
-		end
-	else
-		local unitTag, frameIsHidden, isLocalPlayerInSubgroup
-		for subgroupIndex = 1, NUM_SUBGROUPS do
-			frameIsHidden = true
-			-- Label starts out hidden...
-			isLocalPlayerInSubgroup = false
-			for groupMemberIndex = 1, SMALL_GROUP_SIZE_THRESHOLD do
-				unitTag = GetGroupUnitTagByIndex(((subgroupIndex - 1) * SMALL_GROUP_SIZE_THRESHOLD) + groupMemberIndex)
-				if unitTag then
-					frameIsHidden = false
-					if AreUnitsEqual("player", unitTag) then
-						isLocalPlayerInSubgroup = true
-						break
-						-- Found a reason to show the label, and determined if this is the local player's subgroup, so bail out
-					end
-				end
-			end
 
-			largeGroupAnchorFrames[subgroupIndex]:SetHidden(frameIsHidden)
-		end
-	end
 end
 
 function UnitFramesManager:IsTargetOfTargetEnabled()
@@ -1761,9 +1735,9 @@ local function CreateGroupAnchorFrames()
 	end
 
 	-- Create pet group anchor frame
-	local petFrame = CreateControlFromVirtual("PetGroupAnchorFrame", ZO_SmallGroupAnchorFrame, UnitFrames.PetFrameAnchor)
+	local petFrame = CreateControlFromVirtual("PetGroupAnchorFrame", ZO_UnitFramesGroups, UnitFrames.PetFrameAnchor)
 	petFrame:SetDimensions(constants.GROUP_FRAME_SIZE_X,(constants.GROUP_FRAME_SIZE_Y + constants.GROUP_FRAME_PAD_Y) * PET_GROUP_SIZE_THRESHOLD)
-	petFrame:SetAnchor(TOPLEFT, GuiRoot, TOPLEFT, constants.GROUP_FRAME_BASE_OFFSET_X, constants.GROUP_FRAME_BASE_OFFSET_Y)
+	petFrame:SetAnchor(TOPLEFT, ZO_SmallGroupAnchorFrame, BOTTOMLEFT, 0, 0)
 end
 
 local function UpdateLeaderIndicator(frames)
@@ -2005,7 +1979,7 @@ function UnitFramesManager:UpdatePetFrames()
 
 	self:SetPetSize(petGroupSize)
 
-	if IsPetActive() then
+	if petIndex and IsPetActive() then
 		-- Only update the frames of the unit being changed, and those after it in the list for performance reasons.
 		local frames = self.petFrames
 
@@ -2014,20 +1988,19 @@ function UnitFramesManager:UpdatePetFrames()
 		for i = petIndex, petGroupSize do
 			unitTag = GetPetUnitTagByIndex(i)
 			if not frames[unitTag] then
-				frames[unitTag] = UnitFrame:New(unitTag, HIDE_BAR_TEXT, self.PetUnitFrame)
+				frames[unitTag] = UnitFrame:New(unitTag, HIDE_BAR_TEXT, PET_UNIT_FRAME)
 			end
 		end
 		-- But sync index of all frames with those of API
 		local newIndex, rawName, anchor, hasTarget, isOnline
 		for unitTag, unitFrame in pairs(frames) do
-			newIndex = GetPetUnitTagByIndex(unitTag)
+			newIndex = GetPetIndexFromUnitTag(unitTag)
 			hasTarget = newIndex < GROUPINDEX_NONE
 			rawName = hasTarget and GetRawUnitName(unitTag) or ""
 			-- While zoning of local player unitTag and index can swap, but are effectively the same position. => just the controls are swapping.
 			if unitFrame.index ~= newIndex or unitFrame.rawName ~= rawName then
 				-- For OnUnitDestroyed
 				unitFrame.index = newIndex
-
 				if hasTarget then
 					anchor = GetPetGroupFrameAnchor(newIndex, petGroupSize)
 					if unitFrame.rawName ~= rawName then
@@ -2213,6 +2186,7 @@ local function RegisterForEvents()
 	-- updates for every unit zoning (via wayshrine).
 	local function RequestFullRefresh()
 		UnitFrames.firstDirtyGroupIndex = 1
+		UnitFrames.firstDirtyPetGroupIndex = 1
 	end
 
 	local function OnTargetChanged(eventCode, unitTag)
@@ -2440,6 +2414,35 @@ local function RegisterForEvents()
 	ZO_UnitFrames:AddFilterForEvent(EVENT_UNIT_DESTROYED, REGISTER_FILTER_UNIT_TAG_PREFIX, "group")
 	ZO_UnitFrames:AddFilterForEvent(EVENT_DISPOSITION_UPDATE, REGISTER_FILTER_UNIT_TAG_PREFIX, "group")
 
+	local function OnUnitCreated(eventCode, unitTag)
+		if IsPetUnitTag(unitTag) then
+			UnitFrames:SetPetIndexDirty(GetPetIndexFromUnitTag(unitTag))
+		else
+			ZO_UnitFrames_UpdateWindow(unitTag, UNIT_CHANGED)
+		end
+	end
+
+	local function OnUnitDestroyed(eventCode, unitTag)
+		if IsPetUnitTag(unitTag) then
+			local unitFrame = UnitFrames:GetFrame(unitTag)
+			if unitFrame then
+				if unitFrame.index < GROUPINDEX_NONE then
+					UnitFrames:SetPetIndexDirty(unitFrame.index)
+					unitFrame.dirty = true
+				end
+			end
+		else
+			ZO_UnitFrames_UpdateWindow(unitTag)
+		end
+	end
+
+	EVENT_MANAGER:RegisterForEvent("PetUnits", EVENT_UNIT_CREATED, OnUnitCreated)
+	EVENT_MANAGER:RegisterForEvent("PetUnits", EVENT_UNIT_DESTROYED, OnUnitDestroyed)
+	EVENT_MANAGER:RegisterForEvent("PetUnits", EVENT_DISPOSITION_UPDATE, OnDispositionUpdate)
+	EVENT_MANAGER:AddFilterForEvent("PetUnits", EVENT_UNIT_CREATED, REGISTER_FILTER_UNIT_TAG_PREFIX, "playerpet")
+	EVENT_MANAGER:AddFilterForEvent("PetUnits", EVENT_UNIT_DESTROYED, REGISTER_FILTER_UNIT_TAG_PREFIX, "playerpet")
+	EVENT_MANAGER:AddFilterForEvent("PetUnits", EVENT_DISPOSITION_UPDATE, REGISTER_FILTER_UNIT_TAG_PREFIX, "playerpet")
+
 	CALLBACK_MANAGER:RegisterCallback("TargetOfTargetEnabledChanged", OnTargetOfTargetEnabledChanged)
 end
 
@@ -2477,8 +2480,14 @@ do
 end
 
 function ZO_UnitFrames_OnUpdate()
-	if UnitFrames and UnitFrames:GetIsDirty() then
-		UnitFrames:UpdateGroupFrames()
-		UnitFrames:ClearDirty()
+	if UnitFrames then
+		if UnitFrames:GetIsDirty() then
+			UnitFrames:UpdateGroupFrames()
+			UnitFrames:ClearDirty()
+		end
+		if UnitFrames.firstDirtyPetGroupIndex then
+			UnitFrames:UpdatePetFrames()
+			UnitFrames:ClearDirtyPet()
+		end
 	end
 end
