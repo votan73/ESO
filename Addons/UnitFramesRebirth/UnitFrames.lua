@@ -1725,7 +1725,7 @@ local function CreateGroupAnchorFrames()
 
 	-- Create pet group anchor frame
 	local petFrame = CreateControlFromVirtual("PetGroupAnchorFrame", ZO_UnitFramesGroups, UnitFrames.PetFrameAnchor)
-	petFrame:SetDimensions(constants.GROUP_FRAME_SIZE_X,(constants.GROUP_FRAME_SIZE_Y + constants.GROUP_FRAME_PAD_Y) * PET_GROUP_SIZE_THRESHOLD)
+	petFrame:SetDimensions(constants.GROUP_FRAME_SIZE_X, (constants.GROUP_FRAME_SIZE_Y + constants.GROUP_FRAME_PAD_Y) * PET_GROUP_SIZE_THRESHOLD)
 	petFrame:SetAnchor(TOPLEFT, ZO_SmallGroupAnchorFrame, BOTTOMLEFT, 0, 0)
 	petFrame:SetHidden(true)
 end
@@ -2081,7 +2081,7 @@ local function UpdatePetGroupFramesVisualStyle()
 
 	-- Note: Small group anchor frame is currently the same for all platforms.
 	local groupFrame = PetGroupAnchorFrame
-	groupFrame:SetDimensions(constants.GROUP_FRAME_SIZE_X,(constants.GROUP_FRAME_SIZE_Y + constants.GROUP_FRAME_PAD_Y) * SMALL_GROUP_SIZE_THRESHOLD)
+	groupFrame:SetDimensions(constants.GROUP_FRAME_SIZE_X, (constants.GROUP_FRAME_SIZE_Y + constants.GROUP_FRAME_PAD_Y) * PET_GROUP_SIZE_THRESHOLD)
 	SetAnchorOffsets(groupFrame, 0, constants.GROUP_FRAME_SIZE_Y / 4)
 
 	-- Update all UnitFrame anchors.
