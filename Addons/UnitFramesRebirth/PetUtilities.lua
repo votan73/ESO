@@ -10,21 +10,21 @@ local PET_NAMES = {
 	[GetPetNameLower(18602)] = true,
 	
 	-- Clannfear
-	["clannfear"] = true, -- en
-	["clannbann"] = true, -- de
-	["faucheclan"] = true, -- fr
+	["clannfear"] = true,					-- en
+	["clannbann"] = true,					-- de
+	["faucheclan"] = true,					-- fr
 
 	-- Volatile Familiar
-	[GetPetNameLower(30678)] = true, -- en/de
-	["familier explosif"] = true, -- fr
+	[GetPetNameLower(30678)] = true,		-- en/de
+	["familier explosif"] = true,			-- fr
 
 	-- Winged Twilight
 	[GetPetNameLower(30589)] = true,
 
 	-- Twilight Tormentor
-	[GetPetNameLower(30594)] = true, -- en
-	["zwielichtpeinigerin"] = true, -- de
-	["tourmenteur crépusculaire"] = true, -- fr
+	[GetPetNameLower(30594)] = true,		-- en
+	["zwielichtpeinigerin"] = true,			-- de
+	["tourmenteur crépusculaire"] = true,	-- fr
 
 	-- Twilight Matriarch
 	[GetPetNameLower(30629)] = true,
@@ -40,7 +40,7 @@ local PET_NAMES = {
 }
 
 function IsTrackedPet(unitTag)
-	if unitTag then
+	if IsPetUnitTag(unitTag) then
 		local unitName = ZO_CachedStrFormat("<<z:1>>", GetUnitName(unitTag))
 		return PET_NAMES[unitName] == true
 	end

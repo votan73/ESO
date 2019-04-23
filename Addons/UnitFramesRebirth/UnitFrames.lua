@@ -139,12 +139,10 @@ local function GetGroupFrameAnchor(groupIndex, groupSize)
 end
 
 local function GetPetGroupFrameAnchor(groupIndex, petGroupSize)
-	local constants = GetPlatformConstants()
-
 	-- petGroupSize currently not in use
-	-- petGroupSize = petGroupSize or GetPetGroupSize()
+	local constants = GetPlatformConstants()
+	
 	local row = zo_mod(groupIndex - 1, constants.PET_GROUP_FRAMES_PER_COLUMN)
-
 	groupFrameAnchor:SetTarget(PetGroupAnchorFrame)
 	groupFrameAnchor:SetOffsets(0, row * constants.GROUP_FRAME_OFFSET_Y)
 	return groupFrameAnchor
@@ -368,13 +366,12 @@ function UnitFramesManager:UpdateGroupAnchorFrames()
 	end
 end
 
--------------------------------
--------------------------------
--- MUSS NOCH GEÄNDERT WERDEN --
--------------------------------
--------------------------------
 function UnitFramesManager:UpdatePetGroupAnchorFrames()
-	PetGroupAnchorFrame:SetHidden(not IsPetActive())
+	if UnitFrames.account.enablePetHealth and IsPetActive() then
+		PetGroupAnchorFrame:SetHidden(false)
+	else
+		PetGroupAnchorFrame:SetHidden(true)
+	end
 end
 
 function UnitFramesManager:IsTargetOfTargetEnabled()
@@ -397,6 +394,7 @@ UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_SUPER_FAST = 2
 UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_FASTER = 3
 UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_FAST = 4
 UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_DEFAULT = 5
+UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_INSTANT = 6
 
 -- A special flag that essentially acts like a wild card, accepting any mechanic
 local ANY_POWER_TYPE = true
@@ -652,6 +650,7 @@ do
 	-- The health bar animation is pretty slow. We gonna make it a bit faster. This is very helpful in PvP.
 	-- DEFAULT_ANIMATION_TIME_MS = 500
 	local lookupApproachAmountMs = {
+		[UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_INSTANT] = 0,
 		[UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_ULTRA_FAST] = 100,
 		[UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_SUPER_FAST] = 200,
 		[UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_FASTER] = 300,
@@ -670,8 +669,13 @@ do
 		local barCur = isBarCentered and cur / 2 or cur
 		local barMax = isBarCentered and max / 2 or max
 
+		local customApproach = GetCustomApproachAmountMs()
 		for i = 1, numBarControls do
-			ZO_StatusBar_SmoothTransition(self.barControls[i], barCur, barMax, forceInit, nil, GetCustomApproachAmountMs())
+			if customApproach ~= 0 then
+				ZO_StatusBar_SmoothTransition(self.barControls[i], barCur, barMax, forceInit, nil, customApproach)
+			else
+				ZO_StatusBar_SmoothTransition(self.barControls[i], barCur, barMax, INSTANT)
+			end
 		end
 
 		local updateBarType = false
@@ -1310,31 +1314,13 @@ function UnitFrame:UpdatePowerBar(index, powerType, cur, max, forceInit)
 	end
 end
 
-do
-	local HIDE_LEVEL_TYPES =
-	{
-		[UNIT_TYPE_SIEGEWEAPON] = true,
-		[UNIT_TYPE_INTERACTFIXTURE] = true,
-		[UNIT_TYPE_INTERACTOBJ] = true,
-		[UNIT_TYPE_SIMPLEINTERACTFIXTURE] = true,
-		[UNIT_TYPE_SIMPLEINTERACTOBJ] = true,
-	}
-
-	-- show level for players and non-friendly NPCs
-	function UnitFrame:ShouldShowLevel()
-		local unitTag = self:GetUnitTag()
-		if IsUnitPlayer(unitTag) then
-			return true
-		elseif IsUnitInvulnerableGuard(unitTag) then
-			return false
-		else
-			if HIDE_LEVEL_TYPES[GetUnitType(unitTag)] then
-				return false
-			elseif ZO_UNIT_FRAMES_SHOW_LEVEL_REACTIONS[GetUnitReaction(unitTag)] then
-				return true
-			end
-		end
+-- show level for players and non-friendly NPCs
+function UnitFrame:ShouldShowLevel()
+	local unitTag = self:GetUnitTag()
+	if IsUnitPlayer(unitTag) or ZO_UNIT_FRAMES_SHOW_LEVEL_REACTIONS[GetUnitReaction(unitTag)] then
+		return true
 	end
+	return false
 end
 
 function UnitFrame:UpdateLevel()
@@ -1778,11 +1764,6 @@ local function UpdateLeaderIndicator(frames)
 	end
 end
 
-local unitTypesWhoUseCastInfo = {
-	[UNIT_REACTION_HOSTILE] = true,
-	[UNIT_REACTION_NEUTRAL] = true,
-}
-
 local function CreateTargetFrame()
 	local targetFrameAnchor = ZO_Anchor:New(TOP, GuiRoot, TOP, 0, 88)
 	local targetFrame = UnitFrames:CreateFrame("reticleover", targetFrameAnchor, HIDE_BAR_TEXT, UnitFrames.TargetUnitFrameTemplate)
@@ -1980,6 +1961,7 @@ function UnitFramesManager:UpdatePetFrames()
 	local petGroupSize = GetPetGroupSize()
 	local petIndex = self:GetFirstDirtyPetGroupIndex()
 	local oldPetGroupSize = self.petGroupSize or 0
+	local isPetActive = IsPetActive()
 
 	self:SetPetSize(petGroupSize)
 
@@ -1988,7 +1970,7 @@ function UnitFramesManager:UpdatePetFrames()
 		ForceChange(self.petFrames)
 		petIndex = 1
 	end
-	if petIndex and IsPetActive() then
+	if petIndex and isPetActive then
 		-- Only update the frames of the unit being changed, and those after it in the list for performance reasons.
 		local frames = self.petFrames
 
@@ -2032,8 +2014,13 @@ function UnitFramesManager:UpdatePetFrames()
 		self:UpdatePetGroupAnchorFrames()
 
 	elseif oldPetGroupSize > 0 then
+		-- When you had some pets active and despawn them all, or get killed
 		self:UpdatePetGroupAnchorFrames()
 	end
+end
+
+function UnitFramesManager:SetPetHealth()
+	self:UpdatePetGroupAnchorFrames()
 end
 
 local function SetAnchorOffsets(control, offsetX, offsetY)
@@ -2114,25 +2101,6 @@ local function UpdatePetGroupFramesVisualStyle()
 	end
 end
 
-function UnitFrame_HandleMouseReceiveDrag(frame)
-	if GetCursorContentType() ~= MOUSE_CONTENT_EMPTY then
-		PlaceInUnitFrame(frame.m_unitTag)
-	end
-end
-
-function UnitFrame_HandleMouseUp(frame, button, upInside)
-	if GetCursorContentType() ~= MOUSE_CONTENT_EMPTY then
-		-- dropped something with left click
-		if button == MOUSE_BUTTON_INDEX_LEFT then
-			PlaceInUnitFrame(frame.m_unitTag)
-		else
-			ClearCursor()
-		end
-		-- Same deal here...no unitFrame related clicks like targeting or context menus should take place at this point
-		return
-	end
-end
-
 function UnitFrame_HandleMouseEnter(frame)
 	local unitFrame = UnitFrames:GetFrame(frame.m_unitTag)
 	if unitFrame then
@@ -2195,7 +2163,6 @@ local function RegisterForEvents()
 	-- updates for every unit zoning (via wayshrine).
 	local function RequestFullRefresh()
 		UnitFrames.firstDirtyGroupIndex = 1
-		UnitFrames.firstDirtyPetGroupIndex = 1
 	end
 
 	local function OnTargetChanged(eventCode, unitTag)
@@ -2360,20 +2327,9 @@ local function RegisterForEvents()
 		ZO_UnitFrames_UpdateWindow("reticleover", UNIT_CHANGED)
 		ZO_UnitFrames_UpdateWindow("reticleovertarget", UNIT_CHANGED)
 
-		local requestRefresh = false
-
 		if IsPlayerGrouped() or UnitFrames.groupSize > 0 then
 			ForceChange(UnitFrames.raidFrames)
 			ForceChange(UnitFrames.groupFrames)
-			requestRefresh = true
-		end
-
-		if IsPetActive() then
-			ForceChange(UnitFrames.petFrames)
-			requestRefresh = true
-		end
-
-		if requestRefresh then
 			RequestFullRefresh()
 		end
 	end
@@ -2403,7 +2359,7 @@ local function RegisterForEvents()
 		end
 	end
 
-	-- Register events
+	-- Register group/raid/target events
 	ZO_UnitFrames:RegisterForEvent(EVENT_TARGET_CHANGED, OnTargetChanged)
 	ZO_UnitFrames:RegisterForEvent(EVENT_UNIT_CHARACTER_NAME_CHANGED, OnUnitCharacterNameChanged)
 	ZO_UnitFrames:RegisterForEvent(EVENT_RETICLE_TARGET_CHANGED, OnReticleTargetChanged)
@@ -2425,8 +2381,6 @@ local function RegisterForEvents()
 	ZO_UnitFrames:RegisterForEvent(EVENT_INTERFACE_SETTING_CHANGED, OnInterfaceSettingChanged)
 	ZO_UnitFrames:RegisterForEvent(EVENT_GUILD_NAME_AVAILABLE, OnGuildNameAvailable)
 	ZO_UnitFrames:RegisterForEvent(EVENT_GUILD_ID_CHANGED, OnGuildIdChanged)
-
-	-- Filter events
 	ZO_UnitFrames:AddFilterForEvent(EVENT_TARGET_CHANGED, REGISTER_FILTER_UNIT_TAG, "reticleover")
 	ZO_UnitFrames:AddFilterForEvent(EVENT_UNIT_CHARACTER_NAME_CHANGED, REGISTER_FILTER_UNIT_TAG, "reticleover")
 	ZO_UnitFrames:AddFilterForEvent(EVENT_GUILD_ID_CHANGED, REGISTER_FILTER_UNIT_TAG, "reticleover")
@@ -2434,28 +2388,39 @@ local function RegisterForEvents()
 	ZO_UnitFrames:AddFilterForEvent(EVENT_UNIT_DESTROYED, REGISTER_FILTER_UNIT_TAG_PREFIX, "group")
 	ZO_UnitFrames:AddFilterForEvent(EVENT_DISPOSITION_UPDATE, REGISTER_FILTER_UNIT_TAG_PREFIX, "group")
 
-	local function OnUnitCreated(eventCode, unitTag)
-		if IsPetUnitTag(unitTag) and IsTrackedPet(unitTag) then
+	-- Register Pet health bars
+	local function RequestFullPetRefresh()
+		UnitFrames.firstDirtyPetGroupIndex = 1
+	end
+
+	local function OnPetUnitCreated(eventCode, unitTag)
+		if IsTrackedPet(unitTag) then
 			UnitFrames:SetPetIndexDirty(GetPetIndexFromUnitTag(unitTag))
 		end
 	end
 
-	local function OnUnitDestroyed(eventCode, unitTag)
-		if IsPetUnitTag(unitTag) and IsTrackedPet(unitTag) then
-			local unitFrame = UnitFrames:GetFrame(unitTag)
-			if unitFrame then
-				if unitFrame.index < GROUPINDEX_NONE then
-					UnitFrames:SetPetIndexDirty(unitFrame.index)
-					unitFrame.dirty = true
-				end
+	local function OnPetUnitDestroyed(eventCode, unitTag)
+		local unitFrame = UnitFrames:GetFrame(unitTag)
+		if unitFrame then
+			if unitFrame.index < GROUPINDEX_NONE then
+				UnitFrames:SetPetIndexDirty(unitFrame.index)
+				unitFrame.dirty = true
 			end
 		end
 	end
 
-	EVENT_MANAGER:RegisterForEvent("PetUnits", EVENT_UNIT_CREATED, OnUnitCreated)
-	EVENT_MANAGER:RegisterForEvent("PetUnits", EVENT_UNIT_DESTROYED, OnUnitDestroyed)
+	local function OnPetPlayerActivated(eventCode)
+		if IsPetActive() then
+			ForceChange(UnitFrames.petFrames)
+			RequestFullPetRefresh()
+		end
+	end
+
+	EVENT_MANAGER:RegisterForEvent("PetUnits", EVENT_UNIT_CREATED, OnPetUnitCreated)
+	EVENT_MANAGER:RegisterForEvent("PetUnits", EVENT_UNIT_DESTROYED, OnPetUnitDestroyed)
 	EVENT_MANAGER:RegisterForEvent("PetUnits", EVENT_DISPOSITION_UPDATE, OnDispositionUpdate)
 	EVENT_MANAGER:RegisterForEvent("PetUnits", EVENT_UNIT_DEATH_STATE_CHANGED, OnUnitDeathStateChanged)
+	EVENT_MANAGER:RegisterForEvent("PetUnits", EVENT_PLAYER_ACTIVATED, OnPetPlayerActivated)
 	EVENT_MANAGER:AddFilterForEvent("PetUnits", EVENT_UNIT_CREATED, REGISTER_FILTER_UNIT_TAG_PREFIX, "playerpet")
 	EVENT_MANAGER:AddFilterForEvent("PetUnits", EVENT_UNIT_DESTROYED, REGISTER_FILTER_UNIT_TAG_PREFIX, "playerpet")
 	EVENT_MANAGER:AddFilterForEvent("PetUnits", EVENT_DISPOSITION_UPDATE, REGISTER_FILTER_UNIT_TAG_PREFIX, "playerpet")

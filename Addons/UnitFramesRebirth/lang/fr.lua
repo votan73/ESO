@@ -1,5 +1,6 @@
 SafeAddString(SI_UNITFRAMESREBIRTH_CLASS_WITH_NAME, "<<X:1>> <<2>>", 0)
 
+SafeAddString(SI_UNITFRAMESREBIRTH_APPROACH_INSTANT, "[0ms] instant", 0)
 SafeAddString(SI_UNITFRAMESREBIRTH_APPROACH_ULTRA_FAST, "[100ms] ultra rapide", 0)
 SafeAddString(SI_UNITFRAMESREBIRTH_APPROACH_SUPER_FAST, "[200ms] super rapide", 0)
 SafeAddString(SI_UNITFRAMESREBIRTH_APPROACH_FASTER, "[300ms] plus rapide", 0)
@@ -14,4 +15,6 @@ SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_HIDE_TITLE, "Masquer le titre", 0)
 SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_HIDE_TITLE_TT, "Masque le titre à côté du nom du joueur dans le cadre de cible.", 0)
 SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_HEALTH_WARNER, "Alerte Santé Basse", 0)
 SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_HEALTH_WARNER_TT, "Cette option s'applique uniquement aux cadres de groupe. Si un joueur a sa santé basse, sa barre de santé brillera.", 0)
+SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_PET_HEALTH, "Pet health bar", 0)
+SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_PET_HEALTH_TT, "Show active combat Pet health bar(s). Pet Health bar will only show when this option is enabled and a pet is spawned.", 0)
 SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_APPROACH_HEALTHBAR, "Taux de mise à jour des barres de santé", 0)

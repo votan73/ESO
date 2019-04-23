@@ -1,5 +1,6 @@
 ZO_CreateStringId("SI_UNITFRAMESREBIRTH_CLASS_WITH_NAME", "<<X:1>> <<2>>")
 
+ZO_CreateStringId("SI_UNITFRAMESREBIRTH_APPROACH_INSTANT", "[0ms] instant")
 ZO_CreateStringId("SI_UNITFRAMESREBIRTH_APPROACH_ULTRA_FAST", "[100ms] ultra fast")
 ZO_CreateStringId("SI_UNITFRAMESREBIRTH_APPROACH_SUPER_FAST", "[200ms] super fast")
 ZO_CreateStringId("SI_UNITFRAMESREBIRTH_APPROACH_FASTER", "[300ms] faster")
@@ -14,4 +15,6 @@ ZO_CreateStringId("SI_UNITFRAMESREBIRTH_SETTINGS_HIDE_TITLE", "Hide title")
 ZO_CreateStringId("SI_UNITFRAMESREBIRTH_SETTINGS_HIDE_TITLE_TT", "Hides the title next to the player name on the target frame.")
 ZO_CreateStringId("SI_UNITFRAMESREBIRTH_SETTINGS_HEALTH_WARNER", "Low Health Warning")
 ZO_CreateStringId("SI_UNITFRAMESREBIRTH_SETTINGS_HEALTH_WARNER_TT", "This option is only applied on group frames. If a player has low health, their health bar will glow.")
+ZO_CreateStringId("SI_UNITFRAMESREBIRTH_SETTINGS_PET_HEALTH", "Pet health bar")
+ZO_CreateStringId("SI_UNITFRAMESREBIRTH_SETTINGS_PET_HEALTH_TT", "Show active combat Pet health bar(s). Pet Health bar will only show when this option is enabled and a pet is spawned.")
 ZO_CreateStringId("SI_UNITFRAMESREBIRTH_SETTINGS_APPROACH_HEALTHBAR", "Health bar update rate")
