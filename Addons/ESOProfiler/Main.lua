@@ -23,8 +23,8 @@ do
 	end
 
 	local function UpdateKeybind()
-		if addon.keybindButtonGroup and KEYBIND_STRIP:HasKeybindButtonGroup(addon.keybindButtonGroup) then
-			KEYBIND_STRIP:UpdateKeybindButtonGroup(addon.keybindButtonGroup)
+		if addon.keybindButtonGroupRight and KEYBIND_STRIP:HasKeybindButtonGroup(addon.keybindButtonGroupRight) then
+			KEYBIND_STRIP:UpdateKeybindButtonGroup(addon.keybindButtonGroupRight)
 		end
 	end
 
@@ -77,7 +77,8 @@ function addon:GenerateReport()
 	statusBar:SetHidden(false)
 	content:SetHidden(true)
 
-	task:Cancel():For(1, numFrames):Do( function(frameIndex)
+	-- at 100fps this are 300s = 5min. at 60fps 500s ~ 8min
+	task:Cancel():For(math.max(1, numFrames - 30000), numFrames):Do( function(frameIndex)
 		statusBar:SetValue(frameIndex)
 		task:For(1, GetScriptProfilerFrameNumRecords(frameIndex)):Do( function(recordIndex)
 			profilerData:ProcessRecord(frameIndex, recordIndex)
@@ -341,7 +342,7 @@ function addon:AddKeybind()
 	self.keybindButtonGroupExtras = {
 		alignment = KEYBIND_STRIP_ALIGN_LEFT,
 		{
-			name = "Extras",
+			name = "Profile Script",
 			keybind = "UI_SHORTCUT_TERTIARY",
 			order = 0,
 			callback = function()
