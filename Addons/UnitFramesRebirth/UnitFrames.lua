@@ -1961,7 +1961,6 @@ function UnitFramesManager:UpdatePetFrames()
 	local petGroupSize = GetPetGroupSize()
 	local petIndex = self:GetFirstDirtyPetGroupIndex()
 	local oldPetGroupSize = self.petGroupSize or 0
-	local isPetActive = IsPetActive()
 
 	self:SetPetSize(petGroupSize)
 
@@ -1970,7 +1969,7 @@ function UnitFramesManager:UpdatePetFrames()
 		ForceChange(self.petFrames)
 		petIndex = 1
 	end
-	if petIndex and isPetActive then
+	if petIndex and IsPetActive() then
 		-- Only update the frames of the unit being changed, and those after it in the list for performance reasons.
 		local frames = self.petFrames
 
