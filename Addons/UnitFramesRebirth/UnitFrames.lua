@@ -310,10 +310,6 @@ function UnitFramesManager:GetFirstDirtyPetGroupIndex()
 	return self.firstDirtyPetGroupIndex
 end
 
-function UnitFramesManager:GetIsDirtyPetGroup()
-	return self.firstDirtyPetGroupIndex ~= nil
-end
-
 -- The update we call will update all unit frames after and including the one being modified
 -- So we really just need to know what is the smallest groupIndex that is being changed
 function UnitFramesManager:SetGroupIndexDirty(groupIndex)
@@ -2103,7 +2099,7 @@ local function UpdatePetGroupFramesVisualStyle()
 	SetAnchorOffsets(groupFrame, 0, constants.GROUP_FRAME_SIZE_Y / 4)
 
 	-- Update all UnitFrame anchors.
-	local petGroupSize = UnitFrames.groupSize or GetPetGroupSize()
+	local petGroupSize = UnitFrames.petGroupSize or GetPetGroupSize()
 	local unitTag, unitFrame
 	for i = 1, GROUP_SIZE_MAX do
 		unitTag = GetPetUnitTagByIndex(i)
@@ -2364,9 +2360,20 @@ local function RegisterForEvents()
 		ZO_UnitFrames_UpdateWindow("reticleover", UNIT_CHANGED)
 		ZO_UnitFrames_UpdateWindow("reticleovertarget", UNIT_CHANGED)
 
+		local requestRefresh = false
+
 		if IsPlayerGrouped() or UnitFrames.groupSize > 0 then
 			ForceChange(UnitFrames.raidFrames)
 			ForceChange(UnitFrames.groupFrames)
+			requestRefresh = true
+		end
+
+		if IsPetActive() then
+			ForceChange(UnitFrames.petFrames)
+			requestRefresh = true
+		end
+
+		if requestRefresh then
 			RequestFullRefresh()
 		end
 	end
