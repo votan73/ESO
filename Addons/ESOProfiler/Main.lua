@@ -94,13 +94,15 @@ function addon:PrintReport()
 	local ZO_ScrollList_CreateDataEntry = ZO_ScrollList_CreateDataEntry
 	local text = self.searchBox:GetText():lower()
 	local line = tonumber(text)
-	task:For(pairs(self.profilerData:GetClosureInfoList())):Do( function(recordDataType, recordTable)
-		task:For(pairs(recordTable)):Do( function(recordDataIndex, closure)
-			if text == "" or line == closure.info[CLOSURE_LINE_INDEX] or zo_plainstrfind(closure.info[CLOSURE_NAME_INDEX]:lower(), text) or zo_plainstrfind(closure.info[CLOSURE_FILE_INDEX]:lower(), text) then
-				dataList[#dataList + 1] = ZO_ScrollList_CreateDataEntry(recordDataType, { closure = closure })
-			end
-		end )
-	end )
+	local function doStep(recordDataIndex, recordDataType, closure)
+		if text == "" or line == closure.info[CLOSURE_LINE_INDEX] or zo_plainstrfind(closure.info[CLOSURE_NAME_INDEX]:lower(), text) or zo_plainstrfind(closure.info[CLOSURE_FILE_INDEX]:lower(), text) then
+			dataList[#dataList + 1] = ZO_ScrollList_CreateDataEntry(recordDataType, { closure = closure })
+		end
+	end
+	local function perType(recordDataType, recordTable)
+		task:For(pairs(recordTable)):Do( function(recordDataIndex, closure) doStep(recordDataIndex, recordDataType, closure) end)
+	end
+	task:For(pairs(self.profilerData:GetClosureInfoList())):Do(perType)
 	task:Then( function()
 		local sortHeaders = self.sortHeaders
 		self:ChangeSort(sortHeaders.selectedSortHeader.key, sortHeaders.sortDirection)
