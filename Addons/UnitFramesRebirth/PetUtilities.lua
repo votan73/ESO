@@ -133,48 +133,48 @@ local TWILIGHT = 2
 local GUARDIAN = 3
 
 local FAMILIAR_ABILITIES = {
-	23304, -- Summon Unstable Familiar I
-	30631, -- Summon Unstable Familiar II
-	30636, -- Summon Unstable Familiar III
-	30641, -- Summon Unstable Familiar IV
-	23319, -- Summon Unstable Clannfear I
-	30647, -- Summon Unstable Clannfear II
-	30652, -- Summon Unstable Clannfear III
-	30657, -- Summon Unstable Clannfear IV
-	23316, -- Summon Volatile Familiar I
-	30664, -- Summon Volatile Familiar II
-	30669, -- Summon Volatile Familiar III
-	30674, -- Summon Volatile Familiar IV
+	[23304] = true, -- Summon Unstable Familiar I
+	[30631] = true, -- Summon Unstable Familiar II
+	[30636] = true, -- Summon Unstable Familiar III
+	[30641] = true, -- Summon Unstable Familiar IV
+	[23319] = true, -- Summon Unstable Clannfear I
+	[30647] = true, -- Summon Unstable Clannfear II
+	[30652] = true, -- Summon Unstable Clannfear III
+	[30657] = true, -- Summon Unstable Clannfear IV
+	[23316] = true, -- Summon Volatile Familiar I
+	[30664] = true, -- Summon Volatile Familiar II
+	[30669] = true, -- Summon Volatile Familiar III
+	[30674] = true, -- Summon Volatile Familiar IV
 }
 
 local TWILIGHT_ABILITIES = {
-	24613, -- Summon Winged Twilight I
-	30581, -- Summon Winged Twilight II
-	30584, -- Summon Winged Twilight III
-	30587, -- Summon Winged Twilight IV
-	24636, -- Summon Twilight Tormentor I
-	30592, -- Summon Twilight Tormentor II
-	30595, -- Summon Twilight Tormentor III
-	30598, -- Summon Twilight Tormentor IV
-	24639, -- Summon Twilight Matriarch I
-	30618, -- Summon Twilight Matriarch II
-	30622, -- Summon Twilight Matriarch III
-	30626, -- Summon Twilight Matriarch IV
+	[24613] = true, -- Summon Winged Twilight I
+	[30581] = true, -- Summon Winged Twilight II
+	[30584] = true, -- Summon Winged Twilight III
+	[30587] = true, -- Summon Winged Twilight IV
+	[24636] = true, -- Summon Twilight Tormentor I
+	[30592] = true, -- Summon Twilight Tormentor II
+	[30595] = true, -- Summon Twilight Tormentor III
+	[30598] = true, -- Summon Twilight Tormentor IV
+	[24639] = true, -- Summon Twilight Matriarch I
+	[30618] = true, -- Summon Twilight Matriarch II
+	[30622] = true, -- Summon Twilight Matriarch III
+	[30626] = true, -- Summon Twilight Matriarch IV
 }
 
 local GUARDIAN_ABILITIES = {
-	85982, -- Feral Guardian I
-	85983, -- Feral Guardian II
-	85984, -- Feral Guardian III
-	85985, -- Feral Guardian IV
-	85986, -- Eternal Guardian I
-	85987, -- Eternal Guardian II
-	85988, -- Eternal Guardian III
-	85989, -- Eternal Guardian IV
-	85990, -- Wild Guardian I
-	85991, -- Wild Guardian II
-	85992, -- Wild Guardian III
-	85993, -- Wild Guardian IV
+	[85982] = true, -- Feral Guardian I
+	[85983] = true, -- Feral Guardian II
+	[85984] = true, -- Feral Guardian III
+	[85985] = true, -- Feral Guardian IV
+	[85986] = true, -- Eternal Guardian I
+	[85987] = true, -- Eternal Guardian II
+	[85988] = true, -- Eternal Guardian III
+	[85989] = true, -- Eternal Guardian IV
+	[85990] = true, -- Wild Guardian I
+	[85991] = true, -- Wild Guardian II
+	[85992] = true, -- Wild Guardian III
+	[85993] = true, -- Wild Guardian IV
 }
 
 local function GetPetAbilityIds(lookup)
@@ -197,10 +197,8 @@ function DismissPlayerPet(lookup)
 		local numBuffs = GetNumBuffs("player")
 		for i = 1, numBuffs do
 			buffSlot, _, _, _, _, _, _, abilityId = select(4, GetUnitBuffInfo("player", i))
-			for _, value in pairs(petAbilities) do
-				if value == abilityId then
-					return CancelBuff(buffSlot)
-				end
+			if petAbilities[abilityId] then
+				return CancelBuff(buffSlot)
 			end
 		end
 	end
