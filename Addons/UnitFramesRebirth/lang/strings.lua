@@ -18,3 +18,9 @@ ZO_CreateStringId("SI_UNITFRAMESREBIRTH_SETTINGS_HEALTH_WARNER_TT", "This option
 ZO_CreateStringId("SI_UNITFRAMESREBIRTH_SETTINGS_PET_HEALTH", "Pet health bar")
 ZO_CreateStringId("SI_UNITFRAMESREBIRTH_SETTINGS_PET_HEALTH_TT", "Show active combat Pet health bar(s). Pet Health bar will only show when this option is enabled and a pet is spawned.")
 ZO_CreateStringId("SI_UNITFRAMESREBIRTH_SETTINGS_APPROACH_HEALTHBAR", "Health bar update rate")
+
+ZO_CreateStringId("SI_KEYBINDINGS_CATEGORY_UNIT_FRAMES_REBIRTH", "Unit Frames Rebirth")
+ZO_CreateStringId("SI_BINDING_NAME_UNIT_FRAMES_REBIRTH_ALL", "Dismiss all pets")
+ZO_CreateStringId("SI_BINDING_NAME_UNIT_FRAMES_REBIRTH_FAMILIAR", "Dismiss Familiar/Clannfear")
+ZO_CreateStringId("SI_BINDING_NAME_UNIT_FRAMES_REBIRTH_TWILIGHT", "Dismiss Twilight")
+ZO_CreateStringId("SI_BINDING_NAME_UNIT_FRAMES_REBIRTH_GUARDIAN", "Dismiss Guardian")

@@ -18,3 +18,9 @@ SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_HEALTH_WARNER_TT, "このオプシ�
 SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_PET_HEALTH, "Pet health bar", 0)
 SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_PET_HEALTH_TT, "Show active combat Pet health bar(s). Pet Health bar will only show when this option is enabled and a pet is spawned.", 0)
 SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_APPROACH_HEALTHBAR, "体力バーの更新間隔", 0)
+
+-- SafeAddString(SI_KEYBINDINGS_CATEGORY_UNIT_FRAMES_REBIRTH, "Unit Frames Rebirth", 0)
+-- SafeAddString(SI_BINDING_NAME_UNIT_FRAMES_REBIRTH_ALL, "Entlasse alle Begleiter", 0)
+-- SafeAddString(SI_BINDING_NAME_UNIT_FRAMES_REBIRTH_FAMILIAR, "Entlasse den Begleiter/Clannbann", 0)
+-- SafeAddString(SI_BINDING_NAME_UNIT_FRAMES_REBIRTH_TWILIGHT, "Entlasse das Zwielicht", 0)
+-- SafeAddString(SI_BINDING_NAME_UNIT_FRAMES_REBIRTH_GUARDIAN, "Entlasse den Wächter", 0)

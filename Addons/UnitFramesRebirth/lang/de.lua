@@ -18,3 +18,9 @@ SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_HEALTH_WARNER_TT, "Diese Einstellung
 SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_PET_HEALTH, "Lebensleiste Begleiter", 0)
 SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_PET_HEALTH_TT, "Zeigt die Lebensleisten Eurer aktiven Begleiter im Kampf an. Die Lebensleisten werden nur angezeigt, wenn diese Einstellung aktiviert ist und ein Begleiter beschworen wurde.", 0)
 SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_APPROACH_HEALTHBAR, "Aktualisierungsrate der Lebensleisten", 0)
+
+SafeAddString(SI_KEYBINDINGS_CATEGORY_UNIT_FRAMES_REBIRTH, "Unit Frames Rebirth", 0)
+SafeAddString(SI_BINDING_NAME_UNIT_FRAMES_REBIRTH_ALL, "Entlasse alle Begleiter", 0)
+SafeAddString(SI_BINDING_NAME_UNIT_FRAMES_REBIRTH_FAMILIAR, "Entlasse den Begleiter/Clannbann", 0)
+SafeAddString(SI_BINDING_NAME_UNIT_FRAMES_REBIRTH_TWILIGHT, "Entlasse das Zwielicht", 0)
+SafeAddString(SI_BINDING_NAME_UNIT_FRAMES_REBIRTH_GUARDIAN, "Entlasse den Wächter", 0)

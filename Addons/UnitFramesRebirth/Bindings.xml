@@ -1,0 +1,18 @@
+<Bindings>
+	<Layer name="SI_KEYBINDINGS_LAYER_GENERAL">
+		<Category name="SI_KEYBINDINGS_CATEGORY_UNIT_FRAMES_REBIRTH">
+			<Action name="UNIT_FRAMES_REBIRTH_ALL">
+				<Down>DismissAllPlayerPets()</Down>
+			</Action>
+			<Action name="UNIT_FRAMES_REBIRTH_FAMILIAR">
+				<Down>DismissPlayerPet(1)</Down>
+			</Action>
+			<Action name="UNIT_FRAMES_REBIRTH_TWILIGHT">
+				<Down>DismissPlayerPet(2)</Down>
+			</Action>
+			<Action name="UNIT_FRAMES_REBIRTH_GUARDIAN">
+				<Down>DismissPlayerPet(3)</Down>
+			</Action>
+		</Category>
+	</Layer>
+</Bindings>

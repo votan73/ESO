@@ -18,3 +18,9 @@ SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_HEALTH_WARNER_TT, "Cette option s'ap
 SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_PET_HEALTH, "Barre de vie des familiers", 0)
 SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_PET_HEALTH_TT, "Afficher les barres de vie des familiers en combat. Elles ne seront affichées que si cette option est active et qu'un familier est invoqué.", 0)
 SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_APPROACH_HEALTHBAR, "Taux de mise à jour des barres de santé", 0)
+
+-- SafeAddString(SI_KEYBINDINGS_CATEGORY_UNIT_FRAMES_REBIRTH, "Unit Frames Rebirth", 0)
+-- SafeAddString(SI_BINDING_NAME_UNIT_FRAMES_REBIRTH_ALL, "Libérer tous les familiers", 0)
+-- SafeAddString(SI_BINDING_NAME_UNIT_FRAMES_REBIRTH_FAMILIAR, "Entlasse den Begleiter/Clannbann", 0)
+-- SafeAddString(SI_BINDING_NAME_UNIT_FRAMES_REBIRTH_TWILIGHT, "Entlasse das Zwielicht", 0)
+-- SafeAddString(SI_BINDING_NAME_UNIT_FRAMES_REBIRTH_GUARDIAN, "Entlasse den Wächter", 0)
