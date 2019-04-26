@@ -60,7 +60,8 @@ function ProfilerData:GetClosureInfo(recordDataIndex, recordDataType, frameIndex
 				file = "@Lua"
 			elseif recordDataType == SCRIPT_PROFILER_RECORD_DATA_TYPE_USER_EVENT then
 				-- You can fire off your own custom events using RecordScriptProfilerUserEvent(myEventString). Events with the same eventString will share a recordDataIndex.
-				name = string.format("%q", GetScriptProfilerUserEventInfo(recordDataIndex))
+				-- Similar to console.log() of javascript or System.Diagnostics.Debug.WriteLine() of C#.
+				name = GetScriptProfilerUserEventInfo(recordDataIndex)
 				file = "@UserEvent"
 			end
 			fps = nil
