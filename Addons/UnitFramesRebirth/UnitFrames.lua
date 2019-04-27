@@ -292,8 +292,16 @@ function UnitFramesManager:SetGroupSize(groupSize)
 	self.groupSize = groupSize or GetGroupSize()
 end
 
+function UnitFramesManager:SetPetSize(petGroupSize)
+	self.petGroupSize = petGroupSize or GetPetGroupSize()
+end
+
 function UnitFramesManager:GetFirstDirtyGroupIndex()
 	return self.firstDirtyGroupIndex
+end
+
+function UnitFramesManager:GetFirstDirtyPetGroupIndex()
+	return self.firstDirtyPetGroupIndex
 end
 
 function UnitFramesManager:GetIsDirty()
@@ -304,14 +312,6 @@ function UnitFramesManager:GetIsDirtyPet()
 	return self.firstDirtyPetGroupIndex ~= nil
 end
 
-function UnitFramesManager:SetPetSize(petGroupSize)
-	self.petGroupSize = petGroupSize or GetPetGroupSize()
-end
-
-function UnitFramesManager:GetFirstDirtyPetGroupIndex()
-	return self.firstDirtyPetGroupIndex
-end
-
 -- The update we call will update all unit frames after and including the one being modified
 -- So we really just need to know what is the smallest groupIndex that is being changed
 function UnitFramesManager:SetGroupIndexDirty(groupIndex)
@@ -320,14 +320,14 @@ function UnitFramesManager:SetGroupIndexDirty(groupIndex)
 	end
 end
 
-function UnitFramesManager:ClearDirty()
-	self.firstDirtyGroupIndex = nil
-end
-
 function UnitFramesManager:SetPetIndexDirty(groupIndex)
 	if not self.firstDirtyPetGroupIndex or groupIndex < self.firstDirtyPetGroupIndex then
 		self.firstDirtyPetGroupIndex = groupIndex
 	end
+end
+
+function UnitFramesManager:ClearDirty()
+	self.firstDirtyGroupIndex = nil
 end
 
 function UnitFramesManager:ClearDirtyPet()
@@ -371,7 +371,7 @@ function UnitFramesManager:UpdateGroupAnchorFrames()
 end
 
 function UnitFramesManager:UpdatePetGroupAnchorFrames()
-	if UnitFrames.account.enablePetHealth and IsPetActive() then
+	if self.account.enablePetHealth and not self.petHiddenReasons:IsHidden() and IsPetActive() then
 		PetGroupAnchorFrame:SetHidden(false)
 	else
 		PetGroupAnchorFrame:SetHidden(true)
