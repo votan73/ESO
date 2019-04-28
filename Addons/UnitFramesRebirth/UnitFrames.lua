@@ -196,7 +196,6 @@ function UnitFramesManager:Initialize()
 	self.groupAndRaidHiddenReasons = ZO_HiddenReasons:New()
 	self.firstDirtyGroupIndex = nil
 
-	self.petHiddenReasons = ZO_HiddenReasons:New()
 	self.firstDirtyPetGroupIndex = nil
 
 	self.UnitFrameClass = UnitFrame
@@ -337,7 +336,6 @@ end
 function UnitFramesManager:SetGroupAndRaidFramesHiddenForReason(reason, hidden)
 	UNIT_FRAMES_FRAGMENT:SetHiddenForReason(reason, hidden)
 	self.groupAndRaidHiddenReasons:SetHiddenForReason(reason, hidden)
-	self.petHiddenReasons:SetHiddenForReason(reason, hidden)
 end
 
 function UnitFramesManager:UpdateGroupAnchorFrames()
@@ -371,7 +369,7 @@ function UnitFramesManager:UpdateGroupAnchorFrames()
 end
 
 function UnitFramesManager:UpdatePetGroupAnchorFrames()
-	if self.account.enablePetHealth and not self.petHiddenReasons:IsHidden() and IsPetActive() then
+	if self.account.enablePetHealth and not self.groupAndRaidHiddenReasons:IsHidden() and IsPetActive() then
 		PetGroupAnchorFrame:SetHidden(false)
 	else
 		PetGroupAnchorFrame:SetHidden(true)
@@ -1973,7 +1971,7 @@ function UnitFramesManager:UpdatePetFrames()
 		ForceChange(self.petFrames)
 		petIndex = 1
 	end
-	if petIndex and IsPetActive() then
+	if petIndex and self.account.enablePetHealth then
 		-- Only update the frames of the unit being changed, and those after it in the list for performance reasons.
 		local frames = self.petFrames
 
@@ -2022,7 +2020,8 @@ function UnitFramesManager:UpdatePetFrames()
 	end
 end
 
-function UnitFramesManager:SetPetHealth()
+function UnitFramesManager:RefreshPetFrames()
+	ForceChange(self.petFrames)
 	self:SetPetIndexDirty(1)
 end
 
@@ -2392,10 +2391,6 @@ local function RegisterForEvents()
 	ZO_UnitFrames:AddFilterForEvent(EVENT_DISPOSITION_UPDATE, REGISTER_FILTER_UNIT_TAG_PREFIX, "group")
 
 	-- Register Pet health bars
-	local function RequestFullPetRefresh()
-		UnitFrames.firstDirtyPetGroupIndex = 1
-	end
-
 	local function OnPetUnitCreated(eventCode, unitTag)
 		if IsTrackedPet(unitTag) then
 			UnitFrames:SetPetIndexDirty(GetPetIndexFromUnitTag(unitTag))
@@ -2413,10 +2408,7 @@ local function RegisterForEvents()
 	end
 
 	local function OnPetPlayerActivated(eventCode)
-		if IsPetActive() then
-			ForceChange(UnitFrames.petFrames)
-			RequestFullPetRefresh()
-		end
+		UnitFrames:RefreshPetFrames()
 	end
 
 	local petEvent = "UnitFramesRebirthPet"

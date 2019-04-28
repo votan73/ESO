@@ -83,7 +83,7 @@ local function CreateSettings()
 		getFunction = function() return UnitFrames.account.enablePetHealth end,
 		setFunction = function(bool)
 			UnitFrames.account.enablePetHealth = bool
-			UnitFrames:SetPetHealth()
+			UnitFrames:RefreshPetFrames()
 		end,
 	}
 
@@ -118,7 +118,6 @@ local function OnAddOnLoaded(event, name)
 	CreateSettings()
 
 	UnitFrames:SetWarner(UnitFrames.account.showHealthWarner)
-	UnitFrames:SetPetHealth()
 end
 
 EVENT_MANAGER:RegisterForEvent(ADDON_NAME, EVENT_ADD_ON_LOADED, OnAddOnLoaded)
