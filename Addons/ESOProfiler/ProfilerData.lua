@@ -45,6 +45,7 @@ function ProfilerData:GetClosureInfo(recordDataIndex, recordDataType, frameIndex
 		local name, file, line
 		local fps, latency, memory
 
+		fps = nil
 		if recordDataType == SCRIPT_PROFILER_RECORD_DATA_TYPE_CLOSURE then
 			name, file, line = GetScriptProfilerClosureInfo(recordDataIndex)
 			if legacy then
@@ -52,7 +53,6 @@ function ProfilerData:GetClosureInfo(recordDataIndex, recordDataType, frameIndex
 			end
 		else
 			line = 0
-			fps = nil
 			if recordDataType == SCRIPT_PROFILER_RECORD_DATA_TYPE_CFUNCTION then
 				-- C Functions are functions defined by ZOS as part of the game's API.
 				name = GetScriptProfilerCFunctionInfo(recordDataIndex)
