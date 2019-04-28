@@ -47,9 +47,12 @@ function ProfilerData:GetClosureInfo(recordDataIndex, recordDataType, frameIndex
 
 		if recordDataType == SCRIPT_PROFILER_RECORD_DATA_TYPE_CLOSURE then
 			name, file, line = GetScriptProfilerClosureInfo(recordDataIndex)
-			fps, latency, memory = file:match("statsF(%d+)L(%d+)M(%d+)")
+			if legacy then
+				fps, latency, memory = file:match("statsF(%d+)L(%d+)M(%d+)")
+			end
 		else
 			line = 0
+			fps = nil
 			if recordDataType == SCRIPT_PROFILER_RECORD_DATA_TYPE_CFUNCTION then
 				-- C Functions are functions defined by ZOS as part of the game's API.
 				name = GetScriptProfilerCFunctionInfo(recordDataIndex)
@@ -63,8 +66,8 @@ function ProfilerData:GetClosureInfo(recordDataIndex, recordDataType, frameIndex
 				-- Similar to console.log() of javascript or System.Diagnostics.Debug.WriteLine() of C#.
 				name = GetScriptProfilerUserEventInfo(recordDataIndex)
 				file = "@UserEvent"
+				fps, latency, memory = name:match("statsF(%d+)L(%d+)M(%d+)")
 			end
-			fps = nil
 		end
 		if(not fps or not frameIndex) then
 			self.closureInfo[recordDataType][recordDataIndex] = {

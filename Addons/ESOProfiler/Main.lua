@@ -19,7 +19,11 @@ do
 		local latency = tostring(GetLatency())
 		local memory = tostring(collectgarbage("count") * 1024)
 		local name = string.format("statsF%sL%sM%s", fps, latency, memory)
-		LoadString("", name)()
+		if legacy then
+			LoadString("", name)()
+		else
+			RecordScriptProfilerUserEvent(name)
+		end
 	end
 
 	local function UpdateKeybind()
