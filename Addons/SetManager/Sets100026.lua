@@ -1,4 +1,4 @@
-if GetAPIVersion() < 100026 then return end
+if GetAPIVersion() > 100026 then return end
 
 local addon = SET_MANAGER
 
