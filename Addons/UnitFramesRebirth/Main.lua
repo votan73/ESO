@@ -14,7 +14,7 @@ local function CreateSettings()
 		ZO_UnitFrames_UpdateWindow("reticleovertarget", UNIT_CHANGED)
 	end
 
-	local LibHarvensAddonSettings = LibStub("LibHarvensAddonSettings-1.0")
+	local LibHarvensAddonSettings = LibHarvensAddonSettings or LibStub("LibHarvensAddonSettings-1.0")
 	local settings = LibHarvensAddonSettings:AddAddon(ADDON_DISPLAY_NAME)
 
 	local DEFAULT_SETTINGS = {

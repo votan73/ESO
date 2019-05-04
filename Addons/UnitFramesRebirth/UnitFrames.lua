@@ -2458,15 +2458,34 @@ do
 	EVENT_MANAGER:RegisterForEvent("UnitFrames_OnAddOnLoaded", EVENT_ADD_ON_LOADED, OnAddOnLoaded)
 end
 
-function ZO_UnitFrames_OnUpdate()
-	if UnitFrames then
-		if UnitFrames:GetIsDirty() then
-			UnitFrames:UpdateGroupFrames()
-			UnitFrames:ClearDirty()
-		end
-		if UnitFrames:GetIsDirtyPet() then
-			UnitFrames:UpdatePetFrames()
-			UnitFrames:ClearDirtyPet()
+do
+	local async = LibAsync
+	local task = async:Create("UnitFramesRebirth_Update")
+	local running
+	local function Done()
+		running = false
+	end
+	local function UpdatePets()
+		UnitFrames:UpdatePetFrames()
+		UnitFrames:ClearDirtyPet()
+	end
+	local function UpdatePlayer()
+		UnitFrames:UpdateGroupFrames()
+		UnitFrames:ClearDirty()
+	end
+	function ZO_UnitFrames_OnUpdate()
+		if UnitFrames and not running then
+			if UnitFrames:GetIsDirtyPet() then
+				running = true
+				task:Call(UpdatePets)
+			end
+			if UnitFrames:GetIsDirty() then
+				running = true
+				task:Call(UpdatePlayer)
+			end
+			if running then
+				task:Then(Done)
+			end
 		end
 	end
 end
