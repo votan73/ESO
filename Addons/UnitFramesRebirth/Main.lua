@@ -1,29 +1,31 @@
 
+local ADDON_NAME = "UnitFramesRebirth"
+local ADDON_DISPLAY_NAME = "Unit Frames Rebirth"
+
 local UnitFrames
-
-local addonName = "UnitFramesRebirth"
-
 CALLBACK_MANAGER:RegisterCallback("UnitFramesPreInit", function(unitFrames) UnitFrames = unitFrames end)
 
 local function CreateSettings()
 
 	local UNIT_CHANGED = true
+
 	local function UpdateTargetWindow()
 		ZO_UnitFrames_UpdateWindow("reticleover", UNIT_CHANGED)
 		ZO_UnitFrames_UpdateWindow("reticleovertarget", UNIT_CHANGED)
 	end
 
-	local LibHarvensAddonSettings = LibStub("LibHarvensAddonSettings-1.0")
-	local settings = LibHarvensAddonSettings:AddAddon("Unit Frames Rebirth")
+	local LibHarvensAddonSettings = LibHarvensAddonSettings or LibStub("LibHarvensAddonSettings-1.0")
+	local settings = LibHarvensAddonSettings:AddAddon(ADDON_DISPLAY_NAME)
 
 	local DEFAULT_SETTINGS = {
 		showClassIcon = true,
 		showHealthWarner = true,
 		switchNames = true,
 		hideTitle = true,
+		enablePetHealth = true,
 		approachAmountMs = UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_DEFAULT,
 	}
-	UnitFrames.account = ZO_SavedVars:NewAccountWide(addonName.."_Data", 1, nil, DEFAULT_SETTINGS)
+	UnitFrames.account = ZO_SavedVars:NewAccountWide(ADDON_NAME.."_Data", 1, nil, DEFAULT_SETTINGS)
 
 	settings:AddSetting {
 		type = LibHarvensAddonSettings.ST_CHECKBOX,
@@ -73,18 +75,31 @@ local function CreateSettings()
 		end,
 	}
 
+	settings:AddSetting {
+		type = LibHarvensAddonSettings.ST_CHECKBOX,
+		label = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_PET_HEALTH),
+		tooltip = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_PET_HEALTH_TT),
+		default = DEFAULT_SETTINGS.enablePetHealth,
+		getFunction = function() return UnitFrames.account.enablePetHealth end,
+		setFunction = function(bool)
+			UnitFrames.account.enablePetHealth = bool
+			UnitFrames:RefreshPetFrames()
+		end,
+	}
+
 	do
 		local Modes = {
+			{ name = GetString(SI_UNITFRAMESREBIRTH_APPROACH_INSTANT), data = UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_INSTANT },
 			{ name = GetString(SI_UNITFRAMESREBIRTH_APPROACH_ULTRA_FAST), data = UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_ULTRA_FAST },
 			{ name = GetString(SI_UNITFRAMESREBIRTH_APPROACH_SUPER_FAST), data = UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_SUPER_FAST },
 			{ name = GetString(SI_UNITFRAMESREBIRTH_APPROACH_FASTER), data = UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_FASTER },
 			{ name = GetString(SI_UNITFRAMESREBIRTH_APPROACH_FAST), data = UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_FAST },
 			{ name = GetString(SI_UNITFRAMESREBIRTH_APPROACH_DEFAULT), data = UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_DEFAULT },
 		}
-		
+
 		local ModeToData = { }
 		for i = 1, #Modes do ModeToData[Modes[i].data] = Modes[i] end
-		
+
 		settings:AddSetting {
 			type = LibHarvensAddonSettings.ST_DROPDOWN,
 			label = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_APPROACH_HEALTHBAR),
@@ -97,12 +112,12 @@ local function CreateSettings()
 end
 
 local function OnAddOnLoaded(event, name)
-	if name ~= addonName then return end
-	EVENT_MANAGER:UnregisterForEvent(addonName, EVENT_ADD_ON_LOADED)
+	if name ~= ADDON_NAME then return end
+	EVENT_MANAGER:UnregisterForEvent(ADDON_NAME, EVENT_ADD_ON_LOADED)
 
 	CreateSettings()
 
 	UnitFrames:SetWarner(UnitFrames.account.showHealthWarner)
 end
 
-EVENT_MANAGER:RegisterForEvent(addonName, EVENT_ADD_ON_LOADED, OnAddOnLoaded)
+EVENT_MANAGER:RegisterForEvent(ADDON_NAME, EVENT_ADD_ON_LOADED, OnAddOnLoaded)
