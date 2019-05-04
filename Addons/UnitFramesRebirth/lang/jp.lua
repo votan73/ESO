@@ -15,8 +15,8 @@ SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_HIDE_TITLE, "タイトルを非表�
 SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_HIDE_TITLE_TT, "ターゲットフレームのプレーヤー名の横にあるタイトルを非表示にします。", 0)
 SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_HEALTH_WARNER, "体力低下を警告する", 0)
 SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_HEALTH_WARNER_TT, "このオプションはグループフレームにのみ適用されます。 プレーヤーの体力が低くなると、体力バーが光ります。", 0)
-SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_PET_HEALTH, "Pet health bar", 0)
-SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_PET_HEALTH_TT, "Show active combat Pet health bar(s). Pet Health bar will only show when this option is enabled and a pet is spawned.", 0)
+-- SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_PET_HEALTH, "Pet health bar", 0)
+-- SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_PET_HEALTH_TT, "Show active combat Pet health bar(s). Pet Health bar will only show when this option is enabled and a pet is spawned.", 0)
 SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_APPROACH_HEALTHBAR, "体力バーの更新間隔", 0)
 
 -- SafeAddString(SI_KEYBINDINGS_CATEGORY_UNIT_FRAMES_REBIRTH, "Unit Frames Rebirth", 0)
