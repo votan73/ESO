@@ -19,7 +19,7 @@ SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_PET_HEALTH, "Barre de vie des famili
 SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_PET_HEALTH_TT, "Afficher les barres de vie des familiers en combat. Elles ne seront affichées que si cette option est active et qu'un familier est invoqué.", 0)
 SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_APPROACH_HEALTHBAR, "Taux de mise à jour des barres de santé", 0)
 
-SafeAddString(SI_KEYBINDINGS_CATEGORY_UNIT_FRAMES_REBIRTH, "Unit Frames Rebirth", 0)
+-- SafeAddString(SI_KEYBINDINGS_CATEGORY_UNIT_FRAMES_REBIRTH, "Unit Frames Rebirth", 0)
 SafeAddString(SI_BINDING_NAME_UNIT_FRAMES_REBIRTH_ALL, "Libérer tous les familiers", 0)
 SafeAddString(SI_BINDING_NAME_UNIT_FRAMES_REBIRTH_FAMILIAR, "Libérer Familier/Faucheclan", 0)
 SafeAddString(SI_BINDING_NAME_UNIT_FRAMES_REBIRTH_TWILIGHT, "Libérer Ombre Ailée", 0)
