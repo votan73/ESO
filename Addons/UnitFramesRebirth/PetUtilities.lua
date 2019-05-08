@@ -74,11 +74,12 @@ end
 function GetPetUnitTagByIndex(petIndex)
 	local index = 0
 	for i = 1, MAX_PLAYER_PET do
-		if DoesUnitExist(petIndices[i]) then
+		local unitTag = petIndices[i]
+		if DoesUnitExist(unitTag) and IsTrackedPet(unitTag) then
 			index = index + 1
 		end
 		if index == petIndex then
-			return petIndices[i]
+			return unitTag
 		end
 	end
 end
