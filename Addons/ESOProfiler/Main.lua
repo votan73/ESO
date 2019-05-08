@@ -13,6 +13,19 @@ local async = LibStub("LibAsync")
 local task = async:Create("ESO_PROFILER")
 local extrasFragmentGroup
 
+local function AutoStartEnabled()
+	return GetCVar("StartLuaProfilingOnUILoad") ~= "0"
+end
+local function SetAutoStartEnabled(on)
+	SetCVar("StartLuaProfilingOnUILoad", on and "1" or "0")
+end
+
+local function NewRun()
+	addon.newRun = GetGameTimeMilliseconds()
+	addon.startTime = GetTimeStamp()
+	addon.profiling = true
+end
+
 do
 	local function CaptureFrameMetrics()
 		local fps = tostring(math.floor(GetFramerate()) * 100)
@@ -35,9 +48,7 @@ do
 	local orgStartScriptProfiler = StartScriptProfiler
 	function StartScriptProfiler()
 		if addon.profiling then return end
-		addon.newRun = GetGameTimeMilliseconds()
-		addon.startTime = GetTimeStamp()
-		addon.profiling = true
+		NewRun()
 		EVENT_MANAGER:RegisterForUpdate(addon.name, 500, CaptureFrameMetrics)
 		UpdateKeybind()
 		d("Start profiler....")
@@ -49,6 +60,7 @@ do
 		addon.profiling = false
 		UpdateKeybind()
 		d("Profiler stopped ....")
+		SetAutoStartEnabled(false)
 		return orgStopScriptProfiler()
 	end
 end
@@ -300,13 +312,6 @@ function addon:OnSearchEnterKeyPressed(editBox)
 end
 ------------------------------------------
 function addon:AddKeybind()
-	local function AutoStartEnabled()
-		return GetCVar("StartLuaProfilingOnUILoad") ~= "0"
-	end
-	local function SetAutoStartEnabled(on)
-		SetCVar("StartLuaProfilingOnUILoad", on and "1" or "0")
-	end
-
 	self.keybindButtonGroupRight = {
 		alignment = KEYBIND_STRIP_ALIGN_RIGHT,
 		{
@@ -333,13 +338,13 @@ function addon:AddKeybind()
 		self.keybindButtonGroupAutoStart = {
 			alignment = KEYBIND_STRIP_ALIGN_CENTER,
 			{
-				name = function() return GetString(AutoStartEnabled() and SI_JOURNAL_MENU_ESO_PROFILER_AUTOSTART_ON or SI_JOURNAL_MENU_ESO_PROFILER_AUTOSTART_OFF) end,
-				keybind = "ESO_PROFILER_AUTOSTART_TOGGLE",
+				name = GetString(SI_JOURNAL_MENU_ESO_PROFILER_UI_LOAD),
+				keybind = "ESO_PROFILER_PROFILE_UI_LOAD",
 				order = 0,
 				callback = function()
 					PlaySound(SOUNDS.DEFAULT_CLICK)
-					SetAutoStartEnabled(not AutoStartEnabled())
-					KEYBIND_STRIP:UpdateKeybindButtonGroup(self.keybindButtonGroupAutoStart)
+					SetAutoStartEnabled(true)
+					ReloadUI()
 				end,
 			},
 		}
@@ -616,10 +621,25 @@ end
 em:RegisterForEvent(addon.name, EVENT_ADD_ON_LOADED, OnAddonLoaded)
 
 if GetCVar("StartLuaProfilingOnUILoad") ~= "0" then
-	StartScriptProfiler()
+	local stop
+	local identifier = "ESO_PROFILER_AUTORUN"
+	if legacy then
+		StartScriptProfiler()
+		stop = function()
+			em:UnregisterForUpdate(identifier)
+			StopScriptProfiler()
+		end
+	else
+		NewRun()
+		stop = function()
+			em:UnregisterForUpdate(identifier)
+			StopScriptProfiler()
+			MAIN_MENU_KEYBOARD:ShowScene(ESO_PROFILER_SCENE:GetName())
+		end
+	end
 	em:RegisterForEvent(addon.name, EVENT_PLAYER_ACTIVATED, function()
 		em:UnregisterForEvent(addon.name, EVENT_PLAYER_ACTIVATED)
-		task:Delay(2000, StopScriptProfiler)
+		em:RegisterForUpdate(identifier, 2000, stop)
 	end )
 end
 
