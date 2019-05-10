@@ -338,7 +338,7 @@ function addon:AddKeybind()
 		self.keybindButtonGroupAutoStart = {
 			alignment = KEYBIND_STRIP_ALIGN_CENTER,
 			{
-				name = GetString(SI_JOURNAL_MENU_ESO_PROFILER_UI_LOAD),
+				name = GetString(SI_BINDING_NAME_ESO_PROFILER_PROFILE_UI_LOAD),
 				keybind = "ESO_PROFILER_PROFILE_UI_LOAD",
 				order = 0,
 				callback = function()
