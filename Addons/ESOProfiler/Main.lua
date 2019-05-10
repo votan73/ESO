@@ -9,7 +9,7 @@ local addon = {
 	name = "ESOProfiler",
 }
 local em = GetEventManager()
-local async = LibStub("LibAsync")
+local async = LibAsync
 local task = async:Create("ESO_PROFILER")
 local extrasFragmentGroup
 
@@ -293,7 +293,7 @@ function addon:ShowContextMenu(control)
 	ClearMenu()
 	self:ShowContextMenuInsertBefore(control)
 	self:ShowContextMenuAppendAfter(control)
-	ShowMenu()
+	ShowMenu(control)
 end
 
 ----------------------------------
