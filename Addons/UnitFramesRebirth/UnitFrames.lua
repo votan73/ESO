@@ -112,7 +112,6 @@ local function GetPlatformBarFont()
 end
 
 local groupFrameAnchor = ZO_Anchor:New(TOPLEFT, GuiRoot, TOPLEFT, 0, 0)
-local petFrameAnchor = ZO_Anchor:New(TOPLEFT, GuiRoot, TOPLEFT, 0, 0)
 
 local largeGroupAnchorFrames = { }
 

@@ -1,6 +1,8 @@
 MAX_PLAYER_PET = 7
 PET_GROUP_SIZE_THRESHOLD = 2
 
+local GROUPINDEX_NONE = 4294967296
+
 local function GetPetNameLower(abilityId)
 	return ZO_CachedStrFormat("<<z:1>>", GetAbilityName(abilityId))
 end
@@ -104,7 +106,6 @@ do
 			else
 				self[key] = false
 			end
-
 			return self[key]
 		end,
 	} )
@@ -113,18 +114,19 @@ do
 		return petUnitTags[unitTag] ~= false
 	end
 
-	local function activeUnitsUpTo(maxIndex)
+	local function ActiveUnitsUpTo(maxIndex)
 		local index = 0
 		for i = 1, maxIndex do
-			if DoesUnitExist(petIndices[i]) then
+			local unitTag = petIndices[i]
+			if DoesUnitExist(unitTag) and IsTrackedPet(unitTag) then
 				index = index + 1
 			end
 		end
-		return index > 0 and index or 4294967296
+		return index > 0 and index or GROUPINDEX_NONE
 	end
 
 	function GetPetIndexFromUnitTag(unitTag)
-		return DoesUnitExist(unitTag) and activeUnitsUpTo(petUnitTags[unitTag]) or 4294967296
+		return DoesUnitExist(unitTag) and ActiveUnitsUpTo(petUnitTags[unitTag]) or GROUPINDEX_NONE
 	end
 end
 
