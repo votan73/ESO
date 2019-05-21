@@ -94,34 +94,34 @@
 
 		<StatusBar name="UnitFramesRebirth_GroupUnitFrameStatus" virtual="true">
 			<OnInitialized>
-			self.gloss = self:GetNamedChild("Gloss")
-			self.warnerContainer = self:GetNamedChild("Warner")
+				self.gloss = self:GetNamedChild("Gloss")
+				self.warnerContainer = self:GetNamedChild("Warner")
 			</OnInitialized>
 
 			<Controls>
-			<StatusBar name="$(parent)Gloss"/>
+				<StatusBar name="$(parent)Gloss"/>
 
-			<Control name="$(parent)Warner" inherits="UnitFramesRebirth_PlayerAttributeWarner">
-				<Controls>
-				<Texture name="$(parent)Left" inherits="UnitFramesRebirth_PlayerAttributeWarnerLeft" />
-				<Texture name="$(parent)Right" inherits="UnitFramesRebirth_PlayerAttributeWarnerRight" />
-				<Texture name="$(parent)Center" inherits="UnitFramesRebirth_PlayerAttributeWarnerCenter" />
-				</Controls>
-			</Control>
+				<Control name="$(parent)Warner" inherits="UnitFramesRebirth_PlayerAttributeWarner">
+					<Controls>
+					<Texture name="$(parent)Left" inherits="UnitFramesRebirth_PlayerAttributeWarnerLeft" />
+					<Texture name="$(parent)Right" inherits="UnitFramesRebirth_PlayerAttributeWarnerRight" />
+					<Texture name="$(parent)Center" inherits="UnitFramesRebirth_PlayerAttributeWarnerCenter" />
+					</Controls>
+				</Control>
 			</Controls>
 		</StatusBar>
 
 		<StatusBar name="UnitFramesRebirth_GroupUnitFrameStatus_Keyboard_Template" inherits="ZO_ArrowStatusBarWithBG" virtual="true">
 			<Controls>
-			<Control name="$(parent)BG" hidden="false" />
-			<Control name="$(parent)Overlay" hidden="false" />
+				<Control name="$(parent)BG" hidden="false" />
+				<Control name="$(parent)Overlay" hidden="false" />
 			</Controls>
 		</StatusBar>
 
 		<StatusBar name="UnitFramesRebirth_GroupUnitFrameStatus_Gamepad_Template" inherits="ZO_DefaultStatusBar" virtual="true">
 			<Controls>
-			<Control name="$(parent)BG" hidden="true" />
-			<Control name="$(parent)Overlay" hidden="true" />
+				<Control name="$(parent)BG" hidden="true" />
+				<Control name="$(parent)Overlay" hidden="true" />
 			</Controls>
 		</StatusBar>
 
