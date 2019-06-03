@@ -20,7 +20,7 @@ do
 	local function CaptureFrameMetrics()
 		local fps = tostring(math.floor(GetFramerate()) * 100)
 		local latency = tostring(GetLatency())
-		local memory = tostring(collectgarbage("count") * 1024)
+		local memory = tostring(collectgarbage("count") * 1024) -- TODO remove
 		local name = string.format("statsF%sL%sM%s", fps, latency, memory)
 		RecordScriptProfilerUserEvent(name)
 	end

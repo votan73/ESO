@@ -1,14 +1,3 @@
-local legacy = GetAPIVersion() < 100027
-
--- ToDo: Remove
-if legacy then
-	local orgGetScriptProfilerRecordInfo = GetScriptProfilerRecordInfo
-	function GetScriptProfilerRecordInfo(...)
-		local recordDataIndex, startTimeNS, endTimeNS, calledByRecordIndex = orgGetScriptProfilerRecordInfo(...)
-		return recordDataIndex, startTimeNS, endTimeNS, calledByRecordIndex, SCRIPT_PROFILER_RECORD_DATA_TYPE_CLOSURE
-	end
-end
-
 local ProfilerData = ZO_Object:Subclass()
 ESO_PROFILER.ProfilerData = ProfilerData
 
@@ -21,18 +10,12 @@ end
 function ProfilerData:Initialize(startTime, upTime)
 	self.nextStackFrameId = 1
 	self.frameIdLookup = { }
-	if legacy then
-		self.closureInfo = {
-			[SCRIPT_PROFILER_RECORD_DATA_TYPE_CLOSURE] = { },
-		}
-	else
-		self.closureInfo = {
-			[SCRIPT_PROFILER_RECORD_DATA_TYPE_CLOSURE] = { },
-			[SCRIPT_PROFILER_RECORD_DATA_TYPE_CFUNCTION] = { },
-			[SCRIPT_PROFILER_RECORD_DATA_TYPE_GARBAGE_COLLECTION] = { },
-			[SCRIPT_PROFILER_RECORD_DATA_TYPE_USER_EVENT] = { },
-		}
-	end
+	self.closureInfo = {
+		[SCRIPT_PROFILER_RECORD_DATA_TYPE_CLOSURE] = { },
+		[SCRIPT_PROFILER_RECORD_DATA_TYPE_CFUNCTION] = { },
+		[SCRIPT_PROFILER_RECORD_DATA_TYPE_GARBAGE_COLLECTION] = { },
+		[SCRIPT_PROFILER_RECORD_DATA_TYPE_USER_EVENT] = { },
+	}
 	self.events = { }
 	self.stackFrames = { }
 	self.frameStats = { }
@@ -48,9 +31,6 @@ function ProfilerData:GetClosureInfo(recordDataIndex, recordDataType, frameIndex
 		fps = nil
 		if recordDataType == SCRIPT_PROFILER_RECORD_DATA_TYPE_CLOSURE then
 			name, file, line = GetScriptProfilerClosureInfo(recordDataIndex)
-			if legacy then
-				fps, latency, memory = file:match("statsF(%d+)L(%d+)M(%d+)")
-			end
 		else
 			line = 0
 			if recordDataType == SCRIPT_PROFILER_RECORD_DATA_TYPE_CFUNCTION then
