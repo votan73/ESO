@@ -570,6 +570,7 @@ do
 		addon:GenerateReport()
 	end
 	runner:Finally(finallyStop)
+	runner:OnError(function() d(runner.Error) end)
 	local function stop(runner)
 		-- The frame, StopScriptProfiler is called in, seems to be excluded
 		runner:Delay(20, StopScriptProfiler)
