@@ -1,11 +1,5 @@
 local REFRESH_RATE = math.floor(GetCVar("MinFrameTime.2") * 1000)
 
-ZO_ATTRIBUTE_BAR_POWER_SHIELD_LEVEL = 2000
-ZO_ATTRIBUTE_BAR_POWER_SHIELD_TRAUMA_LEVEL = 3000
-ZO_ATTRIBUTE_BAR_POWER_SHIELD_TRAUMA_GLOSS_LEVEL = 3001
-ZO_ATTRIBUTE_BAR_POWER_SHIELD_FAKE_HEALTH_LEVEL = 4000
-ZO_ATTRIBUTE_BAR_POWER_SHIELD_FAKE_HEALTH_GLOSS_LEVEL = 4001
-
 local RELEVANT_VISUAL_TYPES =
 {
 	ATTRIBUTE_VISUAL_POWER_SHIELDING,
@@ -177,8 +171,9 @@ function UnitFramesRebirth_PowerShieldModule:ShowOverlay(attributeBar, info)
 
 	ApplyPlatformStyleToShield(info.shieldOverlay, overlayTemplate)
 
-	self:GetOwner():NotifyTakingControlOf(attributeBar)
-	self:GetOwner():NotifyEndingControlOf(attributeBar)
+	local owner = self:GetOwner()
+	owner:NotifyTakingControlOf(attributeBar)
+	owner:NotifyEndingControlOf(attributeBar)
 end
 
 function UnitFramesRebirth_PowerShieldModule:ShouldHideBar(barInfo)
