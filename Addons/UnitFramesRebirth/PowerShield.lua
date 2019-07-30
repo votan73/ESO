@@ -1,3 +1,4 @@
+local async = LibAsync
 local REFRESH_RATE = math.floor(GetCVar("MinFrameTime.2") * 1000)
 
 local RELEVANT_VISUAL_TYPES =
@@ -62,9 +63,12 @@ function UnitFramesRebirth_PowerShieldModule:OnAdded(healthBarControl, magickaBa
 	owner:RegisterCallback("AttributeBarSizeChangingStart", function(...) OnSizeChanged(STARTING_RESIZE, ...) end)
 	owner:RegisterCallback("AttributeBarSizeChangingStopped", function(...) OnSizeChanged(STOPPING_RESIZE, ...) end)
 
-	local namespace = "UnitFramesRebirth_PowerShieldModule" .. self:GetModuleId()
+	local modulId = self:GetModuleId()
+	local namespace = "UnitFramesRebirth_PowerShieldModule" .. modulId
+	self.task = async:Create(namespace..owner)
+
 	EVENT_MANAGER:RegisterForEvent(namespace, EVENT_PLAYER_ACTIVATED, function() self:InitializeBarValues() end)
-	EVENT_MANAGER:RegisterForUpdate(namespace, REFRESH_RATE, function() self:OnUpdate() end)
+	EVENT_MANAGER:RegisterForUpdate(namespace, REFRESH_RATE, function() self.task:Call(function() self:OnUpdate() end) end)
 end
 
 function UnitFramesRebirth_PowerShieldModule:InitializeBarValues()
