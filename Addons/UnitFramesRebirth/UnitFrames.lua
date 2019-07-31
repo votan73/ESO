@@ -209,6 +209,7 @@ function UnitFramesManager:Initialize()
 	self.GroupUnitFrame = "ZO_GroupUnitFrame"
 	self.RaidUnitFrame = "ZO_RaidUnitFrame"
 	self.PetUnitFrame = "UnitFramesRebirth_PetGroupUnitFrame"
+	self.UnitShields = "UnitFramesRebirth_PowerShieldBarOverlay"
 end
 
 do
@@ -431,6 +432,10 @@ local UNITFRAME_BAR_STYLES =
 					Right = "UnitFramesRebirth_PlayerAttributeWarnerRightArrow",
 					Center = "UnitFramesRebirth_PlayerAttributeWarnerCenter",
 				},
+				shield =
+				{
+					texture = "UnitFramesRebirth_PowerShieldBarOverlay",
+				}
 			},
 
 			gamepad =
@@ -447,6 +452,10 @@ local UNITFRAME_BAR_STYLES =
 					Right = "UnitFramesRebirth_PlayerAttributeWarnerRight",
 					Center = "UnitFramesRebirth_PlayerAttributeWarnerCenter",
 				},
+				shield =
+				{
+					texture = "UnitFramesRebirth_PowerShieldBarOverlay",
+				}
 			},
 		},
 	},
@@ -490,6 +499,10 @@ local UNITFRAME_BAR_STYLES =
 					Right = "UnitFramesRebirth_PlayerAttributeWarnerRightArrow",
 					Center = "UnitFramesRebirth_PlayerAttributeWarnerCenter",
 				},
+				shield =
+				{
+					texture = "UnitFramesRebirth_PowerShieldBarOverlay",
+				}
 			},
 
 			gamepad =
@@ -506,6 +519,10 @@ local UNITFRAME_BAR_STYLES =
 					Right = "UnitFramesRebirth_PlayerAttributeWarnerRight",
 					Center = "UnitFramesRebirth_PlayerAttributeWarnerCenter",
 				},
+				shield =
+				{
+					texture = "UnitFramesRebirth_PowerShieldBarOverlay",
+				}
 			},
 		},
 	},
@@ -798,6 +815,7 @@ local UNITFRAME_LAYOUT_DATA =
 			leaderIconData = { width = 16, height = 16, offsetX = 5, offsetY = 5 },
 
 			useHealthWarner = true,
+			usePowerShield = true,
 		},
 
 		gamepad =
@@ -814,6 +832,7 @@ local UNITFRAME_LAYOUT_DATA =
 			leaderIconData = { width = 25, height = 25, offsetX = 0, offsetY = 12 },
 
 			useHealthWarner = true,
+			usePowerShield = true,
 		},
 	},
 
@@ -875,6 +894,7 @@ local UNITFRAME_LAYOUT_DATA =
 			statusData = { anchor1 = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 36, 42), anchor2 = ZO_Anchor:New(TOPRIGHT, nil, TOPRIGHT, - 140, 42), height = 0, },
 
 			useHealthWarner = true,
+			usePowerShield = true,
 		},
 
 		gamepad =
@@ -889,6 +909,7 @@ local UNITFRAME_LAYOUT_DATA =
 			hideHealthBgIfOffline = true,
 
 			useHealthWarner = true,
+			usePowerShield = true,
 		},
 	},
 }
@@ -1029,6 +1050,15 @@ function UnitFrame:New(unitTag, showBarText, style)
 		newFrame.healthWarner = UnitFramesRebirth_HealthWarner:New(newFrame.healthBar, unitTag)
 	end
 
+	if layoutData.usePowerShield then
+		local visualizer = newFrame:CreateAttributeVisualizer()
+
+		local powerShieldLayoutData = {
+			barOverlayTemplate = UnitFrames.UnitShields,
+		}
+		visualizer:AddModule(UnitFramesRebirth_PowerShieldModule:New(powerShieldLayoutData))
+	end
+
 	return newFrame
 end
 
@@ -1069,7 +1099,7 @@ function UnitFrame:ApplyVisualStyle(gamepadMode)
 	local barData = GetPlatformBarStyle(healthBar.style, healthBar.mechanic)
 
 	if barData.template then
-		local barWidth, warnerControl, warner, warnerChild
+		local barWidth, warnerControl, warner, warnerChild, shield
 
 		for i, control in ipairs(healthBar.barControls) do
 			if self.style ~= TARGET_UNIT_FRAME then

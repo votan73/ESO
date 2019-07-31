@@ -63,10 +63,8 @@ function UnitFramesRebirth_PowerShieldModule:OnAdded(healthBarControl, magickaBa
 	owner:RegisterCallback("AttributeBarSizeChangingStart", function(...) OnSizeChanged(STARTING_RESIZE, ...) end)
 	owner:RegisterCallback("AttributeBarSizeChangingStopped", function(...) OnSizeChanged(STOPPING_RESIZE, ...) end)
 
-	local modulId = self:GetModuleId()
-	local namespace = "UnitFramesRebirth_PowerShieldModule" .. modulId
-	self.task = async:Create(namespace..owner)
-
+	local namespace = "UnitFramesRebirth_PowerShieldModule" .. self:GetModuleId()
+	self.task = async:Create(namespace .. owner)
 	EVENT_MANAGER:RegisterForEvent(namespace, EVENT_PLAYER_ACTIVATED, function() self:InitializeBarValues() end)
 	EVENT_MANAGER:RegisterForUpdate(namespace, REFRESH_RATE, function() self.task:Call(function() self:OnUpdate() end) end)
 end
