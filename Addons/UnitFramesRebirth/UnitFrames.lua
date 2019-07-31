@@ -1115,7 +1115,7 @@ function UnitFrame:ApplyVisualStyle(gamepadMode)
 			warnerControl = control.warnerContainer
 			warner = barData.warner
 			if warnerControl and warner then
-				for _, direction in pairs( { "Left", "Right", "Center" }) do
+				for _, direction in pairs( { "Left", "Right", "Center" } ) do
 					warnerChild = warnerControl:GetNamedChild(direction)
 					ApplyTemplateToControl(warnerChild, ZO_GetPlatformTemplate(warner.texture))
 					ApplyTemplateToControl(warnerChild, ZO_GetPlatformTemplate(warner[direction]))

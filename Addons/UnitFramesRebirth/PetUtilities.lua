@@ -26,7 +26,7 @@ local PET_NAMES = {
 	-- Twilight Tormentor
 	[GetPetNameLower(30594)] = true, -- en
 	["zwielichtpeinigerin"] = true, -- de
-	["tourmenteur crÃ©pusculaire"] = true, -- fr
+	["tourmenteur crépusculaire"] = true, -- fr
 
 	-- Twilight Matriarch
 	[GetPetNameLower(30629)] = true,
