@@ -1099,7 +1099,7 @@ function UnitFrame:ApplyVisualStyle(gamepadMode)
 	local barData = GetPlatformBarStyle(healthBar.style, healthBar.mechanic)
 
 	if barData.template then
-		local barWidth, warnerControl, warner, warnerChild, shield
+		local barWidth, warnerControl, warner, warnerChild
 
 		for i, control in ipairs(healthBar.barControls) do
 			if self.style ~= TARGET_UNIT_FRAME then
