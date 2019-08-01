@@ -1,6 +1,3 @@
-local async = LibAsync
-local REFRESH_RATE = math.floor(GetCVar("MinFrameTime.2") * 1000)
-
 local RELEVANT_VISUAL_TYPES =
 {
 	ATTRIBUTE_VISUAL_POWER_SHIELDING,
@@ -38,7 +35,7 @@ function UnitFramesRebirth_PowerShieldModule:CreateInfoTable(control, oldInfo, s
 	return nil
 end
 
-function UnitFramesRebirth_PowerShieldModule:OnAdded(healthBarControl, magickaBarControl, staminaBarControl)
+function UnitFramesRebirth_PowerShieldModule:OnAdded(healthBarControl)
 	self.attributeBarControls =
 	{
 		[ATTRIBUTE_HEALTH] = healthBarControl,
@@ -53,6 +50,7 @@ function UnitFramesRebirth_PowerShieldModule:OnAdded(healthBarControl, magickaBa
 			local info = self.attributeInfo and self.attributeInfo[ATTRIBUTE_HEALTH]
 			if info then
 				info.isResizing = resizing
+				self:OnUpdate()
 			end
 		end
 	end
@@ -63,10 +61,7 @@ function UnitFramesRebirth_PowerShieldModule:OnAdded(healthBarControl, magickaBa
 	owner:RegisterCallback("AttributeBarSizeChangingStart", function(...) OnSizeChanged(STARTING_RESIZE, ...) end)
 	owner:RegisterCallback("AttributeBarSizeChangingStopped", function(...) OnSizeChanged(STOPPING_RESIZE, ...) end)
 
-	local namespace = string.format("UnitFramesRebirth_PowerShieldModule%d%s", self:GetModuleId(), owner:GetUnitTag())
-	self.task = async:Create(namespace)
-	EVENT_MANAGER:RegisterForEvent(namespace, EVENT_PLAYER_ACTIVATED, function() self:InitializeBarValues() end)
-	EVENT_MANAGER:RegisterForUpdate(namespace, REFRESH_RATE, function() self.task:Call(function() self:OnUpdate() end) end)
+	EVENT_MANAGER:RegisterForEvent("UnitFramesRebirth_PowerShield", EVENT_PLAYER_ACTIVATED, function() self:InitializeBarValues() end)
 end
 
 function UnitFramesRebirth_PowerShieldModule:InitializeBarValues()
@@ -143,17 +138,14 @@ local function ApplyPlatformStyleToShield(control, overlay)
 end
 
 local SHIELD_COLOR_GRADIENT = { ZO_ColorDef:New(.5, .5, 1, .3), ZO_ColorDef:New(.25, .25, .5, .5) }
-local TRAUMA_COLOR_GRADIENT = { ZO_ColorDef:New("ab1c6473"), ZO_ColorDef:New("ab76bcc3") }
 function UnitFramesRebirth_PowerShieldModule:ShowOverlay(attributeBar, info)
 	if not info.shieldOverlay then
 		local attributeBarControl = unpack(attributeBar.barControls)
 
-		info.shieldOverlay = CreateControlFromVirtual("$(parent)PowerShieldOverlay", attributeBar, self.layoutData)
+		info.shieldOverlay = CreateControlFromVirtual("$(parent)PowerShieldOverlay", attributeBar, self.layoutData.template)
 
 		local overlay = info.shieldOverlay
 		ZO_StatusBar_SetGradientColor(overlay, SHIELD_COLOR_GRADIENT)
-		ZO_StatusBar_SetGradientColor(overlay.traumaBar, TRAUMA_COLOR_GRADIENT)
-		ZO_StatusBar_SetGradientColor(overlay.fakeHealthBar, ZO_POWER_BAR_GRADIENT_COLORS[POWERTYPE_HEALTH])
 		overlay:SetValue(1)
 
 		ZO_PreHookHandler(attributeBarControl, "OnMinMaxValueChanged", function(_, min, max)
@@ -170,7 +162,7 @@ function UnitFramesRebirth_PowerShieldModule:ShowOverlay(attributeBar, info)
 		info.attributeValue = attributeBarControl:GetValue()
 	end
 
-	ApplyPlatformStyleToShield(info.shieldOverlay, self.layoutData)
+	ApplyPlatformStyleToShield(info.shieldOverlay, self.layoutData.template)
 
 	local owner = self:GetOwner()
 	owner:NotifyTakingControlOf(attributeBar)
@@ -197,41 +189,19 @@ function UnitFramesRebirth_PowerShieldModule:ApplyValueToBar(attributeBar, barIn
 	end
 
 	local attributeBarControl = unpack(attributeBar.barControls)
-	local halfWidth = attributeBarControl:GetWidth()
-	local leftOffsetX = halfWidth * (1 - percentOfBarRequested)
-	local rightOffsetX = leftOffsetX + halfWidth * percentOfBarRequested
+	local healthWidth = attributeBarControl:GetWidth()
+	local rightOffsetX = healthWidth * (1 - percentOfBarRequested)
 
 	barControl:ClearAnchors()
-	barControl:SetAnchor(LEFT, attributeBarControl, LEFT, leftOffsetX, 0)
-	barControl:SetAnchor(RIGHT, attributeBarControl, LEFT, rightOffsetX, 0)
+	barControl:SetAnchor(TOPLEFT, attributeBarControl, TOPLEFT)
+	barControl:SetAnchor(BOTTOMRIGHT, attributeBarControl, BOTTOMRIGHT, -rightOffsetX)
 end
 
 function UnitFramesRebirth_PowerShieldModule:OnStatusBarValueChanged(attributeBar, barInfo)
 	local shieldInfo, traumaInfo = barInfo.visualInfo[ATTRIBUTE_VISUAL_POWER_SHIELDING], barInfo.visualInfo[ATTRIBUTE_VISUAL_TRAUMA]
 	local overlayControl = barInfo.shieldOverlay
 	if not self:ShouldHideBar(barInfo) then
-		-- This math just establishes the relationships between each bar: the clamping and scaling to turn these into actual control positions happens in ApplyValueToBar().
-		-- Each bar is drawn on top of the last one in the sequence, so the actual amount of each bar the player will see will always be distance between the last bar and the next.
-
-		local health = barInfo.attributeValue
-		local shield = shieldInfo.value
-		local trauma = traumaInfo.value
-
-		-- Shields add to your original health bar, so they grow out of that value.
-		-- When that amount extends beyond your max health we need shrink your fakehealth to compensate, which we carry over as shieldOverflow
-		local shieldBarSize = health + shield
-		self:ApplyValueToBar(attributeBar, barInfo, overlayControl, shieldBarSize)
-		local shieldOverflow = zo_max(0, shieldBarSize - barInfo.attributeMax)
-
-		-- Trauma starts at your current health value, minus any shield overflow.
-		-- This means that you should perceive the size of this bar as being your "health", it just needs to be overhealed before you can benefit from extra heal.
-		local traumaBarSize = health - shieldOverflow
-		self:ApplyValueToBar(attributeBar, barInfo, overlayControl.traumaBar, traumaBarSize)
-
-		-- Then the fakehealth starts at the step 2 interpretation of health minus any trauma experienced.
-		-- Sometimes trauma and shield overflow will be 0, in which case this value is the same as your actual health, otherwise it shrinks to fit each effect.
-		local fakeHealthSize = traumaBarSize - trauma
-		self:ApplyValueToBar(attributeBar, barInfo, overlayControl.fakeHealthBar, fakeHealthSize)
+		self:ApplyValueToBar(attributeBar, barInfo, overlayControl, shieldInfo.value)
 	else
 		overlayControl:SetHidden(true)
 	end
@@ -260,7 +230,7 @@ function UnitFramesRebirth_PowerShieldModule:ApplyPlatformStyle()
 	if self.attributeInfo then
 		for _, info in pairs(self.attributeInfo) do
 			if info.shieldOverlay then
-				ApplyPlatformStyleToShield(info.shieldOverlay, self.layoutData)
+				ApplyPlatformStyleToShield(info.shieldOverlay, self.layoutData.template)
 			end
 		end
 	end

@@ -433,10 +433,6 @@ local UNITFRAME_BAR_STYLES =
 					Right = "UnitFramesRebirth_PlayerAttributeWarnerRightArrow",
 					Center = "UnitFramesRebirth_PlayerAttributeWarnerCenter",
 				},
-				shield =
-				{
-					texture = "UnitFramesRebirth_PowerShieldBarOverlay",
-				}
 			},
 
 			gamepad =
@@ -453,10 +449,6 @@ local UNITFRAME_BAR_STYLES =
 					Right = "UnitFramesRebirth_PlayerAttributeWarnerRight",
 					Center = "UnitFramesRebirth_PlayerAttributeWarnerCenter",
 				},
-				shield =
-				{
-					texture = "UnitFramesRebirth_PowerShieldBarOverlay",
-				}
 			},
 		},
 	},
@@ -500,10 +492,6 @@ local UNITFRAME_BAR_STYLES =
 					Right = "UnitFramesRebirth_PlayerAttributeWarnerRightArrow",
 					Center = "UnitFramesRebirth_PlayerAttributeWarnerCenter",
 				},
-				shield =
-				{
-					texture = "UnitFramesRebirth_PowerShieldBarOverlay",
-				}
 			},
 
 			gamepad =
@@ -520,10 +508,6 @@ local UNITFRAME_BAR_STYLES =
 					Right = "UnitFramesRebirth_PlayerAttributeWarnerRight",
 					Center = "UnitFramesRebirth_PlayerAttributeWarnerCenter",
 				},
-				shield =
-				{
-					texture = "UnitFramesRebirth_PowerShieldBarOverlay",
-				}
 			},
 		},
 	},
@@ -856,7 +840,9 @@ local UNITFRAME_LAYOUT_DATA =
 
 			statusData = { anchor1 = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 5, 20), anchor2 = ZO_Anchor:New(TOPRIGHT, nil, TOPRIGHT, - 4, 20), height = 15, },
 
-			leaderIconData = { width = 16, height = 16, offsetX = 5, offsetY = 5 }
+			leaderIconData = { width = 16, height = 16, offsetX = 5, offsetY = 5 },
+
+			usePowerShield = true,
 		},
 
 		gamepad =
@@ -873,7 +859,9 @@ local UNITFRAME_LAYOUT_DATA =
 			indentedNameAnchor = ZO_Anchor:New(TOPLEFT,nil,TOPLEFT,20,3),
 			indentedNameWidth = ZO_GAMEPAD_RAID_FRAME_WIDTH - 20 - 2,
 
-			leaderIconData = { width = 18, height = 18, offsetX = 2, offsetY = 7 }
+			leaderIconData = { width = 18, height = 18, offsetX = 2, offsetY = 7 },
+
+			usePowerShield = true,
 		},
 	},
 
@@ -1053,12 +1041,11 @@ function UnitFrame:New(unitTag, showBarText, style)
 
 	if layoutData.usePowerShield then
 		local visualizer = newFrame:CreateAttributeVisualizer(NO_SOUND, unitTag)
-
-		-- local powerShieldLayoutData = {
-			-- barOverlayTemplate = UnitFrames.UnitShields,
-		-- }
-		-- zo_callLater(function() d(UnitFrames.UnitShields) end, 2000)
-		visualizer:AddModule(UnitFramesRebirth_PowerShieldModule:New(UnitFrames.UnitShields))
+		local shieldData =
+		{
+			template = UnitFrames.UnitShields,
+		}
+		visualizer:AddModule(UnitFramesRebirth_PowerShieldModule:New(shieldData))
 	end
 
 	return newFrame

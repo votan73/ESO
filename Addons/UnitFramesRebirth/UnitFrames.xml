@@ -193,60 +193,34 @@
 		</Control>
 
 		<!-- POWER SHIELD -->
-		<StatusBar name="UnitFramesRebirth_PowerShieldBarOverlay" inherits="ZO_PowerShieldBarAngle" virtual="true">
+		<StatusBar name="UnitFramesRebirth_PowerShieldBar" inherits="ZO_ArrowStatusBarWithBG" virtual="true">
 			<Controls>
-				<StatusBar name="$(parent)Gloss" inherits="ZO_TargetAttributeStatusBarGloss"/>
+				<Control name="$(parent)BG" hidden="true" />
+				<Control name="$(parent)Overlay" hidden="true" />
+			</Controls>
+		</StatusBar>
+		
+		
+		<StatusBar name="UnitFramesRebirth_PowerShieldBarOverlay" inherits="ZO_PowerShieldBarArrow" virtual="true">
+			<Controls>
+				<StatusBar name="$(parent)Gloss" inherits="ZO_PlayerAttributeStatusBarGloss"/>
+			</Controls>
+		</StatusBar>
 
-				<StatusBar name="$(parent)Trauma" inherits="ZO_PowerShieldFakeHealthBarAngle">
-					<Controls>
-						<StatusBar name="$(parent)Gloss" inherits="ZO_TargetAttributeStatusBarGloss" level="ZO_ATTRIBUTE_BAR_POWER_SHIELD_TRAUMA_GLOSS_LEVEL"/>
-					</Controls>
-				</StatusBar>
-
-				<StatusBar name="$(parent)FakeHealth" inherits="ZO_PowerShieldFakeHealthBarAngle">
-					<Controls>
-						<StatusBar name="$(parent)Gloss" inherits="ZO_TargetAttributeStatusBarGloss" level="ZO_ATTRIBUTE_BAR_POWER_SHIELD_FAKE_HEALTH_GLOSS_LEVEL"/>
-					</Controls>
+		<StatusBar name="UnitFramesRebirth_PowerShieldBarOverlay_Keyboard_Template" inherits="UnitFramesRebirth_PowerShieldBar" virtual="true">
+			<Controls>
+				<StatusBar name="$(parent)Gloss" inherits="ZO_PlayerAttributeStatusBarGloss_Keyboard_Template">
+					<Anchor offsetY="4"/>
+					<Anchor offsetY="-4"/>
 				</StatusBar>
 			</Controls>
 		</StatusBar>
 
-		<StatusBar name="UnitFramesRebirth_PowerShieldBarOverlay_Keyboard_Template" inherits="ZO_PowerShieldBarAngle_Keyboard_Template" virtual="true">
+		<StatusBar name="UnitFramesRebirth_PowerShieldBarOverlay_Gamepad_Template" inherits="ZO_DefaultStatusBar" virtual="true">
 			<Controls>
-				<StatusBar name="$(parent)Gloss" inherits="ZO_TargetAttributeStatusBarGloss_Keyboard_Template" />
-
-				<StatusBar name="$(parent)Trauma" inherits="ZO_PowerShieldFakeHealthBarAngle_Keyboard_Template">
-					<Anchor point="LEFT" relativePoint="RIGHT" offsetX="-11" />
-					<Controls>
-						<StatusBar name="$(parent)Gloss" inherits="ZO_TargetAttributeStatusBarGloss_Keyboard_Template" />
-					</Controls>
-				</StatusBar>
-
-				<StatusBar name="$(parent)FakeHealth" inherits="ZO_PowerShieldFakeHealthBarAngle_Keyboard_Template">
-					<Anchor point="LEFT" relativePoint="RIGHT" offsetX="-11" />
-					<Controls>
-						<StatusBar name="$(parent)Gloss" inherits="ZO_TargetAttributeStatusBarGloss_Keyboard_Template" />
-					</Controls>
-				</StatusBar>
-			</Controls>
-		</StatusBar>
-
-		<StatusBar name="UnitFramesRebirth_PowerShieldBarOverlay_Gamepad_Template" inherits="ZO_PowerShieldBarAngle_Gamepad_Template" virtual="true">
-			<Controls>
-				<StatusBar name="$(parent)Gloss" inherits="ZO_TargetAttributeStatusBarGloss_Gamepad_Template" />
-
-				<StatusBar name="$(parent)Trauma" inherits="ZO_PowerShieldFakeHealthBarAngle_Gamepad_Template">
-					<Anchor point="LEFT" relativePoint="RIGHT" offsetX="-15" />
-					<Controls>
-						<StatusBar name="$(parent)Gloss" inherits="ZO_TargetAttributeStatusBarGloss_Gamepad_Template" />
-					</Controls>
-				</StatusBar>
-
-				<StatusBar name="$(parent)FakeHealth" inherits="ZO_PowerShieldFakeHealthBarAngle_Gamepad_Template">
-					<Anchor point="LEFT" relativePoint="RIGHT" offsetX="-15" />
-					<Controls>
-						<StatusBar name="$(parent)Gloss" inherits="ZO_TargetAttributeStatusBarGloss_Gamepad_Template" />
-					</Controls>
+				<StatusBar name="$(parent)Gloss" inherits="ZO_PlayerAttributeStatusBarGloss_Gamepad_Template">
+					<Anchor offsetY="0"/>
+					<Anchor offsetY="0"/>
 				</StatusBar>
 			</Controls>
 		</StatusBar>
