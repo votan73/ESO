@@ -7,6 +7,7 @@ local SHOW_BAR_TEXT = 2
 
 local UNIT_CHANGED, FORCE_INIT, UPDATE_BAR_TYPE, UPDATE_VALUE, INSTANT, FORCE_SHOW, IS_ONLINE, IS_IN_RANGE = true, true, true, true, true, true, true, true
 local ANIMATED, DONT_COLOR_RANK_ICON, PREVENT_SHOW, IS_NOT_LEADER = false, false, false, false
+local NO_SOUND = nil
 
 local GROUP_UNIT_FRAME = "ZO_GroupUnitFrame"
 local RAID_UNIT_FRAME = "ZO_RaidUnitFrame"
@@ -1051,12 +1052,13 @@ function UnitFrame:New(unitTag, showBarText, style)
 	end
 
 	if layoutData.usePowerShield then
-		local visualizer = newFrame:CreateAttributeVisualizer()
+		local visualizer = newFrame:CreateAttributeVisualizer(NO_SOUND, unitTag)
 
-		local powerShieldLayoutData = {
-			barOverlayTemplate = UnitFrames.UnitShields,
-		}
-		visualizer:AddModule(UnitFramesRebirth_PowerShieldModule:New(powerShieldLayoutData))
+		-- local powerShieldLayoutData = {
+			-- barOverlayTemplate = UnitFrames.UnitShields,
+		-- }
+		-- zo_callLater(function() d(UnitFrames.UnitShields) end, 2000)
+		visualizer:AddModule(UnitFramesRebirth_PowerShieldModule:New(UnitFrames.UnitShields))
 	end
 
 	return newFrame
@@ -1646,10 +1648,10 @@ function UnitFrame:SetBarTextMode(alwaysShow)
 	end
 end
 
-function UnitFrame:CreateAttributeVisualizer(soundTable)
+function UnitFrame:CreateAttributeVisualizer(soundTable, unitTag)
 	if not self.attributeVisualizer then
 		self.frame.barControls = self.healthBar:GetBarControls()
-		self.attributeVisualizer = ZO_UnitAttributeVisualizer:New(self:GetUnitTag(), soundTable, self.frame)
+		self.attributeVisualizer = ZO_UnitAttributeVisualizer:New(unitTag or self:GetUnitTag(), soundTable, self.frame)
 	end
 	return self.attributeVisualizer
 end

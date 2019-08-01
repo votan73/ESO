@@ -63,8 +63,8 @@ function UnitFramesRebirth_PowerShieldModule:OnAdded(healthBarControl, magickaBa
 	owner:RegisterCallback("AttributeBarSizeChangingStart", function(...) OnSizeChanged(STARTING_RESIZE, ...) end)
 	owner:RegisterCallback("AttributeBarSizeChangingStopped", function(...) OnSizeChanged(STOPPING_RESIZE, ...) end)
 
-	local namespace = "UnitFramesRebirth_PowerShieldModule" .. self:GetModuleId()
-	self.task = async:Create(namespace .. owner)
+	local namespace = string.format("UnitFramesRebirth_PowerShieldModule%d%s", self:GetModuleId(), owner:GetUnitTag())
+	self.task = async:Create(namespace)
 	EVENT_MANAGER:RegisterForEvent(namespace, EVENT_PLAYER_ACTIVATED, function() self:InitializeBarValues() end)
 	EVENT_MANAGER:RegisterForUpdate(namespace, REFRESH_RATE, function() self.task:Call(function() self:OnUpdate() end) end)
 end
@@ -145,11 +145,10 @@ end
 local SHIELD_COLOR_GRADIENT = { ZO_ColorDef:New(.5, .5, 1, .3), ZO_ColorDef:New(.25, .25, .5, .5) }
 local TRAUMA_COLOR_GRADIENT = { ZO_ColorDef:New("ab1c6473"), ZO_ColorDef:New("ab76bcc3") }
 function UnitFramesRebirth_PowerShieldModule:ShowOverlay(attributeBar, info)
-	if not info.overlayControl then
+	if not info.shieldOverlay then
 		local attributeBarControl = unpack(attributeBar.barControls)
-		local overlayTemplate = self.layoutData.barOverlayTemplate
 
-		info.shieldOverlay = CreateControlFromVirtual("$(parent)PowerShieldOverlay", attributeBar, overlayTemplate)
+		info.shieldOverlay = CreateControlFromVirtual("$(parent)PowerShieldOverlay", attributeBar, self.layoutData)
 
 		local overlay = info.shieldOverlay
 		ZO_StatusBar_SetGradientColor(overlay, SHIELD_COLOR_GRADIENT)
@@ -171,7 +170,7 @@ function UnitFramesRebirth_PowerShieldModule:ShowOverlay(attributeBar, info)
 		info.attributeValue = attributeBarControl:GetValue()
 	end
 
-	ApplyPlatformStyleToShield(info.shieldOverlay, overlayTemplate)
+	ApplyPlatformStyleToShield(info.shieldOverlay, self.layoutData)
 
 	local owner = self:GetOwner()
 	owner:NotifyTakingControlOf(attributeBar)
@@ -209,7 +208,7 @@ end
 
 function UnitFramesRebirth_PowerShieldModule:OnStatusBarValueChanged(attributeBar, barInfo)
 	local shieldInfo, traumaInfo = barInfo.visualInfo[ATTRIBUTE_VISUAL_POWER_SHIELDING], barInfo.visualInfo[ATTRIBUTE_VISUAL_TRAUMA]
-	local overlayControl = unpack(barInfo.overlayControl)
+	local overlayControl = barInfo.shieldOverlay
 	if not self:ShouldHideBar(barInfo) then
 		-- This math just establishes the relationships between each bar: the clamping and scaling to turn these into actual control positions happens in ApplyValueToBar().
 		-- Each bar is drawn on top of the last one in the sequence, so the actual amount of each bar the player will see will always be distance between the last bar and the next.
@@ -261,7 +260,7 @@ function UnitFramesRebirth_PowerShieldModule:ApplyPlatformStyle()
 	if self.attributeInfo then
 		for _, info in pairs(self.attributeInfo) do
 			if info.shieldOverlay then
-				ApplyPlatformStyleToShield(info.shieldOverlay, self.layoutData.barOverlayTemplate)
+				ApplyPlatformStyleToShield(info.shieldOverlay, self.layoutData)
 			end
 		end
 	end
