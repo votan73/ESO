@@ -28,7 +28,7 @@ function UnitFramesRebirth_HealthWarner:Initialize(parent, unitTag)
 	self.unitTag = unitTag
 
 	self.warnAnimation = ZO_AlphaAnimation:New(self.warning)
-	self.statusBar = parent
+	self.parent = parent
 	self.paused = false
 end
 
@@ -62,7 +62,7 @@ end
 
 function UnitFramesRebirth_HealthWarner:OnHealthUpdate(health, maxHealth)
 	if not self.paused then
-		local healthPerc = maxHealth > 0 and(health / maxHealth) or 1
+		local healthPerc = maxHealth > 0 and health / maxHealth or 1
 		self:UpdateAlphaPulse(healthPerc)
 	end
 end

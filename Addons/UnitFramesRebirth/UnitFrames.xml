@@ -96,11 +96,22 @@
 
 		<StatusBar name="UnitFramesRebirth_GroupUnitFrameStatus" virtual="true">
 			<OnInitialized>
+				self.shield = self:GetNamedChild("Shield")
 				self.gloss = self:GetNamedChild("Gloss")
 				self.warnerContainer = self:GetNamedChild("Warner")
+				ZO_StatusBar_SetGradientColor(self.shield, SHIELD_COLOR_GRADIENT)
 			</OnInitialized>
 
 			<Controls>
+				<StatusBar name="$(parent)Shield" hidden="true">
+					<Anchor point="TOPLEFT" offsetX="0" offsetY="0" />
+					<Anchor point="BOTTOMRIGHT" offsetX="0" offsetY="0" />
+					<Controls>
+						<Control name="$(parent)BG" hidden="true" />
+						<Control name="$(parent)Overlay" hidden="true" />
+					</Controls>
+				</StatusBar>
+
 				<StatusBar name="$(parent)Gloss"/>
 
 				<Control name="$(parent)Warner" inherits="UnitFramesRebirth_PlayerAttributeWarner">
@@ -115,6 +126,10 @@
 
 		<StatusBar name="UnitFramesRebirth_GroupUnitFrameStatus_Keyboard_Template" inherits="ZO_ArrowStatusBarWithBG" virtual="true">
 			<Controls>
+				<StatusBar name="$(parent)Shield">
+					<Anchor point="TOPLEFT" offsetX="0" offsetY="2" />
+					<Anchor point="BOTTOMRIGHT" offsetX="0" offsetY="-3" />
+				</StatusBar>
 				<Control name="$(parent)BG" hidden="false" />
 				<Control name="$(parent)Overlay" hidden="false" />
 			</Controls>
@@ -122,10 +137,19 @@
 
 		<StatusBar name="UnitFramesRebirth_GroupUnitFrameStatus_Gamepad_Template" inherits="ZO_DefaultStatusBar" virtual="true">
 			<Controls>
+				<StatusBar name="$(parent)Shield">
+					<Anchor point="TOPLEFT" offsetX="0" offsetY="0" />
+					<Anchor point="BOTTOMRIGHT" offsetX="0" offsetY="0" />
+				</StatusBar>
 				<Control name="$(parent)BG" hidden="true" />
 				<Control name="$(parent)Overlay" hidden="true" />
 			</Controls>
 		</StatusBar>
+
+		<!-- SHIELD POWER -->
+		<StatusBar name="UnitFramesRebirth_PowerShieldBar" inherits="ZO_PowerShieldBar" virtual="true" />
+		<StatusBar name="UnitFramesRebirth_PowerShieldBar_Keyboard_Template" inherits="ZO_PowerShieldBar ZO_PlayerAttributeStatusBar_Keyboard_Template" virtual="true" />
+		<StatusBar name="UnitFramesRebirth_PowerShieldBar_Gamepad_Template" inherits="ZO_PowerShieldBar ZO_PlayerAttributeStatusBar_Gamepad_Template" virtual="true" />
 
 		<!-- PET UNITS -->
 		<Control name="UnitFramesRebirth_PetGroupUnitFrame_Keyboard_Template" virtual="true">
@@ -191,38 +215,5 @@
 				</Texture>
 			</Controls>
 		</Control>
-
-		<!-- POWER SHIELD -->
-		<StatusBar name="UnitFramesRebirth_PowerShieldBar" inherits="ZO_ArrowStatusBarWithBG" virtual="true">
-			<Controls>
-				<Control name="$(parent)BG" hidden="true" />
-				<Control name="$(parent)Overlay" hidden="true" />
-			</Controls>
-		</StatusBar>
-		
-		
-		<StatusBar name="UnitFramesRebirth_PowerShieldBarOverlay" inherits="ZO_PowerShieldBarArrow" virtual="true">
-			<Controls>
-				<StatusBar name="$(parent)Gloss" inherits="ZO_PlayerAttributeStatusBarGloss"/>
-			</Controls>
-		</StatusBar>
-
-		<StatusBar name="UnitFramesRebirth_PowerShieldBarOverlay_Keyboard_Template" inherits="UnitFramesRebirth_PowerShieldBar" virtual="true">
-			<Controls>
-				<StatusBar name="$(parent)Gloss" inherits="ZO_PlayerAttributeStatusBarGloss_Keyboard_Template">
-					<Anchor offsetY="4"/>
-					<Anchor offsetY="-4"/>
-				</StatusBar>
-			</Controls>
-		</StatusBar>
-
-		<StatusBar name="UnitFramesRebirth_PowerShieldBarOverlay_Gamepad_Template" inherits="ZO_DefaultStatusBar" virtual="true">
-			<Controls>
-				<StatusBar name="$(parent)Gloss" inherits="ZO_PlayerAttributeStatusBarGloss_Gamepad_Template">
-					<Anchor offsetY="0"/>
-					<Anchor offsetY="0"/>
-				</StatusBar>
-			</Controls>
-		</StatusBar>
 	</Controls>
 </GuiXml>

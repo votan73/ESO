@@ -20,6 +20,7 @@ local function CreateSettings()
 	local DEFAULT_SETTINGS = {
 		showClassIcon = true,
 		showHealthWarner = true,
+		showUnitShield = true,
 		switchNames = true,
 		hideTitle = true,
 		enablePetHealth = true,
@@ -77,6 +78,18 @@ local function CreateSettings()
 
 	settings:AddSetting {
 		type = LibHarvensAddonSettings.ST_CHECKBOX,
+		label = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_UNIT_SHIELDS),
+		tooltip = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_UNIT_SHIELDS_TT),
+		default = DEFAULT_SETTINGS.showUnitShield,
+		getFunction = function() return UnitFrames.account.showUnitShield end,
+		setFunction = function(bool)
+			UnitFrames.account.showUnitShield = bool
+			UnitFrames:SetShield(bool)
+		end,
+	}
+
+	settings:AddSetting {
+		type = LibHarvensAddonSettings.ST_CHECKBOX,
 		label = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_PET_HEALTH),
 		tooltip = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_PET_HEALTH_TT),
 		default = DEFAULT_SETTINGS.enablePetHealth,
@@ -118,6 +131,7 @@ local function OnAddOnLoaded(event, name)
 	CreateSettings()
 
 	UnitFrames:SetWarner(UnitFrames.account.showHealthWarner)
+	UnitFrames:SetShield(UnitFrames.account.showUnitShield)
 end
 
 EVENT_MANAGER:RegisterForEvent(ADDON_NAME, EVENT_ADD_ON_LOADED, OnAddOnLoaded)

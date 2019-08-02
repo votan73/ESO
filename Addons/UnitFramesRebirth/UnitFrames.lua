@@ -5,7 +5,7 @@ local HIDE_BAR_TEXT = 0
 local SHOW_BAR_TEXT_MOUSE_OVER = 1
 local SHOW_BAR_TEXT = 2
 
-local UNIT_CHANGED, FORCE_INIT, UPDATE_BAR_TYPE, UPDATE_VALUE, INSTANT, FORCE_SHOW, IS_ONLINE, IS_IN_RANGE = true, true, true, true, true, true, true, true
+local UNIT_CHANGED, FORCE_INIT, UPDATE_BAR_TYPE, UPDATE_VALUE, FORCE_SHOW, IS_ONLINE, IS_IN_RANGE = true, true, true, true, true, true, true
 local ANIMATED, DONT_COLOR_RANK_ICON, PREVENT_SHOW, IS_NOT_LEADER = false, false, false, false
 local NO_SOUND = nil
 
@@ -210,7 +210,6 @@ function UnitFramesManager:Initialize()
 	self.GroupUnitFrame = "ZO_GroupUnitFrame"
 	self.RaidUnitFrame = "ZO_RaidUnitFrame"
 	self.PetUnitFrame = "UnitFramesRebirth_PetGroupUnitFrame"
-	self.UnitShields = "UnitFramesRebirth_PowerShieldBarOverlay"
 end
 
 do
@@ -248,6 +247,28 @@ do
 		SetWarnerToFrames(self.groupFrames, isActive)
 		SetWarnerToFrames(self.raidFrames, isActive)
 		SetWarnerToFrames(self.petFrames, isActive)
+	end
+end
+
+do
+	local function SetShieldToFrames(frames, isActive)
+		local shield
+		for _, unitFrame in pairs(frames) do
+			shield = unitFrame.shield
+			if shield then
+				if isActive then
+					shield:SetPaused(false)
+				else
+					shield:SetPaused(true)
+				end
+			end
+		end
+	end
+
+	function UnitFramesManager:SetShield(isActive)
+		SetShieldToFrames(self.groupFrames, isActive)
+		SetShieldToFrames(self.raidFrames, isActive)
+		SetShieldToFrames(self.petFrames, isActive)
 	end
 end
 
@@ -391,6 +412,7 @@ end
 --[[
 	UnitFrameBar class...defines one bar in the unit frame, including background/glass textures, statusbar and text
 --]]
+local DEFAULT_ANIMATION_TIME_MS = 500
 
 UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_ULTRA_FAST = 1
 UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_SUPER_FAST = 2
@@ -398,6 +420,15 @@ UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_FASTER = 3
 UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_FAST = 4
 UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_DEFAULT = 5
 UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_INSTANT = 6
+
+local LOOKUP_APPROACH_AMOUNT_MS = {
+	[UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_INSTANT] = 0,
+	[UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_ULTRA_FAST] = 100,
+	[UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_SUPER_FAST] = 200,
+	[UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_FASTER] = 300,
+	[UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_FAST] = 400,
+	[UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_DEFAULT] = DEFAULT_ANIMATION_TIME_MS,
+}
 
 -- A special flag that essentially acts like a wild card, accepting any mechanic
 local ANY_POWER_TYPE = true
@@ -433,6 +464,10 @@ local UNITFRAME_BAR_STYLES =
 					Right = "UnitFramesRebirth_PlayerAttributeWarnerRightArrow",
 					Center = "UnitFramesRebirth_PlayerAttributeWarnerCenter",
 				},
+				shield =
+				{
+					texture = "UnitFramesRebirth_PowerShieldBar",
+				}
 			},
 
 			gamepad =
@@ -449,6 +484,10 @@ local UNITFRAME_BAR_STYLES =
 					Right = "UnitFramesRebirth_PlayerAttributeWarnerRight",
 					Center = "UnitFramesRebirth_PlayerAttributeWarnerCenter",
 				},
+				shield =
+				{
+					texture = "UnitFramesRebirth_PowerShieldBar",
+				}
 			},
 		},
 	},
@@ -649,50 +688,33 @@ function UnitFrameBar:New(baseBarName, parent, showFrameBarText, style, mechanic
 	end
 end
 
-do
-	-- The health bar animation is pretty slow. We gonna make it a bit faster. This is very helpful in PvP.
-	-- DEFAULT_ANIMATION_TIME_MS = 500
-	local lookupApproachAmountMs = {
-		[UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_INSTANT] = 0,
-		[UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_ULTRA_FAST] = 100,
-		[UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_SUPER_FAST] = 200,
-		[UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_FASTER] = 300,
-		[UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_FAST] = 400,
-		[UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_DEFAULT] = DEFAULT_ANIMATION_TIME_MS,
-	}
+function UnitFrameBar:Update(barType, cur, max, forceInit)
+	local numBarControls = #self.barControls
+	local isBarCentered = numBarControls == 2
 
-	local function GetCustomApproachAmountMs()
-		return lookupApproachAmountMs[UnitFrames.account.approachAmountMs] or DEFAULT_ANIMATION_TIME_MS
+	local barCur = isBarCentered and cur / 2 or cur
+	local barMax = isBarCentered and max / 2 or max
+
+	local customApproach = UnitFramesRebirth_GetStatusBarCustomApproachAmountMs()
+	for i = 1, numBarControls do
+		if customApproach ~= 0 then
+			ZO_StatusBar_SmoothTransition(self.barControls[i], barCur, barMax, forceInit, nil, customApproach)
+		else
+			ZO_StatusBar_SmoothTransition(self.barControls[i], barCur, barMax, FORCE_INIT_SMOOTH_STATUS_BAR)
+		end
 	end
 
-	function UnitFrameBar:Update(barType, cur, max, forceInit)
-		local numBarControls = #self.barControls
-		local isBarCentered = numBarControls == 2
+	local updateBarType = false
+	self.currentValue = cur
+	self.maxValue = max
 
-		local barCur = isBarCentered and cur / 2 or cur
-		local barMax = isBarCentered and max / 2 or max
-
-		local customApproach = GetCustomApproachAmountMs()
-		for i = 1, numBarControls do
-			if customApproach ~= 0 then
-				ZO_StatusBar_SmoothTransition(self.barControls[i], barCur, barMax, forceInit, nil, customApproach)
-			else
-				ZO_StatusBar_SmoothTransition(self.barControls[i], barCur, barMax, INSTANT)
-			end
-		end
-
-		local updateBarType = false
-		self.currentValue = cur
-		self.maxValue = max
-
-		if barType ~= self.barType then
-			updateBarType = true
-			self.barType = barType
-			self.barTypeName = GetString("SI_COMBATMECHANICTYPE", self.barType)
-		end
-
-		self:UpdateText(updateBarType, cur ~= self.currentValue or self.maxValue ~= max)
+	if barType ~= self.barType then
+		updateBarType = true
+		self.barType = barType
+		self.barTypeName = GetString("SI_COMBATMECHANICTYPE", self.barType)
 	end
+
+	self:UpdateText(updateBarType, cur ~= self.currentValue or self.maxValue ~= max)
 end
 
 local function GetVisibility(self)
@@ -1040,12 +1062,7 @@ function UnitFrame:New(unitTag, showBarText, style)
 	end
 
 	if layoutData.usePowerShield then
-		local visualizer = newFrame:CreateAttributeVisualizer(NO_SOUND, unitTag)
-		local shieldData =
-		{
-			template = UnitFrames.UnitShields,
-		}
-		visualizer:AddModule(UnitFramesRebirth_PowerShieldModule:New(shieldData))
+		newFrame.shield = UnitFramesRebirth_Shield:New(newFrame.healthBar, unitTag)
 	end
 
 	return newFrame
@@ -1088,7 +1105,7 @@ function UnitFrame:ApplyVisualStyle(gamepadMode)
 	local barData = GetPlatformBarStyle(healthBar.style, healthBar.mechanic)
 
 	if barData.template then
-		local barWidth, warnerControl, warner, warnerChild
+		local barWidth, warnerControl, warner, warnerChild, shieldControl, shield
 
 		for i, control in ipairs(healthBar.barControls) do
 			if self.style ~= TARGET_UNIT_FRAME then
@@ -1108,8 +1125,15 @@ function UnitFrame:ApplyVisualStyle(gamepadMode)
 					warnerChild = warnerControl:GetNamedChild(direction)
 					ApplyTemplateToControl(warnerChild, ZO_GetPlatformTemplate(warner.texture))
 					ApplyTemplateToControl(warnerChild, ZO_GetPlatformTemplate(warner[direction]))
-					self.healthWarner:SetPaused(not UnitFrames.account.showHealthWarner)
 				end
+				self.healthWarner:SetPaused(not UnitFrames.account.showHealthWarner)
+			end
+
+			shieldControl = control.shield
+			shield = barData.shield
+			if shieldControl and shield then
+				ApplyTemplateToControl(shieldControl, ZO_GetPlatformTemplate(shield.texture))
+				self.shield:SetPaused(not UnitFrames.account.showUnitShield)
 			end
 		end
 
@@ -1176,7 +1200,7 @@ end
 
 function UnitFrame:SetHiddenForReason(reason, hidden)
 	if self.hiddenReasons:SetHiddenForReason(reason, hidden) then
-		self:RefreshVisible(INSTANT)
+		self:RefreshVisible(true)
 	end
 end
 
@@ -2178,6 +2202,10 @@ function ZO_UnitFrames_IsTargetOfTargetEnabled()
 	return UnitFrames:IsTargetOfTargetEnabled()
 end
 
+function UnitFramesRebirth_GetStatusBarCustomApproachAmountMs()
+	return LOOKUP_APPROACH_AMOUNT_MS[UnitFrames.account.approachAmountMs] or DEFAULT_ANIMATION_TIME_MS
+end
+
 local function RegisterForEvents()
 
 	-- updates for every unit zoning (via wayshrine).
@@ -2214,14 +2242,8 @@ local function RegisterForEvents()
 			end
 		end
 	end
-	if GetAPIVersion() >= 100027 then
-		ZO_MostRecentPowerUpdateHandler:New("UnitFrames", PowerUpdateHandlerFunction)
-	else
-		local function OnPowerUpdate(eventCode, unitTag, powerPoolIndex, powerType, powerPool, powerPoolMax)
-			PowerUpdateHandlerFunction(unitTag, powerPoolIndex, powerType, powerPool, powerPoolMax)
-		end
-		ZO_UnitFrames:RegisterForEvent(EVENT_POWER_UPDATE, OnPowerUpdate)
-	end
+	ZO_MostRecentPowerUpdateHandler:New("UnitFrames", PowerUpdateHandlerFunction)
+
 
 	local function OnUnitCreated(eventCode, unitTag)
 		if ZO_Group_IsGroupUnitTag(unitTag) then
@@ -2261,9 +2283,11 @@ local function RegisterForEvents()
 	end
 
 	local function OnDispositionUpdate(eventCode, unitTag)
-		local unitFrame = UnitFrames:GetFrame(unitTag)
-		if unitFrame then
-			unitFrame:UpdateUnitReaction()
+		if unitTag == "group" or unitTag == "playerpet" then
+			local unitFrame = UnitFrames:GetFrame(unitTag)
+			if unitFrame then
+				unitFrame:UpdateUnitReaction()
+			end
 		end
 	end
 
@@ -2347,6 +2371,8 @@ local function RegisterForEvents()
 		ZO_UnitFrames_UpdateWindow("reticleover", UNIT_CHANGED)
 		ZO_UnitFrames_UpdateWindow("reticleovertarget", UNIT_CHANGED)
 
+		UnitFrames:RefreshPetFrames()
+
 		if IsPlayerGrouped() or UnitFrames.groupSize > 0 then
 			ForceChange(UnitFrames.raidFrames)
 			ForceChange(UnitFrames.groupFrames)
@@ -2379,6 +2405,36 @@ local function RegisterForEvents()
 		end
 	end
 
+	local function OnUnitAttributeVisualAdded(eventCode, unitTag, unitAttributeVisual, statType, attributeType, powerType, value, maxValue, sequenceId)
+		local unitFrame = UnitFrames:GetFrame(unitTag)
+		if unitFrame then
+			local shield = unitFrame.shield
+			if shield then
+				shield:UpdateStatusBar(value, maxValue)
+			end
+		end
+	end
+
+	local function OnUnitAttributeVisualUpdated(eventCode, unitTag, unitAttributeVisual, statType, attributeType, powerType, oldValue, newValue, oldMaxValue, newMaxValue, sequenceId)
+		local unitFrame = UnitFrames:GetFrame(unitTag)
+		if unitFrame then
+			local shield = unitFrame.shield
+			if shield then
+				shield:UpdateStatusBar(newValue, newMaxValue)
+			end
+		end
+	end
+
+	local function OnUnitAttributeVisualRemoved(eventCode, unitTag, unitAttributeVisual, statType, attributeType, powerType, value, maxValue, sequenceId)
+		local unitFrame = UnitFrames:GetFrame(unitTag)
+		if unitFrame then
+			local shield = unitFrame.shield
+			if shield then
+				shield:UpdateStatusBar(0, 0)
+			end
+		end
+	end
+
 	-- Register group/raid/target events
 	ZO_UnitFrames:RegisterForEvent(EVENT_TARGET_CHANGED, OnTargetChanged)
 	ZO_UnitFrames:RegisterForEvent(EVENT_UNIT_CHARACTER_NAME_CHANGED, OnUnitCharacterNameChanged)
@@ -2401,6 +2457,9 @@ local function RegisterForEvents()
 	ZO_UnitFrames:RegisterForEvent(EVENT_INTERFACE_SETTING_CHANGED, OnInterfaceSettingChanged)
 	ZO_UnitFrames:RegisterForEvent(EVENT_GUILD_NAME_AVAILABLE, OnGuildNameAvailable)
 	ZO_UnitFrames:RegisterForEvent(EVENT_GUILD_ID_CHANGED, OnGuildIdChanged)
+	ZO_UnitFrames:RegisterForEvent(EVENT_UNIT_ATTRIBUTE_VISUAL_ADDED, OnUnitAttributeVisualAdded)
+	ZO_UnitFrames:RegisterForEvent(EVENT_UNIT_ATTRIBUTE_VISUAL_UPDATED, OnUnitAttributeVisualUpdated)
+	ZO_UnitFrames:RegisterForEvent(EVENT_UNIT_ATTRIBUTE_VISUAL_REMOVED, OnUnitAttributeVisualRemoved)
 	ZO_UnitFrames:AddFilterForEvent(EVENT_TARGET_CHANGED, REGISTER_FILTER_UNIT_TAG, "reticleover")
 	ZO_UnitFrames:AddFilterForEvent(EVENT_UNIT_CHARACTER_NAME_CHANGED, REGISTER_FILTER_UNIT_TAG, "reticleover")
 	ZO_UnitFrames:AddFilterForEvent(EVENT_GUILD_ID_CHANGED, REGISTER_FILTER_UNIT_TAG, "reticleover")
@@ -2425,20 +2484,11 @@ local function RegisterForEvents()
 		end
 	end
 
-	local function OnPetPlayerActivated(eventCode)
-		UnitFrames:RefreshPetFrames()
-	end
-
 	local petEvent = "UnitFramesRebirthPet"
 	EVENT_MANAGER:RegisterForEvent(petEvent, EVENT_UNIT_CREATED, OnPetUnitCreated)
 	EVENT_MANAGER:RegisterForEvent(petEvent, EVENT_UNIT_DESTROYED, OnPetUnitDestroyed)
-	EVENT_MANAGER:RegisterForEvent(petEvent, EVENT_DISPOSITION_UPDATE, OnDispositionUpdate)
-	EVENT_MANAGER:RegisterForEvent(petEvent, EVENT_UNIT_DEATH_STATE_CHANGED, OnUnitDeathStateChanged)
-	EVENT_MANAGER:RegisterForEvent(petEvent, EVENT_PLAYER_ACTIVATED, OnPetPlayerActivated)
 	EVENT_MANAGER:AddFilterForEvent(petEvent, EVENT_UNIT_CREATED, REGISTER_FILTER_UNIT_TAG_PREFIX, "playerpet")
 	EVENT_MANAGER:AddFilterForEvent(petEvent, EVENT_UNIT_DESTROYED, REGISTER_FILTER_UNIT_TAG_PREFIX, "playerpet")
-	EVENT_MANAGER:AddFilterForEvent(petEvent, EVENT_DISPOSITION_UPDATE, REGISTER_FILTER_UNIT_TAG_PREFIX, "playerpet")
-	EVENT_MANAGER:AddFilterForEvent(petEvent, EVENT_UNIT_DEATH_STATE_CHANGED, REGISTER_FILTER_UNIT_TAG_PREFIX, "playerpet")
 
 	CALLBACK_MANAGER:RegisterCallback("TargetOfTargetEnabledChanged", OnTargetOfTargetEnabledChanged)
 end
