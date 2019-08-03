@@ -466,7 +466,7 @@ local UNITFRAME_BAR_STYLES =
 				},
 				shield =
 				{
-					texture = "UnitFramesRebirth_PowerShieldBar",
+					texture = "UnitFramesRebirth_GroupPowerShieldBar",
 				}
 			},
 
@@ -486,7 +486,7 @@ local UNITFRAME_BAR_STYLES =
 				},
 				shield =
 				{
-					texture = "UnitFramesRebirth_PowerShieldBar",
+					texture = "UnitFramesRebirth_GroupPowerShieldBar",
 				}
 			},
 		},
@@ -502,6 +502,10 @@ local UNITFRAME_BAR_STYLES =
 				barHeight = 34,
 				barWidth = 90,
 				barAnchors = { ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 2, 2) },
+				shield =
+				{
+					texture = "UnitFramesRebirth_RaidPowerShieldBar",
+				}
 			},
 
 			gamepad =
@@ -510,6 +514,10 @@ local UNITFRAME_BAR_STYLES =
 				barHeight = ZO_GAMEPAD_RAID_FRAME_HEIGHT - 2,
 				barWidth = ZO_GAMEPAD_RAID_FRAME_WIDTH - 2,
 				barAnchors = { ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 1, 1) },
+				shield =
+				{
+					texture = "UnitFramesRebirth_RaidPowerShieldBar",
+				}
 			},
 		},
 	},
@@ -2409,7 +2417,7 @@ local function RegisterForEvents()
 		if statType == STAT_MITIGATION and attributeType == ATTRIBUTE_HEALTH then
 			local unitFrame = UnitFrames:GetFrame(unitTag)
 			if unitFrame then
-				local shield = unitFrame.shield
+				local shield = unitFrame.healthBar.shield
 				if shield then
 					shield:UpdateStatusBar(value, maxValue)
 				end
@@ -2421,7 +2429,7 @@ local function RegisterForEvents()
 		if statType == STAT_MITIGATION and attributeType == ATTRIBUTE_HEALTH then
 			local unitFrame = UnitFrames:GetFrame(unitTag)
 			if unitFrame then
-				local shield = unitFrame.shield
+				local shield = unitFrame.healthBar.shield
 				if shield then
 					shield:UpdateStatusBar(newValue, newMaxValue)
 				end
@@ -2433,7 +2441,7 @@ local function RegisterForEvents()
 		if statType == STAT_MITIGATION and attributeType == ATTRIBUTE_HEALTH then
 			local unitFrame = UnitFrames:GetFrame(unitTag)
 			if unitFrame then
-				local shield = unitFrame.shield
+				local shield = unitFrame.healthBar.shield
 				if shield then
 					shield:UpdateStatusBar(0, 0)
 				end
