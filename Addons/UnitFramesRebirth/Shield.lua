@@ -5,18 +5,19 @@ local WITHOUT_ON_STOP_CALLBACK = nil
 UnitFramesRebirth_Shield = ZO_Object:Subclass()
 
 function UnitFramesRebirth_Shield:New(...)
-	local warner = ZO_Object.New(self)
-	warner:Initialize(...)
-	return warner
+	local shield = ZO_Object.New(self)
+	shield:Initialize(...)
+	return shield
 end
 
 function UnitFramesRebirth_Shield:Initialize(parent, unitTag)
 	local barControls = parent:GetBarControls()
 	if not barControls or #barControls <= 0 then return end
 
-	self.shield = barControls[1].shield
-	if not self.shield then return end
+	local shield = barControls[1].shield
+	if not shield then return end
 
+	self.shield = shield
 	self.unitTag = unitTag
 	self.parent = parent
 	self.hide = false
