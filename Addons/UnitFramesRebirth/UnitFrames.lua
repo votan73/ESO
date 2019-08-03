@@ -254,7 +254,7 @@ do
 	local function SetShieldToFrames(frames, isActive)
 		local shield
 		for _, unitFrame in pairs(frames) do
-			shield = unitFrame.shield
+			shield = unitFrame.healthBar.shield
 			if shield then
 				if isActive then
 					shield:SetPaused(false)
