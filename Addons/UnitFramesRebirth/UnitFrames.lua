@@ -2407,13 +2407,11 @@ local function RegisterForEvents()
 
 	local function OnUnitAttributeVisualAdded(eventCode, unitTag, unitAttributeVisual, statType, attributeType, powerType, value, maxValue, sequenceId)
 		if statType == STAT_MITIGATION and attributeType == ATTRIBUTE_HEALTH then
-			if ZO_Group_IsGroupUnitTag(unitTag) or IsPetUnitTag(unitTag) then
-				local unitFrame = UnitFrames:GetFrame(unitTag)
-				if unitFrame then
-					local shield = unitFrame.shield
-					if shield then
-						shield:UpdateStatusBar(value, maxValue)
-					end
+			local unitFrame = UnitFrames:GetFrame(unitTag)
+			if unitFrame then
+				local shield = unitFrame.shield
+				if shield then
+					shield:UpdateStatusBar(value, maxValue)
 				end
 			end
 		end
@@ -2421,13 +2419,11 @@ local function RegisterForEvents()
 
 	local function OnUnitAttributeVisualUpdated(eventCode, unitTag, unitAttributeVisual, statType, attributeType, powerType, oldValue, newValue, oldMaxValue, newMaxValue, sequenceId)
 		if statType == STAT_MITIGATION and attributeType == ATTRIBUTE_HEALTH then
-			if ZO_Group_IsGroupUnitTag(unitTag) or IsPetUnitTag(unitTag) then
-				local unitFrame = UnitFrames:GetFrame(unitTag)
-				if unitFrame then
-					local shield = unitFrame.shield
-					if shield then
-						shield:UpdateStatusBar(newValue, newMaxValue)
-					end
+			local unitFrame = UnitFrames:GetFrame(unitTag)
+			if unitFrame then
+				local shield = unitFrame.shield
+				if shield then
+					shield:UpdateStatusBar(newValue, newMaxValue)
 				end
 			end
 		end
@@ -2435,13 +2431,11 @@ local function RegisterForEvents()
 
 	local function OnUnitAttributeVisualRemoved(eventCode, unitTag, unitAttributeVisual, statType, attributeType, powerType, value, maxValue, sequenceId)
 		if statType == STAT_MITIGATION and attributeType == ATTRIBUTE_HEALTH then
-			if ZO_Group_IsGroupUnitTag(unitTag) or IsPetUnitTag(unitTag) then
-				local unitFrame = UnitFrames:GetFrame(unitTag)
-				if unitFrame then
-					local shield = unitFrame.shield
-					if shield then
-						shield:UpdateStatusBar(0, 0)
-					end
+			local unitFrame = UnitFrames:GetFrame(unitTag)
+			if unitFrame then
+				local shield = unitFrame.shield
+				if shield then
+					shield:UpdateStatusBar(0, 0)
 				end
 			end
 		end
