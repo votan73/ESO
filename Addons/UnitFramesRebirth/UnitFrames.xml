@@ -186,6 +186,17 @@
 			<TextureCoords left="0" right="1" top="0" bottom="0.53125"/>
 			<LeadingEdge textureFile="UnitFramesRebirth/texture/attributeBar_dynamic_leadingEdge.dds" width="11" height="17" />
 			<LeadingEdgeTextureCoords left="0" right="0.6875" top="0" bottom="0.53125" />
+			<OnInitialized>
+				self.gloss = self:GetNamedChild("Gloss")
+			</OnInitialized>
+
+			<OnMinMaxValueChanged>
+				self.gloss:SetMinMax(min, max)
+			</OnMinMaxValueChanged>
+
+			<OnValueChanged>
+				self.gloss:SetValue(value)
+			</OnValueChanged>
 		</StatusBar>
 
 		<StatusBar name="UnitFramesRebirth_PlayerAttributeStatusBar_Keyboard_Template" virtual="true" textureFile="EsoUI/Art/UnitAttributeVisualizer/attributeBar_dynamic_fill.dds">
