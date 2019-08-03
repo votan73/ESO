@@ -13,8 +13,13 @@ function UnitFramesRebirth_HealthWarner:Initialize(parent, unitTag)
 	local barControls = parent:GetBarControls()
 	if not barControls or #barControls <= 0 then return end
 
-	self.warning = barControls[1].warnerContainer
-	if not self.warning then return end
+	local warning = barControls[1].warnerContainer
+	if not warning then return end
+
+	self.warning = warning
+	self.unitTag = unitTag
+	self.warnAnimation = ZO_AlphaAnimation:New(self.warning)
+	self.paused = false
 
 	local orgUpdate = parent.Update
 	function parent.Update(...)
@@ -24,15 +29,9 @@ function UnitFramesRebirth_HealthWarner:Initialize(parent, unitTag)
 		end
 		return orgUpdate(...)
 	end
-
-	self.unitTag = unitTag
-
-	self.warnAnimation = ZO_AlphaAnimation:New(self.warning)
-	self.parent = parent
-	self.paused = false
 end
 
-function UnitFramesRebirth_HealthWarner:SetPaused(paused)
+function UnitFramesRebirth_HealthWarner:SetPaused(paused, initial)
 	if self.paused ~= paused then
 		self.paused = paused
 		self.warning:SetAlpha(0)

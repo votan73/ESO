@@ -17,19 +17,17 @@ function UnitFramesRebirth_Shield:Initialize(parent, unitTag)
 	local shield = barControls[1].shield
 	if not shield then return end
 
-	self.shield = shield
+	self.statusBarShield = shield
 	self.unitTag = unitTag
-	self.parent = parent
 	self.hide = false
-
-	self.shield:SetValue(1)
+	self.statusBarShield:SetValue(1)
 end
 
 function UnitFramesRebirth_Shield:SetPaused(hide)
-	if self.hide ~= hide then
+	if self.hide ~= hide or initial then
 		self.hide = hide
 		if hide then
-			self.shield:SetHidden(true)
+			self.statusBarShield:SetHidden(true)
 		else
 			local value, maxValue = GetUnitAttributeVisualizerEffectInfo(self.unitTag, ATTRIBUTE_VISUAL_POWER_SHIELDING, STAT_MITIGATION, ATTRIBUTE_HEALTH, POWERTYPE_HEALTH)
 			self:UpdateStatusBar(value or 0, maxValue or 0)
@@ -41,17 +39,17 @@ function UnitFramesRebirth_Shield:UpdateStatusBar(value, maxValue)
 	if not self.hide then
 		-- arbitrary hardcoded threshold to avoid "too-small" values
 		if zo_clamp(value / maxValue, 0, 1.0) <= .01 then
-			self.shield:SetHidden(true)
+			self.statusBarShield:SetHidden(true)
 			return
 		else
-			self.shield:SetHidden(false)
+			self.statusBarShield:SetHidden(false)
 		end
 
 		local customApproach = UnitFramesRebirth_GetStatusBarCustomApproachAmountMs()
 		if customApproach and customApproach ~= 0 then
-			ZO_StatusBar_SmoothTransition(self.shield, value, maxValue, not FORCE_INIT_SMOOTH_STATUS_BAR, WITHOUT_ON_STOP_CALLBACK, customApproach)
+			ZO_StatusBar_SmoothTransition(self.statusBarShield, value, maxValue, not FORCE_INIT_SMOOTH_STATUS_BAR, WITHOUT_ON_STOP_CALLBACK, customApproach)
 		else
-			ZO_StatusBar_SmoothTransition(self.shield, value, maxValue, FORCE_INIT_SMOOTH_STATUS_BAR)
+			ZO_StatusBar_SmoothTransition(self.statusBarShield, value, maxValue, FORCE_INIT_SMOOTH_STATUS_BAR)
 		end
 	end
 end
