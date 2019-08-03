@@ -19,14 +19,14 @@ function UnitFramesRebirth_Shield:Initialize(parent, unitTag)
 
 	self.statusBarShield = shield
 	self.unitTag = unitTag
-	self.hide = false
+	self.paused = false
 	self.statusBarShield:SetValue(1)
 end
 
-function UnitFramesRebirth_Shield:SetPaused(hide)
-	if self.hide ~= hide or initial then
-		self.hide = hide
-		if hide then
+function UnitFramesRebirth_Shield:SetPaused(paused)
+	if self.paused ~= paused then
+		self.paused = paused
+		if paused then
 			self.statusBarShield:SetHidden(true)
 		else
 			local value, maxValue = GetUnitAttributeVisualizerEffectInfo(self.unitTag, ATTRIBUTE_VISUAL_POWER_SHIELDING, STAT_MITIGATION, ATTRIBUTE_HEALTH, POWERTYPE_HEALTH)
@@ -36,7 +36,7 @@ function UnitFramesRebirth_Shield:SetPaused(hide)
 end
 
 function UnitFramesRebirth_Shield:UpdateStatusBar(value, maxValue)
-	if not self.hide then
+	if not self.paused then
 		-- arbitrary hardcoded threshold to avoid "too-small" values
 		if zo_clamp(value / maxValue, 0, 1.0) <= .01 then
 			self.statusBarShield:SetHidden(true)
