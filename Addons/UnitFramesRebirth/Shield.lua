@@ -1,5 +1,7 @@
 SHIELD_COLOR_GRADIENT = { ZO_ColorDef:New(.5, .5, 1, .3), ZO_ColorDef:New(.25, .25, .5, .5) }
 
+local WITHOUT_ON_STOP_CALLBACK = nil
+
 UnitFramesRebirth_Shield = ZO_Object:Subclass()
 
 function UnitFramesRebirth_Shield:New(...)
@@ -8,7 +10,7 @@ function UnitFramesRebirth_Shield:New(...)
 	return warner
 end
 
-function UnitFramesRebirth_Shield:Initialize(parent, unitTag, hide)
+function UnitFramesRebirth_Shield:Initialize(parent, unitTag)
 	local barControls = parent:GetBarControls()
 	if not barControls or #barControls <= 0 then return end
 
@@ -17,7 +19,7 @@ function UnitFramesRebirth_Shield:Initialize(parent, unitTag, hide)
 
 	self.unitTag = unitTag
 	self.parent = parent
-	self.hide = hide or false
+	self.hide = false
 
 	self.shield:SetValue(1)
 end
@@ -46,7 +48,7 @@ function UnitFramesRebirth_Shield:UpdateStatusBar(value, maxValue)
 
 		local customApproach = UnitFramesRebirth_GetStatusBarCustomApproachAmountMs()
 		if customApproach and customApproach ~= 0 then
-			ZO_StatusBar_SmoothTransition(self.shield, value, maxValue, false, nil, customApproach)
+			ZO_StatusBar_SmoothTransition(self.shield, value, maxValue, not FORCE_INIT_SMOOTH_STATUS_BAR, WITHOUT_ON_STOP_CALLBACK, customApproach)
 		else
 			ZO_StatusBar_SmoothTransition(self.shield, value, maxValue, FORCE_INIT_SMOOTH_STATUS_BAR)
 		end
