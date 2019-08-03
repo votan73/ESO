@@ -1,4 +1,4 @@
-SHIELD_COLOR_GRADIENT = { ZO_ColorDef:New(.5, .5, 1, .3), ZO_ColorDef:New(.25, .25, .5, .5) }
+SHIELD_COLOR_GRADIENT = { ZO_ColorDef:New(.5, .5, 1, .5), ZO_ColorDef:New(.25, .25, .5, .65) }
 
 local WITHOUT_ON_STOP_CALLBACK = nil
 
