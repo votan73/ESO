@@ -20,7 +20,6 @@ function UnitFramesRebirth_Shield:Initialize(parent, unitTag, hide)
 	self.hide = hide or false
 
 	self.shield:SetValue(1)
-	self.shield:SetMinMax(0, 1)
 end
 
 function UnitFramesRebirth_Shield:SetPaused(hide)

@@ -12,7 +12,6 @@ lang/strings.lua
 lang/$(language).lua
 
 PetUtilities.lua
-;PowerShield.lua
 Shield.lua
 HealthWarner.lua
 UnitFrames.xml
