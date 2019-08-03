@@ -18,9 +18,11 @@ function UnitFramesRebirth_Shield:Initialize(parent, unitTag)
 	if not shield then return end
 
 	self.statusBarShield = shield
+	self.parentBarControl = barControls[1]
 	self.unitTag = unitTag
-	self.paused = false
-	self.statusBarShield:SetValue(1)
+	self.paused = true
+
+	self.parentBarControl:SetHandler("OnMinMaxValueChanged", function() self:OnMinMaxValueChangedUpdate() end)
 end
 
 function UnitFramesRebirth_Shield:SetPaused(paused)
@@ -29,10 +31,14 @@ function UnitFramesRebirth_Shield:SetPaused(paused)
 		if paused then
 			self.statusBarShield:SetHidden(true)
 		else
-			local value, maxValue = GetUnitAttributeVisualizerEffectInfo(self.unitTag, ATTRIBUTE_VISUAL_POWER_SHIELDING, STAT_MITIGATION, ATTRIBUTE_HEALTH, POWERTYPE_HEALTH)
-			self:UpdateStatusBar(value or 0, maxValue or 0)
+			self:OnMinMaxValueChangedUpdate()
 		end
 	end
+end
+
+function UnitFramesRebirth_Shield:OnMinMaxValueChangedUpdate()
+	local value, maxValue = GetUnitAttributeVisualizerEffectInfo(self.unitTag, ATTRIBUTE_VISUAL_POWER_SHIELDING, STAT_MITIGATION, ATTRIBUTE_HEALTH, POWERTYPE_HEALTH)
+	self:UpdateStatusBar(value or 0, maxValue or 0)
 end
 
 function UnitFramesRebirth_Shield:UpdateStatusBar(value, maxValue)
@@ -45,11 +51,12 @@ function UnitFramesRebirth_Shield:UpdateStatusBar(value, maxValue)
 			self.statusBarShield:SetHidden(false)
 		end
 
+		local healthBarMax = select(2, self.parentBarControl:GetMinMax())
 		local customApproach = UnitFramesRebirth_GetStatusBarCustomApproachAmountMs()
 		if customApproach and customApproach ~= 0 then
-			ZO_StatusBar_SmoothTransition(self.statusBarShield, value, maxValue, not FORCE_INIT_SMOOTH_STATUS_BAR, WITHOUT_ON_STOP_CALLBACK, customApproach)
+			ZO_StatusBar_SmoothTransition(self.statusBarShield, value, healthBarMax, not FORCE_INIT_SMOOTH_STATUS_BAR, WITHOUT_ON_STOP_CALLBACK, customApproach)
 		else
-			ZO_StatusBar_SmoothTransition(self.statusBarShield, value, maxValue, FORCE_INIT_SMOOTH_STATUS_BAR)
+			ZO_StatusBar_SmoothTransition(self.statusBarShield, value, healthBarMax, FORCE_INIT_SMOOTH_STATUS_BAR)
 		end
 	end
 end

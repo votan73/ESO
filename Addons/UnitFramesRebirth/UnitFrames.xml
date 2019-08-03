@@ -147,9 +147,14 @@
 		</StatusBar>
 
 		<!-- SHIELD POWER -->
-		<StatusBar name="UnitFramesRebirth_GroupPowerShieldBar" inherits="ZO_PowerShieldBar" virtual="true" />
-		<StatusBar name="UnitFramesRebirth_GroupPowerShieldBar_Keyboard_Template" inherits="ZO_PowerShieldBar ZO_PlayerAttributeStatusBar_Keyboard_Template" virtual="true" />
-		<StatusBar name="UnitFramesRebirth_GroupPowerShieldBar_Gamepad_Template" inherits="ZO_PowerShieldBar ZO_PlayerAttributeStatusBar_Gamepad_Template" virtual="true" />
+		<!-- <StatusBar name="UnitFramesRebirth_GroupPowerShieldBar" inherits="ZO_PowerShieldBar" virtual="true" /> -->
+		<!-- <StatusBar name="UnitFramesRebirth_GroupPowerShieldBar_Keyboard_Template" inherits="ZO_PowerShieldBar ZO_PlayerAttributeStatusBar_Keyboard_Template" virtual="true" /> -->
+		<!-- <StatusBar name="UnitFramesRebirth_GroupPowerShieldBar_Gamepad_Template" inherits="ZO_PowerShieldBar ZO_PlayerAttributeStatusBar_Gamepad_Template" virtual="true" /> -->
+
+		<StatusBar name="UnitFramesRebirth_GroupPowerShieldBar" inherits="ZO_PlayerAttributeStatusBar" virtual="true" />
+		<StatusBar name="UnitFramesRebirth_GroupPowerShieldBar_Keyboard_Template" inherits="ZO_PlayerAttributeStatusBar_Keyboard_Template" virtual="true" />
+		<StatusBar name="UnitFramesRebirth_GroupPowerShieldBar_Gamepad_Template" inherits="ZO_PlayerAttributeStatusBar_Gamepad_Template" virtual="true" />
+
 
 		<StatusBar name="UnitFramesRebirth_RaidPowerShieldBar" virtual="true" />
 		<StatusBar name="UnitFramesRebirth_RaidPowerShieldBar_Keyboard_Template" inherits="ZO_DefaultStatusBarBase" virtual="true">

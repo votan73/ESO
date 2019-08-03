@@ -2417,7 +2417,7 @@ local function RegisterForEvents()
 		if statType == STAT_MITIGATION and attributeType == ATTRIBUTE_HEALTH then
 			local unitFrame = UnitFrames:GetFrame(unitTag)
 			if unitFrame then
-				local shield = unitFrame.healthBar.shield
+				local shield = unitFrame.shield
 				if shield then
 					shield:UpdateStatusBar(value, maxValue)
 				end
@@ -2429,7 +2429,7 @@ local function RegisterForEvents()
 		if statType == STAT_MITIGATION and attributeType == ATTRIBUTE_HEALTH then
 			local unitFrame = UnitFrames:GetFrame(unitTag)
 			if unitFrame then
-				local shield = unitFrame.healthBar.shield
+				local shield = unitFrame.shield
 				if shield then
 					shield:UpdateStatusBar(newValue, newMaxValue)
 				end
@@ -2441,7 +2441,7 @@ local function RegisterForEvents()
 		if statType == STAT_MITIGATION and attributeType == ATTRIBUTE_HEALTH then
 			local unitFrame = UnitFrames:GetFrame(unitTag)
 			if unitFrame then
-				local shield = unitFrame.healthBar.shield
+				local shield = unitFrame.shield
 				if shield then
 					shield:UpdateStatusBar(0, 0)
 				end
