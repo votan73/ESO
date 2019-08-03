@@ -498,7 +498,7 @@ local UNITFRAME_BAR_STYLES =
 		{
 			keyboard =
 			{
-				template = "ZO_UnitFrameStatus",
+				template = "UnitFramesRebirth_RaidUnitFrameStatus",
 				barHeight = 34,
 				barWidth = 90,
 				barAnchors = { ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 2, 2) },
@@ -510,7 +510,7 @@ local UNITFRAME_BAR_STYLES =
 
 			gamepad =
 			{
-				template = "ZO_UnitFrameStatus",
+				template = "UnitFramesRebirth_RaidUnitFrameStatus",
 				barHeight = ZO_GAMEPAD_RAID_FRAME_HEIGHT - 2,
 				barWidth = ZO_GAMEPAD_RAID_FRAME_WIDTH - 2,
 				barAnchors = { ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 1, 1) },
@@ -539,6 +539,10 @@ local UNITFRAME_BAR_STYLES =
 					Right = "UnitFramesRebirth_PlayerAttributeWarnerRightArrow",
 					Center = "UnitFramesRebirth_PlayerAttributeWarnerCenter",
 				},
+				shield =
+				{
+					texture = "UnitFramesRebirth_GroupPowerShieldBar",
+				}
 			},
 
 			gamepad =
@@ -555,6 +559,10 @@ local UNITFRAME_BAR_STYLES =
 					Right = "UnitFramesRebirth_PlayerAttributeWarnerRight",
 					Center = "UnitFramesRebirth_PlayerAttributeWarnerCenter",
 				},
+				shield =
+				{
+					texture = "UnitFramesRebirth_GroupPowerShieldBar",
+				}
 			},
 		},
 	},

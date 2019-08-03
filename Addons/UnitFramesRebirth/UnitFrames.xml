@@ -116,9 +116,9 @@
 
 				<Control name="$(parent)Warner" inherits="UnitFramesRebirth_PlayerAttributeWarner">
 					<Controls>
-					<Texture name="$(parent)Left" inherits="UnitFramesRebirth_PlayerAttributeWarnerLeft" />
-					<Texture name="$(parent)Right" inherits="UnitFramesRebirth_PlayerAttributeWarnerRight" />
-					<Texture name="$(parent)Center" inherits="UnitFramesRebirth_PlayerAttributeWarnerCenter" />
+						<Texture name="$(parent)Left" inherits="UnitFramesRebirth_PlayerAttributeWarnerLeft" />
+						<Texture name="$(parent)Right" inherits="UnitFramesRebirth_PlayerAttributeWarnerRight" />
+						<Texture name="$(parent)Center" inherits="UnitFramesRebirth_PlayerAttributeWarnerCenter" />
 					</Controls>
 				</Control>
 			</Controls>
@@ -138,29 +138,77 @@
 		<StatusBar name="UnitFramesRebirth_GroupUnitFrameStatus_Gamepad_Template" inherits="ZO_DefaultStatusBar" virtual="true">
 			<Controls>
 				<StatusBar name="$(parent)Shield">
-					<Anchor point="TOPLEFT" offsetX="0" offsetY="0" />
-					<Anchor point="BOTTOMRIGHT" offsetX="0" offsetY="0" />
+					<Dimensions y="14" />
+					<Anchor point="LEFT" offsetX="0" offsetY="2" />
+					<Anchor point="RIGHT" offsetX="0" offsetY="2" />
 				</StatusBar>
 				<Control name="$(parent)BG" hidden="true" />
 				<Control name="$(parent)Overlay" hidden="true" />
 			</Controls>
 		</StatusBar>
 
-		<!-- SHIELD POWER -->
-		<!-- <StatusBar name="UnitFramesRebirth_GroupPowerShieldBar" inherits="ZO_PowerShieldBar" virtual="true" /> -->
-		<!-- <StatusBar name="UnitFramesRebirth_GroupPowerShieldBar_Keyboard_Template" inherits="ZO_PowerShieldBar ZO_PlayerAttributeStatusBar_Keyboard_Template" virtual="true" /> -->
-		<!-- <StatusBar name="UnitFramesRebirth_GroupPowerShieldBar_Gamepad_Template" inherits="ZO_PowerShieldBar ZO_PlayerAttributeStatusBar_Gamepad_Template" virtual="true" /> -->
-
-		<StatusBar name="UnitFramesRebirth_GroupPowerShieldBar" inherits="ZO_PlayerAttributeStatusBar" virtual="true" />
-		<StatusBar name="UnitFramesRebirth_GroupPowerShieldBar_Keyboard_Template" inherits="ZO_PlayerAttributeStatusBar_Keyboard_Template" virtual="true" />
-		<StatusBar name="UnitFramesRebirth_GroupPowerShieldBar_Gamepad_Template" inherits="ZO_PlayerAttributeStatusBar_Gamepad_Template" virtual="true" />
-
-
-		<StatusBar name="UnitFramesRebirth_RaidPowerShieldBar" virtual="true" />
-		<StatusBar name="UnitFramesRebirth_RaidPowerShieldBar_Keyboard_Template" inherits="ZO_DefaultStatusBarBase" virtual="true">
-			<Dimensions y="32" />
+		<StatusBar name="UnitFramesRebirth_RaidUnitFrameStatus" virtual="true">
+			<OnInitialized>
+				self.shield = self:GetNamedChild("Shield")
+				ZO_StatusBar_SetGradientColor(self.shield, SHIELD_COLOR_GRADIENT)
+			</OnInitialized>
+			<Controls>
+				<StatusBar name="$(parent)Shield">
+					<Anchor point="TOPLEFT" offsetX="0" offsetY="0" />
+					<Anchor point="BOTTOMRIGHT" offsetX="0" offsetY="0" />
+				</StatusBar>
+			</Controls>
 		</StatusBar>
-		<StatusBar name="UnitFramesRebirth_RaidPowerShieldBar_Gamepad_Template" virtual="true"/>
+
+		<StatusBar name="UnitFramesRebirth_RaidUnitFrameStatus_Keyboard_Template" inherits="ZO_DefaultStatusBarBase" virtual="true">
+			<Controls>
+				<StatusBar name="$(parent)Shield">
+					<Anchor point="TOPLEFT" offsetX="0" offsetY="0" />
+					<Anchor point="BOTTOMRIGHT" offsetX="0" offsetY="0" />
+				</StatusBar>
+			</Controls>
+		</StatusBar>
+
+		<StatusBar name="UnitFramesRebirth_RaidUnitFrameStatus_Gamepad_Template" virtual="true">
+			<Controls>
+				<StatusBar name="$(parent)Shield">
+					<Anchor point="TOPLEFT" offsetX="0" offsetY="0" />
+					<Anchor point="BOTTOMRIGHT" offsetX="0" offsetY="0" />
+				</StatusBar>
+			</Controls>
+		</StatusBar>
+
+		<!-- SHIELD POWER -->
+		<StatusBar name="UnitFramesRebirth_PlayerAttributeStatusBar" level="500" virtual="true" textureFile="EsoUI/Art/UnitAttributeVisualizer/attributeBar_dynamic_fill.dds">
+			<Dimensions y="14" />
+			<Anchor point="LEFT" />
+			<Anchor point="RIGHT" />
+			<TextureCoords left="0" right="1" top="0" bottom="0.53125"/>
+			<LeadingEdge textureFile="UnitFramesRebirth/texture/attributeBar_dynamic_leadingEdge.dds" width="11" height="17" />
+			<LeadingEdgeTextureCoords left="0" right="0.6875" top="0" bottom="0.53125" />
+		</StatusBar>
+
+		<StatusBar name="UnitFramesRebirth_PlayerAttributeStatusBar_Keyboard_Template" virtual="true" textureFile="EsoUI/Art/UnitAttributeVisualizer/attributeBar_dynamic_fill.dds">
+			<Dimensions y="14" />
+			<TextureCoords left="0" right="1" top="0" bottom="0.53125"/>
+			<LeadingEdge textureFile="UnitFramesRebirth/texture/attributeBar_dynamic_leadingEdge.dds" width="11" height="17" />
+			<LeadingEdgeTextureCoords left="0" right="0.6875" top="0" bottom="0.53125" />
+		</StatusBar>
+
+		<StatusBar name="UnitFramesRebirth_PlayerAttributeStatusBar_Gamepad_Template" virtual="true" textureFile="EsoUI/Art/UnitAttributeVisualizer/Gamepad/gp_attributeBar_dynamic_fill.dds">
+			<Dimensions y="14" />
+			<TextureCoords left="0.34375" right="0.46875"  top="0" bottom="1"/>
+			<LeadingEdge textureFile="UnitFramesRebirth/texture/gp_attributeBar_dynamic_leadingEdge.dds" width="10" height="64" />
+			<LeadingEdgeTextureCoords left="0" right="0.625"  top="0" bottom="1" />
+		</StatusBar>
+
+		<StatusBar name="UnitFramesRebirth_GroupPowerShieldBar" inherits="UnitFramesRebirth_PlayerAttributeStatusBar" virtual="true" />
+		<StatusBar name="UnitFramesRebirth_GroupPowerShieldBar_Keyboard_Template" inherits="UnitFramesRebirth_PlayerAttributeStatusBar_Keyboard_Template" virtual="true" />
+		<StatusBar name="UnitFramesRebirth_GroupPowerShieldBar_Gamepad_Template" inherits="UnitFramesRebirth_PlayerAttributeStatusBar_Gamepad_Template" virtual="true" />
+
+		<StatusBar name="UnitFramesRebirth_RaidPowerShieldBar" inherits="ZO_UnitFrameStatus" virtual="true" />
+		<StatusBar name="UnitFramesRebirth_RaidPowerShieldBar_Keyboard_Template" virtual="true" />
+		<StatusBar name="UnitFramesRebirth_RaidPowerShieldBar_Gamepad_Template" virtual="true" />
 
 		<!-- PET UNITS -->
 		<Control name="UnitFramesRebirth_PetGroupUnitFrame_Keyboard_Template" virtual="true">
