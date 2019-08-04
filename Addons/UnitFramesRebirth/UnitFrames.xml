@@ -104,8 +104,6 @@
 
 			<Controls>
 				<StatusBar name="$(parent)Shield" hidden="true">
-					<Anchor point="TOPLEFT" offsetX="0" offsetY="0" />
-					<Anchor point="BOTTOMRIGHT" offsetX="0" offsetY="0" />
 					<Controls>
 						<Control name="$(parent)BG" hidden="true" />
 						<Control name="$(parent)Overlay" hidden="true" />
@@ -126,10 +124,7 @@
 
 		<StatusBar name="UnitFramesRebirth_GroupUnitFrameStatus_Keyboard_Template" inherits="ZO_ArrowStatusBarWithBG" virtual="true">
 			<Controls>
-				<StatusBar name="$(parent)Shield">
-					<Anchor point="TOPLEFT" offsetX="0" offsetY="2" />
-					<Anchor point="BOTTOMRIGHT" offsetX="0" offsetY="-3" />
-				</StatusBar>
+				<StatusBar name="$(parent)Shield" />
 				<Control name="$(parent)BG" hidden="false" />
 				<Control name="$(parent)Overlay" hidden="false" />
 			</Controls>
@@ -137,10 +132,7 @@
 
 		<StatusBar name="UnitFramesRebirth_GroupUnitFrameStatus_Gamepad_Template" inherits="ZO_DefaultStatusBar" virtual="true">
 			<Controls>
-				<StatusBar name="$(parent)Shield">
-					<Anchor point="TOPLEFT" offsetX="0" offsetY="-10" />
-					<Anchor point="BOTTOMRIGHT" offsetX="1" offsetY="9" />
-				</StatusBar>
+				<StatusBar name="$(parent)Shield" />
 				<Control name="$(parent)BG" hidden="true" />
 				<Control name="$(parent)Overlay" hidden="true" />
 			</Controls>
@@ -178,13 +170,17 @@
 		</StatusBar>
 
 		<!-- SHIELD POWER -->
-		<StatusBar name="UnitFramesRebirth_PlayerAttributeStatusBar" level="500" virtual="true" textureFile="EsoUI/Art/UnitAttributeVisualizer/attributeBar_dynamic_fill.dds">
+		<StatusBar name="UnitFramesRebirth_GroupPowerShieldBar" level="500" virtual="true" textureFile="EsoUI/Art/UnitAttributeVisualizer/attributeBar_dynamic_fill.dds">
 			<Dimensions y="14" />
 			<Anchor point="LEFT" />
 			<Anchor point="RIGHT" />
 			<TextureCoords left="0" right="1" top="0" bottom="0.53125"/>
-			<LeadingEdge textureFile="UnitFramesRebirth/texture/attributeBar_dynamic_leadingEdge.dds" width="11" height="17" />
+			<LeadingEdge textureFile="EsoUI/Art/UnitAttributeVisualizer/attributeBar_dynamic_leadingEdge.dds" width="11" height="17" />
 			<LeadingEdgeTextureCoords left="0" right="0.6875" top="0" bottom="0.53125" />
+			<Controls>
+				<StatusBar name="$(parent)Gloss" inherits="ZO_PlayerAttributeStatusBarGloss" />
+			</Controls>
+
 			<OnInitialized>
 				self.gloss = self:GetNamedChild("Gloss")
 			</OnInitialized>
@@ -198,23 +194,27 @@
 			</OnValueChanged>
 		</StatusBar>
 
-		<StatusBar name="UnitFramesRebirth_PlayerAttributeStatusBar_Keyboard_Template" virtual="true" textureFile="EsoUI/Art/UnitAttributeVisualizer/attributeBar_dynamic_fill.dds">
-			<Dimensions y="14" />
+		<StatusBar name="UnitFramesRebirth_GroupPowerShieldBar_Keyboard_Template" virtual="true" textureFile="EsoUI/Art/UnitAttributeVisualizer/attributeBar_dynamic_fill.dds">
+			<Anchor point="TOPLEFT" offsetX="0" offsetY="2" />
+			<Anchor point="BOTTOMRIGHT" offsetX="0" offsetY="-2" />
 			<TextureCoords left="0" right="1" top="0" bottom="0.53125"/>
-			<LeadingEdge textureFile="UnitFramesRebirth/texture/attributeBar_dynamic_leadingEdge.dds" width="11" height="17" />
+			<LeadingEdge textureFile="EsoUI/Art/UnitAttributeVisualizer/attributeBar_dynamic_leadingEdge.dds" width="11" height="17" />
 			<LeadingEdgeTextureCoords left="0" right="0.6875" top="0" bottom="0.53125" />
+			<Controls>
+				<StatusBar name="$(parent)Gloss" inherits="ZO_PlayerAttributeStatusBarGloss_Keyboard_Template" />
+			</Controls>
 		</StatusBar>
 
-		<StatusBar name="UnitFramesRebirth_PlayerAttributeStatusBar_Gamepad_Template" virtual="true" textureFile="EsoUI/Art/UnitAttributeVisualizer/Gamepad/gp_attributeBar_dynamic_fill.dds">
-			<Dimensions y="14" />
+		<StatusBar name="UnitFramesRebirth_GroupPowerShieldBar_Gamepad_Template" virtual="true" textureFile="EsoUI/Art/UnitAttributeVisualizer/Gamepad/gp_attributeBar_dynamic_fill.dds">
+			<Anchor point="TOPLEFT" offsetX="0" offsetY="-10" />
+			<Anchor point="BOTTOMRIGHT" offsetX="0" offsetY="9" />
 			<TextureCoords left="0.34375" right="0.46875"  top="0" bottom="1"/>
-			<LeadingEdge textureFile="UnitFramesRebirth/texture/gp_attributeBar_dynamic_leadingEdge.dds" width="10" height="64" />
-			<LeadingEdgeTextureCoords left="0" right="0.625"  top="0" bottom="1" />
+			<LeadingEdge textureFile="EsoUI/Art/UnitAttributeVisualizer/Gamepad/gp_attributeBar_dynamic_fill.dds" width="4" height="64" />
+			<LeadingEdgeTextureCoords left="0" right="1" top="0" bottom="1" />
+			<Controls>
+				<StatusBar name="$(parent)Gloss" inherits="ZO_PlayerAttributeStatusBarGloss_Gamepad_Template" />
+			</Controls>
 		</StatusBar>
-
-		<StatusBar name="UnitFramesRebirth_GroupPowerShieldBar" inherits="UnitFramesRebirth_PlayerAttributeStatusBar" virtual="true" />
-		<StatusBar name="UnitFramesRebirth_GroupPowerShieldBar_Keyboard_Template" inherits="UnitFramesRebirth_PlayerAttributeStatusBar_Keyboard_Template" virtual="true" />
-		<StatusBar name="UnitFramesRebirth_GroupPowerShieldBar_Gamepad_Template" inherits="UnitFramesRebirth_PlayerAttributeStatusBar_Gamepad_Template" virtual="true" />
 
 		<StatusBar name="UnitFramesRebirth_RaidPowerShieldBar" inherits="ZO_UnitFrameStatus" virtual="true" />
 		<StatusBar name="UnitFramesRebirth_RaidPowerShieldBar_Keyboard_Template" virtual="true" />
