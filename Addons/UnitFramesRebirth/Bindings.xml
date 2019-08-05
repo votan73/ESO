@@ -5,13 +5,13 @@
 				<Down>DismissAllPlayerPets()</Down>
 			</Action>
 			<Action name="UNIT_FRAMES_REBIRTH_FAMILIAR">
-				<Down>DismissPlayerPet(1)</Down>
+				<Down>DismissPlayerPet(UNIT_FRAMES_REBIRTH_PET_FAMILIAR)</Down>
 			</Action>
 			<Action name="UNIT_FRAMES_REBIRTH_TWILIGHT">
-				<Down>DismissPlayerPet(2)</Down>
+				<Down>DismissPlayerPet(UNIT_FRAMES_REBIRTH_PET_TWILIGHT)</Down>
 			</Action>
 			<Action name="UNIT_FRAMES_REBIRTH_GUARDIAN">
-				<Down>DismissPlayerPet(3)</Down>
+				<Down>DismissPlayerPet(UNIT_FRAMES_REBIRTH_PET_GUARDIAN)</Down>
 			</Action>
 		</Category>
 	</Layer>
