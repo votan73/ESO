@@ -15,8 +15,8 @@ Controls.xml
 ControlsSelector.xml
 
 Main.lua
-Sets100026.lua
 Sets100027.lua
+Sets100028.lua
 ProcessSets.lua
 InventoryScan.lua
 ItemLinks.lua
