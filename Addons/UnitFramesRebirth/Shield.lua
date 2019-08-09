@@ -18,6 +18,7 @@ function UnitFramesRebirth_Shield:Initialize(parent, unitTag)
 	if not shield then return end
 
 	self.statusBarShield = shield
+
 	self.parentBarControl = barControls[1]
 	self.unitTag = unitTag
 	self.paused = true
@@ -41,17 +42,18 @@ function UnitFramesRebirth_Shield:OnMinMaxValueChangedUpdate()
 	self:UpdateStatusBar(value or 0, maxValue or 0)
 end
 
-function UnitFramesRebirth_Shield:UpdateStatusBar(value, maxValue)
+function UnitFramesRebirth_Shield:UpdateStatusBar(value)
 	if not self.paused then
+		local healthBarMax = select(2, self.parentBarControl:GetMinMax())
+
 		-- arbitrary hardcoded threshold to avoid "too-small" values
-		if zo_clamp(value / maxValue, 0, 1.0) <= .01 then
+		if zo_clamp(value / healthBarMax, 0, 1.0) <= .01 then
 			self.statusBarShield:SetHidden(true)
 			return
 		else
 			self.statusBarShield:SetHidden(false)
 		end
 
-		local healthBarMax = select(2, self.parentBarControl:GetMinMax())
 		local customApproach = UnitFramesRebirth_GetStatusBarCustomApproachAmountMs()
 		if customApproach and customApproach ~= 0 then
 			ZO_StatusBar_SmoothTransition(self.statusBarShield, value, healthBarMax, not FORCE_INIT_SMOOTH_STATUS_BAR, WITHOUT_ON_STOP_CALLBACK, customApproach)

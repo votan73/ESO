@@ -2427,7 +2427,7 @@ local function RegisterForEvents()
 			if unitFrame then
 				local shield = unitFrame.shield
 				if shield then
-					shield:UpdateStatusBar(value, maxValue)
+					shield:UpdateStatusBar(value)
 				end
 			end
 		end
@@ -2439,7 +2439,7 @@ local function RegisterForEvents()
 			if unitFrame then
 				local shield = unitFrame.shield
 				if shield then
-					shield:UpdateStatusBar(newValue, newMaxValue)
+					shield:UpdateStatusBar(newValue)
 				end
 			end
 		end
@@ -2451,7 +2451,7 @@ local function RegisterForEvents()
 			if unitFrame then
 				local shield = unitFrame.shield
 				if shield then
-					shield:UpdateStatusBar(0, 0)
+					shield:UpdateStatusBar(0)
 				end
 			end
 		end
