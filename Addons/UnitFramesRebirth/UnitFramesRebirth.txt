@@ -1,8 +1,8 @@
 ## Title: Unit Frames Rebirth
 ## Author: Scootworks & votan
 ## APIVersion: 100028 100029
-## Version: 1.2.2
-## AddOnVersion: 10202
+## Version: 1.2.3
+## AddOnVersion: 10203
 ## DependsOn: LibAsync LibHarvensAddonSettings
 ## SavedVariables: UnitFramesRebirth_Data
 
