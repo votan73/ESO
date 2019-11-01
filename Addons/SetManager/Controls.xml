@@ -6,7 +6,7 @@
       </OnInitialized>
       <Controls>
         <EditBox name="$(parent)Name" inherits="ZO_DefaultEditForDarkBackdrop" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_NORMAL" maxInputCharacters="64">
-          <Dimensions x="160" y="24"/>
+          <Dimensions x="160" y="56"/>
           <Anchor point="TOPLEFT"  relativeTo="$(parent)EquipmentSlotsBackupMain" relativePoint="BOTTOMLEFT" offsetY="4"/>
           <Controls>
             <Label name="$(parent)Instructions" font="ZoFontWinH3" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_DISABLED" text="SI_GAMEPAD_MAIL_SEND_ENTER_NAME">

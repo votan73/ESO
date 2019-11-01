@@ -202,7 +202,7 @@ function addon:ScanSets(maxItemId)
 						isJevelry = isJevelry or isJevelryList[equipType] == true
 					end
 					local isMonster = setInfo.maxWearable <= 2 and isArmor
-					sets[firstItem] = { items = items, isCraftable = #items >= 315 and not isMonster, isMonster = isMonster, isJevelry = isJevelry and not isArmor, bonus = setInfo.bonus }
+					sets[firstItem] = { items = items, isCraftable = #items >= 333 and not isMonster, isMonster = isMonster, isJevelry = isJevelry and not isArmor, bonus = setInfo.bonus }
 				end
 				em:UnregisterForUpdate(identifier)
 				d(zo_strformat("done: <<1>>ms: <<2>> sets. highest id: <<3>>", GetGameTimeMilliseconds() - debugstart, NonContiguousCount(sets), maxId))
