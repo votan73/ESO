@@ -5,11 +5,11 @@ local HIDE_BAR_TEXT = 0
 local SHOW_BAR_TEXT_MOUSE_OVER = 1
 local SHOW_BAR_TEXT = 2
 
-local UNIT_CHANGED, FORCE_INIT, UPDATE_BAR_TYPE, UPDATE_VALUE, FORCE_SHOW, IS_ONLINE, IS_IN_RANGE = true, true, true, true, true, true, true
+local UNIT_CHANGED, FORCE_INIT, UPDATE_BAR_TYPE, UPDATE_VALUE, FORCE_SHOW, IS_ONLINE, IS_IN_RANGE, USE_INTERNAL_FORMAT = true, true, true, true, true, true, true, true
 local ANIMATED, DONT_COLOR_RANK_ICON, PREVENT_SHOW, IS_NOT_LEADER = false, false, false, false
 local NO_SOUND = nil
 
-local GROUP_UNIT_FRAME = "ZO_GroupUnitFrame"
+local GROUP_UNIT_FRAME = "UnitFramesRebirth_GroupUnitFrame"
 local RAID_UNIT_FRAME = "ZO_RaidUnitFrame"
 local TARGET_UNIT_FRAME = "ZO_TargetUnitFrame"
 local PET_UNIT_FRAME = "UnitFramesRebirth_PetGroupUnitFrame"
@@ -142,7 +142,7 @@ local function GetPetGroupFrameAnchor(groupIndex, petGroupSize)
 	-- petGroupSize currently not in use
 	local constants = GetPlatformConstants()
 
-	local row = zo_mod(groupIndex - 1, constants.PET_GROUP_FRAMES_PER_COLUMN)
+	local row = groupIndex - 1
 	groupFrameAnchor:SetTarget(PetGroupAnchorFrame)
 	groupFrameAnchor:SetOffsets(0, row * constants.GROUP_FRAME_OFFSET_Y)
 	return groupFrameAnchor
@@ -207,7 +207,7 @@ function UnitFramesManager:Initialize()
 	self.GroupFrameAnchor = "ZO_GroupFrameAnchor"
 	self.RaidFrameAnchor = "ZO_RaidFrameAnchor"
 	self.PetFrameAnchor = "ZO_GroupFrameAnchor"
-	self.GroupUnitFrame = "ZO_GroupUnitFrame"
+	self.GroupUnitFrame = "UnitFramesRebirth_GroupUnitFrame"
 	self.RaidUnitFrame = "ZO_RaidUnitFrame"
 	self.PetUnitFrame = "UnitFramesRebirth_PetGroupUnitFrame"
 end
@@ -456,7 +456,7 @@ local UNITFRAME_BAR_STYLES =
 				template = "UnitFramesRebirth_GroupUnitFrameStatus",
 				barHeight = 14,
 				barWidth = 180,
-				barAnchors = { ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 36, 42) },
+				barAnchors = { ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 41, 42) },
 				warner =
 				{
 					texture = "ZO_PlayerAttributeHealthWarnerTexture",
@@ -531,7 +531,7 @@ local UNITFRAME_BAR_STYLES =
 				template = "UnitFramesRebirth_GroupUnitFrameStatus",
 				barHeight = 14,
 				barWidth = 180,
-				barAnchors = { ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 36, 42) },
+				barAnchors = { ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 41, 42) },
 				warner =
 				{
 					texture = "ZO_PlayerAttributeHealthWarnerTexture",
@@ -829,25 +829,27 @@ local UNITFRAME_LAYOUT_DATA =
 	{
 		keyboard =
 		{
-			nameAnchor = ZO_Anchor:New(TOPLEFT,nil,TOPLEFT,35,19),
+			nameAnchor = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 40, 19),
 			nameWidth = 215,
 			nameWrapMode = TEXT_WRAP_MODE_ELLIPSIS,
 
-			statusData = { anchor1 = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 36, 42), anchor2 = ZO_Anchor:New(TOPRIGHT, nil, TOPRIGHT, - 140, 42), height = 0, },
+			statusData = { anchor1 = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 41, 42), anchor2 = ZO_Anchor:New(TOPRIGHT, nil, TOPRIGHT, - 140, 42), height = 0, },
 
-			leaderIconData = { width = 16, height = 16, offsetX = 5, offsetY = 5 },
+			leaderIconData = { width = 16, height = 16, offsetX = 40, offsetY = 5 },
 
 			useHealthWarner = true,
 			usePowerShield = true,
+
+			assignmentIconAnchors = { withLevel = ZO_Anchor:New(LEFT, nil, nil, 0, -8), withoutLevel = ZO_Anchor:New(LEFT, nil, nil, 0, 15) },
 		},
 
 		gamepad =
 		{
-			nameAnchor = ZO_Anchor:New(TOPLEFT,nil,TOPLEFT,0,1),
+			nameAnchor = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 0, 1),
 			nameWidth = 306,
 			nameWrapMode = TEXT_WRAP_MODE_ELLIPSIS,
 
-			indentedNameAnchor = ZO_Anchor:New(TOPLEFT,nil,TOPLEFT,25,3),
+			indentedNameAnchor = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 25, 3),
 
 			statusData = { anchor1 = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 0, 0), anchor2 = ZO_Anchor:New(TOPRIGHT, nil, TOPRIGHT, 0, 35), height = 0, },
 			hideHealthBgIfOffline = true,
@@ -856,6 +858,8 @@ local UNITFRAME_LAYOUT_DATA =
 
 			useHealthWarner = true,
 			usePowerShield = true,
+
+			assignmentIconAnchors = { withLevel = ZO_Anchor:New(TOPLEFT, nil, nil, -54, 4), withoutLevel = ZO_Anchor:New(TOPLEFT, nil, nil, -54, 16) },
 		},
 	},
 
@@ -870,10 +874,10 @@ local UNITFRAME_LAYOUT_DATA =
 				icon = { width = 14, height = 14, customAnchor = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 76, 15) },
 			},
 
-			nameAnchor = ZO_Anchor:New(TOPLEFT,nil,TOPLEFT,5,4),
+			nameAnchor = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 5, 4),
 			nameWidth = 86,
 
-			indentedNameAnchor = ZO_Anchor:New(TOPLEFT,nil,TOPLEFT,19,4),
+			indentedNameAnchor = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 19, 4),
 			indentedNameWidth = 75,
 
 			statusData = { anchor1 = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 5, 20), anchor2 = ZO_Anchor:New(TOPRIGHT, nil, TOPRIGHT, - 4, 20), height = 15, },
@@ -892,9 +896,9 @@ local UNITFRAME_LAYOUT_DATA =
 				icon = { width = 14, height = 14, customAnchor = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 66, 7) },
 			},
 
-			nameAnchor = ZO_Anchor:New(TOPLEFT,nil,TOPLEFT,6,2),
+			nameAnchor = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 6, 2),
 			nameWidth = ZO_GAMEPAD_RAID_FRAME_WIDTH - 6,
-			indentedNameAnchor = ZO_Anchor:New(TOPLEFT,nil,TOPLEFT,20,3),
+			indentedNameAnchor = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 20, 3),
 			indentedNameWidth = ZO_GAMEPAD_RAID_FRAME_WIDTH - 20 - 2,
 
 			leaderIconData = { width = 18, height = 18, offsetX = 2, offsetY = 7 },
@@ -914,11 +918,11 @@ local UNITFRAME_LAYOUT_DATA =
 	{
 		keyboard =
 		{
-			nameAnchor = ZO_Anchor:New(TOPLEFT,nil,TOPLEFT,35,19),
+			nameAnchor = ZO_Anchor:New(TOPLEFT , nil, TOPLEFT, 40, 19),
 			nameWidth = 215,
 			nameWrapMode = TEXT_WRAP_MODE_ELLIPSIS,
 
-			statusData = { anchor1 = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 36, 42), anchor2 = ZO_Anchor:New(TOPRIGHT, nil, TOPRIGHT, - 140, 42), height = 0, },
+			statusData = { anchor1 = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 41, 42), anchor2 = ZO_Anchor:New(TOPRIGHT, nil, TOPRIGHT, - 140, 42), height = 0, },
 
 			useHealthWarner = true,
 			usePowerShield = true,
@@ -926,11 +930,11 @@ local UNITFRAME_LAYOUT_DATA =
 
 		gamepad =
 		{
-			nameAnchor = ZO_Anchor:New(TOPLEFT,nil,TOPLEFT,0,1),
+			nameAnchor = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 0, 1),
 			nameWidth = 306,
 			nameWrapMode = TEXT_WRAP_MODE_ELLIPSIS,
 
-			indentedNameAnchor = ZO_Anchor:New(TOPLEFT,nil,TOPLEFT,25,3),
+			indentedNameAnchor = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 25, 3),
 
 			statusData = { anchor1 = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 0, 0), anchor2 = ZO_Anchor:New(TOPRIGHT, nil, TOPRIGHT, 0, 35), height = 0, },
 			hideHealthBgIfOffline = true,
@@ -997,6 +1001,18 @@ local function LayoutUnitFrameName(nameLabel, layoutData, indented)
 	end
 end
 
+local function LayoutUnitFrameAssignmentIcon(assignmentIcon, layoutData, showLevel)
+	if assignmentIcon and layoutData then
+		if showLevel then
+			-- layoutData.withLevel:Set(assignmentIcon)
+			layoutData.withLevel:AddToControl(assignmentIcon)
+		else
+			-- layoutData.withoutLevel:Set(assignmentIcon)
+			layoutData.withoutLevel:AddToControl(assignmentIcon)
+		end
+	end
+end
+
 local function DoUnitFrameLayout(unitFrame, style)
 	local layoutData = GetPlatformLayoutData(style)
 	if layoutData then
@@ -1014,10 +1030,38 @@ local function DoUnitFrameLayout(unitFrame, style)
 
 		LayoutUnitFrameName(unitFrame.nameLabel, layoutData)
 		LayoutUnitFrameStatus(unitFrame.statusLabel, layoutData.statusData)
+		LayoutUnitFrameAssignmentIcon(unitFrame.assignmentIcon, layoutData.assignmentIconAnchors)
 
 		-- NOTE: Level label is always custom and doesn't need to be managed with this anchoring system
 	end
 end
+
+local function IsGroupFrameUnitTag(unitTag)
+	return ZO_Group_IsGroupUnitTag(unitTag) and GetGroupSize() <= SMALL_GROUP_SIZE_THRESHOLD
+end
+
+local function SetAnchorOffsets(control, offsetX, offsetY)
+	local isValid, point, target, relPoint = control:GetAnchor(0)
+	if isValid then
+		control:SetAnchor(point, target, relPoint, offsetX, offsetY)
+	end
+end
+
+-- local function GetAnchorOffsets(control, offsetX, offsetY)
+	-- local offsetX, offsetY = select(5, control:GetAnchor(0))
+	-- return offsetX, offsetY
+-- end
+
+-- local function SetOffset(control, offsetX, offsetY)
+	-- -- zo_callLater(function() d(offset) end, 2000)
+	-- -- zo_callLater(function() d(type(offset)) end, 2000)
+
+	
+	-- local offset = ZO_Anchor:New()
+	-- offset:SetFromControlAnchor(control)
+	-- offset:AddOffsets(offsetX, offsetY)
+	-- offset:Set(control)
+-- end
 
 UnitFrame = ZO_Object:Subclass()
 
@@ -1057,6 +1101,7 @@ function UnitFrame:New(unitTag, showBarText, style)
 
 	newFrame.rankIcon = newFrame:AddFadeComponent("RankIcon", DONT_COLOR_RANK_ICON)
 	newFrame.assignmentIcon = newFrame:AddFadeComponent("AssignmentIcon", DONT_COLOR_RANK_ICON)
+	newFrame.classIcon = newFrame:AddFadeComponent("Class", DONT_COLOR_RANK_ICON)
 	newFrame.championIcon = newFrame:AddFadeComponent("ChampionIcon")
 	newFrame.leftBracket = newFrame:AddFadeComponent("LeftBracket")
 	newFrame.leftBracketGlow = GetControl(frame, "LeftBracketGlow")
@@ -1334,8 +1379,11 @@ end
 -- Just make the status bars and any text on the frame fade out.
 -- The vanilla code has isOnline as argument, but it wasn't in use. So we deleted it.
 function UnitFrame:DoAlphaUpdate(isNearby, isLeader)
+	local unitTag = self.unitTag
 	local color
-	if self.unitTag == "reticleover" then
+	if unitTag == "reticleover" then
+		color = ZO_SELECTED_TEXT
+	elseif IsGroupFrameUnitTag(unitTag) then
 		color = ZO_SELECTED_TEXT
 	elseif isLeader then
 		color = ZO_HIGHLIGHT_TEXT
@@ -1384,32 +1432,51 @@ function UnitFrame:ShouldShowLevel()
 end
 
 function UnitFrame:UpdateLevel()
-	local unitLevel
-	local isChampion = IsUnitChampion(self:GetUnitTag())
+	local unitTag = self:GetUnitTag()
+
+	local unitLevel = GetUnitLevel(unitTag)
+	local isChampion = IsUnitChampion(unitTag) or unitLevel >= 50
+
 	if isChampion then
-		unitLevel = GetUnitEffectiveChampionPoints(self:GetUnitTag())
-	else
-		unitLevel = GetUnitLevel(self:GetUnitTag())
+		unitLevel = GetUnitEffectiveChampionPoints(unitTag)
 	end
 
+	local setting = UnitFrames.account.showLevel
 	local showLevel = self:ShouldShowLevel()
 	if self.levelLabel then
 		if showLevel and unitLevel > 0 then
-			self.levelLabel:SetHidden(false)
+			self.levelLabel:SetHidden(not setting and true or false)
 			self.levelLabel:SetText(tostring(unitLevel))
-			self.nameLabel:SetAnchor(TOPLEFT, self.levelLabel, TOPRIGHT, 10, 0)
+			if not IsGroupFrameUnitTag(unitTag) then
+				self.nameLabel:SetAnchor(TOPLEFT, self.levelLabel, TOPRIGHT, 10, 0)
+			end
+			
 		else
 			self.levelLabel:SetHidden(true)
-			self.nameLabel:SetAnchor(TOPLEFT)
+			if not IsGroupFrameUnitTag(unitTag) then
+				self.nameLabel:SetAnchor(TOPLEFT)
+			end
 		end
+
 	end
 
 	if self.championIcon then
 		if showLevel and isChampion then
-			self.championIcon:SetHidden(false)
+			self.championIcon:SetHidden(not setting and true or false)
 		else
 			self.championIcon:SetHidden(true)
+			if IsGroupFrameUnitTag(unitTag) then
+				local layoutData = GetPlatformLayoutData(self.style)
+				if layoutData then
+					LayoutUnitFrameAssignmentIcon(self.assignmentIcon, layoutData.assignmentIconAnchors, UnitFrames.account.showLevel)
+				end
+			
+				-- local offset = -1*self.championIcon:GetWidth()/2
+				-- SetAnchorOffsets(self.levelLabel, offset)
+				-- SetOffset(self.levelLabel, offset)
+			end
 		end
+		
 	end
 end
 
@@ -1434,22 +1501,49 @@ function UnitFrame:UpdateAssignment()
 	if self.assignmentIcon then
 		local unitTag = self:GetUnitTag()
 		local assignmentTexture = nil
-		if IsActiveWorldBattleground() then
-			local battlegroundAlliance = GetUnitBattlegroundAlliance(unitTag)
-			if battlegroundAlliance ~= BATTLEGROUND_ALLIANCE_NONE then
-				assignmentTexture = GetBattlegroundTeamIcon(battlegroundAlliance)
+
+		local battlegroundAlliance = GetUnitBattlegroundAlliance(unitTag)
+		local isValidBattlegroundAlliance = battlegroundAlliance ~= BATTLEGROUND_ALLIANCE_NONE
+		local isInBattleground = IsActiveWorldBattleground()
+		
+		if UnitFrames.account.switchAssignmentIcon and IsGroupFrameUnitTag(unitTag) then
+			assignmentTexture = GetGamepadClassIcon(GetUnitClassId(unitTag))
+			if isInBattleground and isValidBattlegroundAlliance then
+				self.assignmentIcon:SetColor(GetBattlegroundAllianceColor(battlegroundAlliance))
 			end
 		else
-			local selectedRole = GetGroupMemberSelectedRole(unitTag)
-			if selectedRole ~= LFG_ROLE_INVALID then
-				assignmentTexture = GetRoleIcon(selectedRole)
+			if isInBattleground and isValidBattlegroundAlliance then
+				assignmentTexture = GetBattlegroundTeamIcon(battlegroundAlliance)
+				local color = GetBattlegroundAllianceColor(battlegroundAlliance)
+				self.assignmentIcon:SetColor(color)
+			else
+				local selectedRole = GetGroupMemberSelectedRole(unitTag)
+				if selectedRole ~= LFG_ROLE_INVALID then
+					assignmentTexture = GetRoleIcon(selectedRole)
+				end
+				self.assignmentIcon:SetColor(1, 1, 1)
 			end
 		end
 
-		if assignmentTexture then
+		local hasAssignmentTexture = assignmentTexture ~= nil 
+		if hasAssignmentTexture then
 			self.assignmentIcon:SetTexture(assignmentTexture)
+
+			if not UnitFrames.account.showLevel then
+				-- layoutData.withLevel:Set(assignmentIcon)
+			
+			
+			
+			
+				-- local offsetX, offsetY = GetAnchorOffsets(self.assignmentIcon)
+				-- local newOffsetY = self.assignmentIcon:GetHeight()/4 + offsetY
+				-- d(offsetY, newOffsetY)
+				-- -- SetAnchorOffsets(self.assignmentIcon, offsetX, offsetY)
+				-- SetAnchorOffsets(self.assignmentIcon, offsetX, offsetY*2)
+				-- -- self.assignmentIcon:SetAnchor(LEFT)
+			end
 		end
-		self.assignmentIcon:SetHidden(assignmentTexture == nil)
+		self.assignmentIcon:SetHidden(not hasAssignmentTexture)
 	end
 end
 
@@ -1557,9 +1651,9 @@ do
 			local unitTag = self.unitTag
 			if IsUnitPlayer(unitTag) then
 				if IsUnitTarget(unitTag) then
-					name = UnitFrames.account.switchNames and ZO_GetSecondaryPlayerNameFromUnitTag(unitTag) or ZO_GetPrimaryPlayerNameFromUnitTag(unitTag)
+					name = UnitFrames.account.switchNames and ZO_GetSecondaryPlayerNameFromUnitTag(unitTag, USE_INTERNAL_FORMAT) or ZO_GetPrimaryPlayerNameFromUnitTag(unitTag, USE_INTERNAL_FORMAT)
 				else
-					name = ZO_GetPrimaryPlayerNameFromUnitTag(unitTag)
+					name = ZO_GetPrimaryPlayerNameFromUnitTag(unitTag, USE_INTERNAL_FORMAT)
 				end
 			else
 				name = GetUnitName(unitTag)
@@ -1573,7 +1667,7 @@ do
 	-- Will this fill up the memory? And if so, who cares in an x64 env?
 	-- Caching localization result is 10x faster, less garbage.
 	local function UpdatePlayerCaptionName(unitTag)
-		local name = UnitFrames.account.switchNames and ZO_GetPrimaryPlayerNameFromUnitTag(unitTag) or ZO_GetSecondaryPlayerNameFromUnitTag(unitTag)
+		local name = UnitFrames.account.switchNames and ZO_GetPrimaryPlayerNameFromUnitTag(unitTag, USE_INTERNAL_FORMAT) or ZO_GetSecondaryPlayerNameFromUnitTag(unitTag, USE_INTERNAL_FORMAT)
 		local title = GetUnitTitle(unitTag)
 		if title ~= "" and not UnitFrames.account.hideTitle then
 			return ZO_CachedStrFormat(SI_PLAYER_NAME_WITH_TITLE_FORMAT, name, title)
@@ -2081,13 +2175,6 @@ end
 function UnitFramesManager:RefreshPetFrames()
 	ForceChange(self.petFrames)
 	self:SetPetIndexDirty(1)
-end
-
-local function SetAnchorOffsets(control, offsetX, offsetY)
-	local isValid, point, target, relPoint = control:GetAnchor(0)
-	if isValid then
-		control:SetAnchor(point, target, relPoint, offsetX, offsetY)
-	end
 end
 
 local function UpdateGroupFramesVisualStyle()

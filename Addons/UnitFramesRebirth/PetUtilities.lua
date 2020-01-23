@@ -11,39 +11,30 @@ local function GetPetNameLower(abilityId)
 	return ZO_CachedStrFormat("<<z:1>>", GetAbilityName(abilityId))
 end
 
-local PET_NAMES =
-{
+local PET_NAMES = {
 	-- Familiar
 	[GetPetNameLower(18602)] = true,
-
 	-- Clannfear
 	["clannfear"] = true, -- en
 	["clannbann"] = true, -- de
 	["faucheclan"] = true, -- fr
-
 	-- Volatile Familiar
 	[GetPetNameLower(30678)] = true, -- en/de
 	["familier explosif"] = true, -- fr
-
 	-- Winged Twilight
 	[GetPetNameLower(30589)] = true,
-
 	-- Twilight Tormentor
 	[GetPetNameLower(30594)] = true, -- en
 	["zwielichtpeinigerin"] = true, -- de
 	["tourmenteur crépusculaire"] = true, -- fr
-
 	-- Twilight Matriarch
 	[GetPetNameLower(30629)] = true,
-
 	-- Feral Guardian
 	[GetPetNameLower(94376)] = true,
-
 	-- Eternal Guardian
 	[GetPetNameLower(94394)] = true,
-
 	-- Wild Guardian
-	[GetPetNameLower(94408)] = true,
+	[GetPetNameLower(94408)] = true
 }
 
 function IsTrackedPet(unitTag)
@@ -54,12 +45,11 @@ function IsTrackedPet(unitTag)
 	return false
 end
 
-local petIndices = { }
+local petIndices = {}
 
 for i = 1, MAX_PLAYER_PET do
 	petIndices[i] = "playerpet" .. i
 end
-
 
 function IsPetActive()
 	for i = 1, MAX_PLAYER_PET do
@@ -103,17 +93,21 @@ function GetPetGroupSize()
 end
 
 do
-	local petUnitTags = setmetatable( { }, {
-		__index = function(self, key)
-			local petIndex = tonumber(key:match("^playerpet(%d+)$"))
-			if petIndex and petIndex >= 1 and petIndex <= MAX_PLAYER_PET then
-				self[key] = petIndex
-			else
-				self[key] = false
+	local petUnitTags =
+		setmetatable(
+		{},
+		{
+			__index = function(self, key)
+				local petIndex = tonumber(key:match("^playerpet(%d+)$"))
+				if petIndex and petIndex >= 1 and petIndex <= MAX_PLAYER_PET then
+					self[key] = petIndex
+				else
+					self[key] = false
+				end
+				return self[key]
 			end
-			return self[key]
-		end,
-	} )
+		}
+	)
 
 	function IsPetUnitTag(unitTag)
 		return petUnitTags[unitTag] ~= false
@@ -131,15 +125,13 @@ do
 	end
 
 	function GetPetIndexFromUnitTag(unitTag)
-		return DoesUnitExist(unitTag) and ActiveUnitsUpTo(petUnitTags[unitTag]) or PETINDEX_NONE
+		return DoesUnitExist(unitTag) and IsTrackedPet(unitTag) and ActiveUnitsUpTo(petUnitTags[unitTag]) or PETINDEX_NONE
 	end
 end
 
 -- keybind functions
-local ABILITIES_SUMMONED_PETS =
-{
-	[UNIT_FRAMES_REBIRTH_PET_FAMILIAR] =
-	{
+local ABILITIES_SUMMONED_PETS = {
+	[UNIT_FRAMES_REBIRTH_PET_FAMILIAR] = {
 		[23304] = true, -- Summon Unstable Familiar I
 		[30631] = true, -- Summon Unstable Familiar II
 		[30636] = true, -- Summon Unstable Familiar III
@@ -151,10 +143,9 @@ local ABILITIES_SUMMONED_PETS =
 		[23316] = true, -- Summon Volatile Familiar I
 		[30664] = true, -- Summon Volatile Familiar II
 		[30669] = true, -- Summon Volatile Familiar III
-		[30674] = true, -- Summon Volatile Familiar IV
+		[30674] = true -- Summon Volatile Familiar IV
 	},
-	[UNIT_FRAMES_REBIRTH_PET_TWILIGHT] =
-	{
+	[UNIT_FRAMES_REBIRTH_PET_TWILIGHT] = {
 		[24613] = true, -- Summon Winged Twilight I
 		[30581] = true, -- Summon Winged Twilight II
 		[30584] = true, -- Summon Winged Twilight III
@@ -166,10 +157,9 @@ local ABILITIES_SUMMONED_PETS =
 		[24639] = true, -- Summon Twilight Matriarch I
 		[30618] = true, -- Summon Twilight Matriarch II
 		[30622] = true, -- Summon Twilight Matriarch III
-		[30626] = true, -- Summon Twilight Matriarch IV
+		[30626] = true -- Summon Twilight Matriarch IV
 	},
-	[UNIT_FRAMES_REBIRTH_PET_GUARDIAN] =
-	{
+	[UNIT_FRAMES_REBIRTH_PET_GUARDIAN] = {
 		[85982] = true, -- Feral Guardian I
 		[85983] = true, -- Feral Guardian II
 		[85984] = true, -- Feral Guardian III
@@ -181,8 +171,8 @@ local ABILITIES_SUMMONED_PETS =
 		[85990] = true, -- Wild Guardian I
 		[85991] = true, -- Wild Guardian II
 		[85992] = true, -- Wild Guardian III
-		[85993] = true, -- Wild Guardian IV
-	},
+		[85993] = true -- Wild Guardian IV
+	}
 }
 
 local function GetPetAbilityIds(lookup)
