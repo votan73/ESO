@@ -9,8 +9,22 @@ local addon = {
 	name = "ESOProfiler",
 }
 local em = GetEventManager()
-local async = LibStub("LibAsync")
+local async = LibAsync
 local task = async:Create("ESO_PROFILER")
+local extrasFragmentGroup
+
+local function AutoStartEnabled()
+	return GetCVar("StartLuaProfilingOnUILoad") ~= "0"
+end
+local function SetAutoStartEnabled(on)
+	SetCVar("StartLuaProfilingOnUILoad", on and "1" or "0")
+end
+
+local function NewRun()
+	addon.newRun = GetGameTimeMilliseconds()
+	addon.startTime = GetTimeStamp()
+	addon.profiling = true
+end
 
 do
 	local function CaptureFrameMetrics()
@@ -18,21 +32,23 @@ do
 		local latency = tostring(GetLatency())
 		local memory = tostring(collectgarbage("count") * 1024)
 		local name = string.format("statsF%sL%sM%s", fps, latency, memory)
-		LoadString("", name)()
+		if legacy then
+			LoadString("", name)()
+		else
+			RecordScriptProfilerUserEvent(name)
+		end
 	end
 
 	local function UpdateKeybind()
-		if addon.keybindButtonGroup and KEYBIND_STRIP:HasKeybindButtonGroup(addon.keybindButtonGroup) then
-			KEYBIND_STRIP:UpdateKeybindButtonGroup(addon.keybindButtonGroup)
+		if addon.keybindButtonGroupRight and KEYBIND_STRIP:HasKeybindButtonGroup(addon.keybindButtonGroupRight) then
+			KEYBIND_STRIP:UpdateKeybindButtonGroup(addon.keybindButtonGroupRight)
 		end
 	end
 
 	local orgStartScriptProfiler = StartScriptProfiler
 	function StartScriptProfiler()
 		if addon.profiling then return end
-		addon.newRun = GetGameTimeMilliseconds()
-		addon.startTime = GetTimeStamp()
-		addon.profiling = true
+		NewRun()
 		EVENT_MANAGER:RegisterForUpdate(addon.name, 500, CaptureFrameMetrics)
 		UpdateKeybind()
 		d("Start profiler....")
@@ -44,6 +60,7 @@ do
 		addon.profiling = false
 		UpdateKeybind()
 		d("Profiler stopped ....")
+		SetAutoStartEnabled(false)
 		return orgStopScriptProfiler()
 	end
 end
@@ -76,7 +93,8 @@ function addon:GenerateReport()
 	statusBar:SetHidden(false)
 	content:SetHidden(true)
 
-	task:Cancel():For(1, numFrames):Do( function(frameIndex)
+	-- at 100fps this are 300s = 5min. at 60fps 500s ~ 8min
+	task:Cancel():For(math.max(1, numFrames - 30000), numFrames):Do( function(frameIndex)
 		statusBar:SetValue(frameIndex)
 		task:For(1, GetScriptProfilerFrameNumRecords(frameIndex)):Do( function(recordIndex)
 			profilerData:ProcessRecord(frameIndex, recordIndex)
@@ -92,13 +110,15 @@ function addon:PrintReport()
 	local ZO_ScrollList_CreateDataEntry = ZO_ScrollList_CreateDataEntry
 	local text = self.searchBox:GetText():lower()
 	local line = tonumber(text)
-	task:For(pairs(self.profilerData:GetClosureInfoList())):Do( function(recordDataType, recordTable)
-		task:For(pairs(recordTable)):Do( function(recordDataIndex, closure)
-			if text == "" or line == closure.info[CLOSURE_LINE_INDEX] or zo_plainstrfind(closure.info[CLOSURE_NAME_INDEX]:lower(), text) or zo_plainstrfind(closure.info[CLOSURE_FILE_INDEX]:lower(), text) then
-				dataList[#dataList + 1] = ZO_ScrollList_CreateDataEntry(recordDataType, { closure = closure })
-			end
-		end )
-	end )
+	local function doStep(recordDataIndex, recordDataType, closure)
+		if text == "" or line == closure.info[CLOSURE_LINE_INDEX] or zo_plainstrfind(closure.info[CLOSURE_NAME_INDEX]:lower(), text) or zo_plainstrfind(closure.info[CLOSURE_FILE_INDEX]:lower(), text) then
+			dataList[#dataList + 1] = ZO_ScrollList_CreateDataEntry(recordDataType, { closure = closure })
+		end
+	end
+	local function perType(recordDataType, recordTable)
+		task:For(pairs(recordTable)):Do( function(recordDataIndex, closure) doStep(recordDataIndex, recordDataType, closure) end)
+	end
+	task:For(pairs(self.profilerData:GetClosureInfoList())):Do(perType)
 	task:Then( function()
 		local sortHeaders = self.sortHeaders
 		self:ChangeSort(sortHeaders.selectedSortHeader.key, sortHeaders.sortDirection)
@@ -273,7 +293,7 @@ function addon:ShowContextMenu(control)
 	ClearMenu()
 	self:ShowContextMenuInsertBefore(control)
 	self:ShowContextMenuAppendAfter(control)
-	ShowMenu()
+	ShowMenu(control)
 end
 
 ----------------------------------
@@ -292,13 +312,6 @@ function addon:OnSearchEnterKeyPressed(editBox)
 end
 ------------------------------------------
 function addon:AddKeybind()
-	local function AutoStartEnabled()
-		return GetCVar("StartLuaProfilingOnUILoad") ~= "0"
-	end
-	local function SetAutoStartEnabled(on)
-		SetCVar("StartLuaProfilingOnUILoad", on and "1" or "0")
-	end
-
 	self.keybindButtonGroupRight = {
 		alignment = KEYBIND_STRIP_ALIGN_RIGHT,
 		{
@@ -325,24 +338,44 @@ function addon:AddKeybind()
 		self.keybindButtonGroupAutoStart = {
 			alignment = KEYBIND_STRIP_ALIGN_CENTER,
 			{
-				name = function() return GetString(AutoStartEnabled() and SI_JOURNAL_MENU_ESO_PROFILER_AUTOSTART_ON or SI_JOURNAL_MENU_ESO_PROFILER_AUTOSTART_OFF) end,
-				keybind = "ESO_PROFILER_AUTOSTART_TOGGLE",
+				name = GetString(SI_BINDING_NAME_ESO_PROFILER_PROFILE_UI_LOAD),
+				keybind = "ESO_PROFILER_PROFILE_UI_LOAD",
 				order = 0,
 				callback = function()
 					PlaySound(SOUNDS.DEFAULT_CLICK)
-					SetAutoStartEnabled(not AutoStartEnabled())
-					KEYBIND_STRIP:UpdateKeybindButtonGroup(self.keybindButtonGroupAutoStart)
+					SetAutoStartEnabled(true)
+					ReloadUI()
 				end,
 			},
 		}
 	end
+
+	self.keybindButtonGroupExtras = {
+		alignment = KEYBIND_STRIP_ALIGN_LEFT,
+		{
+			name = "Profile Script",
+			keybind = "UI_SHORTCUT_TERTIARY",
+			order = 0,
+			callback = function()
+				PlaySound(SOUNDS.DEFAULT_CLICK)
+				if ESO_PROFILER_SCENE:HasFragment(LEFT_PANEL_BG_FRAGMENT) then
+					ESO_PROFILER_SCENE:RemoveFragmentGroup(extrasFragmentGroup)
+				else
+					ESO_PROFILER_SCENE:AddFragmentGroup(extrasFragmentGroup)
+				end
+			end,
+		},
+	}
+
 	ESO_PROFILER_FRAGMENT:RegisterCallback("StateChange", function(oldState, newState)
 		if newState == SCENE_FRAGMENT_SHOWN then
+			KEYBIND_STRIP:AddKeybindButtonGroup(self.keybindButtonGroupExtras)
 			KEYBIND_STRIP:AddKeybindButtonGroup(self.keybindButtonGroupRight)
 			KEYBIND_STRIP:AddKeybindButtonGroup(self.keybindButtonGroupAutoStart)
 		elseif newState == SCENE_HIDING then
 			KEYBIND_STRIP:RemoveKeybindButtonGroup(self.keybindButtonGroupRight)
 			KEYBIND_STRIP:RemoveKeybindButtonGroup(self.keybindButtonGroupAutoStart)
+			KEYBIND_STRIP:RemoveKeybindButtonGroup(self.keybindButtonGroupExtras)
 		end
 	end )
 end
@@ -415,6 +448,10 @@ function addon:InitializeWindow()
 	sortHeaders:SelectHeaderByKey("includeTimeMax", ZO_SortHeaderGroup.SUPPRESS_CALLBACKS)
 
 	self.sortHeaders = sortHeaders
+
+	self.script = ESOProfilerScriptTopLevel
+	self.loopCount = self.script:GetNamedChild("LoopCount")
+	self.loopCount:SetText("1")
 end
 
 do
@@ -477,6 +514,7 @@ end
 function addon:CreateJournalTab()
 	local sceneName = "eso_profiler"
 	ESO_PROFILER_FRAGMENT = ZO_HUDFadeSceneFragment:New(self.control)
+	ESO_PROFILER_SCRIPT_FRAGMENT = ZO_HUDFadeSceneFragment:New(ESOProfilerScriptTopLevel)
 	ESO_PROFILER_SCENE = ZO_Scene:New(sceneName, SCENE_MANAGER)
 	ESO_PROFILER_SCENE:AddFragmentGroup(FRAGMENT_GROUP.PLAYER_PROGRESS_BAR_KEYBOARD_CURRENT)
 	ESO_PROFILER_SCENE:AddFragmentGroup(FRAGMENT_GROUP.MOUSE_DRIVEN_UI_WINDOW)
@@ -489,6 +527,8 @@ function addon:CreateJournalTab()
 	ESO_PROFILER_SCENE:AddFragment(JOURNAL_TITLE_FRAGMENT)
 	ESO_PROFILER_SCENE:AddFragment(CODEX_WINDOW_SOUNDS)
 	ESO_PROFILER_SCENE:AddFragment(ESO_PROFILER_FRAGMENT)
+
+	extrasFragmentGroup = { MINIMIZE_CHAT_FRAGMENT, LEFT_PANEL_BG_FRAGMENT, ESO_PROFILER_SCRIPT_FRAGMENT }
 
 	SYSTEMS:RegisterKeyboardRootScene(sceneName, ESO_PROFILER_SCENE)
 
@@ -523,6 +563,53 @@ function addon:Initialize()
 	end )
 end
 
+do
+	local runner = async:Create("ESO_PROFILER_RUNSCRIPT")
+	local function finallyStop()
+		ESOProfilerScriptTopLevelRunCode:SetEnabled(true)
+		addon:GenerateReport()
+	end
+	runner:Finally(finallyStop)
+	runner:OnError(function() d(runner.Error) end)
+	local function stop(runner)
+		-- The frame, StopScriptProfiler is called in, seems to be excluded
+		runner:Delay(20, StopScriptProfiler)
+	end
+	function addon:RunCode(control, button, upInside)
+		if not upInside then return end
+
+		local code = ESOProfilerScriptTopLevelScriptEditBox:GetText()
+		-- code = string.format("function script() %s\nend\nscript()", code)
+		code = assert(zo_loadstring(code, "test"))
+		if code then
+			local statusBar = self.statusBar
+			local content = self.control:GetNamedChild("Content")
+
+			-- search for the pseudo "file path"
+			self.searchBox:SetText("@test")
+
+			local count = self.loopCount:GetText()
+			count = count and #count > 0 and tonumber(count) or 1
+
+			statusBar:SetHidden(true)
+			content:SetHidden(true)
+			ESOProfilerScriptTopLevelRunCode:SetEnabled(false)
+
+			StartScriptProfiler()
+			local function script(runner)
+				if count > 1 then
+					runner:For(1, count):Do(code):Then(stop)
+				else
+					code()
+					stop(runner)
+				end
+			end
+			-- We need a new frame for the profiler to record
+			runner:Delay(20, script)
+		end
+	end
+end
+
 local function OnAddonLoaded(event, name)
 	if name ~= addon.name then return end
 	em:UnregisterForEvent(addon.name, EVENT_ADD_ON_LOADED)
@@ -535,10 +622,25 @@ end
 em:RegisterForEvent(addon.name, EVENT_ADD_ON_LOADED, OnAddonLoaded)
 
 if GetCVar("StartLuaProfilingOnUILoad") ~= "0" then
-	StartScriptProfiler()
+	local stop
+	local identifier = "ESO_PROFILER_AUTORUN"
+	if legacy then
+		StartScriptProfiler()
+		stop = function()
+			em:UnregisterForUpdate(identifier)
+			StopScriptProfiler()
+		end
+	else
+		NewRun()
+		stop = function()
+			em:UnregisterForUpdate(identifier)
+			StopScriptProfiler()
+			MAIN_MENU_KEYBOARD:ShowScene(ESO_PROFILER_SCENE:GetName())
+		end
+	end
 	em:RegisterForEvent(addon.name, EVENT_PLAYER_ACTIVATED, function()
 		em:UnregisterForEvent(addon.name, EVENT_PLAYER_ACTIVATED)
-		task:Delay(2000, StopScriptProfiler)
+		em:RegisterForUpdate(identifier, 2000, stop)
 	end )
 end
 

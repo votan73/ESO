@@ -8,7 +8,7 @@ local em = GetEventManager()
 
 do
 	local identifier = "iCHAT_ASYNC_TASK"
-	local async = LibStub("LibAsync")
+	local async = LibAsync
 	addon.task = async:Create(identifier)
 end
 
@@ -46,13 +46,13 @@ end
 -- end
 
 function addon:InitSettings()
-	local LibHarvensAddonSettings = LibStub("LibHarvensAddonSettings-1.0", LibStub.SILENT)
+	local LibHarvensAddonSettings = LibHarvensAddonSettings or LibStub("LibHarvensAddonSettings-1.0", LibStub.SILENT)
 	if not LibHarvensAddonSettings then return end
 
 	local settings = LibHarvensAddonSettings:AddAddon("iChat")
 	if not settings then return end
 	addon.settingsControls = settings
-	settings.version = "1.0.4"
+	settings.version = "1.0.5"
 	settings.allowDefaults = true
 	-- settings.website = "http://www.esoui.com/downloads/"
 end

@@ -181,7 +181,7 @@ function designer:InitItemList()
 		HideRowHighlight(rowControl, false)
 		InitializeTooltip(SetItemTooltip, rowControl, TOPRIGHT, 0, -104, TOPLEFT)
 		local rowData = ZO_ScrollList_GetData(rowControl)
-		SetItemTooltip:SetTemplateItemLink(rowData.itemLink, self.setTemplates:GetSelectedData(), false)
+		SetItemTooltip:SetTemplateItemLink(rowData.itemLink, self.setTemplates:GetSelectedData(), true)
 		self.itemList.hovered = ZO_ScrollList_GetData(rowControl)
 		KEYBIND_STRIP:UpdateKeybindButtonGroup(self.keybindStripDescriptorMouseOver)
 	end

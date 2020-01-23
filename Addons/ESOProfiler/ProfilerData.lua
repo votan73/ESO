@@ -45,9 +45,12 @@ function ProfilerData:GetClosureInfo(recordDataIndex, recordDataType, frameIndex
 		local name, file, line
 		local fps, latency, memory
 
+		fps = nil
 		if recordDataType == SCRIPT_PROFILER_RECORD_DATA_TYPE_CLOSURE then
 			name, file, line = GetScriptProfilerClosureInfo(recordDataIndex)
-			fps, latency, memory = file:match("statsF(%d+)L(%d+)M(%d+)")
+			if legacy then
+				fps, latency, memory = file:match("statsF(%d+)L(%d+)M(%d+)")
+			end
 		else
 			line = 0
 			if recordDataType == SCRIPT_PROFILER_RECORD_DATA_TYPE_CFUNCTION then
@@ -60,10 +63,11 @@ function ProfilerData:GetClosureInfo(recordDataIndex, recordDataType, frameIndex
 				file = "@Lua"
 			elseif recordDataType == SCRIPT_PROFILER_RECORD_DATA_TYPE_USER_EVENT then
 				-- You can fire off your own custom events using RecordScriptProfilerUserEvent(myEventString). Events with the same eventString will share a recordDataIndex.
-				name = string.format("%q", GetScriptProfilerUserEventInfo(recordDataIndex))
+				-- Similar to console.log() of javascript or System.Diagnostics.Debug.WriteLine() of C#.
+				name = GetScriptProfilerUserEventInfo(recordDataIndex)
 				file = "@UserEvent"
+				fps, latency, memory = name:match("statsF(%d+)L(%d+)M(%d+)")
 			end
-			fps = nil
 		end
 		if(not fps or not frameIndex) then
 			self.closureInfo[recordDataType][recordDataIndex] = {

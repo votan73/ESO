@@ -14,5 +14,5 @@ local function AddItem(inventorySlot, slotActions)
 	end
 end
 
-local menu = LibStub("LibCustomMenu")
+local menu = LibCustomMenu
 menu:RegisterContextMenu(AddItem, menu.CATEGORY_SECONDARY)

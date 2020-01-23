@@ -11,12 +11,18 @@ function GetGuiHidden(...)
 	return orgGetGuiHidden(...)
 end
 
-function SharedChatSystem:AddMessage(text)
+local function AddToBuffer(self, text)
 	buffer[#buffer + 1] = text
+	return orgAddMessage(self, text)
+end
+
+local redirect = AddToBuffer
+function SharedChatSystem.AddMessage(...)
+	return redirect(...)
 end
 local function callback(self)
 	addon.events:UnregisterCallback("HistoryRestored", callback)
-	SharedChatSystem.AddMessage = orgAddMessage
+	redirect = orgAddMessage
 	task:For(1, #buffer):Do( function(i) self:AddMessage(buffer[i]) end)
 	:Then( function() buffer = nil end)
 end

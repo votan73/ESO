@@ -206,14 +206,14 @@ function SetItemTooltip:SetTemplateItemLink(itemLink, setTemplate, equipped)
 					if slotId == EQUIP_SLOT_MAIN_HAND or slotId == EQUIP_SLOT_BACKUP_MAIN then
 						if weaponMainCounted then
 							-- compensate
-							numEquipped = numEquipped - 1
+							--numEquipped = numEquipped - 1
 						else
 							weaponMainCounted = true
 						end
 					elseif slotId == EQUIP_SLOT_OFF_HAND or slotId == EQUIP_SLOT_BACKUP_OFF then
 						if weaponOffHandCounted then
 							-- compensate
-							numEquipped = numEquipped - 1
+							--numEquipped = numEquipped - 1
 						else
 							weaponOffHandCounted = true
 						end

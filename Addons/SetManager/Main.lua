@@ -110,7 +110,7 @@ end
 function addon:Init()
 	SLASH_COMMANDS["/setm"] = function(...) addon:cmdSetManager(...) end
 
-	local LMM2 = LibStub("LibMainMenu-2.0")
+	local LMM2 = LibMainMenu2
 	LMM2:Init()
 	self.LMM2 = LMM2
 
