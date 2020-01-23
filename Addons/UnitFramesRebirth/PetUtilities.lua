@@ -11,7 +11,8 @@ local function GetPetNameLower(abilityId)
 	return ZO_CachedStrFormat("<<z:1>>", GetAbilityName(abilityId))
 end
 
-local PET_NAMES = {
+local PET_NAMES =
+{
 	-- Familiar
 	[GetPetNameLower(18602)] = true,
 	-- Clannfear
@@ -26,7 +27,7 @@ local PET_NAMES = {
 	-- Twilight Tormentor
 	[GetPetNameLower(30594)] = true, -- en
 	["zwielichtpeinigerin"] = true, -- de
-	["tourmenteur crépusculaire"] = true, -- fr
+	["tourmenteur crÃ©pusculaire"] = true, -- fr
 	-- Twilight Matriarch
 	[GetPetNameLower(30629)] = true,
 	-- Feral Guardian
