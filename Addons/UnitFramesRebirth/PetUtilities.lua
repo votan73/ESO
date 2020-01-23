@@ -1,13 +1,18 @@
 MAX_PLAYER_PET = 7
 PET_GROUP_SIZE_THRESHOLD = 2
 
-local GROUPINDEX_NONE = 4294967296
+UNIT_FRAMES_REBIRTH_PET_FAMILIAR = 1
+UNIT_FRAMES_REBIRTH_PET_TWILIGHT = 2
+UNIT_FRAMES_REBIRTH_PET_GUARDIAN = 3
+
+local PETINDEX_NONE = 4294967296
 
 local function GetPetNameLower(abilityId)
 	return ZO_CachedStrFormat("<<z:1>>", GetAbilityName(abilityId))
 end
 
-local PET_NAMES = {
+local PET_NAMES =
+{
 	-- Familiar
 	[GetPetNameLower(18602)] = true,
 
@@ -26,7 +31,7 @@ local PET_NAMES = {
 	-- Twilight Tormentor
 	[GetPetNameLower(30594)] = true, -- en
 	["zwielichtpeinigerin"] = true, -- de
-	["tourmenteur crÃ©pusculaire"] = true, -- fr
+	["tourmenteur crépusculaire"] = true, -- fr
 
 	-- Twilight Matriarch
 	[GetPetNameLower(30629)] = true,
@@ -122,72 +127,72 @@ do
 				index = index + 1
 			end
 		end
-		return index > 0 and index or GROUPINDEX_NONE
+		return index > 0 and index or PETINDEX_NONE
 	end
 
 	function GetPetIndexFromUnitTag(unitTag)
-		return DoesUnitExist(unitTag) and ActiveUnitsUpTo(petUnitTags[unitTag]) or GROUPINDEX_NONE
+		return DoesUnitExist(unitTag) and IsTrackedPet(unitTag) and ActiveUnitsUpTo(petUnitTags[unitTag]) or PETINDEX_NONE
 	end
 end
 
 -- keybind functions
-local FAMILIAR = 1
-local TWILIGHT = 2
-local GUARDIAN = 3
-
-local FAMILIAR_ABILITIES = {
-	[23304] = true, -- Summon Unstable Familiar I
-	[30631] = true, -- Summon Unstable Familiar II
-	[30636] = true, -- Summon Unstable Familiar III
-	[30641] = true, -- Summon Unstable Familiar IV
-	[23319] = true, -- Summon Unstable Clannfear I
-	[30647] = true, -- Summon Unstable Clannfear II
-	[30652] = true, -- Summon Unstable Clannfear III
-	[30657] = true, -- Summon Unstable Clannfear IV
-	[23316] = true, -- Summon Volatile Familiar I
-	[30664] = true, -- Summon Volatile Familiar II
-	[30669] = true, -- Summon Volatile Familiar III
-	[30674] = true, -- Summon Volatile Familiar IV
-}
-
-local TWILIGHT_ABILITIES = {
-	[24613] = true, -- Summon Winged Twilight I
-	[30581] = true, -- Summon Winged Twilight II
-	[30584] = true, -- Summon Winged Twilight III
-	[30587] = true, -- Summon Winged Twilight IV
-	[24636] = true, -- Summon Twilight Tormentor I
-	[30592] = true, -- Summon Twilight Tormentor II
-	[30595] = true, -- Summon Twilight Tormentor III
-	[30598] = true, -- Summon Twilight Tormentor IV
-	[24639] = true, -- Summon Twilight Matriarch I
-	[30618] = true, -- Summon Twilight Matriarch II
-	[30622] = true, -- Summon Twilight Matriarch III
-	[30626] = true, -- Summon Twilight Matriarch IV
-}
-
-local GUARDIAN_ABILITIES = {
-	[85982] = true, -- Feral Guardian I
-	[85983] = true, -- Feral Guardian II
-	[85984] = true, -- Feral Guardian III
-	[85985] = true, -- Feral Guardian IV
-	[85986] = true, -- Eternal Guardian I
-	[85987] = true, -- Eternal Guardian II
-	[85988] = true, -- Eternal Guardian III
-	[85989] = true, -- Eternal Guardian IV
-	[85990] = true, -- Wild Guardian I
-	[85991] = true, -- Wild Guardian II
-	[85992] = true, -- Wild Guardian III
-	[85993] = true, -- Wild Guardian IV
+local ABILITIES_SUMMONED_PETS =
+{
+	[UNIT_FRAMES_REBIRTH_PET_FAMILIAR] =
+	{
+		[23304] = true, -- Summon Unstable Familiar I
+		[30631] = true, -- Summon Unstable Familiar II
+		[30636] = true, -- Summon Unstable Familiar III
+		[30641] = true, -- Summon Unstable Familiar IV
+		[23319] = true, -- Summon Unstable Clannfear I
+		[30647] = true, -- Summon Unstable Clannfear II
+		[30652] = true, -- Summon Unstable Clannfear III
+		[30657] = true, -- Summon Unstable Clannfear IV
+		[23316] = true, -- Summon Volatile Familiar I
+		[30664] = true, -- Summon Volatile Familiar II
+		[30669] = true, -- Summon Volatile Familiar III
+		[30674] = true, -- Summon Volatile Familiar IV
+	},
+	[UNIT_FRAMES_REBIRTH_PET_TWILIGHT] =
+	{
+		[24613] = true, -- Summon Winged Twilight I
+		[30581] = true, -- Summon Winged Twilight II
+		[30584] = true, -- Summon Winged Twilight III
+		[30587] = true, -- Summon Winged Twilight IV
+		[24636] = true, -- Summon Twilight Tormentor I
+		[30592] = true, -- Summon Twilight Tormentor II
+		[30595] = true, -- Summon Twilight Tormentor III
+		[30598] = true, -- Summon Twilight Tormentor IV
+		[24639] = true, -- Summon Twilight Matriarch I
+		[30618] = true, -- Summon Twilight Matriarch II
+		[30622] = true, -- Summon Twilight Matriarch III
+		[30626] = true, -- Summon Twilight Matriarch IV
+	},
+	[UNIT_FRAMES_REBIRTH_PET_GUARDIAN] =
+	{
+		[85982] = true, -- Feral Guardian I
+		[85983] = true, -- Feral Guardian II
+		[85984] = true, -- Feral Guardian III
+		[85985] = true, -- Feral Guardian IV
+		[85986] = true, -- Eternal Guardian I
+		[85987] = true, -- Eternal Guardian II
+		[85988] = true, -- Eternal Guardian III
+		[85989] = true, -- Eternal Guardian IV
+		[85990] = true, -- Wild Guardian I
+		[85991] = true, -- Wild Guardian II
+		[85992] = true, -- Wild Guardian III
+		[85993] = true, -- Wild Guardian IV
+	},
 }
 
 local function GetPetAbilityIds(lookup)
 	if lookup then
-		if lookup == FAMILIAR then
-			return FAMILIAR_ABILITIES
-		elseif lookup == TWILIGHT then
-			return TWILIGHT_ABILITIES
-		elseif lookup == GUARDIAN then
-			return GUARDIAN_ABILITIES
+		if lookup == UNIT_FRAMES_REBIRTH_PET_FAMILIAR then
+			return ABILITIES_SUMMONED_PETS[UNIT_FRAMES_REBIRTH_PET_FAMILIAR]
+		elseif lookup == UNIT_FRAMES_REBIRTH_PET_TWILIGHT then
+			return ABILITIES_SUMMONED_PETS[UNIT_FRAMES_REBIRTH_PET_TWILIGHT]
+		elseif lookup == UNIT_FRAMES_REBIRTH_PET_GUARDIAN then
+			return ABILITIES_SUMMONED_PETS[UNIT_FRAMES_REBIRTH_PET_GUARDIAN]
 		end
 	end
 	return nil
@@ -208,7 +213,7 @@ function DismissPlayerPet(lookup)
 end
 
 function DismissAllPlayerPets()
-	DismissPlayerPet(FAMILIAR)
-	DismissPlayerPet(TWILIGHT)
-	DismissPlayerPet(GUARDIAN)
+	DismissPlayerPet(UNIT_FRAMES_REBIRTH_PET_FAMILIAR)
+	DismissPlayerPet(UNIT_FRAMES_REBIRTH_PET_TWILIGHT)
+	DismissPlayerPet(UNIT_FRAMES_REBIRTH_PET_GUARDIAN)
 end

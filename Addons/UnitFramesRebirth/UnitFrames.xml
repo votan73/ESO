@@ -1,5 +1,7 @@
 <GuiXml>
 	<Controls>
+
+		<!-- HEALTH WARNER -->
 		<Control name="UnitFramesRebirth_PlayerAttributeWarner" virtual="true" alpha="0" layer="OVERLAY" tier="HIGH" level="500">
 			<Dimensions y="44" />
 			<Anchor point="LEFT" offsetX="-18" />
@@ -94,37 +96,131 @@
 
 		<StatusBar name="UnitFramesRebirth_GroupUnitFrameStatus" virtual="true">
 			<OnInitialized>
-			self.gloss = self:GetNamedChild("Gloss")
-			self.warnerContainer = self:GetNamedChild("Warner")
+				self.shield = self:GetNamedChild("Shield")
+				self.gloss = self:GetNamedChild("Gloss")
+				self.warnerContainer = self:GetNamedChild("Warner")
+				ZO_StatusBar_SetGradientColor(self.shield, SHIELD_COLOR_GRADIENT)
 			</OnInitialized>
 
 			<Controls>
-			<StatusBar name="$(parent)Gloss"/>
+				<StatusBar name="$(parent)Shield" hidden="true">
+					<Controls>
+						<Control name="$(parent)BG" hidden="true" />
+						<Control name="$(parent)Overlay" hidden="true" />
+					</Controls>
+				</StatusBar>
 
-			<Control name="$(parent)Warner" inherits="UnitFramesRebirth_PlayerAttributeWarner">
-				<Controls>
-				<Texture name="$(parent)Left" inherits="UnitFramesRebirth_PlayerAttributeWarnerLeft" />
-				<Texture name="$(parent)Right" inherits="UnitFramesRebirth_PlayerAttributeWarnerRight" />
-				<Texture name="$(parent)Center" inherits="UnitFramesRebirth_PlayerAttributeWarnerCenter" />
-				</Controls>
-			</Control>
+				<StatusBar name="$(parent)Gloss"/>
+
+				<Control name="$(parent)Warner" inherits="UnitFramesRebirth_PlayerAttributeWarner">
+					<Controls>
+						<Texture name="$(parent)Left" inherits="UnitFramesRebirth_PlayerAttributeWarnerLeft" />
+						<Texture name="$(parent)Right" inherits="UnitFramesRebirth_PlayerAttributeWarnerRight" />
+						<Texture name="$(parent)Center" inherits="UnitFramesRebirth_PlayerAttributeWarnerCenter" />
+					</Controls>
+				</Control>
 			</Controls>
 		</StatusBar>
 
 		<StatusBar name="UnitFramesRebirth_GroupUnitFrameStatus_Keyboard_Template" inherits="ZO_ArrowStatusBarWithBG" virtual="true">
 			<Controls>
-			<Control name="$(parent)BG" hidden="false" />
-			<Control name="$(parent)Overlay" hidden="false" />
+				<StatusBar name="$(parent)Shield" />
+				<Control name="$(parent)BG" hidden="false" />
+				<Control name="$(parent)Overlay" hidden="false" />
 			</Controls>
 		</StatusBar>
 
 		<StatusBar name="UnitFramesRebirth_GroupUnitFrameStatus_Gamepad_Template" inherits="ZO_DefaultStatusBar" virtual="true">
 			<Controls>
-			<Control name="$(parent)BG" hidden="true" />
-			<Control name="$(parent)Overlay" hidden="true" />
+				<StatusBar name="$(parent)Shield" />
+				<Control name="$(parent)BG" hidden="true" />
+				<Control name="$(parent)Overlay" hidden="true" />
 			</Controls>
 		</StatusBar>
 
+		<StatusBar name="UnitFramesRebirth_RaidUnitFrameStatus" virtual="true">
+			<OnInitialized>
+				self.shield = self:GetNamedChild("Shield")
+				ZO_StatusBar_SetGradientColor(self.shield, SHIELD_COLOR_GRADIENT)
+			</OnInitialized>
+			<Controls>
+				<StatusBar name="$(parent)Shield">
+					<Anchor point="TOPLEFT" offsetX="0" offsetY="0" />
+					<Anchor point="BOTTOMRIGHT" offsetX="0" offsetY="0" />
+				</StatusBar>
+			</Controls>
+		</StatusBar>
+
+		<StatusBar name="UnitFramesRebirth_RaidUnitFrameStatus_Keyboard_Template" inherits="ZO_DefaultStatusBarBase" virtual="true">
+			<Controls>
+				<StatusBar name="$(parent)Shield">
+					<Anchor point="TOPLEFT" offsetX="0" offsetY="0" />
+					<Anchor point="BOTTOMRIGHT" offsetX="0" offsetY="0" />
+				</StatusBar>
+			</Controls>
+		</StatusBar>
+
+		<StatusBar name="UnitFramesRebirth_RaidUnitFrameStatus_Gamepad_Template" virtual="true">
+			<Controls>
+				<StatusBar name="$(parent)Shield">
+					<Anchor point="TOPLEFT" offsetX="0" offsetY="0" />
+					<Anchor point="BOTTOMRIGHT" offsetX="0" offsetY="0" />
+				</StatusBar>
+			</Controls>
+		</StatusBar>
+
+		<!-- SHIELD POWER -->
+		<StatusBar name="UnitFramesRebirth_GroupPowerShieldBar" level="500" virtual="true" textureFile="EsoUI/Art/UnitAttributeVisualizer/attributeBar_dynamic_fill.dds">
+			<Dimensions y="14" />
+			<Anchor point="LEFT" />
+			<Anchor point="RIGHT" />
+			<TextureCoords left="0" right="1" top="0" bottom="0.53125"/>
+			<LeadingEdge textureFile="EsoUI/Art/UnitAttributeVisualizer/attributeBar_dynamic_leadingEdge.dds" width="11" height="17" />
+			<LeadingEdgeTextureCoords left="0" right="0.6875" top="0" bottom="0.53125" />
+			<Controls>
+				<StatusBar name="$(parent)Gloss" inherits="ZO_PlayerAttributeStatusBarGloss" />
+			</Controls>
+
+			<OnInitialized>
+				self.gloss = self:GetNamedChild("Gloss")
+			</OnInitialized>
+
+			<OnMinMaxValueChanged>
+				self.gloss:SetMinMax(min, max)
+			</OnMinMaxValueChanged>
+
+			<OnValueChanged>
+				self.gloss:SetValue(value)
+			</OnValueChanged>
+		</StatusBar>
+
+		<StatusBar name="UnitFramesRebirth_GroupPowerShieldBar_Keyboard_Template" virtual="true" textureFile="EsoUI/Art/UnitAttributeVisualizer/attributeBar_dynamic_fill.dds">
+			<Anchor point="TOPLEFT" offsetX="0" offsetY="2" />
+			<Anchor point="BOTTOMRIGHT" offsetX="0" offsetY="-2" />
+			<TextureCoords left="0" right="1" top="0" bottom="0.53125"/>
+			<LeadingEdge textureFile="EsoUI/Art/UnitAttributeVisualizer/attributeBar_dynamic_leadingEdge.dds" width="11" height="17" />
+			<LeadingEdgeTextureCoords left="0" right="0.6875" top="0" bottom="0.53125" />
+			<Controls>
+				<StatusBar name="$(parent)Gloss" inherits="ZO_PlayerAttributeStatusBarGloss_Keyboard_Template" />
+			</Controls>
+		</StatusBar>
+
+		<StatusBar name="UnitFramesRebirth_GroupPowerShieldBar_Gamepad_Template" virtual="true" textureFile="EsoUI/Art/UnitAttributeVisualizer/Gamepad/gp_attributeBar_dynamic_fill.dds">
+			<Anchor point="TOPLEFT" offsetX="0" offsetY="-10" />
+			<Anchor point="BOTTOMRIGHT" offsetX="0" offsetY="9" />
+			<TextureCoords left="0.34375" right="0.46875"  top="0" bottom="1"/>
+			<LeadingEdge textureFile="EsoUI/Art/UnitAttributeVisualizer/Gamepad/gp_attributeBar_dynamic_fill.dds" width="4" height="64" />
+			<LeadingEdgeTextureCoords left="0" right="1" top="0" bottom="1" />
+			<Controls>
+				<StatusBar name="$(parent)Gloss" inherits="ZO_PlayerAttributeStatusBarGloss_Gamepad_Template" />
+			</Controls>
+		</StatusBar>
+
+		<StatusBar name="UnitFramesRebirth_RaidPowerShieldBar" inherits="ZO_UnitFrameStatus" virtual="true" />
+		<StatusBar name="UnitFramesRebirth_RaidPowerShieldBar_Keyboard_Template" virtual="true" />
+		<StatusBar name="UnitFramesRebirth_RaidPowerShieldBar_Gamepad_Template" virtual="true" />
+
+		<!-- PET UNITS -->
 		<Control name="UnitFramesRebirth_PetGroupUnitFrame_Keyboard_Template" virtual="true">
 			<Dimensions x="ZO_KEYBOARD_GROUP_FRAME_WIDTH" y="ZO_KEYBOARD_GROUP_FRAME_HEIGHT" />
 			<Controls>

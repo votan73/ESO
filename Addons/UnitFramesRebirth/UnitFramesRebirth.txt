@@ -1,8 +1,8 @@
 ## Title: Unit Frames Rebirth
 ## Author: Scootworks & votan
-## APIVersion: 100026 100027
-## Version: 1.2.1
-## AddOnVersion: 10201
+## APIVersion: 100029 100030
+## Version: 1.2.4
+## AddOnVersion: 10204
 ## DependsOn: LibAsync LibHarvensAddonSettings
 ## SavedVariables: UnitFramesRebirth_Data
 
@@ -12,6 +12,7 @@ lang/strings.lua
 lang/$(language).lua
 
 PetUtilities.lua
+Shield.lua
 HealthWarner.lua
 UnitFrames.xml
 UnitFrames.lua
