@@ -14,13 +14,6 @@ local function CreateSettings()
 		ZO_UnitFrames_UpdateWindow("reticleovertarget", UNIT_CHANGED)
 	end
 
-	local function UpdateGroupFrameWindows()
-		for i = 1, SMALL_GROUP_SIZE_THRESHOLD do
-			local unitTag = GetGroupUnitTagByIndex(i)
-			ZO_UnitFrames_UpdateWindow(unitTag, UNIT_CHANGED)
-		end
-	end
-
 	local LibHarvensAddonSettings = LibHarvensAddonSettings or LibStub("LibHarvensAddonSettings-1.0")
 	local settings = LibHarvensAddonSettings:AddAddon(ADDON_DISPLAY_NAME)
 
@@ -29,8 +22,6 @@ local function CreateSettings()
 		showHealthWarner = true,
 		showUnitShield = true,
 		switchNames = true,
-		switchAssignmentIcon = true,
-		showLevel = true,
 		hideTitle = true,
 		enablePetHealth = true,
 		approachAmountMs = UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_DEFAULT,
@@ -58,30 +49,6 @@ local function CreateSettings()
 		setFunction = function(bool)
 			UnitFrames.account.switchNames = bool
 			UpdateTargetWindow()
-		end,
-	}
-
-	settings:AddSetting {
-		type = LibHarvensAddonSettings.ST_CHECKBOX,
-		label = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_SWITCH_ASSIGNMENT_ICON),
-		tooltip = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_SWITCH_ASSIGNMENT_ICON_TT),
-		default = DEFAULT_SETTINGS.switchAssignmentIcon,
-		getFunction = function() return UnitFrames.account.switchAssignmentIcon end,
-		setFunction = function(bool)
-			UnitFrames.account.switchAssignmentIcon = bool
-			UpdateGroupFrameWindows()
-		end,
-	}
-
-	settings:AddSetting {
-		type = LibHarvensAddonSettings.ST_CHECKBOX,
-		label = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_LEVEL),
-		tooltip = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_LEVEL_TT),
-		default = DEFAULT_SETTINGS.showLevel,
-		getFunction = function() return UnitFrames.account.showLevel end,
-		setFunction = function(bool)
-			UnitFrames.account.showLevel = bool
-			UpdateGroupFrameWindows()
 		end,
 	}
 
