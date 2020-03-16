@@ -8,50 +8,49 @@ UNIT_FRAMES_REBIRTH_PET_GUARDIAN = 3
 local PETINDEX_NONE = 4294967296
 
 local function GetPetNameLower(abilityId)
-	return ZO_CachedStrFormat("<<z:1>>", GetAbilityName(abilityId))
+    return zo_strformat(SI_ABILITY_NAME, GetAbilityName(abilityId)):lower()
 end
 
 local PET_NAMES =
 {
-	-- Familiar
-	[GetPetNameLower(18602)] = true,
+    -- Familiar
+    [GetPetNameLower(18602)] = true,
 
-	-- Clannfear
-	["clannfear"] = true, -- en
-	["clannbann"] = true, -- de
-	["faucheclan"] = true, -- fr
+    -- Clannfear
+    ["clannfear"] = true, -- en
+    ["clannbann"] = true, -- de
+    ["faucheclan"] = true, -- fr
 
-	-- Volatile Familiar
-	[GetPetNameLower(30678)] = true, -- en/de
-	["familier explosif"] = true, -- fr
+    -- Volatile Familiar
+    [GetPetNameLower(117255)] = true,
 
-	-- Winged Twilight
-	[GetPetNameLower(30589)] = true,
+    -- Winged Twilight
+    ["winged twilight"] = true, -- en
+    ["zwielichtschwinge"] = true, -- de
+    ["crépuscule ailé"] = true, -- fr
 
-	-- Twilight Tormentor
-	[GetPetNameLower(30594)] = true, -- en
-	["zwielichtpeinigerin"] = true, -- de
-	["tourmenteur crépusculaire"] = true, -- fr
+    -- Twilight Tormentor
+    [GetPetNameLower(117273)] = true,
 
-	-- Twilight Matriarch
-	[GetPetNameLower(30629)] = true,
+    -- Twilight Matriarch
+    [GetPetNameLower(24742)] = true,
 
-	-- Feral Guardian
-	[GetPetNameLower(94376)] = true,
+    -- Feral Guardian
+    [GetPetNameLower(88657)] = true,
 
-	-- Eternal Guardian
-	[GetPetNameLower(94394)] = true,
+    -- Eternal Guardian
+    [GetPetNameLower(131307)] = true,
 
-	-- Wild Guardian
-	[GetPetNameLower(94408)] = true,
+    -- Wild Guardian
+    [GetPetNameLower(131308)] = true,
 }
 
 function IsTrackedPet(unitTag)
-	if unitTag then
-		local unitName = ZO_CachedStrFormat("<<z:1>>", GetUnitName(unitTag))
-		return PET_NAMES[unitName] == true
-	end
-	return false
+    if unitTag then
+        local unitName = ZO_CachedStrFormat("<<z:1>>", GetUnitName(unitTag))
+        return PET_NAMES[unitName] == true
+    end
+    return false
 end
 
 local petIndices = { }
