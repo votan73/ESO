@@ -1,8 +1,8 @@
 ## Title: iChat
 ## Author: votan
-## APIVersion: 100028 100029
-## AddOnVersion: 10050
-## Version: 1.0.5
+## APIVersion: 100030 100031
+## AddOnVersion: 10060
+## Version: 1.0.6
 --- To be loaded as early as possible (for buffering d()-output) this addon should not depend on anything. OptionalDependsOn: LibStub LibAddonMenu-2.0
 ## DependsOn: LibHarvensAddonSettings LibAsync LibCustomMenu
 ## SavedVariables: iChatSavedVar iChatHistory

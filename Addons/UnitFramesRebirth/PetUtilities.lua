@@ -4,18 +4,18 @@ PET_GROUP_SIZE_THRESHOLD = 2
 local PETINDEX_NONE = 4294967296
 
 local function GetPetNameLower(abilityId)
-	return ZO_CachedStrFormat(SI_ABILITY_NAME, GetAbilityName(abilityId)):lower()
+    return zo_strformat(SI_ABILITY_NAME, GetAbilityName(abilityId)):lower()
 end
 
 local PET_NAMES =
 {
-	-- Familiar
-	[GetPetNameLower(18602)] = true,
+    -- Familiar
+    [GetPetNameLower(18602)] = true,
 
-	-- Clannfear
-	["clannfear"] = true, -- en
-	["clannbann"] = true, -- de
-	["faucheclan"] = true, -- fr
+    -- Clannfear
+    ["clannfear"] = true, -- en
+    ["clannbann"] = true, -- de
+    ["faucheclan"] = true, -- fr
 
 	-- Volatile Familiar
 	[GetPetNameLower(117255)] = true,
@@ -23,7 +23,7 @@ local PET_NAMES =
 	-- Winged Twilight
 	["winged twilight"] = true, -- en
 	["zwielichtschwinge"] = true, -- de
-	["crépuscule ailé"] = true, -- fr
+	["crÃ©puscule ailÃ©"] = true, -- fr
 
 	-- Twilight Tormentor
 	[GetPetNameLower(117273)] = true,

@@ -1,7 +1,7 @@
 local addon = ZO_Object:Subclass()
 addon.name = "iChat"
-addon.defaults = { }
-addon.accountDefaults = { }
+addon.defaults = {}
+addon.accountDefaults = {}
 addon.events = ZO_CallbackObject:New()
 
 local em = GetEventManager()
@@ -17,13 +17,12 @@ function addon:Initialize()
 
 	self.account = ZO_SavedVars:NewAccountWide("iChatSavedVar", 1, nil, self.accountDefaults)
 	self.player = ZO_SavedVars:NewCharacterIdSettings("iChatSavedVar", 1, nil, self.defaults)
-	iChatHistory = iChatHistory or { }
+	iChatHistory = iChatHistory or {}
 
 	self.events:FireCallbacks("OnLoad")
 	-- Give someone a chance to do something after all others did something.
 	self.events:FireCallbacks("OnLoaded")
 end
-
 
 -- do
 -- local function UpdateControls()
@@ -47,12 +46,16 @@ end
 
 function addon:InitSettings()
 	local LibHarvensAddonSettings = LibHarvensAddonSettings or LibStub("LibHarvensAddonSettings-1.0", LibStub.SILENT)
-	if not LibHarvensAddonSettings then return end
+	if not LibHarvensAddonSettings then
+		return
+	end
 
 	local settings = LibHarvensAddonSettings:AddAddon("iChat")
-	if not settings then return end
+	if not settings then
+		return
+	end
 	addon.settingsControls = settings
-	settings.version = "1.0.5"
+	settings.version = "1.0.6"
 	settings.allowDefaults = true
 	-- settings.website = "http://www.esoui.com/downloads/"
 end
@@ -61,23 +64,29 @@ end
 
 local function GetLocalTimeStamp()
 	local utc = GetTimeStamp()
-	local localTimeShift = GetSecondsSinceMidnight() -(utc % 86400)
-	if localTimeShift < -12 * 60 * 60 then localTimeShift = localTimeShift + 86400 end
+	local localTimeShift = GetSecondsSinceMidnight() - (utc % 86400)
+	if localTimeShift < -12 * 60 * 60 then
+		localTimeShift = localTimeShift + 86400
+	end
 	return utc + localTimeShift
 end
 
 local function FormatTime(eventArgs)
 	local text = eventArgs.formattedEventText
-	if not text then return end
+	if not text then
+		return
+	end
 	return string.format("|cCCCCCC[%s]|r %s", ZO_FormatTime(eventArgs.localTimeStamp % 86400, TIME_FORMAT_STYLE_CLOCK_TIME, TIME_FORMAT_PRECISION_TWENTY_FOUR_HOUR), text)
 end
 
 do
-	local eventArgs = { }
+	local eventArgs = {}
 	local function PreFormatting(orgFormatter, ...)
 		eventArgs.cancel, eventArgs.isHandled = false, false
 		addon.events:FireCallbacks("PreFormatting", eventArgs)
-		if eventArgs.cancel then return end
+		if eventArgs.cancel then
+			return
+		end
 		if eventArgs.isHandled then
 			return eventArgs.formattedEventText, eventArgs.targetChannel, eventArgs.shownDisplayName, eventArgs.rawMessageText
 		else
@@ -175,9 +184,9 @@ do
 end
 
 do
-	local orgOnChatEvent = SharedChatSystem.OnChatEvent
-	function SharedChatSystem.OnChatEvent(self, ...)
-		local chat, entry = self, { ...}
+	local orgOnChatEvent = CHAT_ROUTER.FormatAndAddChatMessage
+	function CHAT_ROUTER.FormatAndAddChatMessage(self, ...)
+		local chat, entry = self, {...}
 		entry[#entry + 1] = GetLocalTimeStamp()
 		local function PrePostMessage()
 			addon.events:FireCallbacks("OnChatEvent", chat, entry)
