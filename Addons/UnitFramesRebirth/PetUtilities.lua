@@ -1,10 +1,6 @@
 MAX_PLAYER_PET = 7
 PET_GROUP_SIZE_THRESHOLD = 2
 
-UNIT_FRAMES_REBIRTH_PET_FAMILIAR = 1
-UNIT_FRAMES_REBIRTH_PET_TWILIGHT = 2
-UNIT_FRAMES_REBIRTH_PET_GUARDIAN = 3
-
 local PETINDEX_NONE = 4294967296
 
 local function GetPetNameLower(abilityId)
@@ -21,36 +17,32 @@ local PET_NAMES =
     ["clannbann"] = true, -- de
     ["faucheclan"] = true, -- fr
 
-    -- Volatile Familiar
-    [GetPetNameLower(117255)] = true,
+	-- Volatile Familiar
+	[GetPetNameLower(117255)] = true,
 
-    -- Winged Twilight
-    ["winged twilight"] = true, -- en
-    ["zwielichtschwinge"] = true, -- de
-    ["cr�puscule ail�"] = true, -- fr
+	-- Winged Twilight
+	["winged twilight"] = true, -- en
+	["zwielichtschwinge"] = true, -- de
+	["crÃ©puscule ailÃ©"] = true, -- fr
 
-    -- Twilight Tormentor
-    [GetPetNameLower(117273)] = true,
+	-- Twilight Tormentor
+	[GetPetNameLower(117273)] = true,
 
-    -- Twilight Matriarch
-    [GetPetNameLower(24742)] = true,
+	-- Twilight Matriarch
+	[GetPetNameLower(24742)] = true,
 
-    -- Feral Guardian
-    [GetPetNameLower(88657)] = true,
+	-- Feral Guardian
+	[GetPetNameLower(88657)] = true,
 
-    -- Eternal Guardian
-    [GetPetNameLower(131307)] = true,
+	-- Eternal Guardian
+	[GetPetNameLower(131307)] = true,
 
-    -- Wild Guardian
-    [GetPetNameLower(131308)] = true,
+	-- Wild Guardian
+	[GetPetNameLower(131308)] = true,
 }
 
 function IsTrackedPet(unitTag)
-    if unitTag then
-        local unitName = ZO_CachedStrFormat("<<z:1>>", GetUnitName(unitTag))
-        return PET_NAMES[unitName] == true
-    end
-    return false
+	return PET_NAMES[ZO_CachedStrFormat("<<z:1>>", GetUnitName(unitTag))] == true
 end
 
 local petIndices = { }
@@ -135,6 +127,12 @@ do
 end
 
 -- keybind functions
+UNIT_FRAMES_REBIRTH_PET_FAMILIAR = 1
+UNIT_FRAMES_REBIRTH_PET_TWILIGHT = 2
+UNIT_FRAMES_REBIRTH_PET_GUARDIAN = 3
+
+local PLAYER_UNIT_TAG = "player"
+
 local ABILITIES_SUMMONED_PETS =
 {
 	[UNIT_FRAMES_REBIRTH_PET_FAMILIAR] =
@@ -201,9 +199,9 @@ function DismissPlayerPet(lookup)
 	local petAbilities = GetPetAbilityIds(lookup)
 	if petAbilities then
 		local buffSlot, abilityId, _
-		local numBuffs = GetNumBuffs("player")
+		local numBuffs = GetNumBuffs(PLAYER_UNIT_TAG)
 		for i = 1, numBuffs do
-			buffSlot, _, _, _, _, _, _, abilityId = select(4, GetUnitBuffInfo("player", i))
+			buffSlot, _, _, _, _, _, _, abilityId = select(4, GetUnitBuffInfo(PLAYER_UNIT_TAG, i))
 			if petAbilities[abilityId] then
 				return CancelBuff(buffSlot)
 			end
