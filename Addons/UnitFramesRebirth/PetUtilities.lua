@@ -42,11 +42,7 @@ local PET_NAMES =
 }
 
 function IsTrackedPet(unitTag)
-	if unitTag then
-		local unitName = ZO_CachedStrFormat("<<z:1>>", GetUnitName(unitTag))
-		return PET_NAMES[unitName] == true
-	end
-	return false
+	return PET_NAMES[ZO_CachedStrFormat("<<z:1>>", GetUnitName(unitTag))] == true
 end
 
 local petIndices = { }
