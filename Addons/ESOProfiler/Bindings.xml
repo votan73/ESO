@@ -9,4 +9,11 @@
       </Action>
     </Category>
   </Layer>
+  <Layer name="SI_KEYBINDINGS_LAYER_GENERAL">
+    <Category name="SI_KEYBINDINGS_CATEGORY_USER_INTERFACE">
+      <Action name="ESO_PROFILER_TOGGLE_GLOBAL" inheritsBindFrom="ESO_PROFILER_TOGGLE" hideAction="true">
+        <Down>if ESO_PROFILER.profiling then StopScriptProfiler() else StartScriptProfiler() end</Down>
+      </Action>
+    </Category>
+  </Layer>
 </Bindings>
