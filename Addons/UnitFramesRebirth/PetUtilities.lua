@@ -1,21 +1,20 @@
-MAX_PLAYER_PET = 7
 PET_GROUP_SIZE_THRESHOLD = 2
 
 local PETINDEX_NONE = 4294967296
 
 local function GetPetNameLower(abilityId)
-    return zo_strformat(SI_ABILITY_NAME, GetAbilityName(abilityId)):lower()
+	return ZO_CachedStrFormat(SI_ABILITY_NAME, GetAbilityName(abilityId)):lower()
 end
 
 local PET_NAMES =
 {
-    -- Familiar
-    [GetPetNameLower(18602)] = true,
+	-- Familiar
+	[GetPetNameLower(18602)] = true,
 
-    -- Clannfear
-    ["clannfear"] = true, -- en
-    ["clannbann"] = true, -- de
-    ["faucheclan"] = true, -- fr
+	-- Clannfear
+	["clannfear"] = true, -- en
+	["clannbann"] = true, -- de
+	["faucheclan"] = true, -- fr
 
 	-- Volatile Familiar
 	[GetPetNameLower(117255)] = true,
@@ -23,7 +22,7 @@ local PET_NAMES =
 	-- Winged Twilight
 	["winged twilight"] = true, -- en
 	["zwielichtschwinge"] = true, -- de
-	["crÃ©puscule ailÃ©"] = true, -- fr
+	["crépuscule ailé"] = true, -- fr
 
 	-- Twilight Tormentor
 	[GetPetNameLower(117273)] = true,
@@ -47,13 +46,13 @@ end
 
 local petIndices = { }
 
-for i = 1, MAX_PLAYER_PET do
+for i = 1, MAX_PET_UNIT_TAGS do
 	petIndices[i] = "playerpet" .. i
 end
 
 
 function IsPetActive()
-	for i = 1, MAX_PLAYER_PET do
+	for i = 1, MAX_PET_UNIT_TAGS do
 		local unitTag = petIndices[i]
 		if DoesUnitExist(unitTag) and IsTrackedPet(unitTag) then
 			return true
@@ -71,7 +70,7 @@ end
 
 function GetPetUnitTagByIndex(petIndex)
 	local index = 0
-	for i = 1, MAX_PLAYER_PET do
+	for i = 1, MAX_PET_UNIT_TAGS do
 		local unitTag = petIndices[i]
 		if DoesUnitExist(unitTag) and IsTrackedPet(unitTag) then
 			index = index + 1
@@ -84,7 +83,7 @@ end
 
 function GetPetGroupSize()
 	local count = 0
-	for i = 1, MAX_PLAYER_PET do
+	for i = 1, MAX_PET_UNIT_TAGS do
 		local unitTag = petIndices[i]
 		if DoesUnitExist(unitTag) and IsTrackedPet(unitTag) then
 			count = count + 1
@@ -97,7 +96,7 @@ do
 	local petUnitTags = setmetatable( { }, {
 		__index = function(self, key)
 			local petIndex = tonumber(key:match("^playerpet(%d+)$"))
-			if petIndex and petIndex >= 1 and petIndex <= MAX_PLAYER_PET then
+			if petIndex and petIndex >= 1 and petIndex <= MAX_PET_UNIT_TAGS then
 				self[key] = petIndex
 			else
 				self[key] = false
