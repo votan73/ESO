@@ -1,4 +1,4 @@
-MAX_PLAYER_PET = 7
+﻿MAX_PLAYER_PET = 7
 PET_GROUP_SIZE_THRESHOLD = 2
 
 local PETINDEX_NONE = 4294967296
@@ -23,7 +23,7 @@ local PET_NAMES =
 	-- Winged Twilight
 	["winged twilight"] = true, -- en
 	["zwielichtschwinge"] = true, -- de
-	["crÃ©puscule ailÃ©"] = true, -- fr
+	["crépuscule ailé"] = true, -- fr
 
 	-- Twilight Tormentor
 	[GetPetNameLower(117273)] = true,
