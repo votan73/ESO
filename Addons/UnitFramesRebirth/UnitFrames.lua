@@ -1,10 +1,6 @@
 local FULL_ALPHA_VALUE = 1
 local FADED_ALPHA_VALUE = 0.4
 
-local HIDE_BAR_TEXT = 0
-local SHOW_BAR_TEXT_MOUSE_OVER = 1
-local SHOW_BAR_TEXT = 2
-
 local UNIT_CHANGED, FORCE_INIT, UPDATE_BAR_TYPE, UPDATE_VALUE, FORCE_SHOW, IS_ONLINE, IS_IN_RANGE = true, true, true, true, true, true, true
 local ANIMATED, DONT_COLOR_RANK_ICON, PREVENT_SHOW, IS_NOT_LEADER = false, false, false, false
 local NO_SOUND = nil
@@ -202,14 +198,14 @@ function UnitFramesManager:Initialize()
 	self.UnitFrameBarClass = UnitFrameBar
 	self.KEYBOARD_CONSTANTS = KEYBOARD_CONSTANTS
 	self.GAMEPAD_CONSTANTS = GAMEPAD_CONSTANTS
-	self.TargetUnitFrameTemplate = "ZO_TargetUnitFrame"
 	self.UnitFrameBarTextTemplate = "ZO_UnitFrameBarText"
 	self.GroupFrameAnchor = "ZO_GroupFrameAnchor"
 	self.RaidFrameAnchor = "ZO_RaidFrameAnchor"
 	self.PetFrameAnchor = "ZO_GroupFrameAnchor"
-	self.GroupUnitFrame = "ZO_GroupUnitFrame"
-	self.RaidUnitFrame = "ZO_RaidUnitFrame"
-	self.PetUnitFrame = "UnitFramesRebirth_PetGroupUnitFrame"
+	self.TargetUnitFrameTemplate = TARGET_UNIT_FRAME
+	self.GroupUnitFrame = GROUP_UNIT_FRAME
+	self.RaidUnitFrame = RAID_UNIT_FRAME
+	self.PetUnitFrame = PET_UNIT_FRAME
 end
 
 do
@@ -289,10 +285,10 @@ function UnitFramesManager:GetFrame(unitTag)
 	return unitFrameTable and unitFrameTable[unitTag]
 end
 
-function UnitFramesManager:CreateFrame(unitTag, anchors, showBarText, style)
+function UnitFramesManager:CreateFrame(unitTag, anchors, barTextMode, style, templateName)
 	local unitFrame = self:GetFrame(unitTag)
 	if not unitFrame then
-		unitFrame = UnitFrame:New(unitTag, showBarText, style)
+		unitFrame = UnitFrame:New(unitTag, barTextMode, style, templateName)
 
 		local unitFrameTable = self:GetUnitFrameLookupTable(unitTag)
 		if unitFrameTable then
@@ -583,7 +579,7 @@ local function IsValidBarStyle(style, powerType)
 	return styleData and(styleData[powerType] ~= nil or styleData[ANY_POWER_TYPE] ~= nil)
 end
 
-local function CreateBarStatusControl(baseBarName, parent, style, mechanic, showBarText)
+local function CreateBarStatusControl(baseBarName, parent, style, mechanic)
 	local barData = GetPlatformBarStyle(style, mechanic)
 	if barData then
 		if barData.template then
@@ -686,17 +682,17 @@ end
 
 UnitFrameBar = ZO_Object:Subclass()
 
-function UnitFrameBar:New(baseBarName, parent, showFrameBarText, style, mechanic)
-	local barControls = CreateBarStatusControl(baseBarName, parent, style, mechanic, showFrameBarText)
+function UnitFrameBar:New(baseBarName, parent, barTextMode, style, mechanic)
+	local barControls = CreateBarStatusControl(baseBarName, parent, style, mechanic)
 	if barControls then
 		local newFrameBar = ZO_Object.New(self)
 		newFrameBar.barControls = barControls
-		newFrameBar.showBarText = showFrameBarText
+		newFrameBar.barTextMode = barTextMode
 		newFrameBar.style = style
 		newFrameBar.mechanic = mechanic
 		newFrameBar.resourceNumbersLabel = parent:GetNamedChild("ResourceNumbers")
 
-		if showFrameBarText ~= HIDE_BAR_TEXT then
+		if barTextMode ~= ZO_UNIT_FRAME_BAR_TEXT_MODE_HIDDEN then
 			newFrameBar.leftText, newFrameBar.rightText = CreateBarTextControls(baseBarName, parent, style, mechanic)
 		end
 
@@ -734,14 +730,14 @@ function UnitFrameBar:Update(barType, cur, max, forceInit)
 end
 
 local function GetVisibility(self)
-	if self.showBarText == SHOW_BAR_TEXT_MOUSE_OVER then
+	if self.barTextMode == ZO_UNIT_FRAME_BAR_TEXT_MODE_MOUSE_OVER then
 		return self.isMouseInside
 	end
 	return true
 end
 
 function UnitFrameBar:UpdateText(updateBarType, updateValue)
-	if self.showBarText == SHOW_BAR_TEXT or self.showBarText == SHOW_BAR_TEXT_MOUSE_OVER then
+	if self.barTextMode == ZO_UNIT_FRAME_BAR_TEXT_MODE_SHOWN or self.barTextMode == ZO_UNIT_FRAME_BAR_TEXT_MODE_MOUSE_OVER then
 		local visible = GetVisibility(self)
 		if self.leftText and self.rightText then
 			self.leftText:SetHidden(not visible)
@@ -774,7 +770,7 @@ end
 function UnitFrameBar:SetMouseInside(inside)
 	self.isMouseInside = inside
 
-	if self.showBarText == SHOW_BAR_TEXT_MOUSE_OVER then
+	if self.barTextMode == ZO_UNIT_FRAME_BAR_TEXT_MODE_MOUSE_OVER then
 		self:UpdateText(UPDATE_BAR_TYPE, UPDATE_VALUE)
 	end
 end
@@ -815,7 +811,7 @@ function UnitFrameBar:GetBarControls()
 end
 
 function UnitFrameBar:SetBarTextMode(alwaysShow)
-	self.showBarText = alwaysShow
+	self.barTextMode = alwaysShow
 	self:UpdateText(UPDATE_BAR_TYPE, UPDATE_VALUE)
 end
 
@@ -1021,8 +1017,10 @@ end
 
 UnitFrame = ZO_Object:Subclass()
 
-function UnitFrame:New(unitTag, showBarText, style)
+function UnitFrame:New(unitTag, barTextMode, style, templateName)
+	templateName = templateName or style
 	local newFrame = ZO_Object.New(self)
+	local baseWindowName = templateName .. unitTag
 	local parent
 	if ZO_Group_IsGroupUnitTag(unitTag) then
 		parent = ZO_UnitFramesGroups
@@ -1035,9 +1033,10 @@ function UnitFrame:New(unitTag, showBarText, style)
 	local layoutData = GetPlatformLayoutData(style)
 	if not layoutData then return end
 
-	local frame = CreateControlFromVirtual(style .. unitTag, parent, style)
+	local frame = CreateControlFromVirtual(baseWindowName, parent, templateName)
 	frame:SetHidden(true)
 	newFrame.style = style
+	newFrame.templateName = templateName
 	newFrame.frame = frame
 	newFrame.fadeComponents = { }
 	newFrame.hiddenReasons = ZO_HiddenReasons:New()
@@ -1065,7 +1064,9 @@ function UnitFrame:New(unitTag, showBarText, style)
 	newFrame.rightBracketGlow = GetControl(frame, "RightBracketGlow")
 	newFrame.rightBracketUnderlay = GetControl(frame, "RightBracketUnderlay")
 
-	newFrame.healthBar = UnitFrameBar:New("$(parent)Hp", frame, showBarText, style, POWERTYPE_HEALTH)
+	newFrame.barTextMode = barTextMode
+
+	newFrame.healthBar = UnitFrameBar:New(baseWindowName .. "Hp", frame, barTextMode, style, POWERTYPE_HEALTH)
 	newFrame.healthBar:SetColor(POWERTYPE_HEALTH)
 
 	newFrame.resourceBars = { }
@@ -1112,7 +1113,7 @@ function UnitFrame:ApplyVisualStyle(gamepadMode)
 	self.currentGamepadMode = gamepadMode
 
 	DoUnitFrameLayout(self, self.style)
-	ApplyTemplateToControl(self.frame, ZO_GetPlatformTemplate(self.style))
+	ApplyTemplateToControl(self.frame, ZO_GetPlatformTemplate(self.templateName))
 
 	self:DoAlphaUpdate(IsUnitInGroupSupportRange(self.unitTag), IsUnitGroupLeader(self.unitTag))
 	self:UpdateDifficulty()
@@ -1199,7 +1200,7 @@ function UnitFrame:SetTextIndented(isIndented)
 	local layoutData = GetPlatformLayoutData(self.style)
 	if layoutData then
 		LayoutUnitFrameName(self.nameLabel, layoutData, isIndented)
-		LayoutUnitFrameStatus(self.statusLabel, layoutData.statusData, isIndented)
+		LayoutUnitFrameStatus(self.statusLabel, layoutData.statusData)
 	end
 end
 
@@ -1265,6 +1266,10 @@ function UnitFrame:RefreshVisible(instant)
 	end
 end
 
+function UnitFrame:GetHealth()
+	return GetUnitPower(self.unitTag, POWERTYPE_HEALTH)
+end
+
 function UnitFrame:RefreshControls()
 	if self.hidden then
 		self.dirty = true
@@ -1277,7 +1282,7 @@ function UnitFrame:RefreshControls()
 			self:UpdateLevel()
 			self:UpdateCaption()
 
-			local health, maxHealth = GetUnitPower(unitTag, POWERTYPE_HEALTH)
+			local health, maxHealth = self:GetHealth()
 			self.healthBar:Update(POWERTYPE_HEALTH, health, maxHealth, FORCE_INIT)
 
 			local powerType, cur, max
@@ -1361,7 +1366,7 @@ function UnitFrame:UpdatePowerBar(index, powerType, cur, max, forceInit)
 		local currentBar = self.powerBars[index]
 
 		if not currentBar then
-			self.powerBars[index] = UnitFrameBar:New("$(parent)PowerBar" .. index, self.frame, self.showBarText, self.style, powerType)
+			self.powerBars[index] = UnitFrameBar:New("$(parent)PowerBar" .. index, self.frame, self.barTextMode, self.style, powerType)
 			currentBar = self.powerBars[index]
 			currentBar:SetColor(powerType)
 			self.resourceBars[powerType] = currentBar
@@ -1826,9 +1831,9 @@ end
 
 local function CreateTargetFrame()
 	local targetFrameAnchor = ZO_Anchor:New(TOP, GuiRoot, TOP, 0, 88)
-	local targetFrame = UnitFrames:CreateFrame("reticleover", targetFrameAnchor, HIDE_BAR_TEXT, UnitFrames.TargetUnitFrameTemplate)
+	local targetFrame = UnitFrames:CreateFrame("reticleover", targetFrameAnchor, ZO_UNIT_FRAME_BAR_TEXT_MODE_HIDDEN, UnitFrames.TargetUnitFrameTemplate)
 	if targetFrame then
-		targetFrame:SetData("reticleover", targetFrameAnchor, HIDE_BAR_TEXT)
+		targetFrame:SetData("reticleover", targetFrameAnchor, ZO_UNIT_FRAME_BAR_TEXT_MODE_HIDDEN)
 		targetFrame.hasTarget = false
 		targetFrame:SetAnimateShowHide(true)
 	end
@@ -1977,7 +1982,7 @@ function UnitFramesManager:UpdateGroupFrames()
 		for i = groupIndex, groupSize do
 			unitTag = GetGroupUnitTagByIndex(i)
 			if not frames[unitTag] then
-				frames[unitTag] = UnitFrame:New(unitTag, HIDE_BAR_TEXT, style)
+				frames[unitTag] = UnitFrame:New(unitTag, ZO_UNIT_FRAME_BAR_TEXT_MODE_HIDDEN, style)
 			end
 		end
 		-- But sync index of all frames with those of API
@@ -1994,7 +1999,7 @@ function UnitFramesManager:UpdateGroupFrames()
 				if hasTarget then
 					anchor = GetGroupFrameAnchor(newIndex, groupSize)
 					if unitFrame.rawName ~= rawName then
-						unitFrame:SetData(unitTag, anchor, HIDE_BAR_TEXT)
+						unitFrame:SetData(unitTag, anchor, ZO_UNIT_FRAME_BAR_TEXT_MODE_HIDDEN)
 					else
 						-- just anchor at new index position
 						unitFrame:SetAnchor(anchor)
@@ -2038,7 +2043,7 @@ function UnitFramesManager:UpdatePetFrames()
 		for i = petIndex, petGroupSize do
 			unitTag = GetPetUnitTagByIndex(i)
 			if not frames[unitTag] then
-				frames[unitTag] = UnitFrame:New(unitTag, HIDE_BAR_TEXT, self.PetUnitFrame)
+				frames[unitTag] = UnitFrame:New(unitTag, ZO_UNIT_FRAME_BAR_TEXT_MODE_HIDDEN, self.PetUnitFrame)
 			end
 		end
 		-- But sync index of all frames with those of API
@@ -2054,7 +2059,7 @@ function UnitFramesManager:UpdatePetFrames()
 				if hasTarget then
 					anchor = GetPetGroupFrameAnchor(newIndex, petGroupSize)
 					if unitFrame.rawName ~= rawName then
-						unitFrame:SetData(unitTag, anchor, HIDE_BAR_TEXT)
+						unitFrame:SetData(unitTag, anchor, ZO_UNIT_FRAME_BAR_TEXT_MODE_HIDDEN)
 					else
 						-- just anchor at new index position
 						unitFrame:SetAnchor(anchor)

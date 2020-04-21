@@ -3,7 +3,7 @@ PET_GROUP_SIZE_THRESHOLD = 2
 local PETINDEX_NONE = 4294967296
 
 local function GetPetNameLower(abilityId)
-	return ZO_CachedStrFormat(SI_ABILITY_NAME, GetAbilityName(abilityId)):lower()
+	return zo_strformat(SI_ABILITY_NAME, GetAbilityName(abilityId)):lower()
 end
 
 local PET_NAMES =
