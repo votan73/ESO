@@ -1,3 +1,7 @@
+if GetAPIVersion() < 100031 then
+	return
+end
+
 local FULL_ALPHA_VALUE = 1
 local FADED_ALPHA_VALUE = 0.4
 
