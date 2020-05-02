@@ -7,6 +7,10 @@ SafeAddString(SI_UNITFRAMESREBIRTH_APPROACH_FASTER, "[300ミリ秒] 早い", 0)
 SafeAddString(SI_UNITFRAMESREBIRTH_APPROACH_FAST, "[400ミリ秒] 少し早い", 0)
 SafeAddString(SI_UNITFRAMESREBIRTH_APPROACH_DEFAULT, "[500ミリ秒] デフォルト", 0)
 
+-- SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_SECTION_TARGET_FRAME, "Targeted Player Frame", 0)
+-- SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_SECTION_GROUP_PET_FRAME, "Group/Pet Frame", 0)
+-- SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_SECTION_HEALTH_BARS, "Health Bars", 0)
+
 SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_CLASS_ICON, "クラスアイコンを表示", 0)
 SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_CLASS_ICON_TT, "ターゲットフレームのプレーヤー名の隣にクラスアイコンを表示します。", 0)
 SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_SWITCH_NAMES, "名前を切り替え", 0)
@@ -20,6 +24,9 @@ SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_UNIT_SHIELDS_TT, "グループメン
 SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_PET_HEALTH, "ペットの体力バー", 0)
 SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_PET_HEALTH_TT, "有効にするとペットの体力バーが表示されます。バーは、このオプションが有効で、ペットが呼び出されている時にのみ表示されます。", 0)
 SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_APPROACH_HEALTHBAR, "体力バーの更新間隔", 0)
+-- SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_APPROACH_HEALTHBAR_TT, "Aktualisierungsrate der Lebensleisten", 0)
+-- SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_PLAYER_HEALTHBAR, "Aktualisierungsrate der Lebensleisten", 0)
+-- SafeAddString(SI_UNITFRAMESREBIRTH_SETTINGS_PLAYER_HEALTHBAR_TT, "Aktualisierungsrate der Lebensleisten", 0)
 
 -- SafeAddString(SI_KEYBINDINGS_CATEGORY_UNIT_FRAMES_REBIRTH, "Unit Frames Rebirth", 0)
 SafeAddString(SI_BINDING_NAME_UNIT_FRAMES_REBIRTH_ALL, "すべてのペットを解除する", 0)
