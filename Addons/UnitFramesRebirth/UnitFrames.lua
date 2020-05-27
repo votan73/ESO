@@ -412,7 +412,8 @@ end
 --[[
 	UnitFrameBar class...defines one bar in the unit frame, including background/glass textures, statusbar and text
 --]]
-local DEFAULT_ANIMATION_TIME_MS = 500
+UNIT_FRAMES_REBIRTH_INSTANT_ANIMATION_TIME_MS = 0
+UNIT_FRAMES_REBIRTH_INSTANT_DEFAULT_ANIMATION_TIME_MS = 500
 
 UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_ULTRA_FAST = 1
 UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_SUPER_FAST = 2
@@ -422,12 +423,12 @@ UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_DEFAULT = 5
 UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_INSTANT = 6
 
 local LOOKUP_APPROACH_AMOUNT_MS = {
-	[UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_INSTANT] = 0,
+	[UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_INSTANT] = UNIT_FRAMES_REBIRTH_INSTANT_ANIMATION_TIME_MS,
 	[UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_ULTRA_FAST] = 100,
 	[UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_SUPER_FAST] = 200,
 	[UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_FASTER] = 300,
 	[UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_FAST] = 400,
-	[UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_DEFAULT] = DEFAULT_ANIMATION_TIME_MS,
+	[UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_DEFAULT] = UNIT_FRAMES_REBIRTH_INSTANT_DEFAULT_ANIMATION_TIME_MS,
 }
 
 -- A special flag that essentially acts like a wild card, accepting any mechanic
@@ -711,13 +712,10 @@ function UnitFrameBar:Update(barType, cur, max, forceInit)
 	local barCur = isBarCentered and cur / 2 or cur
 	local barMax = isBarCentered and max / 2 or max
 
-	local customApproach = UnitFramesRebirth_GetStatusBarCustomApproachAmountMs()
+	local customApproachAmountMs = UnitFramesRebirth_GetStatusBarCustomApproachAmountMs()
+	forceInit = forceInit or customApproachAmountMs == UNIT_FRAMES_REBIRTH_INSTANT_ANIMATION_TIME_MS
 	for i = 1, numBarControls do
-		if customApproach ~= 0 then
-			ZO_StatusBar_SmoothTransition(self.barControls[i], barCur, barMax, forceInit, nil, customApproach)
-		else
-			ZO_StatusBar_SmoothTransition(self.barControls[i], barCur, barMax, FORCE_INIT_SMOOTH_STATUS_BAR)
-		end
+		ZO_StatusBar_SmoothTransition(self.barControls[i], barCur, barMax, forceInit, nil, customApproachAmountMs)
 	end
 
 	local updateBarType = false
@@ -2228,7 +2226,7 @@ function ZO_UnitFrames_IsTargetOfTargetEnabled()
 end
 
 function UnitFramesRebirth_GetStatusBarCustomApproachAmountMs()
-	return LOOKUP_APPROACH_AMOUNT_MS[UnitFrames.account.approachAmountMs] or DEFAULT_ANIMATION_TIME_MS
+	return LOOKUP_APPROACH_AMOUNT_MS[UnitFrames.account.approachAmountMs] or UNIT_FRAMES_REBIRTH_INSTANT_DEFAULT_ANIMATION_TIME_MS
 end
 
 local function RegisterForEvents()

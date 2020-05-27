@@ -1,21 +1,45 @@
-
 local ADDON_NAME = "UnitFramesRebirth"
 local ADDON_DISPLAY_NAME = "Unit Frames Rebirth"
 
 local UnitFrames
 CALLBACK_MANAGER:RegisterCallback("UnitFramesPreInit", function(unitFrames) UnitFrames = unitFrames end)
 
+-- Hook ZO_StatusBar_SmoothTransition
+local PLAYER_HEALTH_BAR_CONTROLS =
+{
+	["ZO_PlayerAttributeHealthBarLeft"] = true,
+	["ZO_PlayerAttributeHealthBarRight"] = true,
+}
+
+local function IsTrackedHealthBar(control)
+	return PLAYER_HEALTH_BAR_CONTROLS[control:GetName()] == true
+end
+
+local function IsSettingEnabled(enableApproachAmountOnPlayerHealthBar)
+	return enableApproachAmountOnPlayerHealthBar == true
+end
+
+local function HookSmoothTransition(enableApproachAmountOnPlayerHealthBar)
+	local origZO_StatusBar_SmoothTransition = ZO_StatusBar_SmoothTransition
+	function ZO_StatusBar_SmoothTransition(self, value, max, forceInit, onStopCallback, customApproachAmountMs)
+		if IsSettingEnabled(enableApproachAmountOnPlayerHealthBar) and IsTrackedHealthBar(self) and forceInit ~= true then
+			customApproachAmountMs = UnitFramesRebirth_GetStatusBarCustomApproachAmountMs() or customApproachAmountMs
+			forceInit = customApproachAmountMs == UNIT_FRAMES_REBIRTH_INSTANT_ANIMATION_TIME_MS
+		end
+		origZO_StatusBar_SmoothTransition(self, value, max, forceInit, onStopCallback, customApproachAmountMs)
+	end
+end
+
+-- Settings
 local function CreateSettings()
+	local LibHarvensAddonSettings = LibHarvensAddonSettings
+	local settings = LibHarvensAddonSettings:AddAddon(ADDON_DISPLAY_NAME)
 
 	local UNIT_CHANGED = true
-
 	local function UpdateTargetWindow()
 		ZO_UnitFrames_UpdateWindow("reticleover", UNIT_CHANGED)
 		ZO_UnitFrames_UpdateWindow("reticleovertarget", UNIT_CHANGED)
 	end
-
-	local LibHarvensAddonSettings = LibHarvensAddonSettings or LibStub("LibHarvensAddonSettings-1.0")
-	local settings = LibHarvensAddonSettings:AddAddon(ADDON_DISPLAY_NAME)
 
 	local DEFAULT_SETTINGS = {
 		showClassIcon = true,
@@ -25,8 +49,17 @@ local function CreateSettings()
 		hideTitle = true,
 		enablePetHealth = true,
 		approachAmountMs = UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_DEFAULT,
+		enableApproachAmountOnPlayerHealthBar = true,
 	}
 	UnitFrames.account = ZO_SavedVars:NewAccountWide(ADDON_NAME.."_Data", 1, nil, DEFAULT_SETTINGS)
+
+	local enableApproachAmountOnPlayerHealthBar = UnitFrames.account.enableApproachAmountOnPlayerHealthBar
+	HookSmoothTransition(enableApproachAmountOnPlayerHealthBar)
+
+	settings:AddSetting {
+		type = LibHarvensAddonSettings.ST_SECTION,
+		label = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_SECTION_TARGET_FRAME),
+	}
 
 	settings:AddSetting {
 		type = LibHarvensAddonSettings.ST_CHECKBOX,
@@ -65,6 +98,11 @@ local function CreateSettings()
 	}
 
 	settings:AddSetting {
+		type = LibHarvensAddonSettings.ST_SECTION,
+		label = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_SECTION_GROUP_PET_FRAME),
+	}
+
+	settings:AddSetting {
 		type = LibHarvensAddonSettings.ST_CHECKBOX,
 		label = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_HEALTH_WARNER),
 		tooltip = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_HEALTH_WARNER_TT),
@@ -100,6 +138,11 @@ local function CreateSettings()
 		end,
 	}
 
+	settings:AddSetting {
+		type = LibHarvensAddonSettings.ST_SECTION,
+		label = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_SECTION_HEALTH_BARS),
+	}
+
 	do
 		local Modes = {
 			{ name = GetString(SI_UNITFRAMESREBIRTH_APPROACH_INSTANT), data = UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_INSTANT },
@@ -116,12 +159,22 @@ local function CreateSettings()
 		settings:AddSetting {
 			type = LibHarvensAddonSettings.ST_DROPDOWN,
 			label = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_APPROACH_HEALTHBAR),
+			tooltip = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_APPROACH_HEALTHBAR_TT),
 			items = Modes,
 			default = ModeToData[DEFAULT_SETTINGS.approachAmountMs].name,
 			getFunction = function() return (ModeToData[UnitFrames.account.approachAmountMs] or ModeToData[DEFAULT_SETTINGS.approachAmountMs]).name end,
 			setFunction = function(combobox, name, item) UnitFrames.account.approachAmountMs = item.data end,
 		}
 	end
+
+	settings:AddSetting {
+		type = LibHarvensAddonSettings.ST_CHECKBOX,
+		label = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_PLAYER_HEALTHBAR),
+		tooltip = GetString(SI_UNITFRAMESREBIRTH_SETTINGS_PLAYER_HEALTHBAR_TT),
+		default = DEFAULT_SETTINGS.enableApproachAmountOnPlayerHealthBar,
+		getFunction = function() return UnitFrames.account.enableApproachAmountOnPlayerHealthBar end,
+		setFunction = function(bool) UnitFrames.account.enableApproachAmountOnPlayerHealthBar = bool end,
+	}
 end
 
 local function OnAddOnLoaded(event, name)
