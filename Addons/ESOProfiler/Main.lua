@@ -1,11 +1,4 @@
-﻿local legacy = GetAPIVersion() < 100027
-
--- ToDo: Remove
-if legacy then
-	SCRIPT_PROFILER_RECORD_DATA_TYPE_CLOSURE = 1
-end
-
-local addon = {
+﻿local addon = {
 	name = "ESOProfiler",
 }
 local em = GetEventManager()
@@ -162,7 +155,7 @@ do
 		end
 
 		InitializeTooltip(ItemTooltip, self.control, RIGHT, -5, 0, LEFT)
-		ZO_ItemTooltip_SetStolen(ItemTooltip, false)
+		ZO_ItemTooltip_UpdateVisualStyle(ItemTooltip, false, false)
 		local closure = selectedData.closure
 		local count = closure.callCount
 		ZO_ClearNumericallyIndexedTable(text)

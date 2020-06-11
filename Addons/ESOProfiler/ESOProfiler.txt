@@ -1,8 +1,8 @@
 ## Title: ESO Profiler
 ## Author: sirinsidiator & votan
-## APIVersion: 100030 100031
-## Version: 1.3.2
-## DependsOn: LibAsync>=20100 LibCustomMenu>=682
+## APIVersion: 100031 100032
+## Version: 1.3.3
+## DependsOn: LibAsync>=20100 LibCustomMenu>=690
 ## SavedVariables: ESOProfiler_Export
 
 ## This Add-On is not created by, affiliated with or sponsored by ZeniMax Media Inc. or its affiliates. The Elder Scrolls� and related logos are registered trademarks or trademarks of ZeniMax Media Inc. in the United States and/or other countries. All rights reserved.

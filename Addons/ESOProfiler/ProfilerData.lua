@@ -106,7 +106,7 @@ function ProfilerData:ProcessRecord(frameIndex, recordIndex)
 	if (calledByRecordIndex) then
 		local parentRecordDataIndex, _, _, grandParentRecordIndex, parentRecordDataType = GetScriptProfilerRecordInfo(frameIndex, calledByRecordIndex)
 		local calledByInfo = self:GetClosureInfo(parentRecordDataIndex, parentRecordDataType)
-		calledByInfo.selfTime = calledByInfo.selfTime - duration
+		calledByInfo.selfTime = math.max(0, calledByInfo.selfTime - duration)
 
 		stackId = self:GetStackFrameId(recordDataIndex, recordDataType, parentRecordDataIndex, parentRecordDataType)
 		local grandParentDataRecordIndex, grandParentRecordDataType
