@@ -25,11 +25,7 @@ do
 		local latency = tostring(GetLatency())
 		local memory = tostring(collectgarbage("count") * 1024)
 		local name = string.format("statsF%sL%sM%s", fps, latency, memory)
-		if legacy then
-			LoadString("", name)()
-		else
-			RecordScriptProfilerUserEvent(name)
-		end
+		RecordScriptProfilerUserEvent(name)
 	end
 
 	local function UpdateKeybind()
@@ -322,26 +318,19 @@ function addon:AddKeybind()
 			end,
 		},
 	}
-	-- ToDo: Remove
-	if legacy then
-		self.keybindButtonGroupAutoStart = {
-			alignment = KEYBIND_STRIP_ALIGN_CENTER,
-		}
-	else
-		self.keybindButtonGroupAutoStart = {
-			alignment = KEYBIND_STRIP_ALIGN_CENTER,
-			{
-				name = GetString(SI_BINDING_NAME_ESO_PROFILER_PROFILE_UI_LOAD),
-				keybind = "ESO_PROFILER_PROFILE_UI_LOAD",
-				order = 0,
-				callback = function()
-					PlaySound(SOUNDS.DEFAULT_CLICK)
-					SetAutoStartEnabled(true)
-					ReloadUI()
-				end,
-			},
-		}
-	end
+	self.keybindButtonGroupAutoStart = {
+		alignment = KEYBIND_STRIP_ALIGN_CENTER,
+		{
+			name = GetString(SI_BINDING_NAME_ESO_PROFILER_PROFILE_UI_LOAD),
+			keybind = "ESO_PROFILER_PROFILE_UI_LOAD",
+			order = 0,
+			callback = function()
+				PlaySound(SOUNDS.DEFAULT_CLICK)
+				SetAutoStartEnabled(true)
+				ReloadUI()
+			end,
+		},
+	}
 
 	self.keybindButtonGroupExtras = {
 		alignment = KEYBIND_STRIP_ALIGN_LEFT,
@@ -414,16 +403,14 @@ function addon:InitializeWindow()
 	ZO_ScrollList_AddDataType(self.contentList, SCRIPT_PROFILER_RECORD_DATA_TYPE_CLOSURE, "ESOProfilerRow", 24, setupDataRowClosure)
 	ZO_ScrollList_SetTypeSelectable(self.contentList, SCRIPT_PROFILER_RECORD_DATA_TYPE_CLOSURE, true)
 
-	if not legacy then
-		ZO_ScrollList_AddDataType(self.contentList, SCRIPT_PROFILER_RECORD_DATA_TYPE_CFUNCTION, "ESOProfilerRow", 24, setupDataRowOther)
-		ZO_ScrollList_SetTypeSelectable(self.contentList, SCRIPT_PROFILER_RECORD_DATA_TYPE_CFUNCTION, true)
+	ZO_ScrollList_AddDataType(self.contentList, SCRIPT_PROFILER_RECORD_DATA_TYPE_CFUNCTION, "ESOProfilerRow", 24, setupDataRowOther)
+	ZO_ScrollList_SetTypeSelectable(self.contentList, SCRIPT_PROFILER_RECORD_DATA_TYPE_CFUNCTION, true)
 
-		ZO_ScrollList_AddDataType(self.contentList, SCRIPT_PROFILER_RECORD_DATA_TYPE_GARBAGE_COLLECTION, "ESOProfilerRow", 24, setupDataRowOther)
-		ZO_ScrollList_SetTypeSelectable(self.contentList, SCRIPT_PROFILER_RECORD_DATA_TYPE_GARBAGE_COLLECTION, true)
+	ZO_ScrollList_AddDataType(self.contentList, SCRIPT_PROFILER_RECORD_DATA_TYPE_GARBAGE_COLLECTION, "ESOProfilerRow", 24, setupDataRowOther)
+	ZO_ScrollList_SetTypeSelectable(self.contentList, SCRIPT_PROFILER_RECORD_DATA_TYPE_GARBAGE_COLLECTION, true)
 
-		ZO_ScrollList_AddDataType(self.contentList, SCRIPT_PROFILER_RECORD_DATA_TYPE_USER_EVENT, "ESOProfilerRow", 24, setupDataRowOther)
-		ZO_ScrollList_SetTypeSelectable(self.contentList, SCRIPT_PROFILER_RECORD_DATA_TYPE_USER_EVENT, true)
-	end
+	ZO_ScrollList_AddDataType(self.contentList, SCRIPT_PROFILER_RECORD_DATA_TYPE_USER_EVENT, "ESOProfilerRow", 24, setupDataRowOther)
+	ZO_ScrollList_SetTypeSelectable(self.contentList, SCRIPT_PROFILER_RECORD_DATA_TYPE_USER_EVENT, true)
 
 	ZO_ScrollList_SetDeselectOnReselect(self.contentList, true)
 	ZO_ScrollList_EnableSelection(self.contentList, "ZO_ThinListHighlight", function(...) self:OnSelectionChanged(...) end)
@@ -617,19 +604,11 @@ em:RegisterForEvent(addon.name, EVENT_ADD_ON_LOADED, OnAddonLoaded)
 if GetCVar("StartLuaProfilingOnUILoad") ~= "0" then
 	local stop
 	local identifier = "ESO_PROFILER_AUTORUN"
-	if legacy then
-		StartScriptProfiler()
-		stop = function()
-			em:UnregisterForUpdate(identifier)
-			StopScriptProfiler()
-		end
-	else
-		NewRun()
-		stop = function()
-			em:UnregisterForUpdate(identifier)
-			StopScriptProfiler()
-			MAIN_MENU_KEYBOARD:ShowScene(ESO_PROFILER_SCENE:GetName())
-		end
+	NewRun()
+	stop = function()
+		em:UnregisterForUpdate(identifier)
+		StopScriptProfiler()
+		MAIN_MENU_KEYBOARD:ShowScene(ESO_PROFILER_SCENE:GetName())
 	end
 	em:RegisterForEvent(addon.name, EVENT_PLAYER_ACTIVATED, function()
 		em:UnregisterForEvent(addon.name, EVENT_PLAYER_ACTIVATED)
