@@ -1,0 +1,141 @@
+{
+    "New Addon": {
+        "prefix": "!esonew",
+        "body": [
+            "local addon = {",
+            "\tname = \"${1:Title}\"",
+            "}",
+            "local em = GetEventManager()",
+            "local wm = WINDOW_MANAGER",
+            "",
+            "---- Init ----",
+            "",
+            "function addon:Initialize()",
+            "$0",
+            "end",
+            "",
+            "local function OnAddonLoaded(event, name)",
+            "\tif name ~= addon.name then",
+            "\t\treturn",
+            "\tend",
+            "\tem:UnregisterForEvent(addon.name, EVENT_ADD_ON_LOADED)",
+            "\taddon:Initialize()",
+            "end",
+            "",
+            "em:RegisterForEvent(addon.name, EVENT_ADD_ON_LOADED, OnAddonLoaded)"
+        ],
+        "description": "Blank new addon",
+        "scope": "lua"
+    },
+    "Event Player Activated": {
+        "prefix": "!esoplayeractivated",
+        "body": [
+            "local function OnPlayerActivated(event, initial)",
+            "\tem:UnregisterForEvent(addon.name, EVENT_PLAYER_ACTIVATED)",
+            "\t$0",
+            "end",
+            "",
+            "em:RegisterForEvent(addon.name, EVENT_PLAYER_ACTIVATED, OnPlayerActivated)",
+            ""
+        ],
+        "description": "Handle player activated event",
+        "scope": "lua"
+    },
+    "Scene State Change": {
+        "prefix": "!esoscenestate",
+        "body": [
+            "${1:SCENE}:RegisterCallback(\"StateChange\", function(oldState, newState)",
+            "\tif newState == SCENE_SHOWING then$0",
+            "\telseif newState == SCENE_SHOWN then",
+            "\telseif newState == SCENE_HIDING then",
+            "\telseif newState == SCENE_HIDDEN then",
+            "\tend",
+            "end)",
+            ""
+        ],
+        "description": "Handle scene state change callback",
+        "scope": "lua"
+    },
+    "Keybind Descriptor": {
+        "prefix": "!esokeybinddescriptor",
+        "body": [
+            "self.${1:keybindStripDescriptor} = {",
+            "\talignment = KEYBIND_STRIP_ALIGN_${2:RIGHT},",
+            "\t{",
+            "\t\tname = GetString(SI_${3:STRING}),",
+            "\t\tkeybind = \"${4:ACTION_NAME}\",",
+            "\t\tcallback = function()$0",
+            "\t\tend,",
+            "\t\tenabled = function() return true end,",
+            "\t\tvisible = function(keybindButtonDescriptor)",
+            "\t\t\treturn GetHighestPriorityActionBindingInfoFromName(keybindButtonDescriptor.keybind) ~= KEY_INVALID",
+            "\t\tend",
+            "\t}",
+            "}",
+            "",
+            "${5:SCENE}:RegisterCallback(\"StateChange\", function(oldState, newState)",
+            "\tif newState == SCENE_SHOWN then",
+            "\t\tPushActionLayerByName(GetString(SI_${6:LAYER_NAME})) -- optional",
+            "\t\tKEYBIND_STRIP:AddKeybindButtonGroup(self.${1:keybindStripDescriptor})",
+            "\telseif newState == SCENE_HIDING then",
+            "\t\tKEYBIND_STRIP:RemoveKeybindButtonGroup(self.${1:keybindStripDescriptor})",
+            "\t\tRemoveActionLayerByName(GetString(SI_${6:LAYER_NAME})) -- optional",
+            "\tend",
+            "end)",
+            ""
+        ],
+        "description": "Create a new keybind descriptor with scene based activation",
+        "scope": "lua"
+    },
+    "Keybind Action": {
+        "prefix": "!esokeybindaction",
+        "body": [
+            ",",
+            "{",
+            "\tname = GetString(SI_${1:STRING}),",
+            "\tkeybind = \"${2:ACTION_NAME}\",",
+            "\tcallback = function()$0",
+            "\tend,",
+            "\tenabled = function() return true end,",
+            "\tvisible = function(keybindButtonDescriptor) -- optional hide unbound",
+            "\t\treturn GetHighestPriorityActionBindingInfoFromName(keybindButtonDescriptor.keybind) ~= KEY_INVALID",
+            "\tend",
+            "}",
+        ],
+        "description": "Add additional keybind action",
+        "scope": "lua"
+    },
+    "Register Callback": {
+        "prefix": "!esoregistercallback",
+        "body": [
+            "CALLBACK_MANAGER:RegisterCallback(\"${1:EventName}\", function(${2}) $0end)"
+        ],
+        "description": "Register to CALLBACK_MANAGER event",
+        "scope": "lua"
+    },
+    "Fire Callbacks": {
+        "prefix": "!esofirecallbacks",
+        "body": [
+            "CALLBACK_MANAGER:FireCallbacks(\"${1:EventName}\"$0)"
+        ],
+        "description": "Register to CALLBACK_MANAGER event",
+        "scope": "lua"
+    },
+    "Hook Tail Call": {
+        "prefix": "!esohooktailcall",
+        "body": [
+            "do",
+            "\tlocal org = ${1:original}",
+            "\tlocal function ${2:hook}()",
+            "\t\t$0",
+            "\tend",
+            "\tfunction ${1:original}(...)",
+            "\t\t${2:hook}(...)",
+            "\t\treturn org(...)",
+            "\tend",
+            "end"
+        ],
+        "description": "Register to CALLBACK_MANAGER event",
+        "scope": "lua"
+    }
+}

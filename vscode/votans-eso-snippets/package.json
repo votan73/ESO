@@ -1,0 +1,26 @@
+{
+    "name": "votans-eso-snippets",
+    "displayName": "Votans ESO snippets",
+    "description": "Elder Scrolls Online Addon Snippets",
+    "version": "1.0.0",
+    "publisher": "votan73",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/votan73/ESO/vscode"
+    },
+    "icon": "icon.png",
+    "engines": {
+        "vscode": "^1.6.0"
+    },
+    "categories": [
+        "Snippets"
+    ],
+    "contributes": {
+        "snippets": [
+            {
+                "language": "lua",
+                "path": "./snippets/snippets.code-snippets"
+            }
+        ]
+    }
+}
