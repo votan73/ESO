@@ -44,7 +44,7 @@
     "Scene State Change": {
         "prefix": "!esoscenestate",
         "body": [
-            "${1:SCENE}:RegisterCallback(\"StateChange\", function(oldState, newState)",
+            ":RegisterCallback(\"StateChange\", function(oldState, newState)",
             "\tif newState == SCENE_SHOWING then$0",
             "\telseif newState == SCENE_SHOWN then",
             "\telseif newState == SCENE_HIDING then",
@@ -53,7 +53,7 @@
             "end)",
             ""
         ],
-        "description": "Handle scene state change callback",
+        "description": "Insert scene state change callback",
         "scope": "lua"
     },
     "Keybind Descriptor": {
@@ -135,7 +135,32 @@
             "\tend",
             "end"
         ],
-        "description": "Register to CALLBACK_MANAGER event",
+        "description": "Hook function with tail call",
+        "scope": "lua"
+    },
+    "Control from Virual": {
+        "prefix": "!esocontrolfromvirtual",
+        "body": [
+            "wm:CreateControlFromVirtual(\"${1:$(parent)Name}\", ${2:parent}, \"${3:templateName\"})"
+        ]
+    },
+    "New Scroll List": {
+        "prefix": "!esoscrolllist",
+        "body": [
+            "local ROW_ID = 1",
+            "local function setupDataRow(rowControl, rowData, scrollList)",
+            "end",
+            "ZO_ScrollList_AddDataType(${1:scrolllist}, ROW_ID, \"${2:templateName}\", ${3:24}, setupDataRow)",
+            "ZO_ScrollList_SetTypeSelectable(${1:scrolllist}, ROW_ID, true)",
+            "",
+            "local function OnSelectionChanged(previouslySelectedData, selectedData, selectingDuringRebuild)",
+            "end",
+            "ZO_ScrollList_EnableSelection(${1:scrolllist}, \"ZO_ThinListHighlight\", OnSelectionChanged)",
+            "ZO_ScrollList_SetDeselectOnReselect(${1:scrolllist}, true)",
+            "",
+            "ZO_ScrollList_EnableHighlight(${1:scrolllist}, \"ZO_ThinListHighlight\")"
+        ],
+        "description": "Hook function with tail call",
         "scope": "lua"
     }
 }
