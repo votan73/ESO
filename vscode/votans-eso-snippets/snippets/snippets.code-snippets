@@ -1,6 +1,6 @@
 {
     "New Addon": {
-        "prefix": "!esonew",
+        "prefix": "!esoNewAddon",
         "body": [
             "local addon = {",
             "\tname = \"${1:Title}\"",
@@ -28,7 +28,7 @@
         "scope": "lua"
     },
     "Event Player Activated": {
-        "prefix": "!esoplayeractivated",
+        "prefix": "!esoPlayerActivated",
         "body": [
             "local function OnPlayerActivated(event, initial)",
             "\tem:UnregisterForEvent(addon.name, EVENT_PLAYER_ACTIVATED)",
@@ -42,9 +42,9 @@
         "scope": "lua"
     },
     "Scene State Change": {
-        "prefix": "!esoscenestate",
+        "prefix": "!esoSceneState",
         "body": [
-            ":RegisterCallback(\"StateChange\", function(oldState, newState)",
+            "$TM_SELECTED_TEXT:RegisterCallback(\"StateChange\", function(oldState, newState)",
             "\tif newState == SCENE_SHOWING then$0",
             "\telseif newState == SCENE_SHOWN then",
             "\telseif newState == SCENE_HIDING then",
@@ -57,7 +57,7 @@
         "scope": "lua"
     },
     "Keybind Descriptor": {
-        "prefix": "!esokeybinddescriptor",
+        "prefix": "!esoKeybindDescriptor",
         "body": [
             "self.${1:keybindStripDescriptor} = {",
             "\talignment = KEYBIND_STRIP_ALIGN_${2:RIGHT},",
@@ -88,7 +88,7 @@
         "scope": "lua"
     },
     "Keybind Action": {
-        "prefix": "!esokeybindaction",
+        "prefix": "!esoKeybindAction",
         "body": [
             ",",
             "{",
@@ -96,17 +96,17 @@
             "\tkeybind = \"${2:ACTION_NAME}\",",
             "\tcallback = function()$0",
             "\tend,",
-            "\tenabled = function() return true end,",
-            "\tvisible = function(keybindButtonDescriptor) -- optional hide unbound",
-            "\t\treturn GetHighestPriorityActionBindingInfoFromName(keybindButtonDescriptor.keybind) ~= KEY_INVALID",
-            "\tend",
+            "-- enabled = function() return true end,",
+            "-- visible = function(keybindButtonDescriptor) -- optional hide unbound",
+            "-- \treturn GetHighestPriorityActionBindingInfoFromName(keybindButtonDescriptor.keybind) ~= KEY_INVALID",
+            "-- end",
             "}",
         ],
         "description": "Add additional keybind action",
         "scope": "lua"
     },
     "Register Callback": {
-        "prefix": "!esoregistercallback",
+        "prefix": "!esoRegisterCallback",
         "body": [
             "CALLBACK_MANAGER:RegisterCallback(\"${1:EventName}\", function(${2}) $0end)"
         ],
@@ -114,7 +114,7 @@
         "scope": "lua"
     },
     "Fire Callbacks": {
-        "prefix": "!esofirecallbacks",
+        "prefix": "!esoFireCallbacks",
         "body": [
             "CALLBACK_MANAGER:FireCallbacks(\"${1:EventName}\"$0)"
         ],
@@ -122,7 +122,7 @@
         "scope": "lua"
     },
     "Hook Tail Call": {
-        "prefix": "!esohooktailcall",
+        "prefix": "!esoHookTailCall",
         "body": [
             "do",
             "\tlocal org = ${1:original}",
@@ -139,28 +139,56 @@
         "scope": "lua"
     },
     "Control from Virual": {
-        "prefix": "!esocontrolfromvirtual",
+        "prefix": "!esoControlFromVirtual",
         "body": [
-            "wm:CreateControlFromVirtual(\"${1:$(parent)Name}\", ${2:parent}, \"${3:templateName\"})"
-        ]
+            "wm:CreateControlFromVirtual(\"${1:$(parent)Name}\", ${2:parent}, \"${3:templateName}\")"
+        ],
+        "description": "Create a new control instance from XML template. *templateName* must be an XML control marked as \"virtual\".",
+        "scope": "lua"
+    },
+    "New Control": {
+        "prefix": "!esoControl",
+        "body": [
+            "wm:CreateControl(\"${1:$(parent)Name}\", ${2:parent}, \"${3|CT_BACKDROP,CT_BUTTON,CT_COLORSELECT,CT_COMPASS,CT_CONTROL,CT_COOLDOWN,CT_DEBUGTEXT,CT_EDITBOX,CT_LABEL,CT_LINE,CT_MAPDISPLAY,CT_ROOT_WINDOW,CT_SCROLL,CT_SLIDER,CT_STATUSBAR,CT_TEXTBUFFER,CT_TEXTURE,CT_TEXTURECOMPOSITE,CT_TOOLTIP,CT_TOPLEVELCONTROL|\"})"
+        ],
+        "description": "Create a new basic control instance.",
+        "scope": "lua"
+    },
+    "New Scroll Control": {
+        "prefix": "!esoScrollListControl",
+        "body": [
+            "wm:CreateControlFromVirtual(\"${1:$(parent)List}\", ${2:parent}, \"ZO_ScrollList\")"
+        ],
+        "description": "Create new scroll-list control",
+        "scope": "lua"
     },
     "New Scroll List": {
-        "prefix": "!esoscrolllist",
+        "prefix": "!esoScrollListNew",
         "body": [
-            "local ROW_ID = 1",
-            "local function setupDataRow(rowControl, rowData, scrollList)",
+            "local function ${3:onSelectionChanged}(previouslySelectedData, selectedData, selectingDuringRebuild)",
             "end",
-            "ZO_ScrollList_AddDataType(${1:scrolllist}, ROW_ID, \"${2:templateName}\", ${3:24}, setupDataRow)",
-            "ZO_ScrollList_SetTypeSelectable(${1:scrolllist}, ROW_ID, true)",
+            "ZO_ScrollList_EnableSelection(${1:scrollList}, \"${2|ZO_ThinListHighlight,ZO_TallListSelectedHighlight|}\", ${3:onSelectionChanged})",
+            "ZO_ScrollList_SetDeselectOnReselect(${1:scrollList}, ${4|true,false|})",
             "",
-            "local function OnSelectionChanged(previouslySelectedData, selectedData, selectingDuringRebuild)",
-            "end",
-            "ZO_ScrollList_EnableSelection(${1:scrolllist}, \"ZO_ThinListHighlight\", OnSelectionChanged)",
-            "ZO_ScrollList_SetDeselectOnReselect(${1:scrolllist}, true)",
+            "ZO_ScrollList_EnableHighlight(${1:scrollList}, \"${5|ZO_ThinListHighlight,ZO_TallListHighlight|}\")",
             "",
-            "ZO_ScrollList_EnableHighlight(${1:scrolllist}, \"ZO_ThinListHighlight\")"
+            "${0:-- ToDo: add data type (!esoScrollListDataType)}"
         ],
-        "description": "Hook function with tail call",
+        "description": "Insert code skeleton for a new scroll-list",
+        "scope": "lua"
+    },
+    "Add Scroll List Data Type": {
+        "prefix": "!esoScrollListDataType",
+        "body": [
+            "local ROW_ID${6:1} = ${6:1}",
+            "local function ${4:setupDataRow}(rowControl, rowData, scrollList)",
+            "end",
+            "ZO_ScrollList_AddDataType(${1:scrollList}, ROW_ID${6:1}, \"${2:rowTemplateName}\", ${3:24}, ${4:setupDataRow})",
+            "ZO_ScrollList_SetTypeSelectable(${1:scrollList}, ROW_ID${6:1}, ${5|true,false|})",
+            "",
+            "$0",
+        ],
+        "description": "Insert code skeleton for an additional scroll list data type. *rowTemplateName* must be an XML control marked as \"virtual\".",
         "scope": "lua"
     }
 }
