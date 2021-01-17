@@ -1,0 +1,15 @@
+{
+    "New Addon": {
+        "prefix": "!esoNewGuiXml",
+        "body": [
+            "<GuiXml>",
+            "  <Animations>",
+            "  </Animations>",
+            "  <Controls>",
+            "  </Controls>",
+            "</GuiXml>"
+        ],
+        "description": "Blank new Gui XML",
+        "scope": "xml"
+    },
+}

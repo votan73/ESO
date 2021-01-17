@@ -19,7 +19,11 @@
         "snippets": [
             {
                 "language": "lua",
-                "path": "./snippets/snippets.code-snippets"
+                "path": "./snippets/eso-snippets.code-snippets"
+            },
+            {
+                "language": "xml",
+                "path": "./snippets/xml-snippets.code-snippets"
             }
         ]
     }
