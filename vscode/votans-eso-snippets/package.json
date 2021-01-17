@@ -22,6 +22,10 @@
                 "path": "./snippets/eso-snippets.code-snippets"
             },
             {
+                "language": "lua",
+                "path": "./snippets/eso-manager.code-snippets"
+            },
+            {
                 "language": "xml",
                 "path": "./snippets/xml-snippets.code-snippets"
             }
