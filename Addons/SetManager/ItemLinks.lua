@@ -37,9 +37,9 @@ end
 
 function addon:CreateCraftedItemLink(baseItemId, level, champ, quality, style, trait)
 	local subId = self:CreateSubItemId(level, champ, quality)
-	local items = self.allSets[baseItemId]
-	if not items then return "" end
-	local itemId = items[trait * 35]
+	local set = self.allSets[baseItemId]
+	if not set then return "" end
+	local itemId = set.items[trait * 35]
 	if not itemId then itemId = baseItemId end
 	local itemLink = string.format("|H1:item:%i:%i:%i:0:0:0:0:0:0:0:0:0:0:0:0:%i:1:0:0:10000:0|h|h", itemId, subId, level, style)
 	return itemLink

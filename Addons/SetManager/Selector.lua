@@ -1,33 +1,60 @@
 local addon = SET_MANAGER
 addon.Selector = {
-	allowedInteractions =
-	{
+	allowedInteractions = {
 		[CRAFTING_TYPE_BLACKSMITHING] = true,
 		[CRAFTING_TYPE_CLOTHIER] = true,
 		[CRAFTING_TYPE_WOODWORKING] = true,
+		[CRAFTING_TYPE_JEWELRYCRAFTING] = true
 	},
-	allowedArmorType =
-	{
-		[CRAFTING_TYPE_BLACKSMITHING] = { [ARMORTYPE_HEAVY] = true },
-		[CRAFTING_TYPE_CLOTHIER] = { [ARMORTYPE_LIGHT] = true, [ARMORTYPE_MEDIUM] = true },
-		[CRAFTING_TYPE_WOODWORKING] = { },
+	allowedArmorType = {
+		[CRAFTING_TYPE_BLACKSMITHING] = {[ARMORTYPE_HEAVY] = true},
+		[CRAFTING_TYPE_CLOTHIER] = {[ARMORTYPE_LIGHT] = true, [ARMORTYPE_MEDIUM] = true},
+		[CRAFTING_TYPE_WOODWORKING] = {}
 	},
-	allowedWeaponType =
-	{
-		[CRAFTING_TYPE_BLACKSMITHING] = { [WEAPONTYPE_AXE] = true, [WEAPONTYPE_DAGGER] = true, [WEAPONTYPE_HAMMER] = true, [WEAPONTYPE_SWORD] = true, [WEAPONTYPE_TWO_HANDED_AXE] = true, [WEAPONTYPE_TWO_HANDED_HAMMER] = true, [WEAPONTYPE_TWO_HANDED_SWORD] = true, },
-		[CRAFTING_TYPE_CLOTHIER] = { },
-		[CRAFTING_TYPE_WOODWORKING] = { [WEAPONTYPE_BOW] = true, [WEAPONTYPE_FIRE_STAFF] = true, [WEAPONTYPE_FROST_STAFF] = true, [WEAPONTYPE_HEALING_STAFF] = true, [WEAPONTYPE_LIGHTNING_STAFF] = true, [WEAPONTYPE_SHIELD] = true },
-	},
-
+	allowedWeaponType = {
+		[CRAFTING_TYPE_BLACKSMITHING] = {
+			[WEAPONTYPE_AXE] = true,
+			[WEAPONTYPE_DAGGER] = true,
+			[WEAPONTYPE_HAMMER] = true,
+			[WEAPONTYPE_SWORD] = true,
+			[WEAPONTYPE_TWO_HANDED_AXE] = true,
+			[WEAPONTYPE_TWO_HANDED_HAMMER] = true,
+			[WEAPONTYPE_TWO_HANDED_SWORD] = true
+		},
+		[CRAFTING_TYPE_CLOTHIER] = {},
+		[CRAFTING_TYPE_WOODWORKING] = {[WEAPONTYPE_BOW] = true, [WEAPONTYPE_FIRE_STAFF] = true, [WEAPONTYPE_FROST_STAFF] = true, [WEAPONTYPE_HEALING_STAFF] = true, [WEAPONTYPE_LIGHTNING_STAFF] = true, [WEAPONTYPE_SHIELD] = true}
+	}
 }
 local selector = SET_MANAGER.Selector
 
 local wm = GetWindowManager()
 local em = GetEventManager()
 
+local function CanBeCraftedHere(weaponType, armorType)
+	if weaponType > 0 then
+		return CanSmithingWeaponPatternsBeCraftedHere()
+	elseif armorType > 0 then
+		return CanSmithingApparelPatternsBeCraftedHere()
+	else
+		return CanSmithingJewelryPatternsBeCraftedHere()
+	end
+end
 function selector:UpdateSetTemplates()
 	local templates = self.templates
 	self.setTemplates:Clear()
+	if CanSmithingSetPatternsBeCraftedHere() then
+		local equipType, weaponType, armorType
+		local backpackSlots = SHARED_INVENTORY:GetOrCreateBagCache(BAG_BACKPACK)
+		for _, data in pairs(backpackSlots) do
+			if data.itemType == ITEMTYPE_MASTER_WRIT then
+				local itemLink = GetItemLink(data.bagId, data.slotIndex)
+				itemLink, equipType, weaponType, armorType = addon:GetWritInfo(itemLink)
+				if itemLink and CanBeCraftedHere(weaponType, armorType) then
+					self.setTemplates:AddEntry({[ZO_Character_GetEquipSlotForEquipType(equipType) or EQUIP_SLOT_OFF_HAND] = itemLink, ["name"] = data.name})
+				end
+			end
+		end
+	end
 	for _, template in ipairs(templates) do
 		self.setTemplates:AddEntry(template)
 	end
@@ -67,7 +94,7 @@ function selector:InitSetTemplates()
 		local function SetIndex(listControl, matchFunc)
 			local index = listControl:FindIndexFromData(0, matchFunc)
 			if index then
-				listControl:SetSelectedIndex(index, true, true)
+				listControl:SetSelectedIndex(index, true, true, false, true)
 				return true
 			end
 			return false
@@ -96,35 +123,64 @@ function selector:InitSetTemplates()
 			local creation = SMITHING.creationPanel
 			local success
 
-			SMITHING.modeBar.m_object:SelectDescriptor(SMITHING_MODE_CREATION)
+			ZO_MenuBar_SelectDescriptor(SMITHING.modeBar, SMITHING_MODE_CREATION, true)
 
-			creation.tabs.m_object:SelectDescriptor((armorType > 0 or weaponType == WEAPONTYPE_SHIELD) and ZO_SMITHING_CREATION_FILTER_TYPE_SET_ARMOR or ZO_SMITHING_CREATION_FILTER_TYPE_SET_WEAPONS)
-			success = SetIndex(creation.patternList, function(_, newData) return itemName == GetItemLinkName(GetSmithingPatternResultLink(newData.patternIndex, 1, 7, 1, 1)) end)
+			ZO_MenuBar_SelectDescriptor(creation.tabs, (armorType > 0 or weaponType == WEAPONTYPE_SHIELD) and ZO_SMITHING_CREATION_FILTER_TYPE_SET_ARMOR or ZO_SMITHING_CREATION_FILTER_TYPE_SET_WEAPONS, true)
+			success =
+				SetIndex(
+				creation.patternList,
+				function(_, newData)
+					return itemName == GetItemLinkName(GetSmithingPatternResultLink(newData.patternIndex, 1, 7, 1, 1))
+				end
+			)
 			if not success then
 				local equipType = GetItemLinkEquipType(itemLink)
 				if armorType > 0 then
-					success = SetIndex(creation.patternList, function(_, newData)
-						local otherLink = GetSmithingPatternResultLink(newData.patternIndex, 1, 7, 1, 1)
-						return armorType == GetItemLinkArmorType(otherLink) and equipType == GetItemLinkEquipType(otherLink)
-					end )
+					success =
+						SetIndex(
+						creation.patternList,
+						function(_, newData)
+							local otherLink = GetSmithingPatternResultLink(newData.patternIndex, 1, 7, 1, 1)
+							return armorType == GetItemLinkArmorType(otherLink) and equipType == GetItemLinkEquipType(otherLink)
+						end
+					)
 				else
-					success = SetIndex(creation.patternList, function(_, newData)
-						local otherLink = GetSmithingPatternResultLink(newData.patternIndex, 1, 7, 1, 1)
-						return weaponType == GetItemLinkWeaponType(otherLink) and equipType == GetItemLinkEquipType(otherLink)
-					end )
+					success =
+						SetIndex(
+						creation.patternList,
+						function(_, newData)
+							local otherLink = GetSmithingPatternResultLink(newData.patternIndex, 1, 7, 1, 1)
+							return weaponType == GetItemLinkWeaponType(otherLink) and equipType == GetItemLinkEquipType(otherLink)
+						end
+					)
 				end
 			end
-			if SetIndex(creation.materialList, function(_, newData) return newData.rankRequirement == requiredRank end) then
-				if GetAPIVersion() < 100022 then
-					success = SetMaterialQuantity(creation, requiredLevel, requiredCP) and success
-				else
-					success = true
-				end
+			if
+				SetIndex(
+					creation.materialList,
+					function(_, newData)
+						return newData.rankRequirement == requiredRank
+					end
+				)
+			 then
+				success = true
 			else
 				success = false
 			end
-			success = SetIndex(creation.styleList, function(_, newData) return newData.itemStyleId == itemStyleId end) and success
-			success = SetIndex(creation.traitList, function(_, newData) return newData.traitType == itemTrait end) and success
+			success =
+				SetIndex(
+				creation.styleList,
+				function(_, newData)
+					return newData.itemStyleId == itemStyleId
+				end
+			) and success
+			success =
+				SetIndex(
+				creation.traitList,
+				function(_, newData)
+					return newData.traitType == itemTrait
+				end
+			) and success
 
 			PlaySound(success and SOUNDS.DEFAULT_CLICK or SOUNDS.NEGATIVE_CLICK)
 		end
@@ -138,7 +194,7 @@ function selector:InitSetTemplates()
 				InitializeTooltip(SetItemTooltip, rowControl, TOPRIGHT, 0, -104, TOPLEFT)
 				SetItemTooltip:SetTemplateItemLink(rowControl.itemLink, self.setTemplates:GetSelectedData(), false)
 				self.setTemplates.hoveredSlot = rowControl.slotId
-				-- KEYBIND_STRIP:UpdateKeybindButtonGroup(self.keybindStripDescriptorMouseOver)
+			-- KEYBIND_STRIP:UpdateKeybindButtonGroup(self.keybindStripDescriptorMouseOver)
 			end
 		end
 		local function onMouseExit(rowControl)
@@ -193,7 +249,6 @@ function selector:InitSetTemplates()
 				end
 				slotControl:SetEnabled(enabled)
 			end
-
 		end
 
 		local function EqualityFunction(leftData, rightData)
@@ -218,9 +273,11 @@ function selector:InitSetTemplates()
 end
 
 function selector:CreateSetNameToData()
-	if self.setNameToData then return end
+	if self.setNameToData then
+		return
+	end
 
-	local setNameToData = { }
+	local setNameToData = {}
 	self.setNameToData = setNameToData
 	local createLink = string.format
 	local GetItemLinkSetInfo = GetItemLinkSetInfo
@@ -229,6 +286,7 @@ function selector:CreateSetNameToData()
 	for itemId, setInfo in pairs(sets) do
 		local itemLink = createLink("|H1:item:%i:304:50:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h", itemId)
 		local _, name = GetItemLinkSetInfo(itemLink, false)
+		setInfo.name = name
 		setNameToData[name] = setInfo
 	end
 end
@@ -238,25 +296,28 @@ function selector:Init()
 	SETMANAGER_SELECTOR_FRAGMENT = ZO_HUDFadeSceneFragment:New(self.window)
 	SMITHING_SCENE:AddFragment(SETMANAGER_SELECTOR_FRAGMENT)
 
-	SETMANAGER_SELECTOR_FRAGMENT:RegisterCallback("StateChange", function(oldState, newState)
-		if newState == SCENE_FRAGMENT_SHOWING then
-			self.window:SetMouseEnabled(true)
+	SETMANAGER_SELECTOR_FRAGMENT:RegisterCallback(
+		"StateChange",
+		function(oldState, newState)
+			if newState == SCENE_FRAGMENT_SHOWING then
+				-- elseif newState == SCENE_FRAGMENT_SHOWN then
+				-- elseif newState == SCENE_FRAGMENT_HIDING then
+				self.window:SetMouseEnabled(true)
 
-			self:CreateSetNameToData()
-			local allowed, name = GetItemLinkSetInfo(GetSmithingPatternResultLink(GetNumSmithingPatterns() / 2 + 1, 1, 7, 1, 1))
-			if allowed then
-				self.currentSetName = name
-				self.templates = addon.account.templates
-				self:UpdateSetTemplates()
-			else
-				self.currentSetName = nil
+				self:CreateSetNameToData()
+				local allowed, name = GetItemLinkSetInfo(GetSmithingPatternResultLink(GetNumSmithingPatterns() / 2 + 1, 1, 7, 1, 1))
+				if allowed then
+					self.currentSetName = name
+					self.templates = addon.account.templates
+					self:UpdateSetTemplates()
+				else
+					self.currentSetName = nil
+				end
+			elseif newState == SCENE_FRAGMENT_HIDDEN then
+				collectgarbage()
 			end
-			-- elseif newState == SCENE_FRAGMENT_SHOWN then
-			-- elseif newState == SCENE_FRAGMENT_HIDING then
-		elseif newState == SCENE_FRAGMENT_HIDDEN then
-			collectgarbage()
 		end
-	end )
+	)
 
 	self:InitSetTemplates()
 
