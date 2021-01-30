@@ -45,7 +45,7 @@ end
 -- end
 
 function addon:InitSettings()
-	local LibHarvensAddonSettings = LibHarvensAddonSettings or LibStub("LibHarvensAddonSettings-1.0", LibStub.SILENT)
+	local LibHarvensAddonSettings = LibHarvensAddonSettings
 	if not LibHarvensAddonSettings then
 		return
 	end
@@ -55,7 +55,7 @@ function addon:InitSettings()
 		return
 	end
 	addon.settingsControls = settings
-	settings.version = "1.0.6"
+	settings.version = "1.0.7"
 	settings.allowDefaults = true
 	-- settings.website = "http://www.esoui.com/downloads/"
 end
@@ -117,7 +117,7 @@ do
 	end
 
 	-- The new formatters are in the original table
-	local newFormatter = ZO_ChatSystem_GetEventHandlers()
+	local newFormatter = CHAT_ROUTER:GetRegisteredMessageFormatters()
 	-- The original formatters are saved in a new table. Sounds odd, but is right.
 	local orgFormatter = ZO_ShallowTableCopy(newFormatter)
 
@@ -188,14 +188,15 @@ do
 	function CHAT_ROUTER.FormatAndAddChatMessage(self, ...)
 		local chat, entry = self, {...}
 		entry[#entry + 1] = GetLocalTimeStamp()
-		local function PrePostMessage()
-			addon.events:FireCallbacks("OnChatEvent", chat, entry)
-		end
 
 		local function PostMessage()
 			orgOnChatEvent(chat, unpack(entry))
 		end
-		addon.task:Call(PrePostMessage):Then(PostMessage)
+		local function PrePostMessage(task)
+			addon.events:FireCallbacks("OnChatEvent", chat, entry)
+			task:Call(PostMessage)
+		end
+		addon.task:Call(PrePostMessage)
 	end
 end
 
@@ -256,7 +257,9 @@ do
 end
 
 local function OnAddonLoaded(event, name)
-	if name ~= addon.name then return end
+	if name ~= addon.name then
+		return
+	end
 	em:UnregisterForEvent(addon.name, EVENT_ADD_ON_LOADED)
 
 	addon:Initialize()
