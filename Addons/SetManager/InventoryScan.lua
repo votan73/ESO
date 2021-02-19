@@ -133,8 +133,8 @@ function addon:GetWritInfo(writItemLink)
 		return
 	end
 	if quality then
-		set = set:match(":%s*(.+)")
-		style = style:match(":%s*(.+)")
+		set = ZO_CachedStrFormat("<<C:1>>", set:match(":%s*(.+)"))
+		style = ZO_CachedStrFormat("<<C:1>>", style:match(":%s*(.+)"))
 		trait = trait:match(":%s*(.+)")
 		quality = quality:match(":%s*(.+)")
 
@@ -142,7 +142,7 @@ function addon:GetWritInfo(writItemLink)
 		style = styleNameToId[style] or -1
 		quality = qualityNameToId[quality] or -1
 	else
-		set = set:match(":%s*(.+)")
+		set = ZO_CachedStrFormat("<<C:1>>", set:match(":%s*(.+)"))
 		quality = trait:match(":%s*(.+)")
 		trait = style:match(":%s*(.+)")
 
@@ -171,7 +171,7 @@ function addon:GetWritInfo(writItemLink)
 		local itemId = set.items[i]
 		local itemLink = string.format("|H1:item:%i:%i:%i:0:0:0:0:0:0:0:0:0:0:0:0:%i:1:0:0:10000:0|h|h", itemId, subId, level, style)
 		if GetItemLinkEquipType(itemLink) == equipType and GetItemLinkWeaponType(itemLink) == weaponType and GetItemLinkArmorType(itemLink) == armorType and GetString("SI_ITEMTRAITTYPE", GetItemLinkTraitInfo(itemLink)) == trait then
-			return itemLink, equipType, weaponType, armorType
+			return itemLink, equipType, weaponType, armorType, set
 		end
 	end
 end

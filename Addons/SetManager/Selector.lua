@@ -43,14 +43,14 @@ function selector:UpdateSetTemplates()
 	local templates = self.templates
 	self.setTemplates:Clear()
 	if CanSmithingSetPatternsBeCraftedHere() then
-		local equipType, weaponType, armorType
+		local equipType, weaponType, armorType, set
 		local backpackSlots = SHARED_INVENTORY:GetOrCreateBagCache(BAG_BACKPACK)
 		for _, data in pairs(backpackSlots) do
 			if data.itemType == ITEMTYPE_MASTER_WRIT then
 				local itemLink = GetItemLink(data.bagId, data.slotIndex)
-				itemLink, equipType, weaponType, armorType = addon:GetWritInfo(itemLink)
+				itemLink, equipType, weaponType, armorType, set = addon:GetWritInfo(itemLink)
 				if itemLink and CanBeCraftedHere(weaponType, armorType) then
-					self.setTemplates:AddEntry({[ZO_Character_GetEquipSlotForEquipType(equipType) or EQUIP_SLOT_OFF_HAND] = itemLink, ["name"] = data.name})
+					self.setTemplates:AddEntry({[ZO_Character_GetEquipSlotForEquipType(equipType) or EQUIP_SLOT_OFF_HAND] = itemLink, ["name"] = ZO_CachedStrFormat(SI_ANTIQUITY_SET_NAME_FORMATTER, set.name)})
 				end
 			end
 		end
@@ -125,7 +125,15 @@ function selector:InitSetTemplates()
 
 			ZO_MenuBar_SelectDescriptor(SMITHING.modeBar, SMITHING_MODE_CREATION, true)
 
-			ZO_MenuBar_SelectDescriptor(creation.tabs, (armorType > 0 or weaponType == WEAPONTYPE_SHIELD) and ZO_SMITHING_CREATION_FILTER_TYPE_SET_ARMOR or ZO_SMITHING_CREATION_FILTER_TYPE_SET_WEAPONS, true)
+			local descriptor
+			if armorType > 0 or weaponType == WEAPONTYPE_SHIELD then
+				descriptor = SMITHING_FILTER_TYPE_SET_ARMOR
+			elseif armorType > 0 then
+				descriptor = SMITHING_FILTER_TYPE_SET_WEAPONS
+			else
+				descriptor = SMITHING_FILTER_TYPE_SET_JEWELRY
+			end
+			ZO_MenuBar_SelectDescriptor(creation.tabs, descriptor, true)
 			success =
 				SetIndex(
 				creation.patternList,
@@ -144,13 +152,24 @@ function selector:InitSetTemplates()
 							return armorType == GetItemLinkArmorType(otherLink) and equipType == GetItemLinkEquipType(otherLink)
 						end
 					)
-				else
+				elseif weaponType > 0 then
 					success =
 						SetIndex(
 						creation.patternList,
 						function(_, newData)
 							local otherLink = GetSmithingPatternResultLink(newData.patternIndex, 1, 7, 1, 1)
 							return weaponType == GetItemLinkWeaponType(otherLink) and equipType == GetItemLinkEquipType(otherLink)
+						end
+					)
+				else
+                    requiredRank = 5
+					success =
+						SetIndex(
+						creation.patternList,
+						function(_, newData)
+							local rankData = newData.materialData[1]
+							local otherLink = GetSmithingPatternResultLink(newData.patternIndex, rankData.materialIndex, rankData.min, 1, 1)
+							return equipType == GetItemLinkEquipType(otherLink)
 						end
 					)
 				end
@@ -167,6 +186,7 @@ function selector:InitSetTemplates()
 			else
 				success = false
 			end
+            if armorType > 0 or weaponType > 0 then
 			success =
 				SetIndex(
 				creation.styleList,
@@ -174,6 +194,7 @@ function selector:InitSetTemplates()
 					return newData.itemStyleId == itemStyleId
 				end
 			) and success
+            end
 			success =
 				SetIndex(
 				creation.traitList,
@@ -219,6 +240,7 @@ function selector:InitSetTemplates()
 
 			local weaponsAllowed = CanSmithingWeaponPatternsBeCraftedHere()
 			local apparelAllowed = CanSmithingApparelPatternsBeCraftedHere()
+			local jewelryAllowed = CanSmithingJewelryPatternsBeCraftedHere()
 
 			-- 		local setsAllowed = CanSmithingSetPatternsBeCraftedHere()
 
@@ -232,7 +254,11 @@ function selector:InitSetTemplates()
 					local itemType = GetItemLinkArmorType(slotControl.itemLink)
 					if itemType == 0 then
 						itemType = GetItemLinkWeaponType(slotControl.itemLink)
-						enabled = weaponsAllowed and self.allowedWeaponType[self.interactionType][itemType]
+						if itemType == 0 then
+							enabled = jewelryAllowed
+						else
+							enabled = weaponsAllowed and self.allowedWeaponType[self.interactionType][itemType]
+						end
 					else
 						enabled = apparelAllowed and self.allowedArmorType[self.interactionType][itemType]
 					end
