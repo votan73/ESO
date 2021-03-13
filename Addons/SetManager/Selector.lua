@@ -162,7 +162,7 @@ function selector:InitSetTemplates()
 						end
 					)
 				else
-                    requiredRank = 5
+					requiredRank = 5
 					success =
 						SetIndex(
 						creation.patternList,
@@ -186,15 +186,15 @@ function selector:InitSetTemplates()
 			else
 				success = false
 			end
-            if armorType > 0 or weaponType > 0 then
-			success =
-				SetIndex(
-				creation.styleList,
-				function(_, newData)
-					return newData.itemStyleId == itemStyleId
-				end
-			) and success
-            end
+			if armorType > 0 or weaponType > 0 then
+				success =
+					SetIndex(
+					creation.styleList,
+					function(_, newData)
+						return newData.itemStyleId == itemStyleId
+					end
+				) and success
+			end
 			success =
 				SetIndex(
 				creation.traitList,
@@ -326,15 +326,16 @@ function selector:Init()
 		"StateChange",
 		function(oldState, newState)
 			if newState == SCENE_FRAGMENT_SHOWING then
-				-- elseif newState == SCENE_FRAGMENT_SHOWN then
-				-- elseif newState == SCENE_FRAGMENT_HIDING then
 				self.window:SetMouseEnabled(true)
 
+				self.templates = addon.account.templates
 				self:CreateSetNameToData()
-				local allowed, name = GetItemLinkSetInfo(GetSmithingPatternResultLink(GetNumSmithingPatterns() / 2 + 1, 1, 7, 1, 1))
+			elseif newState == SCENE_FRAGMENT_SHOWN then
+				-- elseif newState == SCENE_FRAGMENT_HIDING then
+				--local allowed, name = GetItemLinkSetInfo(GetSmithingPatternResultLink(GetNumSmithingPatterns() / 2 + 1, 1, 7, 1, 1))
+				local allowed, name = GetItemLinkSetInfo(GetSmithingPatternResultLink(SMITHING.creationPanel:GetResultCraftingParameters()))
 				if allowed then
 					self.currentSetName = name
-					self.templates = addon.account.templates
 					self:UpdateSetTemplates()
 				else
 					self.currentSetName = nil
