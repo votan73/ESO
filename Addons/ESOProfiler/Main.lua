@@ -6,9 +6,6 @@ local async = LibAsync
 local task = async:Create("ESO_PROFILER")
 local extrasFragmentGroup
 
-local function AutoStartEnabled()
-	return GetCVar("StartLuaProfilingOnUILoad") ~= "0"
-end
 local function SetAutoStartEnabled(on)
 	SetCVar("StartLuaProfilingOnUILoad", on and "1" or "0")
 end
@@ -601,11 +598,10 @@ end
 
 em:RegisterForEvent(addon.name, EVENT_ADD_ON_LOADED, OnAddonLoaded)
 
-if GetCVar("StartLuaProfilingOnUILoad") ~= "0" then
-	local stop
+if IsScriptProfilerEnabled() then
 	local identifier = "ESO_PROFILER_AUTORUN"
 	NewRun()
-	stop = function()
+	local function stop()
 		em:UnregisterForUpdate(identifier)
 		StopScriptProfiler()
 		MAIN_MENU_KEYBOARD:ShowScene(ESO_PROFILER_SCENE:GetName())
