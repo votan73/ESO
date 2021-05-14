@@ -1,7 +1,3 @@
-if GetAPIVersion() < 100031 then
-	return
-end
-
 local FULL_ALPHA_VALUE = 1
 local FADED_ALPHA_VALUE = 0.4
 
@@ -292,7 +288,7 @@ end
 function UnitFramesManager:CreateFrame(unitTag, anchors, barTextMode, style, templateName)
 	local unitFrame = self:GetFrame(unitTag)
 	if not unitFrame then
-		unitFrame = UnitFrame:New(unitTag, barTextMode, style, templateName)
+		unitFrame = UnitFrame:New(unitTag, anchors, barTextMode, style, templateName)
 
 		local unitFrameTable = self:GetUnitFrameLookupTable(unitTag)
 		if unitFrameTable then
@@ -1019,7 +1015,7 @@ end
 
 UnitFrame = ZO_Object:Subclass()
 
-function UnitFrame:New(unitTag, barTextMode, style, templateName)
+function UnitFrame:New(unitTag, anchors, barTextMode, style, templateName)
 	templateName = templateName or style
 	local newFrame = ZO_Object.New(self)
 	local baseWindowName = templateName .. unitTag
@@ -1076,6 +1072,10 @@ function UnitFrame:New(unitTag, barTextMode, style, templateName)
 
 	newFrame.powerBars = { }
 
+	if anchors then
+		newFrame:SetData(unitTag, anchors, barTextMode)
+	end
+
 	if layoutData.useHealthWarner then
 		newFrame.healthWarner = UnitFramesRebirth_HealthWarner:New(newFrame.healthBar, unitTag)
 	end
@@ -1087,13 +1087,13 @@ function UnitFrame:New(unitTag, barTextMode, style, templateName)
 	return newFrame
 end
 
-function UnitFrame:SetData(unitTag, anchors, showBarText)
+function UnitFrame:SetData(unitTag, anchors, barTextMode)
 	self.unitTag = unitTag
 	self.dirty = true
 	self.animateShowHide = false
 	self.isOnline = nil
 
-	self.showBarText = showBarText
+	self.barTextMode = barTextMode
 
 	self.lastPowerType = POWERTYPE_INVALID
 	self.frame.m_unitTag = unitTag
@@ -1984,7 +1984,7 @@ function UnitFramesManager:UpdateGroupFrames()
 		for i = groupIndex, groupSize do
 			unitTag = GetGroupUnitTagByIndex(i)
 			if not frames[unitTag] then
-				frames[unitTag] = UnitFrame:New(unitTag, ZO_UNIT_FRAME_BAR_TEXT_MODE_HIDDEN, style)
+				frames[unitTag] = UnitFrame:New(unitTag, nil, ZO_UNIT_FRAME_BAR_TEXT_MODE_HIDDEN, style)
 			end
 		end
 		-- But sync index of all frames with those of API
@@ -2045,7 +2045,7 @@ function UnitFramesManager:UpdatePetFrames()
 		for i = petIndex, petGroupSize do
 			unitTag = GetPetUnitTagByIndex(i)
 			if not frames[unitTag] then
-				frames[unitTag] = UnitFrame:New(unitTag, ZO_UNIT_FRAME_BAR_TEXT_MODE_HIDDEN, self.PetUnitFrame)
+				frames[unitTag] = UnitFrame:New(unitTag, nil, ZO_UNIT_FRAME_BAR_TEXT_MODE_HIDDEN, self.PetUnitFrame)
 			end
 		end
 		-- But sync index of all frames with those of API
