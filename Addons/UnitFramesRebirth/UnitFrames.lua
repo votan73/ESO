@@ -145,20 +145,20 @@ UNIT_FRAMES = nil
 --[[
 	Local object declarations
 --]]
-local UnitFrames, UnitFramesManager, UnitFrame, UnitFrameBar
+local UnitFrames, ZO_UnitFrames_Manager, ZO_UnitFrameObject, ZO_UnitFrameBar
 
 --[[
 	UnitFrames container object.  Used to manage the UnitFrame objects according to UnitTags ("group1", "group4pet", etc...)
 --]]
-UnitFramesManager = ZO_Object:Subclass()
+ZO_UnitFrames_Manager = ZO_Object:Subclass()
 
-function UnitFramesManager:New()
+function ZO_UnitFrames_Manager:New()
 	local unitFrames = ZO_Object.New(self)
 	unitFrames:Initialize()
 	return unitFrames
 end
 
-function UnitFramesManager:Initialize()
+function ZO_UnitFrames_Manager:Initialize()
 	self.groupFrames = {}
 	self.raidFrames = {}
 	self.staticFrames = {}
@@ -172,7 +172,7 @@ function UnitFramesManager:Initialize()
 	self.firstDirtyPetGroupIndex = nil
 
 	self.UnitFrameClass = UnitFrame
-	self.UnitFrameBarClass = UnitFrameBar
+	self.UnitFrameBarClass = ZO_UnitFrameBar
 	self.KEYBOARD_CONSTANTS = KEYBOARD_CONSTANTS
 	self.GAMEPAD_CONSTANTS = GAMEPAD_CONSTANTS
 	self.UnitFrameBarTextTemplate = "ZO_UnitFrameBarText"
@@ -192,7 +192,7 @@ do
 		end
 	end
 
-	function UnitFramesManager:ApplyVisualStyle()
+	function ZO_UnitFrames_Manager:ApplyVisualStyle()
 		self.gamepadMode = IsInGamepadPreferredMode()
 		ApplyVisualStyleToAllFrames(self.staticFrames, self.gamepadMode)
 		ApplyVisualStyleToAllFrames(self.groupFrames, self.gamepadMode)
@@ -216,7 +216,7 @@ do
 		end
 	end
 
-	function UnitFramesManager:SetWarner(isActive)
+	function ZO_UnitFrames_Manager:SetWarner(isActive)
 		SetWarnerToFrames(self.groupFrames, isActive)
 		SetWarnerToFrames(self.raidFrames, isActive)
 		SetWarnerToFrames(self.petFrames, isActive)
@@ -238,14 +238,14 @@ do
 		end
 	end
 
-	function UnitFramesManager:SetShield(isActive)
+	function ZO_UnitFrames_Manager:SetShield(isActive)
 		SetShieldToFrames(self.groupFrames, isActive)
 		SetShieldToFrames(self.raidFrames, isActive)
 		SetShieldToFrames(self.petFrames, isActive)
 	end
 end
 
-function UnitFramesManager:GetUnitFrameLookupTable(unitTag)
+function ZO_UnitFrames_Manager:GetUnitFrameLookupTable(unitTag)
 	if unitTag then
 		if ZO_Group_IsGroupUnitTag(unitTag) then
 			return self.groupSize > SMALL_GROUP_SIZE_THRESHOLD and self.raidFrames or self.groupFrames
@@ -257,15 +257,15 @@ function UnitFramesManager:GetUnitFrameLookupTable(unitTag)
 	return self.staticFrames
 end
 
-function UnitFramesManager:GetFrame(unitTag)
+function ZO_UnitFrames_Manager:GetFrame(unitTag)
 	local unitFrameTable = self:GetUnitFrameLookupTable(unitTag)
 	return unitFrameTable and unitFrameTable[unitTag]
 end
 
-function UnitFramesManager:CreateFrame(unitTag, anchors, barTextMode, style, templateName)
+function ZO_UnitFrames_Manager:CreateFrame(unitTag, anchors, barTextMode, style, templateName)
 	local unitFrame = self:GetFrame(unitTag)
 	if not unitFrame then
-		unitFrame = UnitFrame:New(unitTag, anchors, barTextMode, style, templateName)
+		unitFrame = ZO_UnitFrameObject:New(unitTag, anchors, barTextMode, style, templateName)
 
 		local unitFrameTable = self:GetUnitFrameLookupTable(unitTag)
 		if unitFrameTable then
@@ -275,65 +275,65 @@ function UnitFramesManager:CreateFrame(unitTag, anchors, barTextMode, style, tem
 	return unitFrame
 end
 
-function UnitFramesManager:SetFrameHiddenForReason(unitTag, reason, hidden)
+function ZO_UnitFrames_Manager:SetFrameHiddenForReason(unitTag, reason, hidden)
 	local unitFrame = self:GetFrame(unitTag)
 	if unitFrame then
 		unitFrame:SetHiddenForReason(reason, hidden)
 	end
 end
 
-function UnitFramesManager:SetGroupSize(groupSize)
+function ZO_UnitFrames_Manager:SetGroupSize(groupSize)
 	self.groupSize = groupSize or GetGroupSize()
 end
 
-function UnitFramesManager:SetPetSize(petGroupSize)
+function ZO_UnitFrames_Manager:SetPetSize(petGroupSize)
 	self.petGroupSize = petGroupSize or GetPetGroupSize()
 end
 
-function UnitFramesManager:GetFirstDirtyGroupIndex()
+function ZO_UnitFrames_Manager:GetFirstDirtyGroupIndex()
 	return self.firstDirtyGroupIndex
 end
 
-function UnitFramesManager:GetFirstDirtyPetGroupIndex()
+function ZO_UnitFrames_Manager:GetFirstDirtyPetGroupIndex()
 	return self.firstDirtyPetGroupIndex
 end
 
-function UnitFramesManager:GetIsDirty()
+function ZO_UnitFrames_Manager:GetIsDirty()
 	return self.firstDirtyGroupIndex ~= nil
 end
 
-function UnitFramesManager:GetIsDirtyPet()
+function ZO_UnitFrames_Manager:GetIsDirtyPet()
 	return self.firstDirtyPetGroupIndex ~= nil
 end
 
 -- The update we call will update all unit frames after and including the one being modified
 -- So we really just need to know what is the smallest groupIndex that is being changed
-function UnitFramesManager:SetGroupIndexDirty(groupIndex)
+function ZO_UnitFrames_Manager:SetGroupIndexDirty(groupIndex)
 	if not self.firstDirtyGroupIndex or groupIndex < self.firstDirtyGroupIndex then
 		self.firstDirtyGroupIndex = groupIndex
 	end
 end
 
-function UnitFramesManager:SetPetIndexDirty(groupIndex)
+function ZO_UnitFrames_Manager:SetPetIndexDirty(groupIndex)
 	if not self.firstDirtyPetGroupIndex or groupIndex < self.firstDirtyPetGroupIndex then
 		self.firstDirtyPetGroupIndex = groupIndex
 	end
 end
 
-function UnitFramesManager:ClearDirty()
+function ZO_UnitFrames_Manager:ClearDirty()
 	self.firstDirtyGroupIndex = nil
 end
 
-function UnitFramesManager:ClearDirtyPet()
+function ZO_UnitFrames_Manager:ClearDirtyPet()
 	self.firstDirtyPetGroupIndex = nil
 end
 
-function UnitFramesManager:SetGroupAndRaidFramesHiddenForReason(reason, hidden)
+function ZO_UnitFrames_Manager:SetGroupAndRaidFramesHiddenForReason(reason, hidden)
 	UNIT_FRAMES_FRAGMENT:SetHiddenForReason(reason, hidden)
 	self.groupAndRaidHiddenReasons:SetHiddenForReason(reason, hidden)
 end
 
-function UnitFramesManager:UpdateGroupAnchorFrames()
+function ZO_UnitFrames_Manager:UpdateGroupAnchorFrames()
 	-- Only the raid frame anchors need updates for now and it's only for whether or not the group name labels are showing and which one is highlighted
 	if self.groupSize <= SMALL_GROUP_SIZE_THRESHOLD or self.groupAndRaidHiddenReasons:IsHidden() then
 		-- Small groups never show the raid frame anchors
@@ -363,7 +363,7 @@ function UnitFramesManager:UpdateGroupAnchorFrames()
 	end
 end
 
-function UnitFramesManager:UpdatePetGroupAnchorFrames()
+function ZO_UnitFrames_Manager:UpdatePetGroupAnchorFrames()
 	if self.account.enablePetHealth and not self.groupAndRaidHiddenReasons:IsHidden() and IsPetActive() then
 		PetGroupAnchorFrame:SetHidden(false)
 	else
@@ -371,11 +371,11 @@ function UnitFramesManager:UpdatePetGroupAnchorFrames()
 	end
 end
 
-function UnitFramesManager:IsTargetOfTargetEnabled()
+function ZO_UnitFrames_Manager:IsTargetOfTargetEnabled()
 	return self.targetOfTargetEnabled
 end
 
-function UnitFramesManager:SetEnableTargetOfTarget(enableFlag)
+function ZO_UnitFrames_Manager:SetEnableTargetOfTarget(enableFlag)
 	if enableFlag ~= self.targetOfTargetEnabled then
 		self.targetOfTargetEnabled = enableFlag
 		CALLBACK_MANAGER:FireCallbacks("TargetOfTargetEnabledChanged", enableFlag)
@@ -383,7 +383,7 @@ function UnitFramesManager:SetEnableTargetOfTarget(enableFlag)
 end
 
 --[[
-	UnitFrameBar class...defines one bar in the unit frame, including background/glass textures, statusbar and text
+	ZO_UnitFrameBar class...defines one bar in the unit frame, including background/glass textures, statusbar and text
 --]]
 UNIT_FRAMES_REBIRTH_INSTANT_ANIMATION_TIME_MS = 0
 UNIT_FRAMES_REBIRTH_INSTANT_DEFAULT_ANIMATION_TIME_MS = 500
@@ -626,9 +626,9 @@ local function CreateBarTextControls(baseBarName, parent, style, mechanic)
 	return text1, text2
 end
 
-UnitFrameBar = ZO_Object:Subclass()
+ZO_UnitFrameBar = ZO_Object:Subclass()
 
-function UnitFrameBar:New(baseBarName, parent, barTextMode, style, mechanic)
+function ZO_UnitFrameBar:New(baseBarName, parent, barTextMode, style, mechanic)
 	local barControls = CreateBarStatusControl(baseBarName, parent, style, mechanic)
 	if barControls then
 		local newFrameBar = ZO_Object.New(self)
@@ -646,7 +646,7 @@ function UnitFrameBar:New(baseBarName, parent, barTextMode, style, mechanic)
 	end
 end
 
-function UnitFrameBar:Update(barType, cur, max, forceInit)
+function ZO_UnitFrameBar:Update(barType, cur, max, forceInit)
 	local numBarControls = #self.barControls
 	local isBarCentered = numBarControls == 2
 
@@ -679,7 +679,7 @@ local function GetVisibility(self)
 	return true
 end
 
-function UnitFrameBar:UpdateText(updateBarType, updateValue)
+function ZO_UnitFrameBar:UpdateText(updateBarType, updateValue)
 	if self.barTextMode == ZO_UNIT_FRAME_BAR_TEXT_MODE_SHOWN or self.barTextMode == ZO_UNIT_FRAME_BAR_TEXT_MODE_MOUSE_OVER then
 		local visible = GetVisibility(self)
 		if self.leftText and self.rightText then
@@ -710,7 +710,7 @@ function UnitFrameBar:UpdateText(updateBarType, updateValue)
 	end
 end
 
-function UnitFrameBar:SetMouseInside(inside)
+function ZO_UnitFrameBar:SetMouseInside(inside)
 	self.isMouseInside = inside
 
 	if self.barTextMode == ZO_UNIT_FRAME_BAR_TEXT_MODE_MOUSE_OVER then
@@ -718,7 +718,7 @@ function UnitFrameBar:SetMouseInside(inside)
 	end
 end
 
-function UnitFrameBar:SetColor(barType)
+function ZO_UnitFrameBar:SetColor(barType)
 	local colorFadeOut = GetInterfaceColor(INTERFACE_COLOR_TYPE_POWER_FADE_OUT, barType)
 	local colorFadeIn = GetInterfaceColor(INTERFACE_COLOR_TYPE_POWER_FADE_IN, barType)
 
@@ -729,13 +729,13 @@ function UnitFrameBar:SetColor(barType)
 	end
 end
 
-function UnitFrameBar:Hide(hidden)
+function ZO_UnitFrameBar:Hide(hidden)
 	for i = 1, #self.barControls do
 		self.barControls[i]:SetHidden(hidden)
 	end
 end
 
-function UnitFrameBar:SetAlpha(alpha)
+function ZO_UnitFrameBar:SetAlpha(alpha)
 	for i = 1, #self.barControls do
 		self.barControls[i]:SetAlpha(alpha)
 	end
@@ -749,11 +749,11 @@ function UnitFrameBar:SetAlpha(alpha)
 	end
 end
 
-function UnitFrameBar:GetBarControls()
+function ZO_UnitFrameBar:GetBarControls()
 	return self.barControls
 end
 
-function UnitFrameBar:SetBarTextMode(alwaysShow)
+function ZO_UnitFrameBar:SetBarTextMode(alwaysShow)
 	self.barTextMode = alwaysShow
 	self:UpdateText(UPDATE_BAR_TYPE, UPDATE_VALUE)
 end
@@ -918,9 +918,9 @@ local function DoUnitFrameLayout(unitFrame, style)
 	end
 end
 
-UnitFrame = ZO_Object:Subclass()
+ZO_UnitFrameObject = ZO_Object:Subclass()
 
-function UnitFrame:New(unitTag, anchors, barTextMode, style, templateName)
+function ZO_UnitFrameObject:New(unitTag, anchors, barTextMode, style, templateName)
 	templateName = templateName or style
 	local newFrame = ZO_Object.New(self)
 	local baseWindowName = templateName .. unitTag
@@ -971,7 +971,7 @@ function UnitFrame:New(unitTag, anchors, barTextMode, style, templateName)
 
 	newFrame.barTextMode = barTextMode
 
-	newFrame.healthBar = UnitFrameBar:New(baseWindowName .. "Hp", frame, barTextMode, style, POWERTYPE_HEALTH)
+	newFrame.healthBar = ZO_UnitFrameBar:New(baseWindowName .. "Hp", frame, barTextMode, style, POWERTYPE_HEALTH)
 	newFrame.healthBar:SetColor(POWERTYPE_HEALTH)
 
 	newFrame.resourceBars = {}
@@ -994,7 +994,7 @@ function UnitFrame:New(unitTag, anchors, barTextMode, style, templateName)
 	return newFrame
 end
 
-function UnitFrame:SetData(unitTag, anchors, barTextMode)
+function ZO_UnitFrameObject:SetData(unitTag, anchors, barTextMode)
 	self.unitTag = unitTag
 	self.dirty = true
 	self.animateShowHide = false
@@ -1010,14 +1010,14 @@ function UnitFrame:SetData(unitTag, anchors, barTextMode)
 	self:RefreshVisible()
 end
 
-function UnitFrame:IsOnline()
+function ZO_UnitFrameObject:IsOnline()
 	if self.isOnline == nil then
 		self.isOnline = IsUnitOnline(self.unitTag)
 	end
 	return self.isOnline
 end
 
-function UnitFrame:ApplyVisualStyle(gamepadMode)
+function ZO_UnitFrameObject:ApplyVisualStyle(gamepadMode)
 	if self.currentGamepadMode == gamepadMode then
 		return
 	end
@@ -1093,11 +1093,11 @@ function UnitFrame:ApplyVisualStyle(gamepadMode)
 	self:RefreshControls()
 end
 
-function UnitFrame:SetAnimateShowHide(animate)
+function ZO_UnitFrameObject:SetAnimateShowHide(animate)
 	self.animateShowHide = animate
 end
 
-function UnitFrame:AddFadeComponent(name, setColor)
+function ZO_UnitFrameObject:AddFadeComponent(name, setColor)
 	local control = self.frame:GetNamedChild(name)
 	if control then
 		control.setColor = setColor ~= false
@@ -1106,7 +1106,7 @@ function UnitFrame:AddFadeComponent(name, setColor)
 	return control
 end
 
-function UnitFrame:SetTextIndented(isIndented)
+function ZO_UnitFrameObject:SetTextIndented(isIndented)
 	local layoutData = GetPlatformLayoutData(self.style)
 	if layoutData then
 		LayoutUnitFrameName(self.nameLabel, layoutData, isIndented)
@@ -1114,7 +1114,7 @@ function UnitFrame:SetTextIndented(isIndented)
 	end
 end
 
-function UnitFrame:SetAnchor(anchors)
+function ZO_UnitFrameObject:SetAnchor(anchors)
 	self.frame:ClearAnchors()
 
 	if type(anchors) == "table" and #anchors >= 2 then
@@ -1125,25 +1125,25 @@ function UnitFrame:SetAnchor(anchors)
 	end
 end
 
-function UnitFrame:SetHiddenForReason(reason, hidden)
+function ZO_UnitFrameObject:SetHiddenForReason(reason, hidden)
 	if self.hiddenReasons:SetHiddenForReason(reason, hidden) then
 		self:RefreshVisible(true)
 	end
 end
 
-function UnitFrame:SetHasTarget(hasTarget)
+function ZO_UnitFrameObject:SetHasTarget(hasTarget)
 	self.hasTarget = hasTarget
 	self:RefreshVisible(ANIMATED)
 end
 
-function UnitFrame:ComputeHidden()
+function ZO_UnitFrameObject:ComputeHidden()
 	if not self.hasTarget then
 		return true
 	end
 	return self.hiddenReasons:IsHidden()
 end
 
-function UnitFrame:RefreshVisible(instant)
+function ZO_UnitFrameObject:RefreshVisible(instant)
 	local hidden = self:ComputeHidden()
 	if hidden ~= self.hidden then
 		self.hidden = hidden
@@ -1176,11 +1176,11 @@ function UnitFrame:RefreshVisible(instant)
 	end
 end
 
-function UnitFrame:GetHealth()
+function ZO_UnitFrameObject:GetHealth()
 	return GetUnitPower(self.unitTag, POWERTYPE_HEALTH)
 end
 
-function UnitFrame:RefreshControls()
+function ZO_UnitFrameObject:RefreshControls()
 	if self.hidden then
 		self.dirty = true
 	else
@@ -1210,7 +1210,7 @@ function UnitFrame:RefreshControls()
 	end
 end
 
-function UnitFrame:RefreshUnit(unitChanged, validTarget)
+function ZO_UnitFrameObject:RefreshUnit(unitChanged, validTarget)
 	if validTarget == nil then
 		-- validTarget is not false or true
 		validTarget = DoesUnitExist(self.unitTag)
@@ -1229,26 +1229,26 @@ function UnitFrame:RefreshUnit(unitChanged, validTarget)
 	self:SetHasTarget(validTarget)
 end
 
-function UnitFrame:SetBarsHidden(hidden)
+function ZO_UnitFrameObject:SetBarsHidden(hidden)
 	self.healthBar:Hide(hidden)
 end
 
-function UnitFrame:IsHidden()
+function ZO_UnitFrameObject:IsHidden()
 	return self.hidden
 end
 
-function UnitFrame:GetUnitTag()
+function ZO_UnitFrameObject:GetUnitTag()
 	return self.frame.m_unitTag
 end
 
-function UnitFrame:GetPrimaryControl()
+function ZO_UnitFrameObject:GetPrimaryControl()
 	return self.frame
 end
 
 -- Don't fade out just the frame, because that needs to appear correctly (along with BG, etc...)
 -- Just make the status bars and any text on the frame fade out.
 -- The vanilla code has isOnline as argument, but it wasn't in use. So we deleted it.
-function UnitFrame:DoAlphaUpdate(isNearby, isLeader)
+function ZO_UnitFrameObject:DoAlphaUpdate(isNearby, isLeader)
 	local color
 	if self.unitTag == "reticleover" then
 		color = ZO_SELECTED_TEXT
@@ -1271,12 +1271,12 @@ function UnitFrame:DoAlphaUpdate(isNearby, isLeader)
 	end
 end
 
-function UnitFrame:UpdatePowerBar(index, powerType, cur, max, forceInit)
+function ZO_UnitFrameObject:UpdatePowerBar(index, powerType, cur, max, forceInit)
 	if IsValidBarStyle(self.style, powerType) then
 		local currentBar = self.powerBars[index]
 
 		if not currentBar then
-			self.powerBars[index] = UnitFrameBar:New("$(parent)PowerBar" .. index, self.frame, self.barTextMode, self.style, powerType)
+			self.powerBars[index] = ZO_UnitFrameBar:New("$(parent)PowerBar" .. index, self.frame, self.barTextMode, self.style, powerType)
 			currentBar = self.powerBars[index]
 			currentBar:SetColor(powerType)
 			self.resourceBars[powerType] = currentBar
@@ -1290,7 +1290,7 @@ function UnitFrame:UpdatePowerBar(index, powerType, cur, max, forceInit)
 end
 
 -- show level for players and non-friendly NPCs
-function UnitFrame:ShouldShowLevel()
+function ZO_UnitFrameObject:ShouldShowLevel()
 	local unitTag = self:GetUnitTag()
 	if IsUnitPlayer(unitTag) or ZO_UNIT_FRAMES_SHOW_LEVEL_REACTIONS[GetUnitReaction(unitTag)] then
 		return true
@@ -1298,7 +1298,7 @@ function UnitFrame:ShouldShowLevel()
 	return false
 end
 
-function UnitFrame:UpdateLevel()
+function ZO_UnitFrameObject:UpdateLevel()
 	local unitLevel
 	local isChampion = IsUnitChampion(self:GetUnitTag())
 	if isChampion then
@@ -1328,7 +1328,7 @@ function UnitFrame:UpdateLevel()
 	end
 end
 
-function UnitFrame:UpdateRank()
+function ZO_UnitFrameObject:UpdateRank()
 	if self.rankIcon then
 		local unitTag = self:GetUnitTag()
 		local rank = GetUnitAvARank(unitTag)
@@ -1345,7 +1345,7 @@ function UnitFrame:UpdateRank()
 	end
 end
 
-function UnitFrame:UpdateAssignment()
+function ZO_UnitFrameObject:UpdateAssignment()
 	if self.assignmentIcon then
 		local unitTag = self:GetUnitTag()
 		local assignmentTexture = nil
@@ -1399,7 +1399,7 @@ do
 		[MONSTER_DIFFICULTY_DEADLY] = "EsoUI/Art/UnitFrames/Gamepad/gp_targetUnitFrame_bracket_level4.dds"
 	}
 
-	function UnitFrame:SetPlatformDifficultyTextures(difficulty)
+	function ZO_UnitFrameObject:SetPlatformDifficultyTextures(difficulty)
 		if IsInGamepadPreferredMode() then
 			local texture = GAMEPAD_DIFFICULTY_BRACKET_TEXTURE[difficulty]
 			self.leftBracket:SetTexture(texture)
@@ -1417,7 +1417,7 @@ do
 	end
 end
 
-function UnitFrame:UpdateDifficulty()
+function ZO_UnitFrameObject:UpdateDifficulty()
 	if self.leftBracket then
 		local unitTag = self:GetUnitTag()
 		local difficulty = GetUnitDifficulty(unitTag)
@@ -1446,7 +1446,7 @@ function UnitFrame:UpdateDifficulty()
 	end
 end
 
-function UnitFrame:UpdateUnitReaction()
+function ZO_UnitFrameObject:UpdateUnitReaction()
 	if self.nameLabel then
 		local unitTag = self:GetUnitTag()
 		if ZO_Group_IsGroupUnitTag(unitTag) or IsPetUnitTag(unitTag) then
@@ -1466,7 +1466,7 @@ do
 		return TARGET_FRAME_UNITS[unitTag]
 	end
 
-	function UnitFrame:UpdateName()
+	function ZO_UnitFrameObject:UpdateName()
 		if self.nameLabel then
 			local name
 			local unitTag = self.unitTag
@@ -1502,7 +1502,7 @@ do
 		return zo_iconFormat(GetPlatformClassIcon(GetUnitClassId(unitTag)), iconSize, iconSize)
 	end
 
-	function UnitFrame:UpdatePlayerCaption(unitTag)
+	function ZO_UnitFrameObject:UpdatePlayerCaption(unitTag)
 		if UnitFrames.account.showClassIcon then
 			return ZO_CachedStrFormat(SI_UNITFRAMESREBIRTH_CLASS_WITH_NAME, GetPlatformClassIconResized(unitTag), UpdatePlayerCaptionName(unitTag))
 		end
@@ -1518,7 +1518,7 @@ do
 	end
 
 	-- still set the caption text when empty so we collapse the label for anything anchoring off the bottom of it
-	function UnitFrame:UpdateCaption()
+	function ZO_UnitFrameObject:UpdateCaption()
 		local captionLabel = self.captionLabel
 		if captionLabel then
 			local caption = ""
@@ -1535,7 +1535,7 @@ do
 	end
 end
 
-function UnitFrame:UpdateStatus(isDead, isOnline)
+function ZO_UnitFrameObject:UpdateStatus(isDead, isOnline)
 	local statusLabel = self.statusLabel
 	if statusLabel then
 		local hideBars = isOnline == false or isDead == true
@@ -1568,29 +1568,29 @@ function UnitFrame:UpdateStatus(isDead, isOnline)
 	end
 end
 
-function UnitFrame:SetBarMouseInside(inside)
+function ZO_UnitFrameObject:SetBarMouseInside(inside)
 	self.healthBar:SetMouseInside(inside)
 	for powerIndex, powerBar in pairs(self.powerBars) do
 		powerBar:SetMouseInside(inside)
 	end
 end
 
-function UnitFrame:HandleMouseEnter()
+function ZO_UnitFrameObject:HandleMouseEnter()
 	self:SetBarMouseInside(true)
 end
 
-function UnitFrame:HandleMouseExit()
+function ZO_UnitFrameObject:HandleMouseExit()
 	self:SetBarMouseInside(false)
 end
 
-function UnitFrame:SetBarTextMode(alwaysShow)
+function ZO_UnitFrameObject:SetBarTextMode(alwaysShow)
 	self.healthBar:SetBarTextMode(alwaysShow)
 	for powerIndex, powerBar in pairs(self.powerBars) do
 		powerBar:SetBarTextMode(alwaysShow)
 	end
 end
 
-function UnitFrame:CreateAttributeVisualizer(soundTable, unitTag)
+function ZO_UnitFrameObject:CreateAttributeVisualizer(soundTable, unitTag)
 	if not self.attributeVisualizer then
 		self.frame.barControls = self.healthBar:GetBarControls()
 		self.attributeVisualizer = ZO_UnitAttributeVisualizer:New(unitTag or self:GetUnitTag(), soundTable, self.frame)
@@ -1830,7 +1830,7 @@ end
 -- Utility to update the style of the current group frames creating a new frame for the unitTag if necessary,
 -- hiding frames that are no longer applicable, and creating new frames of the correct style if the group size
 -- goes above or below the "small group" or "raid group" thresholds.
-function UnitFramesManager:UpdateGroupFrames()
+function ZO_UnitFrames_Manager:UpdateGroupFrames()
 	local groupSize = GetGroupSize()
 	local groupIndex = self:GetFirstDirtyGroupIndex()
 	local oldGroupSize = self.groupSize or 0
@@ -1877,7 +1877,7 @@ function UnitFramesManager:UpdateGroupFrames()
 		for i = groupIndex, groupSize do
 			unitTag = GetGroupUnitTagByIndex(i)
 			if not frames[unitTag] then
-				frames[unitTag] = UnitFrame:New(unitTag, nil, ZO_UNIT_FRAME_BAR_TEXT_MODE_HIDDEN, style)
+				frames[unitTag] = ZO_UnitFrameObject:New(unitTag, nil, ZO_UNIT_FRAME_BAR_TEXT_MODE_HIDDEN, style)
 			end
 		end
 		-- But sync index of all frames with those of API
@@ -1916,7 +1916,7 @@ function UnitFramesManager:UpdateGroupFrames()
 	end
 end
 
-function UnitFramesManager:UpdatePetFrames()
+function ZO_UnitFrames_Manager:UpdatePetFrames()
 	local petGroupSize = GetPetGroupSize()
 	local petIndex = self:GetFirstDirtyPetGroupIndex()
 	local oldPetGroupSize = self.petGroupSize or 0
@@ -1937,7 +1937,7 @@ function UnitFramesManager:UpdatePetFrames()
 		for i = petIndex, petGroupSize do
 			unitTag = GetPetUnitTagByIndex(i)
 			if not frames[unitTag] then
-				frames[unitTag] = UnitFrame:New(unitTag, nil, ZO_UNIT_FRAME_BAR_TEXT_MODE_HIDDEN, self.PetUnitFrame)
+				frames[unitTag] = ZO_UnitFrameObject:New(unitTag, nil, ZO_UNIT_FRAME_BAR_TEXT_MODE_HIDDEN, self.PetUnitFrame)
 			end
 		end
 		-- But sync index of all frames with those of API
@@ -1976,7 +1976,7 @@ function UnitFramesManager:UpdatePetFrames()
 	end
 end
 
-function UnitFramesManager:RefreshPetFrames()
+function ZO_UnitFrames_Manager:RefreshPetFrames()
 	ForceChange(self.petFrames)
 	self:SetPetIndexDirty(1)
 end
@@ -2420,7 +2420,7 @@ do
 
 		CalculateDynamicPlatformConstants()
 
-		UnitFrames = UnitFramesManager:New()
+		UnitFrames = ZO_UnitFrames_Manager:New()
 		UnitFrames.UNITFRAME_BAR_STYLES = UNITFRAME_BAR_STYLES
 		UnitFrames.LAYOUT_DATA = UNITFRAME_LAYOUT_DATA
 
