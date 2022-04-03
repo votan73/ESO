@@ -16,68 +16,48 @@ local GROUPINDEX_NONE = 4294967296
 
 local KEYBOARD_CONSTANTS = {
 	GROUP_LEADER_ICON = "EsoUI/Art/UnitFrames/groupIcon_leader.dds",
-
 	GROUP_FRAMES_PER_COLUMN = SMALL_GROUP_SIZE_THRESHOLD,
 	PET_GROUP_FRAMES_PER_COLUMN = 2,
 	NUM_COLUMNS = NUM_SUBGROUPS,
-
 	GROUP_STRIDE = NUM_SUBGROUPS,
-
 	GROUP_FRAME_BASE_OFFSET_X = 28,
 	GROUP_FRAME_BASE_OFFSET_Y = 100,
-
 	RAID_FRAME_BASE_OFFSET_X = 28,
 	RAID_FRAME_BASE_OFFSET_Y = 100,
-
 	GROUP_FRAME_SIZE_X = ZO_KEYBOARD_GROUP_FRAME_WIDTH,
 	GROUP_FRAME_SIZE_Y = ZO_KEYBOARD_GROUP_FRAME_HEIGHT,
-
 	GROUP_FRAME_PAD_X = 2,
 	GROUP_FRAME_PAD_Y = 0,
-
 	RAID_FRAME_SIZE_X = ZO_KEYBOARD_RAID_FRAME_WIDTH,
 	RAID_FRAME_SIZE_Y = ZO_KEYBOARD_RAID_FRAME_HEIGHT,
-
 	RAID_FRAME_PAD_X = 2,
 	RAID_FRAME_PAD_Y = 2,
-
 	GROUP_BAR_FONT = "ZoFontGameOutline",
 	RAID_BAR_FONT = "ZoFontGameOutline",
-
-	SHOW_GROUP_LABELS = true,
+	SHOW_GROUP_LABELS = true
 }
 
 local GAMEPAD_CONSTANTS = {
 	GROUP_LEADER_ICON = "EsoUI/Art/UnitFrames/Gamepad/gp_Group_Leader.dds",
-
 	GROUP_FRAMES_PER_COLUMN = 12,
 	PET_GROUP_FRAMES_PER_COLUMN = 2,
 	NUM_COLUMNS = GROUP_SIZE_MAX / 12,
-
 	GROUP_STRIDE = 3,
-
 	GROUP_FRAME_BASE_OFFSET_X = 70,
 	GROUP_FRAME_BASE_OFFSET_Y = 55,
-
 	RAID_FRAME_BASE_OFFSET_X = 100,
 	RAID_FRAME_BASE_OFFSET_Y = 50,
-
 	GROUP_FRAME_SIZE_X = ZO_GAMEPAD_GROUP_FRAME_WIDTH,
 	GROUP_FRAME_SIZE_Y = ZO_GAMEPAD_GROUP_FRAME_HEIGHT,
-
 	GROUP_FRAME_PAD_X = 2,
 	GROUP_FRAME_PAD_Y = 9,
-
 	RAID_FRAME_SIZE_X = ZO_GAMEPAD_RAID_FRAME_WIDTH,
 	RAID_FRAME_SIZE_Y = ZO_GAMEPAD_RAID_FRAME_HEIGHT,
-
 	RAID_FRAME_PAD_X = 4,
 	RAID_FRAME_PAD_Y = 2,
-
 	GROUP_BAR_FONT = "ZoFontGamepad34",
 	RAID_BAR_FONT = "ZoFontGamepad18",
-
-	SHOW_GROUP_LABELS = false,
+	SHOW_GROUP_LABELS = false
 }
 
 local function GetPlatformConstants()
@@ -85,7 +65,7 @@ local function GetPlatformConstants()
 end
 
 local function CalculateDynamicPlatformConstants()
-	local allConstants = { KEYBOARD_CONSTANTS, GAMEPAD_CONSTANTS }
+	local allConstants = {KEYBOARD_CONSTANTS, GAMEPAD_CONSTANTS}
 
 	for _, constants in ipairs(allConstants) do
 		constants.GROUP_FRAME_OFFSET_X = constants.GROUP_FRAME_SIZE_X + constants.GROUP_FRAME_PAD_X
@@ -95,7 +75,7 @@ local function CalculateDynamicPlatformConstants()
 		constants.RAID_FRAME_OFFSET_Y = constants.RAID_FRAME_SIZE_Y + constants.RAID_FRAME_PAD_Y
 
 		constants.RAID_FRAME_ANCHOR_CONTAINER_WIDTH = constants.RAID_FRAME_SIZE_X
-		constants.RAID_FRAME_ANCHOR_CONTAINER_HEIGHT =(constants.RAID_FRAME_SIZE_Y + constants.RAID_FRAME_PAD_Y) * constants.GROUP_FRAMES_PER_COLUMN
+		constants.RAID_FRAME_ANCHOR_CONTAINER_HEIGHT = (constants.RAID_FRAME_SIZE_Y + constants.RAID_FRAME_PAD_Y) * constants.GROUP_FRAMES_PER_COLUMN
 	end
 end
 
@@ -110,7 +90,7 @@ end
 
 local groupFrameAnchor = ZO_Anchor:New(TOPLEFT, GuiRoot, TOPLEFT, 0, 0)
 
-local largeGroupAnchorFrames = { }
+local largeGroupAnchorFrames = {}
 
 local function GetGroupFrameAnchor(groupIndex, groupSize)
 	local constants = GetPlatformConstants()
@@ -148,9 +128,9 @@ local function GetGroupAnchorFrameOffsets(subgroupIndex, groupStride, constants)
 	groupStride = groupStride or NUM_SUBGROUPS
 	local zeroBasedIndex = subgroupIndex - 1
 	local row = zo_floor(zeroBasedIndex / groupStride)
-	local column = zeroBasedIndex -(row * groupStride)
+	local column = zeroBasedIndex - (row * groupStride)
 
-	return constants.RAID_FRAME_BASE_OFFSET_X +(column * constants.RAID_FRAME_OFFSET_X), constants.RAID_FRAME_BASE_OFFSET_Y +(row * constants.RAID_FRAME_ANCHOR_CONTAINER_HEIGHT)
+	return constants.RAID_FRAME_BASE_OFFSET_X + (column * constants.RAID_FRAME_OFFSET_X), constants.RAID_FRAME_BASE_OFFSET_Y + (row * constants.RAID_FRAME_ANCHOR_CONTAINER_HEIGHT)
 end
 
 local function IsPlayerGrouped()
@@ -160,19 +140,16 @@ end
 --[[
 	Global object declarations
 --]]
-
 UNIT_FRAMES = nil
 
 --[[
 	Local object declarations
 --]]
-
 local UnitFrames, UnitFramesManager, UnitFrame, UnitFrameBar
 
 --[[
 	UnitFrames container object.  Used to manage the UnitFrame objects according to UnitTags ("group1", "group4pet", etc...)
 --]]
-
 UnitFramesManager = ZO_Object:Subclass()
 
 function UnitFramesManager:New()
@@ -182,10 +159,10 @@ function UnitFramesManager:New()
 end
 
 function UnitFramesManager:Initialize()
-	self.groupFrames = { }
-	self.raidFrames = { }
-	self.staticFrames = { }
-	self.petFrames = { }
+	self.groupFrames = {}
+	self.raidFrames = {}
+	self.staticFrames = {}
+	self.petFrames = {}
 
 	self.groupSize = 0
 	self.targetOfTargetEnabled = true
@@ -376,7 +353,7 @@ function UnitFramesManager:UpdateGroupAnchorFrames()
 					if AreUnitsEqual("player", unitTag) then
 						isLocalPlayerInSubgroup = true
 						break
-						-- Found a reason to show the label, and determined if this is the local player's subgroup, so bail out
+					-- Found a reason to show the label, and determined if this is the local player's subgroup, so bail out
 					end
 				end
 			end
@@ -424,145 +401,113 @@ local LOOKUP_APPROACH_AMOUNT_MS = {
 	[UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_SUPER_FAST] = 200,
 	[UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_FASTER] = 300,
 	[UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_FAST] = 400,
-	[UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_DEFAULT] = UNIT_FRAMES_REBIRTH_INSTANT_DEFAULT_ANIMATION_TIME_MS,
+	[UNIT_FRAME_REBIRTH_APPROACH_AMOUNT_DEFAULT] = UNIT_FRAMES_REBIRTH_INSTANT_DEFAULT_ANIMATION_TIME_MS
 }
 
 -- A special flag that essentially acts like a wild card, accepting any mechanic
 local ANY_POWER_TYPE = true
 
-local UNITFRAME_BAR_STYLES =
-{
-	[TARGET_UNIT_FRAME] =
-	{
-		[POWERTYPE_HEALTH] =
-		{
-			textAnchors =
-			{
-				ZO_Anchor:New(TOP,nil,BOTTOM,0,- 22),
+local UNITFRAME_BAR_STYLES = {
+	[TARGET_UNIT_FRAME] = {
+		[POWERTYPE_HEALTH] = {
+			textAnchors = {
+				ZO_Anchor:New(TOP, nil, BOTTOM, 0, -22)
 			},
-			centered = true,
-		},
+			centered = true
+		}
 	},
-
-	[GROUP_UNIT_FRAME] =
-	{
-		[POWERTYPE_HEALTH] =
-		{
-			keyboard =
-			{
+	[GROUP_UNIT_FRAME] = {
+		[POWERTYPE_HEALTH] = {
+			keyboard = {
 				template = "UnitFramesRebirth_GroupUnitFrameStatus",
 				barHeight = 14,
 				barWidth = 180,
-				barAnchors = { ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 36, 42) },
-				warner =
-				{
+				barAnchors = {ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 36, 42)},
+				warner = {
 					texture = "ZO_PlayerAttributeHealthWarnerTexture",
 					Left = "UnitFramesRebirth_PlayerAttributeWarnerLeft",
 					Right = "UnitFramesRebirth_PlayerAttributeWarnerRightArrow",
-					Center = "UnitFramesRebirth_PlayerAttributeWarnerCenter",
+					Center = "UnitFramesRebirth_PlayerAttributeWarnerCenter"
 				},
-				shield =
-				{
-					texture = "UnitFramesRebirth_GroupPowerShieldBar",
+				shield = {
+					texture = "UnitFramesRebirth_GroupPowerShieldBar"
 				}
 			},
-
-			gamepad =
-			{
+			gamepad = {
 				template = "UnitFramesRebirth_GroupUnitFrameStatus",
 				barHeight = 8,
 				barWidth = ZO_GAMEPAD_GROUP_FRAME_WIDTH,
-				barAnchors = { ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 0, 45) },
+				barAnchors = {ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 0, 45)},
 				hideBgIfOffline = true,
-				warner =
-				{
+				warner = {
 					texture = "ZO_PlayerAttributeHealthWarnerTexture",
 					Left = "UnitFramesRebirth_PlayerAttributeWarnerLeft",
 					Right = "UnitFramesRebirth_PlayerAttributeWarnerRight",
-					Center = "UnitFramesRebirth_PlayerAttributeWarnerCenter",
+					Center = "UnitFramesRebirth_PlayerAttributeWarnerCenter"
 				},
-				shield =
-				{
-					texture = "UnitFramesRebirth_GroupPowerShieldBar",
+				shield = {
+					texture = "UnitFramesRebirth_GroupPowerShieldBar"
 				}
-			},
-		},
+			}
+		}
 	},
-
-	[RAID_UNIT_FRAME] =
-	{
-		[POWERTYPE_HEALTH] =
-		{
-			keyboard =
-			{
+	[RAID_UNIT_FRAME] = {
+		[POWERTYPE_HEALTH] = {
+			keyboard = {
 				template = "UnitFramesRebirth_RaidUnitFrameStatus",
 				barHeight = 34,
 				barWidth = 90,
-				barAnchors = { ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 2, 2) },
-				shield =
-				{
-					texture = "UnitFramesRebirth_RaidPowerShieldBar",
+				barAnchors = {ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 2, 2)},
+				shield = {
+					texture = "UnitFramesRebirth_RaidPowerShieldBar"
 				}
 			},
-
-			gamepad =
-			{
+			gamepad = {
 				template = "UnitFramesRebirth_RaidUnitFrameStatus",
 				barHeight = ZO_GAMEPAD_RAID_FRAME_HEIGHT - 2,
 				barWidth = ZO_GAMEPAD_RAID_FRAME_WIDTH - 2,
-				barAnchors = { ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 1, 1) },
-				shield =
-				{
-					texture = "UnitFramesRebirth_RaidPowerShieldBar",
+				barAnchors = {ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 1, 1)},
+				shield = {
+					texture = "UnitFramesRebirth_RaidPowerShieldBar"
 				}
-			},
-		},
+			}
+		}
 	},
-
-	[PET_UNIT_FRAME] =
-	{
-		[POWERTYPE_HEALTH] =
-		{
-			keyboard =
-			{
+	[PET_UNIT_FRAME] = {
+		[POWERTYPE_HEALTH] = {
+			keyboard = {
 				template = "UnitFramesRebirth_GroupUnitFrameStatus",
 				barHeight = 14,
 				barWidth = 180,
-				barAnchors = { ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 36, 42) },
-				warner =
-				{
+				barAnchors = {ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 36, 42)},
+				warner = {
 					texture = "ZO_PlayerAttributeHealthWarnerTexture",
 					Left = "UnitFramesRebirth_PlayerAttributeWarnerLeft",
 					Right = "UnitFramesRebirth_PlayerAttributeWarnerRightArrow",
-					Center = "UnitFramesRebirth_PlayerAttributeWarnerCenter",
+					Center = "UnitFramesRebirth_PlayerAttributeWarnerCenter"
 				},
-				shield =
-				{
-					texture = "UnitFramesRebirth_GroupPowerShieldBar",
+				shield = {
+					texture = "UnitFramesRebirth_GroupPowerShieldBar"
 				}
 			},
-
-			gamepad =
-			{
+			gamepad = {
 				template = "UnitFramesRebirth_GroupUnitFrameStatus",
 				barHeight = 8,
 				barWidth = ZO_GAMEPAD_GROUP_FRAME_WIDTH,
-				barAnchors = { ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 0, 45) },
+				barAnchors = {ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 0, 45)},
 				hideBgIfOffline = true,
-				warner =
-				{
+				warner = {
 					texture = "ZO_PlayerAttributeHealthWarnerTexture",
 					Left = "UnitFramesRebirth_PlayerAttributeWarnerLeft",
 					Right = "UnitFramesRebirth_PlayerAttributeWarnerRight",
-					Center = "UnitFramesRebirth_PlayerAttributeWarnerCenter",
+					Center = "UnitFramesRebirth_PlayerAttributeWarnerCenter"
 				},
-				shield =
-				{
-					texture = "UnitFramesRebirth_GroupPowerShieldBar",
+				shield = {
+					texture = "UnitFramesRebirth_GroupPowerShieldBar"
 				}
-			},
-		},
-	},
+			}
+		}
+	}
 }
 
 local function GetPlatformBarStyle(style, powerType)
@@ -577,7 +522,7 @@ end
 
 local function IsValidBarStyle(style, powerType)
 	local styleData = UNITFRAME_BAR_STYLES[style] or UNITFRAME_BAR_STYLES.default
-	return styleData and(styleData[powerType] ~= nil or styleData[ANY_POWER_TYPE] ~= nil)
+	return styleData and (styleData[powerType] ~= nil or styleData[ANY_POWER_TYPE] ~= nil)
 end
 
 local function CreateBarStatusControl(baseBarName, parent, style, mechanic)
@@ -618,7 +563,7 @@ local function CreateBarStatusControl(baseBarName, parent, style, mechanic)
 
 				rightBar:SetAnchor(TOPLEFT, leftBar, TOPRIGHT, 0, 0)
 
-				return { leftBar, rightBar }
+				return {leftBar, rightBar}
 			else
 				local statusBar = CreateControlFromVirtual(baseBarName, parent, barData.template)
 
@@ -640,19 +585,19 @@ local function CreateBarStatusControl(baseBarName, parent, style, mechanic)
 					barAnchor2:AddToControl(statusBar)
 				end
 
-				return { statusBar }
+				return {statusBar}
 			end
 		else
 			-- attempt to find the controls from XML
 			local bar = parent:GetNamedChild("Bar")
 			if bar then
-				return { bar }
+				return {bar}
 			end
 
 			local barLeft = parent:GetNamedChild("BarLeft")
 			local barRight = parent:GetNamedChild("BarRight")
 			if barLeft and barRight then
-				return { barLeft, barRight }
+				return {barLeft, barRight}
 			end
 		end
 	end
@@ -816,123 +761,83 @@ end
 --[[
 	UnitFrame main class and update functions
 --]]
-
-local UNITFRAME_LAYOUT_DATA =
-{
-	[GROUP_UNIT_FRAME] =
-	{
-		keyboard =
-		{
-			nameAnchor = ZO_Anchor:New(TOPLEFT,nil,TOPLEFT,35,19),
+local UNITFRAME_LAYOUT_DATA = {
+	[GROUP_UNIT_FRAME] = {
+		keyboard = {
+			nameAnchor = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 35, 19),
 			nameWidth = 215,
 			nameWrapMode = TEXT_WRAP_MODE_ELLIPSIS,
-
-			statusData = { anchor1 = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 36, 42), anchor2 = ZO_Anchor:New(TOPRIGHT, nil, TOPRIGHT, - 140, 42), height = 0, },
-
-			leaderIconData = { width = 16, height = 16, offsetX = 5, offsetY = 5 },
-
+			statusData = {anchor1 = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 36, 42), anchor2 = ZO_Anchor:New(TOPRIGHT, nil, TOPRIGHT, -140, 42), height = 0},
+			leaderIconData = {width = 16, height = 16, offsetX = 5, offsetY = 5},
 			useHealthWarner = true,
-			usePowerShield = true,
+			usePowerShield = true
 		},
-
-		gamepad =
-		{
-			nameAnchor = ZO_Anchor:New(TOPLEFT,nil,TOPLEFT,0,1),
+		gamepad = {
+			nameAnchor = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 0, 1),
 			nameWidth = 306,
 			nameWrapMode = TEXT_WRAP_MODE_ELLIPSIS,
-
-			indentedNameAnchor = ZO_Anchor:New(TOPLEFT,nil,TOPLEFT,25,3),
-
-			statusData = { anchor1 = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 0, 0), anchor2 = ZO_Anchor:New(TOPRIGHT, nil, TOPRIGHT, 0, 35), height = 0, },
+			indentedNameAnchor = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 25, 3),
+			statusData = {anchor1 = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 0, 0), anchor2 = ZO_Anchor:New(TOPRIGHT, nil, TOPRIGHT, 0, 35), height = 0},
 			hideHealthBgIfOffline = true,
-
-			leaderIconData = { width = 25, height = 25, offsetX = 0, offsetY = 12 },
-
+			leaderIconData = {width = 25, height = 25, offsetX = 0, offsetY = 12},
 			useHealthWarner = true,
-			usePowerShield = true,
-		},
+			usePowerShield = true
+		}
 	},
-
-	[RAID_UNIT_FRAME] =
-	{
-		keyboard =
-		{
-			highPriorityBuffHighlight =
-			{
-				left = { texture = "EsoUI/Art/UnitFrames/unitframe_raid_outline_left.dds", width = 64, height = 64, },
-				right = { texture = "EsoUI/Art/UnitFrames/unitframe_raid_outline_right.dds", width = 32, height = 64, },
-				icon = { width = 14, height = 14, customAnchor = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 76, 15) },
+	[RAID_UNIT_FRAME] = {
+		keyboard = {
+			highPriorityBuffHighlight = {
+				left = {texture = "EsoUI/Art/UnitFrames/unitframe_raid_outline_left.dds", width = 64, height = 64},
+				right = {texture = "EsoUI/Art/UnitFrames/unitframe_raid_outline_right.dds", width = 32, height = 64},
+				icon = {width = 14, height = 14, customAnchor = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 76, 15)}
 			},
-
-			nameAnchor = ZO_Anchor:New(TOPLEFT,nil,TOPLEFT,5,4),
+			nameAnchor = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 5, 4),
 			nameWidth = 86,
-
-			indentedNameAnchor = ZO_Anchor:New(TOPLEFT,nil,TOPLEFT,19,4),
+			indentedNameAnchor = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 19, 4),
 			indentedNameWidth = 75,
-
-			statusData = { anchor1 = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 5, 20), anchor2 = ZO_Anchor:New(TOPRIGHT, nil, TOPRIGHT, - 4, 20), height = 15, },
-
-			leaderIconData = { width = 16, height = 16, offsetX = 5, offsetY = 5 },
-
-			usePowerShield = true,
+			statusData = {anchor1 = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 5, 20), anchor2 = ZO_Anchor:New(TOPRIGHT, nil, TOPRIGHT, -4, 20), height = 15},
+			leaderIconData = {width = 16, height = 16, offsetX = 5, offsetY = 5},
+			usePowerShield = true
 		},
-
-		gamepad =
-		{
-			highPriorityBuffHighlight =
-			{
-				left = { texture = "EsoUI/Art/UnitFrames/unitframe_raid_outline_left.dds", width = 54, height = 44, },
-				right = { texture = "EsoUI/Art/UnitFrames/unitframe_raid_outline_right.dds", width = 32, height = 44, },
-				icon = { width = 14, height = 14, customAnchor = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 66, 7) },
+		gamepad = {
+			highPriorityBuffHighlight = {
+				left = {texture = "EsoUI/Art/UnitFrames/unitframe_raid_outline_left.dds", width = 54, height = 44},
+				right = {texture = "EsoUI/Art/UnitFrames/unitframe_raid_outline_right.dds", width = 32, height = 44},
+				icon = {width = 14, height = 14, customAnchor = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 66, 7)}
 			},
-
-			nameAnchor = ZO_Anchor:New(TOPLEFT,nil,TOPLEFT,6,2),
+			nameAnchor = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 6, 2),
 			nameWidth = ZO_GAMEPAD_RAID_FRAME_WIDTH - 6,
-			indentedNameAnchor = ZO_Anchor:New(TOPLEFT,nil,TOPLEFT,20,3),
+			indentedNameAnchor = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 20, 3),
 			indentedNameWidth = ZO_GAMEPAD_RAID_FRAME_WIDTH - 20 - 2,
-
-			leaderIconData = { width = 18, height = 18, offsetX = 2, offsetY = 7 },
-
-			usePowerShield = true,
-		},
+			leaderIconData = {width = 18, height = 18, offsetX = 2, offsetY = 7},
+			usePowerShield = true
+		}
 	},
-
-	[TARGET_UNIT_FRAME] =
-	{
+	[TARGET_UNIT_FRAME] = {
 		neverHideStatusBar = true,
 		showStatusInName = true,
-		captionControlName = "Caption",
+		captionControlName = "Caption"
 	},
-
-	[PET_UNIT_FRAME] =
-	{
-		keyboard =
-		{
-			nameAnchor = ZO_Anchor:New(TOPLEFT,nil,TOPLEFT,35,19),
+	[PET_UNIT_FRAME] = {
+		keyboard = {
+			nameAnchor = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 35, 19),
 			nameWidth = 215,
 			nameWrapMode = TEXT_WRAP_MODE_ELLIPSIS,
-
-			statusData = { anchor1 = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 36, 42), anchor2 = ZO_Anchor:New(TOPRIGHT, nil, TOPRIGHT, - 140, 42), height = 0, },
-
+			statusData = {anchor1 = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 36, 42), anchor2 = ZO_Anchor:New(TOPRIGHT, nil, TOPRIGHT, -140, 42), height = 0},
 			useHealthWarner = true,
-			usePowerShield = true,
+			usePowerShield = true
 		},
-
-		gamepad =
-		{
-			nameAnchor = ZO_Anchor:New(TOPLEFT,nil,TOPLEFT,0,1),
+		gamepad = {
+			nameAnchor = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 0, 1),
 			nameWidth = 306,
 			nameWrapMode = TEXT_WRAP_MODE_ELLIPSIS,
-
-			indentedNameAnchor = ZO_Anchor:New(TOPLEFT,nil,TOPLEFT,25,3),
-
-			statusData = { anchor1 = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 0, 0), anchor2 = ZO_Anchor:New(TOPRIGHT, nil, TOPRIGHT, 0, 35), height = 0, },
+			indentedNameAnchor = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 25, 3),
+			statusData = {anchor1 = ZO_Anchor:New(TOPLEFT, nil, TOPLEFT, 0, 0), anchor2 = ZO_Anchor:New(TOPRIGHT, nil, TOPRIGHT, 0, 35), height = 0},
 			hideHealthBgIfOffline = true,
-
 			useHealthWarner = true,
-			usePowerShield = true,
-		},
-	},
+			usePowerShield = true
+		}
+	}
 }
 
 local function GetPlatformLayoutData(style)
@@ -955,7 +860,7 @@ local function SetUnitFrameTexture(frame, styleData, showOption)
 
 		if showOption == FORCE_SHOW then
 			frame:SetHidden(false)
-			-- never toggles, this is the only chance this frame has of being shown
+		-- never toggles, this is the only chance this frame has of being shown
 		end
 	end
 end
@@ -1009,7 +914,7 @@ local function DoUnitFrameLayout(unitFrame, style)
 		LayoutUnitFrameName(unitFrame.nameLabel, layoutData)
 		LayoutUnitFrameStatus(unitFrame.statusLabel, layoutData.statusData)
 
-		-- NOTE: Level label is always custom and doesn't need to be managed with this anchoring system
+	-- NOTE: Level label is always custom and doesn't need to be managed with this anchoring system
 	end
 end
 
@@ -1029,14 +934,16 @@ function UnitFrame:New(unitTag, anchors, barTextMode, style, templateName)
 	end
 
 	local layoutData = GetPlatformLayoutData(style)
-	if not layoutData then return end
+	if not layoutData then
+		return
+	end
 
 	local frame = CreateControlFromVirtual(baseWindowName, parent, templateName)
 	frame:SetHidden(true)
 	newFrame.style = style
 	newFrame.templateName = templateName
 	newFrame.frame = frame
-	newFrame.fadeComponents = { }
+	newFrame.fadeComponents = {}
 	newFrame.hiddenReasons = ZO_HiddenReasons:New()
 	newFrame.hidden = true
 
@@ -1067,10 +974,10 @@ function UnitFrame:New(unitTag, anchors, barTextMode, style, templateName)
 	newFrame.healthBar = UnitFrameBar:New(baseWindowName .. "Hp", frame, barTextMode, style, POWERTYPE_HEALTH)
 	newFrame.healthBar:SetColor(POWERTYPE_HEALTH)
 
-	newFrame.resourceBars = { }
+	newFrame.resourceBars = {}
 	newFrame.resourceBars[POWERTYPE_HEALTH] = newFrame.healthBar
 
-	newFrame.powerBars = { }
+	newFrame.powerBars = {}
 
 	if anchors then
 		newFrame:SetData(unitTag, anchors, barTextMode)
@@ -1111,7 +1018,9 @@ function UnitFrame:IsOnline()
 end
 
 function UnitFrame:ApplyVisualStyle(gamepadMode)
-	if self.currentGamepadMode == gamepadMode then return end
+	if self.currentGamepadMode == gamepadMode then
+		return
+	end
 	self.currentGamepadMode = gamepadMode
 
 	DoUnitFrameLayout(self, self.style)
@@ -1140,7 +1049,7 @@ function UnitFrame:ApplyVisualStyle(gamepadMode)
 			warnerControl = control.warnerContainer
 			warner = barData.warner
 			if warnerControl and warner then
-				for _, direction in pairs( { "Left", "Right", "Center" } ) do
+				for _, direction in pairs({"Left", "Right", "Center"}) do
 					warnerChild = warnerControl:GetNamedChild(direction)
 					ApplyTemplateToControl(warnerChild, ZO_GetPlatformTemplate(warner.texture))
 					ApplyTemplateToControl(warnerChild, ZO_GetPlatformTemplate(warner[direction]))
@@ -1162,7 +1071,6 @@ function UnitFrame:ApplyVisualStyle(gamepadMode)
 				barAnchor2:AddToControl(healthBar.barControls[1])
 			end
 		end
-
 	end
 
 	local statusBackground = self.frame:GetNamedChild("Background1")
@@ -1464,31 +1372,31 @@ do
 	local DIFFICULTY_BRACKET_LEFT_TEXTURE = {
 		[MONSTER_DIFFICULTY_NORMAL] = "EsoUI/Art/UnitFrames/targetUnitFrame_bracket_level2_left.dds",
 		[MONSTER_DIFFICULTY_HARD] = "EsoUI/Art/UnitFrames/targetUnitFrame_bracket_level3_left.dds",
-		[MONSTER_DIFFICULTY_DEADLY] = "EsoUI/Art/UnitFrames/targetUnitFrame_bracket_level4_left.dds",
+		[MONSTER_DIFFICULTY_DEADLY] = "EsoUI/Art/UnitFrames/targetUnitFrame_bracket_level4_left.dds"
 	}
 
 	local DIFFICULTY_BRACKET_RIGHT_TEXTURE = {
 		[MONSTER_DIFFICULTY_NORMAL] = "EsoUI/Art/UnitFrames/targetUnitFrame_bracket_level2_right.dds",
 		[MONSTER_DIFFICULTY_HARD] = "EsoUI/Art/UnitFrames/targetUnitFrame_bracket_level3_right.dds",
-		[MONSTER_DIFFICULTY_DEADLY] = "EsoUI/Art/UnitFrames/targetUnitFrame_bracket_level4_right.dds",
+		[MONSTER_DIFFICULTY_DEADLY] = "EsoUI/Art/UnitFrames/targetUnitFrame_bracket_level4_right.dds"
 	}
 
 	local DIFFICULTY_BRACKET_GLOW_LEFT_TEXTURE = {
 		[MONSTER_DIFFICULTY_NORMAL] = "EsoUI/Art/UnitFrames/targetUnitFrame_glowOverlay_level2_left.dds",
 		[MONSTER_DIFFICULTY_HARD] = "EsoUI/Art/UnitFrames/targetUnitFrame_glowOverlay_level3_left.dds",
-		[MONSTER_DIFFICULTY_DEADLY] = "EsoUI/Art/UnitFrames/targetUnitFrame_glowOverlay_level4_left.dds",
+		[MONSTER_DIFFICULTY_DEADLY] = "EsoUI/Art/UnitFrames/targetUnitFrame_glowOverlay_level4_left.dds"
 	}
 
 	local DIFFICULTY_BRACKET_GLOW_RIGHT_TEXTURE = {
 		[MONSTER_DIFFICULTY_NORMAL] = "EsoUI/Art/UnitFrames/targetUnitFrame_glowOverlay_level2_right.dds",
 		[MONSTER_DIFFICULTY_HARD] = "EsoUI/Art/UnitFrames/targetUnitFrame_glowOverlay_level3_right.dds",
-		[MONSTER_DIFFICULTY_DEADLY] = "EsoUI/Art/UnitFrames/targetUnitFrame_glowOverlay_level4_right.dds",
+		[MONSTER_DIFFICULTY_DEADLY] = "EsoUI/Art/UnitFrames/targetUnitFrame_glowOverlay_level4_right.dds"
 	}
 
 	local GAMEPAD_DIFFICULTY_BRACKET_TEXTURE = {
 		[MONSTER_DIFFICULTY_NORMAL] = "EsoUI/Art/UnitFrames/Gamepad/gp_targetUnitFrame_bracket_level2.dds",
 		[MONSTER_DIFFICULTY_HARD] = "EsoUI/Art/UnitFrames/Gamepad/gp_targetUnitFrame_bracket_level3.dds",
-		[MONSTER_DIFFICULTY_DEADLY] = "EsoUI/Art/UnitFrames/Gamepad/gp_targetUnitFrame_bracket_level4.dds",
+		[MONSTER_DIFFICULTY_DEADLY] = "EsoUI/Art/UnitFrames/Gamepad/gp_targetUnitFrame_bracket_level4.dds"
 	}
 
 	function UnitFrame:SetPlatformDifficultyTextures(difficulty)
@@ -1516,7 +1424,7 @@ function UnitFrame:UpdateDifficulty()
 
 		-- show difficulty for neutral and hostile NPCs
 		local unitReaction = GetUnitReaction(unitTag)
-		local showsDifficulty = difficulty > MONSTER_DIFFICULTY_EASY and(unitReaction == UNIT_REACTION_NEUTRAL or unitReaction == UNIT_REACTION_HOSTILE)
+		local showsDifficulty = difficulty > MONSTER_DIFFICULTY_EASY and (unitReaction == UNIT_REACTION_NEUTRAL or unitReaction == UNIT_REACTION_HOSTILE)
 
 		self.leftBracket:SetHidden(not showsDifficulty)
 		self.rightBracket:SetHidden(not showsDifficulty)
@@ -1551,7 +1459,7 @@ end
 do
 	local TARGET_FRAME_UNITS = {
 		["reticleover"] = true,
-		["reticleovertarget"] = true,
+		["reticleovertarget"] = true
 	}
 
 	local function IsUnitTarget(unitTag)
@@ -1693,63 +1601,53 @@ end
 --[[
 	UnitFrame Utility functions
 --]]
-
 local ATTRIBUTE_VISUALIZER_SOUNDS = {
-	[STAT_HEALTH_MAX] =
-	{
+	[STAT_HEALTH_MAX] = {
 		[ATTRIBUTE_BAR_STATE_NORMAL] = SOUNDS.UAV_MAX_HEALTH_NORMAL_TARGET,
 		[ATTRIBUTE_BAR_STATE_EXPANDED] = SOUNDS.UAV_MAX_HEALTH_INCREASED_TARGET,
-		[ATTRIBUTE_BAR_STATE_SHRUNK] = SOUNDS.UAV_MAX_HEALTH_DECREASED_TARGET,
+		[ATTRIBUTE_BAR_STATE_SHRUNK] = SOUNDS.UAV_MAX_HEALTH_DECREASED_TARGET
 	},
-	[STAT_MAGICKA_MAX] =
-	{
+	[STAT_MAGICKA_MAX] = {
 		[ATTRIBUTE_BAR_STATE_NORMAL] = SOUNDS.UAV_MAX_MAGICKA_NORMAL_TARGET,
 		[ATTRIBUTE_BAR_STATE_EXPANDED] = SOUNDS.UAV_MAX_MAGICKA_INCREASED_TARGET,
-		[ATTRIBUTE_BAR_STATE_SHRUNK] = SOUNDS.UAV_MAX_MAGICKA_DECREASED_TARGET,
+		[ATTRIBUTE_BAR_STATE_SHRUNK] = SOUNDS.UAV_MAX_MAGICKA_DECREASED_TARGET
 	},
-	[STAT_STAMINA_MAX] =
-	{
+	[STAT_STAMINA_MAX] = {
 		[ATTRIBUTE_BAR_STATE_NORMAL] = SOUNDS.UAV_MAX_STAMINA_NORMAL_TARGET,
 		[ATTRIBUTE_BAR_STATE_EXPANDED] = SOUNDS.UAV_MAX_STAMINA_INCREASED_TARGET,
-		[ATTRIBUTE_BAR_STATE_SHRUNK] = SOUNDS.UAV_MAX_STAMINA_DECREASED_TARGET,
+		[ATTRIBUTE_BAR_STATE_SHRUNK] = SOUNDS.UAV_MAX_STAMINA_DECREASED_TARGET
 	},
-	[STAT_HEALTH_REGEN_COMBAT] =
-	{
+	[STAT_HEALTH_REGEN_COMBAT] = {
 		[STAT_STATE_INCREASE_GAINED] = SOUNDS.UAV_INCREASED_HEALTH_REGEN_ADDED_TARGET,
 		[STAT_STATE_INCREASE_LOST] = SOUNDS.UAV_INCREASED_HEALTH_REGEN_LOST_TARGET,
 		[STAT_STATE_DECREASE_GAINED] = SOUNDS.UAV_DECREASED_HEALTH_REGEN_ADDED_TARGET,
-		[STAT_STATE_DECREASE_LOST] = SOUNDS.UAV_DECREASED_HEALTH_REGEN_LOST_TARGET,
+		[STAT_STATE_DECREASE_LOST] = SOUNDS.UAV_DECREASED_HEALTH_REGEN_LOST_TARGET
 	},
-	[STAT_MAGICKA_REGEN_COMBAT] =
-	{
+	[STAT_MAGICKA_REGEN_COMBAT] = {
 		[STAT_STATE_INCREASE_GAINED] = SOUNDS.UAV_INCREASED_MAGICKA_REGEN_ADDED_TARGET,
 		[STAT_STATE_INCREASE_LOST] = SOUNDS.UAV_INCREASED_MAGICKA_REGEN_LOST_TARGET,
 		[STAT_STATE_DECREASE_GAINED] = SOUNDS.UAV_DECREASED_MAGICKA_REGEN_ADDED_TARGET,
-		[STAT_STATE_DECREASE_LOST] = SOUNDS.UAV_DECREASED_MAGICKA_REGEN_LOST_TARGET,
+		[STAT_STATE_DECREASE_LOST] = SOUNDS.UAV_DECREASED_MAGICKA_REGEN_LOST_TARGET
 	},
-	[STAT_STAMINA_REGEN_COMBAT] =
-	{
+	[STAT_STAMINA_REGEN_COMBAT] = {
 		[STAT_STATE_INCREASE_GAINED] = SOUNDS.UAV_INCREASED_STAMINA_REGEN_ADDED_TARGET,
 		[STAT_STATE_INCREASE_LOST] = SOUNDS.UAV_INCREASED_STAMINA_REGEN_LOST_TARGET,
 		[STAT_STATE_DECREASE_GAINED] = SOUNDS.UAV_DECREASED_STAMINA_REGEN_ADDED_TARGET,
-		[STAT_STATE_DECREASE_LOST] = SOUNDS.UAV_DECREASED_STAMINA_REGEN_LOST_TARGET,
+		[STAT_STATE_DECREASE_LOST] = SOUNDS.UAV_DECREASED_STAMINA_REGEN_LOST_TARGET
 	},
-	[STAT_ARMOR_RATING] =
-	{
+	[STAT_ARMOR_RATING] = {
 		[STAT_STATE_INCREASE_GAINED] = SOUNDS.UAV_INCREASED_ARMOR_ADDED_TARGET,
 		[STAT_STATE_INCREASE_LOST] = SOUNDS.UAV_INCREASED_ARMOR_LOST_TARGET,
 		[STAT_STATE_DECREASE_GAINED] = SOUNDS.UAV_DECREASED_ARMOR_ADDED_TARGET,
-		[STAT_STATE_DECREASE_LOST] = SOUNDS.UAV_DECREASED_ARMOR_LOST_TARGET,
+		[STAT_STATE_DECREASE_LOST] = SOUNDS.UAV_DECREASED_ARMOR_LOST_TARGET
 	},
-	[STAT_POWER] =
-	{
+	[STAT_POWER] = {
 		[STAT_STATE_INCREASE_GAINED] = SOUNDS.UAV_INCREASED_POWER_ADDED_TARGET,
 		[STAT_STATE_INCREASE_LOST] = SOUNDS.UAV_INCREASED_POWER_LOST_TARGET,
 		[STAT_STATE_DECREASE_GAINED] = SOUNDS.UAV_DECREASED_POWER_ADDED_TARGET,
-		[STAT_STATE_DECREASE_LOST] = SOUNDS.UAV_DECREASED_POWER_LOST_TARGET,
+		[STAT_STATE_DECREASE_LOST] = SOUNDS.UAV_DECREASED_POWER_LOST_TARGET
 	},
-	[STAT_MITIGATION] =
-	{
+	[STAT_MITIGATION] = {
 		[STAT_STATE_IMMUNITY_GAINED] = SOUNDS.UAV_IMMUNITY_ADDED_TARGET,
 		[STAT_STATE_IMMUNITY_LOST] = SOUNDS.UAV_IMMUNITY_LOST_TARGET,
 		[STAT_STATE_SHIELD_GAINED] = SOUNDS.UAV_DAMAGE_SHIELD_ADDED_TARGET,
@@ -1757,8 +1655,8 @@ local ATTRIBUTE_VISUALIZER_SOUNDS = {
 		[STAT_STATE_POSSESSION_APPLIED] = SOUNDS.UAV_POSSESSION_APPLIED_TARGET,
 		[STAT_STATE_POSSESSION_REMOVED] = SOUNDS.UAV_POSSESSION_REMOVED_TARGET,
 		[STAT_STATE_TRAUMA_GAINED] = SOUNDS.UAV_TRAUMA_ADDED_TARGET,
-		[STAT_STATE_TRAUMA_LOST] = SOUNDS.UAV_TRAUMA_LOST_TARGET,
-	},
+		[STAT_STATE_TRAUMA_LOST] = SOUNDS.UAV_TRAUMA_LOST_TARGET
+	}
 }
 
 function ZO_UnitFrames_UpdateWindow(unitTag, unitChanged, unitFrame, validTarget)
@@ -1773,7 +1671,7 @@ local function CreateGroupAnchorFrames()
 
 	-- Create small group anchor frame
 	local smallFrame = CreateControlFromVirtual("ZO_SmallGroupAnchorFrame", ZO_UnitFramesGroups, UnitFrames.GroupFrameAnchor)
-	smallFrame:SetDimensions(constants.GROUP_FRAME_SIZE_X,(constants.GROUP_FRAME_SIZE_Y + constants.GROUP_FRAME_PAD_Y) * SMALL_GROUP_SIZE_THRESHOLD)
+	smallFrame:SetDimensions(constants.GROUP_FRAME_SIZE_X, (constants.GROUP_FRAME_SIZE_Y + constants.GROUP_FRAME_PAD_Y) * SMALL_GROUP_SIZE_THRESHOLD)
 	smallFrame:SetAnchor(TOPLEFT, GuiRoot, TOPLEFT, constants.GROUP_FRAME_BASE_OFFSET_X, constants.GROUP_FRAME_BASE_OFFSET_Y)
 
 	-- Create raid group anchor frames, these are positioned at the default locations
@@ -1792,7 +1690,7 @@ local function CreateGroupAnchorFrames()
 
 	-- Create pet group anchor frame
 	local petFrame = CreateControlFromVirtual("PetGroupAnchorFrame", ZO_UnitFramesGroups, UnitFrames.PetFrameAnchor)
-	petFrame:SetDimensions(constants.GROUP_FRAME_SIZE_X,(constants.GROUP_FRAME_SIZE_Y + constants.GROUP_FRAME_PAD_Y) * PET_GROUP_SIZE_THRESHOLD)
+	petFrame:SetDimensions(constants.GROUP_FRAME_SIZE_X, (constants.GROUP_FRAME_SIZE_Y + constants.GROUP_FRAME_PAD_Y) * PET_GROUP_SIZE_THRESHOLD)
 	petFrame:SetAnchor(TOPLEFT, ZO_SmallGroupAnchorFrame, BOTTOMLEFT, 0, 0)
 	petFrame:SetHidden(true)
 end
@@ -1804,7 +1702,9 @@ local function UpdateLeaderIndicator(frames)
 	local leaderUnitTag = GetGroupLeaderUnitTag()
 	if not frames then
 		frames = ZO_Group_IsGroupUnitTag(leaderUnitTag) and UnitFrames:GetUnitFrameLookupTable(leaderUnitTag)
-		if not frames then return end
+		if not frames then
+			return
+		end
 	end
 	for unitTag, unitFrame in pairs(frames) do
 		if unitTag == leaderUnitTag then
@@ -1854,21 +1754,18 @@ local function CreateTargetFrame()
 		increasedArmorFrameContainerTemplate = "ZO_IncreasedArmorFrameContainerAngle",
 		decreasedArmorOverlayContainerTemplate = "ZO_DecreasedArmorOverlayContainerAngle",
 		increasedPowerGlowTemplate = "ZO_IncreasedPowerGlowAngle",
-		increasedArmorOffsets =
-		{
-			keyboard =
-			{
-				top = - 7,
+		increasedArmorOffsets = {
+			keyboard = {
+				top = -7,
 				bottom = 8,
-				left = - 15,
-				right = 15,
+				left = -15,
+				right = 15
 			},
-			gamepad =
-			{
-				top = - 8,
+			gamepad = {
+				top = -8,
 				bottom = 9,
-				left = - 12,
-				right = 12,
+				left = -12,
+				right = 12
 			}
 		}
 	}
@@ -1877,24 +1774,20 @@ local function CreateTargetFrame()
 
 	VISUALIZER_ANGLE_UNWAVERING_LAYOUT_DATA = {
 		overlayContainerTemplate = "ZO_UnwaveringOverlayContainerAngle",
-		overlayOffsets =
-		{
-			keyboard =
-			{
+		overlayOffsets = {
+			keyboard = {
 				top = 2,
-				bottom = - 3,
+				bottom = -3,
 				left = 6,
-				right = - 7,
+				right = -7
 			},
-			gamepad =
-			{
+			gamepad = {
 				top = 4,
-				bottom = - 2,
+				bottom = -2,
 				left = 8,
-				right = - 8,
+				right = -8
 			}
 		}
-
 	}
 	visualizer:AddModule(ZO_UnitVisualizer_UnwaveringModule:New(VISUALIZER_ANGLE_UNWAVERING_LAYOUT_DATA))
 
@@ -1904,14 +1797,14 @@ local function CreateTargetFrame()
 		possessionHaloGlowTemplate = "ZO_PossessionHaloGlowAngle",
 		overlayLeftOffset = 8,
 		overlayTopOffset = 3,
-		overlayRightOffset = - 8,
-		overlayBottomOffset = - 3,
+		overlayRightOffset = -8,
+		overlayBottomOffset = -3
 	}
 	visualizer:AddModule(ZO_UnitVisualizer_PossessionModule:New(VISUALIZER_ANGLE_POSSESSION_LAYOUT_DATA))
 
 	VISUALIZER_ANGLE_POWER_SHIELD_LAYOUT_DATA = {
 		barLeftOverlayTemplate = "ZO_PowerShieldBarLeftOverlayAngle",
-		barRightOverlayTemplate = "ZO_PowerShieldBarRightOverlayAngle",
+		barRightOverlayTemplate = "ZO_PowerShieldBarRightOverlayAngle"
 	}
 	visualizer:AddModule(ZO_UnitVisualizer_PowerShieldModule:New(VISUALIZER_ANGLE_POWER_SHIELD_LAYOUT_DATA))
 
@@ -2018,7 +1911,6 @@ function UnitFramesManager:UpdateGroupFrames()
 		end
 		UpdateLeaderIndicator(frames)
 		self:UpdateGroupAnchorFrames()
-
 	elseif oldGroupSize > 0 then
 		self:UpdateGroupAnchorFrames()
 	end
@@ -2078,7 +1970,6 @@ function UnitFramesManager:UpdatePetFrames()
 		end
 
 		self:UpdatePetGroupAnchorFrames()
-
 	elseif oldPetGroupSize > 0 then
 		-- When you had some pets active and despawn them all, or get killed
 		self:UpdatePetGroupAnchorFrames()
@@ -2102,7 +1993,7 @@ local function UpdateGroupFramesVisualStyle()
 
 	-- Note: Small group anchor frame is currently the same for all platforms.
 	local groupFrame = ZO_SmallGroupAnchorFrame
-	groupFrame:SetDimensions(constants.GROUP_FRAME_SIZE_X,(constants.GROUP_FRAME_SIZE_Y + constants.GROUP_FRAME_PAD_Y) * SMALL_GROUP_SIZE_THRESHOLD)
+	groupFrame:SetDimensions(constants.GROUP_FRAME_SIZE_X, (constants.GROUP_FRAME_SIZE_Y + constants.GROUP_FRAME_PAD_Y) * SMALL_GROUP_SIZE_THRESHOLD)
 	SetAnchorOffsets(groupFrame, constants.GROUP_FRAME_BASE_OFFSET_X, constants.GROUP_FRAME_BASE_OFFSET_Y)
 
 	-- Raid group anchor frames.
@@ -2149,7 +2040,7 @@ local function UpdatePetGroupFramesVisualStyle()
 
 	-- Note: Small group anchor frame is currently the same for all platforms.
 	local groupFrame = PetGroupAnchorFrame
-	groupFrame:SetDimensions(constants.GROUP_FRAME_SIZE_X,(constants.GROUP_FRAME_SIZE_Y + constants.GROUP_FRAME_PAD_Y) * PET_GROUP_SIZE_THRESHOLD)
+	groupFrame:SetDimensions(constants.GROUP_FRAME_SIZE_X, (constants.GROUP_FRAME_SIZE_Y + constants.GROUP_FRAME_PAD_Y) * PET_GROUP_SIZE_THRESHOLD)
 	SetAnchorOffsets(groupFrame, 0, constants.GROUP_FRAME_SIZE_Y / 4)
 
 	-- Update all UnitFrame anchors.
@@ -2230,7 +2121,6 @@ function UnitFramesRebirth_GetStatusBarCustomApproachAmountMs()
 end
 
 local function RegisterForEvents()
-
 	-- updates for every unit zoning (via wayshrine).
 	local function RequestFullRefresh()
 		UnitFrames.firstDirtyGroupIndex = 1
@@ -2266,7 +2156,6 @@ local function RegisterForEvents()
 		end
 	end
 	ZO_MostRecentPowerUpdateHandler:New("UnitFrames", PowerUpdateHandlerFunction)
-
 
 	local function OnUnitCreated(eventCode, unitTag)
 		if ZO_Group_IsGroupUnitTag(unitTag) then
@@ -2524,7 +2413,9 @@ end
 
 do
 	local function OnAddOnLoaded(event, name)
-		if name ~= "ZO_Ingame" then return end
+		if name ~= "ZO_Ingame" then
+			return
+		end
 		EVENT_MANAGER:UnregisterForEvent("UnitFrames_OnAddOnLoaded", EVENT_ADD_ON_LOADED)
 
 		CalculateDynamicPlatformConstants()
