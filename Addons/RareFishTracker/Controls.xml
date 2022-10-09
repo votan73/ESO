@@ -1,0 +1,19 @@
+<GuiXml>
+  <Controls>
+    <Control name="RareFishTrackerItem" resizeToFitDescendents="true" layer="CONTROLS" tier="HIGH" virtual="true">
+      <Controls>
+        <Label name="$(parent)Label">
+          <Anchor point="TOP" relativeTo="$(parent)" relativePoint="TOP" />
+        </Label>
+        <Texture name="$(parent)Bg" layer="BACKGROUND" excludeFromResizeToFitExtents="true">
+          <Anchor point="TOP" relativeTo="$(parent)" relativePoint="TOP" offsetY="-8" />
+          <Dimensions x="48" y="48"/>
+        </Texture>
+        <Texture name="$(parent)Icon">
+          <Anchor point="TOP" relativeTo="$(parent)" relativePoint="TOP" />
+          <Dimensions x="32" y="32"/>
+        </Texture>
+      </Controls>
+    </Control>
+  </Controls>
+</GuiXml>

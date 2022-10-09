@@ -1,0 +1,63 @@
+<Bindings>
+  <Layer name="SI_KEYBINDINGS_LAYER_GENERAL">
+    <Category name="SI_KEYBINDINGS_CATEGORY_USER_INTERFACE">
+      <Action name="GREET">
+        <Down>SLASH_COMMANDS["/greet"]()</Down>
+      </Action>
+      <Action name="HELLO">
+        <Down>SLASH_COMMANDS["/hello"]()</Down>
+      </Action>
+      <Action name="THANKS">
+        <Down>SLASH_COMMANDS["/thanks"]()</Down>
+      </Action>
+      <Action name="LAUGH">
+        <Down>SLASH_COMMANDS["/laugh"]()</Down>
+      </Action>
+      <Action name="YAWN">
+        <Down>SLASH_COMMANDS["/yawn"]()</Down>
+      </Action>
+      <Action name="GRATS">
+        <Down>SLASH_COMMANDS["/grats"]()</Down>
+      </Action>
+      <Action name="CONGRATULATE">
+        <Down>SLASH_COMMANDS["/congratulate"]()</Down>
+      </Action>
+      <Action name="WELCOME">
+        <Down>SLASH_COMMANDS["/welcome"]()</Down>
+      </Action>
+      <Action name="YES">
+        <Down>SLASH_COMMANDS["/yes"]()</Down>
+      </Action>
+      <Action name="NO">
+        <Down>SLASH_COMMANDS["/no"]()</Down>
+      </Action>
+      <Action name="NOD">
+        <Down>SLASH_COMMANDS["/nod"]()</Down>
+      </Action>
+      <Action name="THUMBSUP">
+        <Down>SLASH_COMMANDS["/thumbsup"]()</Down>
+      </Action>
+      <Action name="SIGH">
+        <Down>SLASH_COMMANDS["/sigh"]()</Down>
+      </Action>
+      <Action name="CROUCH">
+        <Down>SLASH_COMMANDS["/crouch"]()</Down>
+      </Action>
+      <Action name="STRETCH">
+        <Down>SLASH_COMMANDS["/stretch"]()</Down>
+      </Action>
+      <Action name="RELOADUI">
+        <Down>SLASH_COMMANDS["/reloadui"]()</Down>
+      </Action>
+      <Action name="SALUTE">
+        <Down>SLASH_COMMANDS["/salute3"]()</Down>
+      </Action>
+      <Action name="ISEEYOU">
+        <Down>SLASH_COMMANDS["/iseeyou"]()</Down>
+      </Action>
+      <Action name="SWORDDANCE">
+        <Down>SLASH_COMMANDS["/sworddance"]()</Down>
+      </Action>
+    </Category>
+  </Layer>
+</Bindings>

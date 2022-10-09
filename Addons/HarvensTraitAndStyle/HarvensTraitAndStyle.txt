@@ -1,0 +1,15 @@
+; This Add-on is not created by, affiliated with or sponsored by ZeniMax
+; Media Inc. or its affiliates. The Elder Scrolls® and related logos are
+; registered trademarks or trademarks of ZeniMax Media Inc. in the United
+; States and/or other countries. All rights reserved.
+
+## Title: Harven's Trait and Style
+## Version: 2.10.2
+## Author: Harven & votan
+## APIVersion: 101032 101033
+## Description: This addon adds an additional information to the armor/weapon item's tooltip. The information includes armor/weapon style and knowledge about a trait.
+## SavedVariables: HarvensTraitAndStyle_SavedVariables
+## DependsOn: LibHarvensAddonSettings>=10705
+## OptionalDependsOn: FCOItemSaver>=223
+
+HarvensTraitAndStyle.lua

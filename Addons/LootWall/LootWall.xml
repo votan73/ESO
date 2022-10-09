@@ -1,0 +1,77 @@
+<GuiXml>
+  <Controls>
+    <Tooltip name="LootWallLootable" virtual="true" movable="true" mouseEnabled="true" inherits="ZO_ItemIconTooltip">
+      <Anchor point="CENTER" offsetX="0" offsetY="0"/>
+      <Dimensions x="470" y="150" />
+      <DimensionConstraints minX="470" maxX="470" minY="150" />
+      <Controls>
+        <Button name="$(parent)_BKeepAlways" text="Keep (Always)" inherits="ZO_DefaultButton" excludeFromResizeToFitExtents="true" level="3">
+          <Dimensions x="150" y="22"/>
+          <Anchor point="BOTTOMRIGHT" relativeTo="$(parent)" relativePoint="BOTTOMRIGHT" offsetX="-5" offsetY="-12"/>
+          <OnClicked>
+            LootWall:KeepAlwaysAction()
+          </OnClicked>
+        </Button>
+        <Button name="$(parent)_BKeepNow" text="Keep (Now)" inherits="ZO_DefaultButton" excludeFromResizeToFitExtents="true" level="3">
+          <Dimensions x="150" y="22"/>
+          <Anchor point="BOTTOM" relativeTo="$(parent)_BKeepAlways" relativePoint="TOP" offsetX="0" offsetY="-5"/>
+          <OnClicked>
+            LootWall:KeepNowAction()
+          </OnClicked>
+        </Button>
+        <Button name="$(parent)_BTrashAlways" text="Junk (Always)" inherits="ZO_DefaultButton" excludeFromResizeToFitExtents="true" level="3">
+          <Dimensions x="150" y="22"/>
+          <Anchor point="RIGHT" relativeTo="$(parent)_BKeepAlways" relativePoint="LEFT" offsetX="-5" offsetY="0"/>
+          <OnClicked>
+            LootWall:TrashAlwaysAction()
+          </OnClicked>
+        </Button>
+        <Button name="$(parent)_BTrashNow" text="Junk (Now)" inherits="ZO_DefaultButton" excludeFromResizeToFitExtents="true" level="3">
+          <Dimensions x="150" y="22"/>
+          <Anchor point="RIGHT" relativeTo="$(parent)_BKeepNow" relativePoint="LEFT" offsetX="-5" offsetY="0"/>
+          <OnClicked>
+            LootWall:TrashNowAction()
+          </OnClicked>
+        </Button>
+        <Button name="$(parent)_BTrashSecondSlot" text="Junk (2. Slot)" inherits="ZO_DefaultButton" excludeFromResizeToFitExtents="true" level="3">
+          <Dimensions x="150" y="22"/>
+          <Anchor point="BOTTOM" relativeTo="$(parent)_BTrashNow" relativePoint="TOP" offsetX="0" offsetY="-5"/>
+          <OnClicked>
+            LootWall:TrashSecondSlotAction()
+          </OnClicked>
+        </Button>
+        <Button name="$(parent)_BDestroyAlways" text="Destroy (Always)" inherits="ZO_DefaultButton" excludeFromResizeToFitExtents="true" level="3">
+          <Dimensions x="150" y="22"/>
+          <Anchor point="RIGHT" relativeTo="$(parent)_BTrashAlways" relativePoint="LEFT" offsetX="-5" offsetY="0"/>
+          <OnClicked>
+            LootWall:DestroyAlwaysAction()
+          </OnClicked>
+        </Button>
+        <Button name="$(parent)_BDestroyNow" text="Destroy (Now)" inherits="ZO_DefaultButton" excludeFromResizeToFitExtents="true" level="3">
+          <Dimensions x="150" y="22"/>
+          <Anchor point="RIGHT" relativeTo="$(parent)_BTrashNow" relativePoint="LEFT" offsetX="-5" offsetY="0"/>
+          <OnClicked>
+            LootWall:DestroyNowAction()
+          </OnClicked>
+        </Button>
+        <Button name="$(parent)_BDestroySecondSlot" text="Destroy (2. Slot)" inherits="ZO_DefaultButton" excludeFromResizeToFitExtents="true" level="3">
+          <Dimensions x="150" y="22"/>
+          <Anchor point="BOTTOM" relativeTo="$(parent)_BDestroyNow" relativePoint="TOP" offsetX="0" offsetY="-5"/>
+          <OnClicked>
+            LootWall:DestroySecondSlotAction()
+          </OnClicked>
+        </Button>
+      </Controls>
+      <OnMoveStop>
+        LootWall:OnWindowMoveStop()
+      </OnMoveStop>
+    </Tooltip>
+
+    <TopLevelControl name="LootWallControl" tier="MEDIUM" layer="OVERLAY">
+      <Anchor point="TOPLEFT" offsetX="0" offsetY="0"/>
+      <AnchorFill />
+      <Controls>
+      </Controls>
+    </TopLevelControl>
+  </Controls>
+</GuiXml>

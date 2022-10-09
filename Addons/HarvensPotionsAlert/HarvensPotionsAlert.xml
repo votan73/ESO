@@ -1,0 +1,76 @@
+<GuiXml>
+  <Animations>
+    <AnimationTimeline name="HarvensPotionsAlertFade">
+      <Animations>
+        <AlphaAnimation delay="2200" duration="500" startAlpha="1.0" endAlpha="0.0"/>
+      </Animations>
+    </AnimationTimeline>
+  </Animations>
+
+  <Controls>
+    <Control name="HarvensPotionsAlertKeyBindTemplate" virtual="true">
+      <Controls>
+        <Label name="$(parent)Press" text="Press" font="ZoFontKeybindStripKey">
+          <Anchor point="LEFT"/>
+        </Label>
+        <Label name="$(parent)Bind" font="ZoFontKeybindStripKey">
+          <Anchor point="LEFT" relativeTo="$(parent)Press" relativePoint="RIGHT" offsetX="6"/>
+        </Label>
+      </Controls>
+    </Control>
+
+    <Control name="HarvensOptionsLabelButton" mouseEnabled="true" virtual="true">
+      <Dimensions x="510" y="26" />
+      <Controls>
+        <Label name="$(parent)Name" font="ZoFontWinH4" wrapMode="ELLIPSIS">
+          <Dimensions x="300" y="26" />
+          <Anchor point="LEFT" />
+        </Label>
+
+        <Button name="$(parent)Button" inherits="ZO_DefaultButton">
+          <Dimensions x="200" y="26" />
+          <Anchor point="RIGHT" />
+        </Button>
+      </Controls>
+    </Control>
+
+    <TopLevelControl name="HarvensPotionsAlertCooldownAlert" hidden="true" clampedToScreen="true" mouseEnabled="true" movable="true" resizeToFitDescendents="true">
+      <Controls>
+        <Label name="$(parent)Label" text="|t48:48:EsoUI/Art/Icons/icon_missing.dds|t is |c00ff00Ready|r!" font="$(BOLD_FONT)|36|thick-outline">
+          <Anchor point="TOP" />
+        </Label>
+        <Button name="$(parent)Close" inherits="ZO_CloseButton" hidden="true">
+          <Anchor point="TOPRIGHT" offsetX="10" offsetY="-10"/>
+        </Button>
+      </Controls>
+    </TopLevelControl>
+
+    <TopLevelControl name="HarvensPotionsAlertTopLevel" hidden="true" clampedToScreen="true" mouseEnabled="true" movable="true">
+      <Dimensions x="186" y="140"/>
+
+      <Controls>
+        <Backdrop name="$(parent)Backdrop" inherits="ZO_LargeKeyBackdrop" alpha="0.75">
+          <Anchor point="TOPLEFT" />
+          <Anchor point="BOTTOMRIGHT" />
+        </Backdrop>
+
+        <Button name="$(parent)Close" inherits="ZO_CloseButton" hidden="true">
+          <Anchor point="TOPRIGHT" offsetX="-4" offsetY="4"/>
+        </Button>
+
+        <Label name="$(parent)Msg" text="Low Health" font="ZoFontKeybindStripKey">
+          <Anchor point="TOP" offsetY="8"/>
+        </Label>
+
+        <Texture name="$(parent)Icon" textureFile="EsoUI/Art/Icons/icon_missing.dds" level="1">
+          <Dimensions x="61" y="61" />
+          <Anchor point="CENTER" />
+        </Texture>
+
+        <Control name="$(parent)KeyBind" inherits="HarvensPotionsAlertKeyBindTemplate" resizeToFitDescendents="true">
+          <Anchor point="TOP" relativeTo="$(parent)Icon" relativePoint="BOTTOM" />
+        </Control>
+      </Controls>
+    </TopLevelControl>
+  </Controls>
+</GuiXml>

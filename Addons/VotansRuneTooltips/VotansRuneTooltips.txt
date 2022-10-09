@@ -1,0 +1,14 @@
+## Title: Votan's Rune Tooltips
+## Author: votan
+## Description: Shows resulting glyph type and level in tool-tip of runes.
+## Version: 1.4.7
+## APIVersion: 101033 101034
+## DependsOn: LibHarvensAddonSettings>=10704
+## SavedVariables: VotansRuneTooltips_Storage
+
+## This Add-On is not created by, affiliated with or sponsored by ZeniMax Media Inc. or its affiliates. The Elder Scrolls® and related logos are registered trademarks or trademarks of ZeniMax Media Inc. in the United States and/or other countries. All rights reserved.
+
+lang100015/strings.lua
+lang100015/$(language).lua
+
+VotansRuneTooltips100015.lua

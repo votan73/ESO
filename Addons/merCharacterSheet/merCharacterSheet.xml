@@ -1,0 +1,119 @@
+<GuiXml>
+	<Controls>
+
+		<Button name="merCharacterSheetButtonBehavior" virtual="true">
+			<OnMouseEnter>
+				if self.tooltipText then
+					InitializeTooltip(InformationTooltip, self, BOTTOM)
+					SetTooltipText(InformationTooltip, self.tooltipText)
+				end
+			</OnMouseEnter>
+			<OnMouseExit>
+				if self.tooltipText then
+					ClearTooltip(InformationTooltip)
+				end
+			</OnMouseExit>
+		</Button>
+
+		<Button name="merCharacterSheetResearchToggleButton" virtual="true" level="1"
+				inherits="merCharacterSheetButtonBehavior">
+			<Dimensions x="28" y="28" />
+			<Textures
+				normal="EsoUI/Art/ActionBar/passiveAbilityFrame_round_up.dds"
+				pressed="EsoUI/Art/ActionBar/passiveAbilityFrame_round_down.dds"
+			/>
+			<Controls>
+				<Texture name="$(parent)Icon" textureFile="EsoUI/Art/Icons/icon_missing.dds">
+					<Anchor point="TOPLEFT" offsetX="1" offsetY="1" />
+					<Anchor point="BOTTOMRIGHT" offsetX="-1" offsetY="-1" />
+				</Texture>
+			</Controls>
+		</Button>
+
+		<Button name="merCharacterSheetAltsToggleButton" virtual="true" level="1"
+				inherits="merCharacterSheetButtonBehavior">
+			<Dimensions x="32" y="32" />
+			<Textures
+				normal="EsoUI/Art/Crafting/smithing_tabIcon_research_up.dds"
+				pressed="EsoUI/Art/Crafting/smithing_tabIcon_research_down.dds"
+				disabled="EsoUI/Art/Crafting/smithing_tabIcon_research_down.dds"
+				mouseOver="EsoUI/Art/Crafting/smithing_tabIcon_research_over.dds"
+			/>
+		</Button>
+
+		<Control name="merCharacterSheetResearchHeader" virtual="true">
+			<Dimensions x="607" y="40" />
+			<Controls>
+				<Label name="$(parent)NumResearching" inherits="ZO_StatsRowName">
+					<Anchor point="CENTER" relativePoint="LEFT" offsetX="25" />
+				</Label>
+				<Label name="$(parent)SkillName" inherits="ZO_StatsRowName">
+					<Anchor point="LEFT" offsetX="50" />
+				</Label>
+				<Label name="$(parent)CharacterName" inherits="ZO_StatsRowName">
+					<Anchor point="LEFT" relativePoint="RIGHT" offsetX="-275" />
+				</Label>
+				<Texture name="$(parent)ClassIcon">
+					<Dimensions x="32" y="32" />
+					<Anchor point="RIGHT" relativePoint="LEFT" relativeTo="$(parent)CharacterName" offsetX="-5" />
+				</Texture>
+			</Controls>
+		</Control>
+
+		<Control name="merCharacterSheetResearchGroup" virtual="true" resizeToFitDescendents="true">
+			<Controls>
+				<Control name="$(parent)Header" inherits="merCharacterSheetResearchHeader">
+					<Anchor point="TOPLEFT" />
+				</Control>
+			</Controls>
+		</Control>
+
+		<Control name="merCharacterSheetResearchRow" virtual="true">
+			<Dimensions x="607" y="40" />
+			<Controls>
+				<Texture name="$(parent)ItemIcon">
+					<Dimensions x="32" y="32" />
+					<Anchor point="LEFT" offsetX="9" />
+				</Texture>
+				<Label name="$(parent)ItemName" inherits="ZO_StatsRowName">
+					<Anchor point="LEFT" offsetX="50" />
+				</Label>
+				<Control name="$(parent)TimerBar">
+					<Dimensions x="270" y="20" />
+					<Anchor point="LEFT" relativePoint="RIGHT" offsetX="-275" />
+					<Controls>
+						<StatusBar name="$(parent)Status" inherits="ZO_ArrowStatusBarWithBG">
+							<AnchorFill />
+							<OnInitialized>
+								ZO_StatusBar_InitializeDefaultColors(self)
+								self.gloss = self:GetNamedChild("Gloss")
+							</OnInitialized>
+						</StatusBar>
+						<Label name="$(parent)Time" inherits="ZO_StatsRowValue">
+							<Anchor point="CENTER" />
+						</Label>
+					</Controls>
+				</Control>
+			</Controls>
+		</Control>
+
+		<Texture name="merCharacterSheetMountTimerIcon" textureFile="EsoUI/Art/Miscellaneous/timer_32.dds" mouseEnabled="true" virtual="true">
+			<Dimensions x="32" y="32" />
+			<OnMouseEnter>
+				InitializeTooltip(InformationTooltip, self, RIGHT)
+				self.updateTooltip(self, nil) -- force update now
+				self:SetHandler("OnUpdate", self.updateTooltip)
+			</OnMouseEnter>
+			<OnMouseExit>
+				self:SetHandler("OnUpdate", nil)
+				ClearTooltip(InformationTooltip)
+			</OnMouseExit>
+			<Controls>
+				<Cooldown name="$(parent)Overlay" textureFile="EsoUI/Art/Miscellaneous/timer_overlay_32.dds">
+					<AnchorFill />
+				</Cooldown>
+			</Controls>
+		</Texture>
+
+	</Controls>
+</GuiXml>

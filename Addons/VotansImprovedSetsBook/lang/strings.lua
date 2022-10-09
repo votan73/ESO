@@ -1,0 +1,7 @@
+ZO_CreateStringId("SI_VOTANS_IMPROVED_SETS_BOOK_FAVORITES", "Favorites")
+ZO_CreateStringId("SI_VOTANS_IMPROVED_SETS_BOOK_FAVORITE_ADD", "Add to Favorites")
+ZO_CreateStringId("SI_VOTANS_IMPROVED_SETS_BOOK_FAVORITE_REMOVE", "Remove from Favorites")
+ZO_CreateStringId("SI_VOTANS_SETSBOOK_LAYER", "VotansSetsBook")
+ZO_CreateStringId("SI_VOTANS_IMPROVED_SETS_BOOK_LOCATION", "Current Location")
+
+ZO_CreateStringId("SI_VOTANS_IMPROVED_SETS_BOOK_FAVORITE_POPUP", "Show in Popup")

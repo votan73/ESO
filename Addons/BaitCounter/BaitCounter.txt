@@ -1,0 +1,6 @@
+## Title: Bait Counter
+## Author: katkat42 & votan
+## APIVersion: 100033 100034
+## Version: 1.6.3
+
+BaitCounter.lua

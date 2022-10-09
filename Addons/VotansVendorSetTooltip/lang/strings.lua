@@ -1,0 +1,2 @@
+ZO_CreateStringId("SI_VOTAN_VENDOR_STORE_SET_TOTAL", "Total")
+ZO_CreateStringId("SI_VOTAN_VENDOR_STORE_SET_MISSING", "Missing")

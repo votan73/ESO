@@ -1,0 +1,10 @@
+## Title: Votan's Survey The World
+## Author: manavortex & votan
+## Description: Adds survey and tresure map icons to the location tab in world map.
+## Version: 1.22.0
+## APIVersion: 101035 101036
+## DependsOn: VotansImprovedLocations
+
+## This Add-On is not created by, affiliated with or sponsored by ZeniMax Media Inc. or its affiliates. The Elder Scrolls® and related logos are registered trademarks or trademarks of ZeniMax Media Inc. in the United States and/or other countries. All rights reserved.
+
+Main.lua

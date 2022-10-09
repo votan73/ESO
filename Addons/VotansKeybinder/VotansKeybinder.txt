@@ -1,0 +1,16 @@
+## Title: Votan's Keybinder
+## Author: votan
+## Description: Adds checkboxes to key-bind dialog for user-account-wide key-bindings
+## APIVersion: 101034 101035
+## Version: 1.4.4
+## DependsOn: libAddonKeybinds>=5
+## SavedVariables: VotansKeybinder_Data
+
+## This Add-On is not created by, affiliated with or sponsored by ZeniMax Media Inc. or its affiliates. The Elder Scrolls® and related logos are registered trademarks or trademarks of ZeniMax Media Inc. in the United States and/or other countries. All rights reserved.
+
+lang/strings.lua
+lang/$(language).lua
+
+Bindings.xml
+
+Main.lua

@@ -1,0 +1,14 @@
+;All of the good addons have comments here.
+
+## Title: Enchanted Quality
+## APIVersion: 101031 101032
+## Author: |c7f0000Rhyono|r & votan
+## Description: Shows the quality of an enchantment/item on the tooltip.
+## Version: 1.34
+## DependsOn: LibAddonMenu-2.0
+## SavedVariables: EnchantedQualityVars
+
+lang/strings.lua
+lang/$(language).lua
+
+EnchantedQuality.lua

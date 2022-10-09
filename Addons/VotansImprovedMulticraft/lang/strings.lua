@@ -1,0 +1,5 @@
+ZO_CreateStringId("VOTANS_IMPROVED_MULTICRAFT_PASSIVE_NOT_MAXED", "Passive for extraction not maxed out")
+ZO_CreateStringId("VOTANS_IMPROVED_MULTICRAFT_AUTO_MAX_REFINEMENT", "Auto Max Refinement")
+ZO_CreateStringId("VOTANS_IMPROVED_MULTICRAFT_AUTO_MAX_REFINEMENT_TOOLTIP", "Back to old built-in default behavior.")
+ZO_CreateStringId("VOTANS_IMPROVED_MULTICRAFT_NON_CRAFTER_PROTECT", "Non-Crafter Protection")
+ZO_CreateStringId("VOTANS_IMPROVED_MULTICRAFT_NON_CRAFTER_PROTECT_TOOLTIP", "Do not allow multicraft refinement on chars not maxed out in the respective extraction passive for boosters.")

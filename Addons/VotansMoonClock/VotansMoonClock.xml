@@ -1,0 +1,19 @@
+<GuiXml>
+	<Animations>
+		<AnimationTimeline name="VotansMoonNightRotate">
+			<Animations>
+				<TextureRotateAnimation duration="59999" startRotation="0" endRotation="6.28" />
+			</Animations>
+		</AnimationTimeline>
+		<AnimationTimeline name="VotansMoonNewRotate">
+			<Animations>
+				<TextureRotateAnimation duration="3089" startRotation="0" endRotation="-6.28" />
+			</Animations>
+		</AnimationTimeline>
+		<AnimationTimeline name="VotansMoonFullRotate">
+			<Animations>
+				<TextureRotateAnimation duration="13103" startRotation="0" endRotation="-6.28" />
+			</Animations>
+		</AnimationTimeline>
+	</Animations>
+</GuiXml>

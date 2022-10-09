@@ -1,0 +1,6 @@
+﻿SafeAddString(SI_VOTANS_LIBRARY_LOADING, "Suche...")
+SafeAddString(SI_VOTANS_LIBRARY_NO_RESULT, "Kein Buch gefunden")
+SafeAddString(SI_VOTANS_LIBRARY_CANCELLED, "Benutzerabbruch")
+SafeAddString(SI_VOTANS_LIBRARY_HIGHLIGHT, "Wörter hervorheben")
+SafeAddString(SI_VOTANS_LIBRARY_HIGHLIGHT_TOOLTIP, "Gefundene Wörter im Text farblich hervorheben.")
+SafeAddString(SI_VOTANS_LIBRARY_HIGHLIGHT_COLOR, "Farbe der Hervorhebung")

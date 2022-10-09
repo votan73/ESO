@@ -1,0 +1,31 @@
+<Bindings>
+  <Layer name="SI_KEYBINDINGS_CATEGORY_GENERAL">
+    <Category name="WaypointIt">
+      <Action name="WAYPOINTIT_TOGGLE_DEBUGWIN">
+        <Down>
+          WAYPOINTIT:ToggleDebugWin()
+        </Down>
+      </Action>
+      <Action name="WAYPOINTIT_AUTOMARK_NEAREST_QUEST">
+        <Down>
+          WAYPOINTIT:TryAutoMarkNearestQuest()
+        </Down>
+      </Action>
+      <Action name="WAYPOINTIT_AUTOMARK_FOLLOW_NEXT">
+        <Down>
+          if not WAYPOINTIT:TryFollowNextCustomPin() then PlaySound(SOUNDS.NEGATIVE_CLICK) end
+        </Down>
+      </Action>
+    </Category>
+  </Layer>
+  <Layer name="SI_KEYBINDINGS_CATEGORY_WAYPOINTIT">
+    <Category name="SI_BINDING_NAME_TOGGLE_MAP">
+      <Action name="WAYPOINTIT_TOGGLE_SORT">
+        <Down>return ZO_KeybindStrip_HandleKeybindDown(keybind)</Down>
+      </Action>
+      <Action name="WAYPOINTIT_ADD_FOLLOW">
+        <Down>return ZO_KeybindStrip_HandleKeybindDown(keybind)</Down>
+      </Action>
+    </Category>
+  </Layer>
+</Bindings>

@@ -1,0 +1,12 @@
+## Title: LibWorldMapInfoTab
+## Author: votan
+## APIVersion: 100033 100034
+## Version: 1.2.7
+## Description: Auto scales the tab buttons of the world map menu on the right side.
+## AddOnVersion: 127
+## IsLibrary: true
+## OptionalDependsOn: LibStub LibAddonMenu-2.0 LibHarvensAddonSettings
+
+## This Add-On is not created by, affiliated with or sponsored by ZeniMax Media Inc. or its affiliates. The Elder Scrolls® and related logos are registered trademarks or trademarks of ZeniMax Media Inc. in the United States and/or other countries. All rights reserved.
+
+LibWorldMapInfoTab.lua

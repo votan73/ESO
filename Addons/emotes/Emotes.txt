@@ -1,0 +1,9 @@
+## Title: Votan's /emotes
+## Author: votan
+## APIVersion: 100033 100034
+## Version: 1.0.15
+## Description: Shows all available emotes, e.g. /emotes, /emotes dance
+
+Bindings.xml
+localization/$(language).lua
+Emotes.lua

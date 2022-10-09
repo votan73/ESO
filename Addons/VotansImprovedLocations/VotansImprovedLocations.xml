@@ -1,0 +1,42 @@
+<GuiXml>
+  <Controls>
+    <Control name="VotansLocationRow" virtual="true" mouseEnabled="true">
+      <Dimensions x="200" y="25" />
+      <Controls>
+        <Texture name="$(parent)Highlight" alpha="0" excludeFromResizeToFitExtents="true">
+          <AnchorFill />
+          <TextureCoords left="0" right="1" top="0" bottom=".625" />
+        </Texture>
+
+        <Label name="$(parent)Location" font="ZoFontWinH4" wrapMode="ELLIPSIS" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true">
+          <Anchor point="TOPLEFT" relativeTo="$(parent)" relativePoint="TOPLEFT" offsetX="38" offsetY="2"/>
+          <Anchor point="BOTTOMRIGHT" relativeTo="$(parent)" relativePoint="BOTTOMRIGHT" offsetX="-5" offsetY="-2"/>
+        </Label>
+        <Label name="$(parent)Level" font="esoui/common/fonts/univers67.otf|14" wrapMode="ELLIPSIS" verticalAlignment="BOTTOM" excludeFromResizeToFitExtents="true" alpha="0.5">
+          <Anchor point="TOPRIGHT" relativeTo="$(parent)" relativePoint="TOPRIGHT" offsetX="-19" offsetY="2"/>
+          <Anchor point="BOTTOMRIGHT" relativeTo="$(parent)" relativePoint="BOTTOMRIGHT" offsetX="-19" offsetY="-2"/>
+        </Label>
+      </Controls>
+    </Control>
+    <Control name="VotansLocationHeaderRow" virtual="true" mouseEnabled="false">
+      <Dimensions x="300" y="50" />
+      <Controls>
+        <Texture name="$(parent)Texture" level="3" excludeFromResizeToFitExtents="true">
+          <Anchor point="TOPLEFT" offsetX="0" offsetY="0" />
+          <Dimensions x="32" y="64"/>
+        </Texture>
+        <Label name="$(parent)Location" font="ZoFontWinH3" wrapMode="ELLIPSIS" verticalAlignment="BOTTOM" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true">
+          <Anchor point="TOPLEFT" relativeTo="$(parent)" relativePoint="TOPLEFT" offsetX="38" offsetY="0"/>
+          <Anchor point="BOTTOMRIGHT" relativeTo="$(parent)" relativePoint="BOTTOMRIGHT" offsetX="-5" offsetY="0"/>
+        </Label>
+      </Controls>
+    </Control>
+    <Control name="VotansGamepadLocationRow" virtual="true" inherits="ZO_GamepadMenuEntryTemplateLowercase42">
+      <Controls>
+        <Label name="$(parent)SubLabel1" inherits="ZO_GamepadMenuEntryStackCountTemplate" excludeFromResizeToFitExtents="true" alpha="0.5" />
+      </Controls>
+    </Control>
+    <Control name="VotansGamepadRecentLocationRow" virtual="true" inherits="VotansGamepadLocationRow">
+    </Control>
+  </Controls>
+</GuiXml>

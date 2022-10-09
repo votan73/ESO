@@ -1,0 +1,25 @@
+<GuiXml>
+  <Controls>
+    <TopLevelControl name="InfoBarForm" mouseEnabled="false" clampedToScreen="true" layer="0" level="0" resizeToFitDescendents="1">
+      <Controls>
+        <Label name="$(parent)Clock" font="ZoFontWindowTitle" inheritAlpha="true" color="FFFFFF" verticalAlignment="TOP" horizontalAlignment="CENTER">
+          <Anchor point="TOPLEFT" relativeTo="$(parent)" />
+          <Dimensions x="70" y="32" />
+        </Label>
+        <Label name="$(parent)Bag" font="ZoFontGame" inheritAlpha="true" color="FFFFFF" verticalAlignment="CENTER" horizontalAlignment="LEFT" wrapMode="TEXT_WRAP_MODE_ELLIPSIS">
+          <Anchor point="TOP" relativeTo="$(parent)Clock" relativePoint="BOTTOM" offsetX="2"/>
+          <Dimensions x="80" />
+          <DimensionConstraints minX="80" maxX="80" minY="25" />
+        </Label>
+        <Label name="$(parent)Repair" font="ZoFontGame" inheritAlpha="true" color="FFFFFF" verticalAlignment="CENTER" horizontalAlignment="LEFT">
+          <Anchor point="TOPLEFT" relativeTo="$(parent)Bag" relativePoint="BOTTOMLEFT" offsetX="2" offsetY="2"/>
+          <Dimensions x="150" y="25" />
+        </Label>
+        <Label name="$(parent)InGameTime" font="ZoFontWindowSubtitle" inheritAlpha="true" color="FFFFFF" verticalAlignment="BOTTOM" horizontalAlignment="LEFT">
+          <Anchor point="BOTTOMLEFT" relativeTo="$(parent)Clock" relativePoint="BOTTOMRIGHT" offsetX="8" offsetY="2" />
+          <Dimensions x="40" y="32" />
+        </Label>
+      </Controls>
+    </TopLevelControl>
+  </Controls>
+</GuiXml>

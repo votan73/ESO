@@ -1,0 +1,46 @@
+<GuiXml>
+  <Controls>
+    <Backdrop name="VotansLibrarySearch" font="ZoFontWinT1" inherits="ZO_InventorySearchTemplate">
+    </Backdrop>
+    <Control name="VotansLibraryBookRow" virtual="true" mouseEnabled="true">
+      <Dimensions x="300" y="60" />
+      <Controls>
+        <Texture name="$(parent)Highlight" textureFile="EsoUI/Art/Miscellaneous/listItem_highlight.dds" alpha="0">
+          <AnchorFill />
+          <TextureCoords left="0" right="1" top="0" bottom=".625" />
+        </Texture>
+
+        <Texture name="$(parent)Texture" level="3">
+          <Anchor point="TOPLEFT" offsetX="20" offsetY="10" />
+          <Dimensions x="40" y="40"/>
+          <!--<Controls>
+            <Texture name="$(parent)BG" textureFile="EsoUI/Art/Achievements/achievements_iconBG.dds" level="2">
+              <AnchorFill />
+            </Texture>
+            <Texture name="$(parent)Frame" textureFile="EsoUI/Art/ActionBar/abilityFrame64_up.dds" layer="CONTROLS">
+              <AnchorFill />
+            </Texture>
+          </Controls>-->
+        </Texture>
+
+        <Label name="$(parent)Name" font="ZoFontWinH4" wrapMode="ELLIPSIS" verticalAlignment="TOP" horizontalAlignment="LEFT">
+          <Anchor point="TOPLEFT" relativeTo="$(parent)Texture" relativePoint="TOPRIGHT" offsetX="5" offsetY="0"/>
+          <Anchor point="BOTTOMRIGHT" relativeTo="$(parent)" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="-26"/>
+        </Label>
+        <Label name="$(parent)Origin" font="$(BOLD_FONT)|14" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_NORMAL" wrapMode="ELLIPSIS" verticalAlignment="BOTTOM" horizontalAlignment="LEFT">
+          <Anchor point="TOPLEFT" relativeTo="$(parent)Name" relativePoint="BOTTOMLEFT" offsetX="0" offsetY="0"/>
+          <Anchor point="BOTTOMRIGHT" relativeTo="$(parent)Recent" relativePoint="BOTTOMLEFT" offsetX="0" offsetY="-7"/>
+        </Label>
+      </Controls>
+    </Control>
+    <Control name="VotansLibraryNotifyRow" virtual="true" mouseEnabled="true">
+      <Dimensions x="300" y="60" />
+      <Controls>
+        <Label name="$(parent)Text" font="ZoFontWinH3" wrapMode="ELLIPSIS" verticalAlignment="CENTER" horizontalAlignment="CENTER">
+          <Anchor point="TOPLEFT" relativeTo="$(parent)" relativePoint="TOPLEFT" offsetX="5" offsetY="0"/>
+          <Anchor point="BOTTOMRIGHT" relativeTo="$(parent)" relativePoint="BOTTOMRIGHT" offsetX="-5" offsetY="0"/>
+        </Label>
+      </Controls>
+    </Control>
+  </Controls>
+</GuiXml>

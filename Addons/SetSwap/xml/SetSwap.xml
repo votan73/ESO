@@ -1,0 +1,387 @@
+
+<!-- Level then Layer then Tier (lowest to highest prescendence 
+	<MouseButton button="1" enabled="false" />
+	<MouseButton button="2" enabled="true" />
+-->
+<GuiXml>
+  <Controls>
+			<Button name="SetSwap_SharedSkills_SaveSetBtn" inherits="ZO_DefaultButton" hidden="true" font="ZoFontWinH5" text="Run Code">
+					<AnchorFill />
+				<OnInitialized>
+					self:GetParent().button = self
+				</OnInitialized>
+				<OnMouseUp>
+					SetSwap_SaveSet(self, button, upInside)
+				</OnMouseUp>
+			</Button>
+        <TopLevelControl name="SetSwap_SharedSkills_SaveSetBtnTlw" tier="1" clampedToScreen="true" mouseEnabled="true" hidden="true" >
+				<Dimensions x="175" y="30" />
+			<Controls>
+			</Controls>
+		</TopLevelControl>
+
+<!-- SKILL BUTTON VIRUTAL TEMPLATE - used for all skill buttons -->
+		<Control name="SetSwap_SkillButton" virtual="true">
+			<Dimensions x="35" y="35" />
+			<Controls>
+				<Backdrop name="$(parent)Backdrop" >
+					<AnchorFill />
+					<Edge file="EsoUI/Art/Tooltips/UI-Border.dds" edgeFileWidth="128" edgeFileHeight="16" />
+					<Center file="EsoUI/Art/Tooltips/UI-TooltipCenter.dds" />
+					<Insets left="16" top="16" right="-16" bottom="-16" />
+				</Backdrop>
+                <Texture name="$(parent)Icon" hidden="false" >
+					<Dimensions x="28" y="28" />
+                    <Anchor point="CENTER" offsetX="-1" offsetY="-1" />
+					<OnInitialized>
+						self:GetParent().icon = self
+					</OnInitialized>
+				</Texture>
+				<Button name="$(parent)Button" mouseOverBlendMode="ADD">
+					<AnchorFill />
+					<OnInitialized>
+						self:GetParent().Button = self
+					</OnInitialized>
+
+					<Textures mouseOver="EsoUI/Art/ActionBar/actionBar_mouseOver.dds" />
+				</Button>
+			</Controls>
+		</Control>
+
+<!-- ROW TEMPLATES -->		
+<!-- 
+		<Control name="SetSwap_SaveButton_RowTemplate" mouseEnabled="true" virtual="true" >
+			<Dimensions x="250" y="32" />
+		
+			<Controls>
+				<Button name="SetSwap_SharedSkills_SaveSetBtn" inherits="ZO_DefaultButton" font="ZoFontWinH4" text="Run Code">
+					<Dimensions x="200" y="30" />
+					<Anchor point="TOP" relativeTo="$(parent)" relativePoint="TOP" offsetX="0" offsetY="0"/>
+					<OnInitialized>
+						self:GetParent().button = self
+					</OnInitialized>
+					<OnMouseUp>
+						SetSwap_SaveSet(self, button, upInside)
+					</OnMouseUp>
+				</Button>
+			</Controls>
+		</Control>
+		-->
+		<Control name="SetSwap_RowTemplate" mouseEnabled="true" virtual="true" >
+			<Dimensions x="250" y="32" />
+			<OnMouseUp>
+				self:OnMouseUp(button, upInside)
+			</OnMouseUp>
+			<OnMouseEnter>
+				self:OnMouseEnter(self)
+				self.highlight:SetHidden(false)
+			</OnMouseEnter>
+			<OnMouseExit>
+				self:OnMouseExit(self)
+				self.highlight:SetHidden(true)
+			</OnMouseExit>
+			<Controls>
+                <Texture name="$(parent)Highlight" textureFile="EsoUI/Art/Miscellaneous/listItem_highlight.dds" hidden="true" alpha="1" layer="0">
+                    <AnchorFill />
+                    <TextureCoords left="0" right="1" top="0" bottom=".625" />
+					<OnInitialized>
+						self:GetParent().highlight = self
+					</OnInitialized>
+                </Texture>
+                <Texture name="$(parent)Icon" hidden="true" >
+					<OnInitialized>
+						self:GetParent().icon = self
+					</OnInitialized>
+					<Dimensions x="32" y="32" />
+					<Anchor point="TOPLEFT" relativeTo="$(parent)" relativePoint="TOPLEFT" offsetX="0" offsetY="0"/>
+				</Texture>
+                <Backdrop name="$(parent)NameBackdrop" inherits="ZO_EditBackdrop" hidden="true" alpha="1" layer="0" level="0" tier="0" >
+					<Anchor point="TOPLEFT" relativeTo="$(parent)" relativePoint="TOPLEFT" offsetX="40" offsetY="3"/>
+					<Anchor point="BOTTOMRIGHT" relativeTo="$(parent)" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="-8"/>
+					<OnInitialized>
+						self:GetParent().labelBackdrop = self
+					</OnInitialized>
+				</Backdrop>
+				<EditBox name="$(parent)Name" font="ZoFontWinH4" editEnabled="true" mouseEnabled="false" maxInputCharacters="40" multiLine="false" newLineEnabled="false" inherits="ZO_DefaultEditForBackdrop">
+					<Anchor point="TOPLEFT" relativeTo="$(parent)" relativePoint="TOPLEFT" offsetX="40" offsetY="3"/>
+					<Anchor point="BOTTOMRIGHT" relativeTo="$(parent)" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="0"/>
+					<OnInitialized>
+						self.parent = self:GetParent()
+						self.parent.label = self
+					</OnInitialized>
+					<OnFocusLost>
+						self:SetMouseEnabled(false)
+						self.parent.labelBackdrop:SetHidden(true)
+					</OnFocusLost>
+					<OnEnter>
+						self:LoseFocus()
+						SetSwap_OnSetNameChange(self.parent, self:GetText())
+					</OnEnter>
+				</EditBox>
+			</Controls>
+		</Control>
+		
+		<Control name="SetSwap_SkillSet_Preview_RowTemplate" inherits="SetSwap_RowTemplate" virtual="true" >
+			<OnInitialized>
+				SetSwap_SkillSet_RowTemplate_Initialize(self)
+			</OnInitialized>
+		</Control>
+		
+		<Control name="SetSwap_EquipmentSet_Preview_RowTemplate" inherits="SetSwap_RowTemplate" virtual="true" >
+			<OnInitialized>
+				SetSwap_EquipmentSet_RowTemplate_Initialize(self)
+			</OnInitialized>
+		</Control>
+		
+		<Control name="SetSwap_FullSet_Preview_RowTemplate" inherits="SetSwap_RowTemplate" virtual="true" >
+			<OnInitialized>
+				SetSwap_FullSet_RowTemplate_Initialize(self)
+			</OnInitialized>
+		</Control>
+<!-- END ROW TEMPLATES -->		
+
+
+<!-- SKILL BAR PREVIEW - VIRTUAL TEMPLATE 
+(used in both the skill set preview & full set character preview windows)
+-->		
+		<Control name="SetSwap_SkillBar_Preview" resizeToFitDescendents="true" virtual="true" >
+			<Dimensions x="270" y="35" />
+					<OnInitialized>
+						self:GetParent().skillBar = self
+						self.buttons = {}
+						self.buttons[1] = self.button1 
+						self.buttons[2] = self.button2
+						self.buttons[3] = self.button3
+						self.buttons[4] = self.button4
+						self.buttons[5] = self.button5
+						self.buttons[6] = self.button6
+					</OnInitialized>
+			<Controls>
+				<Control name="$(parent)Button1" inherits="SetSwap_SkillButton" layer="0">
+                    <Anchor point="TOPLEFT" relativeTo="$(parent)" relativePoint="TOPLEFT" offsetX="0" offsetY="0"/>
+					<OnInitialized>
+						self:GetParent().button1 = self
+					</OnInitialized>
+				</Control>
+				<Control name="$(parent)Button2" inherits="SetSwap_SkillButton" layer="0">
+                    <Anchor point="TOPLEFT" relativeTo="$(parent)Button1" relativePoint="TOPRIGHT" offsetX="3" />
+					<OnInitialized>
+						self:GetParent().button2 = self
+					</OnInitialized>
+				</Control>
+				<Control name="$(parent)Button3" inherits="SetSwap_SkillButton" layer="0">
+                    <Anchor point="TOPLEFT" relativeTo="$(parent)Button2" relativePoint="TOPRIGHT" offsetX="3" />
+					<OnInitialized>
+						self:GetParent().button3 = self
+					</OnInitialized>
+				</Control>
+				<Control name="$(parent)Button4" inherits="SetSwap_SkillButton" layer="0">
+                    <Anchor point="TOPLEFT" relativeTo="$(parent)Button3" relativePoint="TOPRIGHT" offsetX="3" />
+					<OnInitialized>
+						self:GetParent().button4 = self
+					</OnInitialized>
+				</Control>
+				<Control name="$(parent)Button5" inherits="SetSwap_SkillButton" layer="0">
+                    <Anchor point="TOPLEFT" relativeTo="$(parent)Button4" relativePoint="TOPRIGHT" offsetX="3" />
+					<OnInitialized>
+						self:GetParent().button5 = self
+					</OnInitialized>
+				</Control>
+				<Control name="$(parent)Button6" inherits="SetSwap_SkillButton" drawLayer="0">
+                    <Anchor point="TOPLEFT" relativeTo="$(parent)Button5" relativePoint="TOPRIGHT" offsetX="13" />
+					<OnInitialized>
+						self:GetParent().button6 = self
+					</OnInitialized>
+				</Control>
+			</Controls>
+		</Control>
+		
+		
+<!-- SKILL SET/BAR PREVIEW WINDOW -->
+        <TopLevelControl name="SetSwap_Skill_Preview_Bar" resizeToFitDescendents="true" mouseEnabled="true" hidden="true">
+            <Controls>
+				<Control name="$(parent)SkillBar" inherits="SetSwap_SkillBar_Preview" >
+                    <Anchor point="TOPLEFT" relativeTo="$(parent)" relativePoint="TOPLEFT" offsetX="0" offsetY="0" />
+				</Control>
+            </Controls>
+        </TopLevelControl>
+				
+				
+<!-- CHARACTER PREVIEW WINDOW -->			
+        <TopLevelControl name="SetSwap_Character_Preview_Window" mouseEnabled="true" hidden="true">
+            <Anchor point="CENTER" offsetY="-100" />
+            <Dimensions x="210" y="485" />
+
+            <OnInitialized>
+				SetSwap_InitializeCharacterPreview(self)
+            </OnInitialized>
+
+            <Controls>
+                <Backdrop name="$(parent)Backdrop" inherits="ZO_DefaultBackdrop" alpha="1"  >
+					<AnchorFill />
+				</Backdrop>
+				<!--
+                <Label name="$(parent)Title" font="ZoFontHeader4" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_SELECTED" modifyTextType="UPPERCASE" text="SI_CHARACTER_EQUIP_TITLE">
+                    <Anchor point="TOPLEFT" offsetX="14" offsetY="26" />
+                </Label>
+                -->
+                <Texture name="$(parent)ApparelSection" inherits="ZO_CharacterSheetDivider">
+                    <Anchor point="TOPLEFT" offsetY="0" />
+                    <OnInitialized>
+                        self:GetNamedChild("Text"):SetText(GetString(SI_CHARACTER_EQUIP_SECTION_APPAREL))
+                    </OnInitialized>
+                </Texture>
+
+                <Texture name="$(parent)EquipmentSlotsHead" >
+                    <Dimensions x="44" y="44" />
+                    <Anchor point="TOP" relativePoint="TOPLEFT" offsetX="87" offsetY="37" />
+					<OnInitialized>
+						self:SetTexture(ZO_Character_GetEmptyEquipSlotTexture(EQUIP_SLOT_HEAD))
+					</OnInitialized>
+                </Texture>
+
+                <Texture name="$(parent)PaperDoll">
+                    <Dimensions x="64" y="256" />
+                    <Anchor point="TOP" relativeTo="$(parent)EquipmentSlotsHead" relativePoint="BOTTOM" offsetY="6" />
+					<OnInitialized>
+						self:SetTexture(GetUnitSilhouetteTexture("player"))
+					</OnInitialized>
+                </Texture>
+
+                <!-- left side -->
+                <Texture name="$(parent)EquipmentSlotsShoulder" >
+                    <Dimensions x="44" y="44" />
+                    <Anchor point="TOPLEFT" offsetX="10" offsetY="93" />
+					<OnInitialized>
+						self:SetTexture(ZO_Character_GetEmptyEquipSlotTexture(EQUIP_SLOT_SHOULDERS))
+					</OnInitialized>
+                </Texture>
+                <Texture name="$(parent)EquipmentSlotsGlove" >
+                    <Dimensions x="44" y="44" />
+                    <Anchor point="TOP" relativeTo="$(parent)EquipmentSlotsShoulder" relativePoint="BOTTOM" offsetY="10" />
+					<OnInitialized>
+						self:SetTexture(ZO_Character_GetEmptyEquipSlotTexture(EQUIP_SLOT_HAND))
+					</OnInitialized>
+                </Texture>
+                <Texture name="$(parent)EquipmentSlotsLeg" >
+                    <Dimensions x="44" y="44" />
+                    <Anchor point="TOP" relativeTo="$(parent)EquipmentSlotsGlove" relativePoint="BOTTOM" offsetY="10" />
+					<OnInitialized>
+						self:SetTexture(ZO_Character_GetEmptyEquipSlotTexture(EQUIP_SLOT_LEGS))
+					</OnInitialized>
+                </Texture>
+
+                <!-- right side -->
+                <Texture name="$(parent)EquipmentSlotsChest" >
+                    <Dimensions x="44" y="44" />
+                    <Anchor point="TOPLEFT" offsetX="124" offsetY="93" />
+					<OnInitialized>
+						self:SetTexture(ZO_Character_GetEmptyEquipSlotTexture(EQUIP_SLOT_CHEST))
+					</OnInitialized>
+                </Texture>
+                <Texture name="$(parent)EquipmentSlotsBelt" >
+                    <Dimensions x="44" y="44" />
+                    <Anchor point="TOP" relativeTo="$(parent)EquipmentSlotsChest" relativePoint="BOTTOM" offsetY="10" />
+					<OnInitialized>
+						self:SetTexture(ZO_Character_GetEmptyEquipSlotTexture(EQUIP_SLOT_WAIST))
+					</OnInitialized>
+                </Texture>
+                <Texture name="$(parent)EquipmentSlotsFoot" >
+                    <Dimensions x="44" y="44" />
+                    <Anchor point="TOP" relativeTo="$(parent)EquipmentSlotsBelt" relativePoint="BOTTOM" offsetY="10" />
+					<OnInitialized>
+						self:SetTexture(ZO_Character_GetEmptyEquipSlotTexture(EQUIP_SLOT_FEET))
+					</OnInitialized>
+                </Texture>
+
+                <!-- bottom part 1 -->
+                <Texture name="$(parent)AccessoriesSection" inherits="ZO_CharacterSheetDivider">
+                    <Anchor point="TOPLEFT" offsetY="260" />
+                    <OnInitialized>self:GetNamedChild("Text"):SetText(GetString(SI_CHARACTER_EQUIP_SECTION_ACCESSORIES))
+                    </OnInitialized>
+                </Texture>
+
+                <Texture name="$(parent)EquipmentSlotsCostume" >
+                    <Dimensions x="44" y="44" />
+                    <Anchor point="TOPLEFT" offsetX="10" offsetY="292" />
+					<OnInitialized>
+						self:SetTexture(ZO_Character_GetEmptyEquipSlotTexture(EQUIP_SLOT_COSTUME))
+					</OnInitialized>
+                </Texture>
+                <Texture name="$(parent)EquipmentSlotsNeck" >
+                    <Dimensions x="44" y="44" />
+                    <Anchor point="LEFT" relativeTo="$(parent)EquipmentSlotsCostume" relativePoint="RIGHT" offsetX="4" />
+					<OnInitialized>
+						self:SetTexture(ZO_Character_GetEmptyEquipSlotTexture(EQUIP_SLOT_NECK))
+					</OnInitialized>
+                </Texture>
+                <Texture name="$(parent)EquipmentSlotsRing1" >
+                    <Dimensions x="44" y="44" />
+                    <Anchor point="LEFT" relativeTo="$(parent)EquipmentSlotsNeck" relativePoint="RIGHT" offsetX="4" />
+					<OnInitialized>
+						self:SetTexture(ZO_Character_GetEmptyEquipSlotTexture(EQUIP_SLOT_RING1))
+					</OnInitialized>
+                </Texture>
+                <Texture name="$(parent)EquipmentSlotsRing2" >
+                    <Dimensions x="44" y="44" />
+                    <Anchor point="LEFT" relativeTo="$(parent)EquipmentSlotsRing1" relativePoint="RIGHT" offsetX="4" />
+					<OnInitialized>
+						self:SetTexture(ZO_Character_GetEmptyEquipSlotTexture(EQUIP_SLOT_RING2))
+					</OnInitialized>
+                </Texture>
+
+                <!-- bottom part 2 -->
+                <Texture name="$(parent)WeaponsSection" inherits="ZO_CharacterSheetDivider">
+                    <Anchor point="TOPLEFT" offsetY="340" />
+                    <OnInitialized>
+                        self:GetNamedChild("Text"):SetText(GetString(SI_CHARACTER_EQUIP_SECTION_WEAPONS))
+                    </OnInitialized>
+                </Texture>
+
+                <Texture name="$(parent)EquipmentSlotsMainHand" >
+                    <Dimensions x="44" y="44" />
+                    <Anchor point="TOPLEFT" offsetX="10" offsetY="375" />
+					<OnInitialized>
+						self:SetTexture(ZO_Character_GetEmptyEquipSlotTexture(EQUIP_SLOT_MAIN_HAND))
+					</OnInitialized>
+                </Texture>
+                <Texture name="$(parent)EquipmentSlotsOffHand" >
+                    <Dimensions x="44" y="44" />
+                    <Anchor point="LEFT" relativeTo="$(parent)EquipmentSlotsMainHand" relativePoint="RIGHT" offsetX="10" />
+					<OnInitialized>
+						self:SetTexture(ZO_Character_GetEmptyEquipSlotTexture(EQUIP_SLOT_OFF_HAND))
+					</OnInitialized>
+                </Texture>
+                <Texture name="$(parent)EquipmentSlotsBackupMain" >
+                    <Dimensions x="44" y="44" />
+                    <Anchor point="TOPLEFT" relativeTo="$(parent)EquipmentSlotsMainHand" relativePoint="BOTTOMLEFT" offsetY="4" />
+					<OnInitialized>
+						self:SetTexture(ZO_Character_GetEmptyEquipSlotTexture(EQUIP_SLOT_BACKUP_MAIN))
+					</OnInitialized>
+                </Texture>
+                <Texture name="$(parent)EquipmentSlotsBackupOff" >
+                    <Dimensions x="44" y="44" />
+                    <Anchor point="LEFT" relativeTo="$(parent)EquipmentSlotsBackupMain" relativePoint="RIGHT" offsetX="10" />
+					<OnInitialized>
+						self:SetTexture(ZO_Character_GetEmptyEquipSlotTexture(EQUIP_SLOT_BACKUP_OFF))
+					</OnInitialized>
+                </Texture>
+
+                <Button name="$(parent)WeaponSwap" inherits="ZO_WeaponSwapLeft">  
+                    <Anchor point="LEFT" relativeTo="$(parent)EquipmentSlotsOffHand" relativePoint="BOTTOMRIGHT" offsetX="3" />
+                </Button>
+				<Control name="$(parent)SkillBar" inherits="SetSwap_SkillBar_Preview" >
+                    <Anchor point="TOPLEFT" relativeTo="$(parent)" relativePoint="BOTTOMLEFT" offsetX="0" offsetY="10" />
+				</Control>
+            </Controls>
+        </TopLevelControl>
+  </Controls>
+</GuiXml>
+
+
+ 
+
+		
+		
+
+

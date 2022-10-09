@@ -1,0 +1,12 @@
+<Bindings>
+  <Layer name="SI_KEYBINDINGS_LAYER_GENERAL">
+    <Category name="SI_KEYBINDINGS_CATEGORY_ADAPTIVE_SETTINGS">
+      <Action name="VOTANS_TOGGLE_ADJUSTMENT">
+        <Down>VOTANS_ADAPTIVE_SETTINGS.ToggleAdjustViewDistance()</Down>
+      </Action>
+      <Action name="VOTANS_TOGGLE_VIEWDISTANCE">
+        <Down>VOTANS_ADAPTIVE_SETTINGS.ToggleShowViewDistance()</Down>
+      </Action>
+    </Category>
+  </Layer>
+</Bindings>

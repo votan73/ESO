@@ -1,0 +1,12 @@
+## Title: LibEnchantingStation
+## Author: votan
+## APIVersion: 100033 100034
+## Version: 2.3.5
+## AddOnVersion: 234
+## IsLibrary: true
+## OptionalDependsOn: LibStub LibAddonMenu-2.0 LibHarvensAddonSettings
+## Description: Library to add tabs to the Enchanting craft station.
+
+## This Add-On is not created by, affiliated with or sponsored by ZeniMax Media Inc. or its affiliates. The Elder Scrolls® and related logos are registered trademarks or trademarks of ZeniMax Media Inc. in the United States and/or other countries. All rights reserved.
+
+LibEnchantingStation.lua

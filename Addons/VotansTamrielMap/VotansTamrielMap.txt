@@ -1,0 +1,18 @@
+## Title: Votan's Tamriel Map
+## Author: votan
+## Description: New Tamriel map style for role play.
+## Version: 1.1.4
+## APIVersion: 101035 101036
+## DependsOn: LibHarvensAddonSettings>=10705 LibMapPing>=900 LibGPS>=65
+## OptionalDependsOn: NoThankYou WorldMapWayshrinesController GuildShrines
+## SavedVariables: VotansTamrielMap_Data
+
+## This Add-On is not created by, affiliated with or sponsored by ZeniMax Media Inc. or its affiliates. The Elder Scrolls® and related logos are registered trademarks or trademarks of ZeniMax Media Inc. in the United States and/or other countries. All rights reserved.
+
+lang/strings.lua
+lang/$(language).lua
+
+##Bindings.xml
+
+Controls.xml
+Main.lua

@@ -1,0 +1,6 @@
+﻿SafeAddString(SI_VOTANS_FILET_FISH_ALL, "Stapel filetieren", 0)
+SafeAddString(SI_BINDING_NAME_VOTANS_FISH_FILLET_ALL_STACKS, "Alle Stapel filetieren", 0)
+SafeAddString(SI_VOTANS_FILET_OPT_ALLSTACKS, "\"Alle Stapel filetieren\" anzeigen")
+SafeAddString(SI_VOTANS_FILET_OPT_ALLSTACKS_TOOLTIP, "Aktiviert eine zusätzliche Option mit der alle Stapel im Inventar filetiert werden können.", 0)
+SafeAddString(SI_VOTANS_FILET_OPT_ALLSTACKS_ALWAYS, "Immer alle Stapel filetieren.")
+SafeAddString(SI_VOTANS_FILET_OPT_ALLSTACKS_ALWAYS_TOOLTIP, "Wenn aktiviert, wird Votan's Fish Fillet fortfahren alle Stapel im Inventar zu filetieren, nachdem der anfängliche Stapel abgearbeitet wurde.")

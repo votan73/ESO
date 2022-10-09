@@ -1,0 +1,2 @@
+﻿SafeAddString(SI_VOTAN_VENDOR_STORE_SET_TOTAL, "Insgesamt", 0)
+SafeAddString(SI_VOTAN_VENDOR_STORE_SET_MISSING, "Fehlen", 0)

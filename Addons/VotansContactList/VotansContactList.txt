@@ -1,0 +1,16 @@
+## Title: Votan's Contact List
+## Author: votan
+## Description: Adds a recent contact list to the Friends page.
+## Version: 1.0.11
+## APIVersion: 100033 100034
+## DependsOn: LibMapPing>=1200 LibGPS>=28 LibAsync LibCustomMenu
+## SavedVariables: VotansContactList_Data
+
+## This Add-On is not created by, affiliated with or sponsored by ZeniMax Media Inc. or its affiliates. The Elder Scrolls® and related logos are registered trademarks or trademarks of ZeniMax Media Inc. in the United States and/or other countries. All rights reserved.
+
+lang\strings.lua
+lang\$(language).lua
+
+## Bindings.xml
+Main.lua
+Controls.xml

@@ -1,0 +1,80 @@
+Rare Fish Tracker, by katkat42
+Changelog:
+1.15:
+- Window postion was not restore, if visible in both scenes due to a fishing hole (Fisherman Auto-Hide feature)
+- Update to LibAddonMenu r18 & LibStub r3.
+
+Big Thanks to Wandamey for support, code and ideas for:
+- French translation. 
+- Added "Do I Keep It For Alts?" support.
+- Additional style: ESO background
+
+1.14:
+- Multi language support.
+- Translation DE
+- Alik'r working in french
+- Allow to show in HUD or World Map, with different positions
+- Show fishes of zone shown in World Map
+
+1.13:
+- Fixed a bug having to do with the achievement category changing.
+
+1.12:
+- Fixed a bug with the display of fish names in landlocked zones.
+
+1.11:
+- Fixed bug related to 100011 API change.
+- Updated API version declaration. Oops!
+
+1.10:
+- Updated to the 100011 API patch.
+- Accounted for the change in achievement category introduced in 100011.
+
+1.9:
+- Fixed some localization issues
+
+1.8:
+- Handles the zones without certain types of water correctly!
+
+1.7:
+- Handles the out-of-order fish in Craglorn and Stormhaven
+- Because you can catch the Stros M'Kai and Bleakrock fish in Betnikh and Bal Foyen,
+respectively, those fish will also show up in the latter zones.
+
+1.5:
+- Updated to the 100010 API patch.
+- Fixed an issue with the window displaying when in the menu and toggling between 
+caught and uncaught display.
+
+1.4:
+- Fixed a bug with the code that shows/hides the tracker when the compass shows/hides.
+- Fixed a problem with the Bleakrock (Isle) Angler tracking.
+- Fixed a bug where zones without fishing achievements were throwing errors (ie., Betnikh).
+- Updated to the 100009 API patch.
+
+1.3: 
+- Fixed an issue with definite articles in zone names was hampering localization. Thanks
+to kikiadoc and Ymirion for the code!
+
+1.2:
+- Updated to the 100008 API patch.
+- Fixed an issue where the full zone name wasn't in the achievement name (ie. "The Rift")
+caused the window not to update.
+
+1.1:
+- Fixed an issue with showing/hiding the window when it refreshes.
+
+1.0:
+- Initial Release.
+
+Thanks to the Right Anglers fishing guild for their fishing data and their support.
+Thanks also to ESOUI.com user meglon978 for the idea. Thanks to Seerah for writing
+LibAddonMenu. I read ingeniousclown's Weapon Charge Alert and Biki's Achievement 
+Tracker to help me resolve some UI window issues, and Achievement Tracker again to 
+deal with achievement detection issues. I referenced pills's MailR to remind myself 
+how to do keybinds.
+
+This Add-on is not created by, affiliated with or sponsored by ZeniMax Media Inc. 
+or its affiliates. The Elder Scrolls® and related logos are registered trademarks 
+or trademarks of ZeniMax Media Inc. in the United States and/or other countries. 
+All rights reserved.

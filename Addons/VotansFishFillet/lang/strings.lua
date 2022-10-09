@@ -1,0 +1,7 @@
+ZO_CreateStringId("SI_VOTANS_FILET_FISH_ALL", "Fillet Stack")
+ZO_CreateStringId("SI_KEYBINDINGS_CATEGORY_FILET_FISH", "Fish Fillet")
+ZO_CreateStringId("SI_BINDING_NAME_VOTANS_FISH_FILLET_ALL_STACKS", "Fillet All Stacks")
+ZO_CreateStringId("SI_VOTANS_FILET_OPT_ALLSTACKS", "Show \"Fillet All Stacks\"")
+ZO_CreateStringId("SI_VOTANS_FILET_OPT_ALLSTACKS_TOOLTIP", "If enabled, Votan's Fish Fillet will proceed to fillet all stacks in your inventory after the initial stack is complete.")
+ZO_CreateStringId("SI_VOTANS_FILET_OPT_ALLSTACKS_ALWAYS", "Always fillet all stacks")
+ZO_CreateStringId("SI_VOTANS_FILET_OPT_ALLSTACKS_ALWAYS_TOOLTIP", "If enabled, Votan's Fish Fillet will proceed to fillet all stacks in your inventory.")

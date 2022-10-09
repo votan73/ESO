@@ -1,0 +1,15 @@
+## Title: Votan's Lore Library Search
+## Author: votan
+## Description: Adds a full-text-search button to Lore Library.
+## Version: 1.1.9
+## APIVersion: 101034 101035
+## DependsOn: LibHarvensAddonSettings>=10705
+## SavedVariables: VotansLoreLibrarySearch_Data
+
+## This Add-On is not created by, affiliated with or sponsored by ZeniMax Media Inc. or its affiliates. The Elder Scrolls® and related logos are registered trademarks or trademarks of ZeniMax Media Inc. in the United States and/or other countries. All rights reserved.
+
+lang/strings.lua
+lang/$(language).lua
+
+Controls.xml
+Main.lua

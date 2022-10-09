@@ -1,0 +1,81 @@
+<GuiXml>
+  <Controls>
+    <Control name="VotansFashionTreeNode" inherits="ZO_StatusIconChildlessHeader" virtual="true">
+    </Control>
+    <Texture name="VotansFashionHighlight" textureFile="esoui/art/miscellaneous/entryhighlight.dds" alpha="0" level="1" virtual="true">
+      <AnchorFill />
+      <TextureCoords left="0" right="1" top=".05" bottom="0.95" />
+    </Texture>
+
+    <Control name="VotansFashionRowTemplate" mouseEnabled="true" virtual="true">
+      <Dimensions y="520" />
+
+      <OnMouseEnter>
+        ZO_ScrollList_MouseEnter(VOTANS_IMPROVED_OUTFIT.list, self)
+      </OnMouseEnter>
+      <OnMouseExit>
+        ZO_ScrollList_MouseExit(VOTANS_IMPROVED_OUTFIT.list,self)
+      </OnMouseExit>
+      <OnMouseUp>
+        if not upInside then return end
+        if button ~= MOUSE_BUTTON_INDEX_RIGHT then
+        ZO_ScrollList_MouseClick(VOTANS_IMPROVED_OUTFIT.list, self)
+        else
+        VOTANS_IMPROVED_OUTFIT:ShowFashionContextMenu(self)
+        end
+      </OnMouseUp>
+
+      <Controls>
+        <Control name="$(parent)Container" inherits="ZO_RestyleSlotsSheet_Keyboard" hidden="false" mouseEnabled="false">
+          <AnchorFill />
+          <Controls>
+            <Control name="$(parent)Primary" override="true">
+              <Dimensions y="335" />
+              <Anchor point="TOPLEFT" />
+              <Anchor point="TOPRIGHT" />
+
+              <Controls>
+                <Label name="$(parent)Header" override="true" text="SI_RESTYLE_SHEET_EQUIPMENT_APPAREL" />
+              </Controls>
+            </Control>
+
+            <Control name="$(parent)Secondary" override="true" hidden="false">
+            </Control>
+          </Controls>
+        </Control>
+      </Controls>
+    </Control>
+
+    <TopLevelControl name="VotansImprovedOutfitTopLevel" inherits="ZO_Restyle_Content_Anchors" hidden="true">
+      <Controls>
+        <Control name="$(parent)List" inherits="ZO_ScrollList">
+          <Anchor point="TOPLEFT" offsetY="45"/>
+          <Anchor point="BOTTOMRIGHT" offsetX="-35" offsetY="0"/>
+        </Control>
+      </Controls>
+    </TopLevelControl>
+
+    <TopLevelControl name="VotansImprovedOutfitToClipboard" inherits="ZO_CustomDialogBase" hidden="true">
+      <Controls>
+        <Label name="$(parent)DisplayName" inherits="ZO_DialogContentAnchors" horizontalAlignment="CENTER" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_NORMAL" font="ZoFontHeader3"/>
+
+        <Backdrop name="$(parent)Note" inherits="ZO_MultiLineEditBackdrop_Keyboard">
+          <Anchor point="TOPLEFT" relativeTo="$(parent)DisplayName" relativePoint="BOTTOMLEFT" offsetX="-32" offsetY="10"/>
+          <Anchor point="TOPRIGHT" relativeTo="$(parent)DisplayName" relativePoint="BOTTOMRIGHT" offsetX="32" offsetY="10"/>
+          <Dimensions y="500"/>
+          <Controls>
+            <EditBox name="$(parent)Edit" maxInputCharacters="2048" inherits="ZO_DefaultEditMultiLineForBackdrop">
+
+              <OnEffectivelyShown>
+                self:TakeFocus()
+                self:SelectAll()
+              </OnEffectivelyShown>
+            </EditBox>
+          </Controls>
+        </Backdrop>
+
+        <Control name="$(parent)Close" inherits="ZO_CustomDialogButton"/>
+      </Controls>
+    </TopLevelControl>
+  </Controls>
+</GuiXml>

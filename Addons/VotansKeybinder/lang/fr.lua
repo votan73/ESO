@@ -1,0 +1,2 @@
+﻿SafeAddString(SI_VOTANS_KEYBINDER_ACCOUNTWIDE, "Si coché, la commande sera appliquée à tous les comptes et comme modèle pour les nouveaux personnages.", 0)
+SafeAddString(SI_VOTANS_KEYBINDER_TOGGLE, "Tout cocher/décocher")

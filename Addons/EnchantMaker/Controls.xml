@@ -1,0 +1,114 @@
+<GuiXml>
+  <Controls>
+    <Control name="EnchantMakerRadialMenuBar" virtual="true" inherits="ZO_MenuBarTemplate" resizeToFitDescendents="false">
+      <OnInitialized>
+        EnchantMakerRadialMenuBar_OnInitialized(self)
+      </OnInitialized>
+    </Control>
+    <Control name="EnchantMakerFilterPanel">
+      <Controls>
+        <Texture name="$(parent)Background" textureFile="art/fx/texture/sigil_daedricrune_02.dds" alpha="0.05">
+          <Anchor point="CENTER"/>
+          <Dimensions x="579" y="579"/>
+        </Texture>
+        <Texture name="$(parent)QualityBackground" textureFile="art/fx/texture/sigil_daedricrune_01.dds" alpha="0.75" pixelRoundingEnabled="true">
+          <Anchor point="CENTER"/>
+          <Dimensions x="579" y="579"/>
+        </Texture>
+        <Control name="$(parent)Level" inherits="EnchantMakerRadialMenuBar" layer="CONTROLS">
+          <Anchor point="CENTER"/>
+          <Dimensions x="467" y="467"/>
+        </Control>
+        <Control name="$(parent)Quality" inherits="EnchantMakerRadialMenuBar" layer="CONTROLS">
+          <Anchor point="CENTER"/>
+          <Dimensions x="319" y="319"/>
+        </Control>
+        <Texture name="$(parent)TypeSlot1" textureFile="esoui/art/actionbar/passiveabilityframe_round_empty.dds">
+          <Anchor point="CENTER" offsetX="0" offsetY="85"/>
+          <Dimensions x="63" y="63"/>
+        </Texture>
+        <Texture name="$(parent)TypeSlot2" textureFile="esoui/art/actionbar/passiveabilityframe_round_empty.dds">
+          <Anchor point="CENTER" offsetX="74" offsetY="-42"/>
+          <Dimensions x="63" y="63"/>
+        </Texture>
+        <Texture name="$(parent)TypeSlot3" textureFile="esoui/art/actionbar/passiveabilityframe_round_empty.dds">
+          <Anchor point="CENTER" offsetX="-74" offsetY="-42"/>
+          <Dimensions x="63" y="63"/>
+        </Texture>
+        <Control name="$(parent)Type" inherits="EnchantMakerRadialMenuBar" layer="CONTROLS">
+          <Anchor point="CENTER"/>
+          <Dimensions x="171" y="171"/>
+        </Control>
+        <Button name="$(parent)SearchButton" font="ZoFontGame" inherits="ZO_DefaultButton" text="SI_GAMEPAD_HELP_SEARCH">
+          <Dimensions x="175" y="30" />
+          <Anchor point="BOTTOMRIGHT" relativeTo="$(parent)" relativePoint="BOTTOMRIGHT" offsetX="-12" offsetY="0" />
+        </Button>
+        <Button name="$(parent)SearchQuestsButton" font="ZoFontGame" inherits="ZO_DefaultButton" text="SI_JOURNAL_MENU_QUESTS">
+          <Dimensions x="175" y="30" />
+          <Anchor point="TOPRIGHT" relativeTo="$(parent)SearchButton" relativePoint="TOPLEFT" offsetX="-24" offsetY="0" />
+        </Button>
+      </Controls>
+    </Control>
+    <Control name="EnchantMakerOutput" hidden="true">
+      <Controls>
+        <Button name="$(parent)Back" font="ZoFontGame" inherits="ZO_DefaultButton" text="SI_GAMEPAD_BACK_OPTION">
+          <Dimensions x="175" y="30" />
+          <Anchor point="BOTTOMRIGHT" relativeTo="$(parent)" relativePoint="BOTTOMRIGHT" offsetX="-12" offsetY="0" />
+        </Button>
+        <Label name="$(parent)Empty" font="ZoFontGame" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_DISABLED" horizontalAlignment="CENTER" hidden="true">
+          <Anchor point="TOPLEFT" relativeTo="ZO_SharedRightPanelBackground" relativePoint="TOPLEFT" offsetX="50" offsetY="180"/>
+          <Anchor point="BOTTOMRIGHT" relativeTo="ZO_SharedRightPanelBackground" relativePoint="BOTTOMRIGHT" offsetX="-50" offsetY="-50" />
+        </Label>
+        <Control name="$(parent)List" inherits="ZO_ScrollList">
+          <Anchor point="TOPLEFT" />
+          <Anchor point="BOTTOMRIGHT" relativeTo="$(parent)Back" relativePoint="TOPRIGHT" offsetY="-12"/>
+        </Control>
+        <Backdrop name="$(parent)Search" font="ZoFontWinT1" inherits="ZO_InventorySearchTemplate">
+          <Anchor point="BOTTOMLEFT" relativeTo="$(parent)" relativePoint="BOTTOMLEFT" offsetX="6" offsetY="1" />
+        </Backdrop>
+      </Controls>
+    </Control>
+    <Button name="EnchantMakerRowItem" virtual="true">
+      <Dimensions x="568" y="48" />
+      <Textures pressed="esoui/art/miscellaneous/listitem_selectedhighlight.dds" mouseOver="esoui/art/miscellaneous/listitem_highlight.dds" />
+      <TextureCoords left="0" right="1" top="0" bottom=".625" />
+      <MouseButton button="2" enabled="true" />
+      <Controls>
+        <Backdrop name="$(parent)BG" edgeColor="00000000">
+          <Anchor point="TOPLEFT" />
+          <Anchor point="BOTTOMRIGHT" offsetX="-22" />
+          <Center file="esoui/art/chatwindow/chat_bg_center.dds" />
+          <Insets left="0" top="2" right="0" bottom="-2" />
+        </Backdrop>
+        <Texture name="$(parent)Rune1" hidden="true"  mouseEnabled="true" verticalAlignment="CENTER" horizontalAlignment="CENTER" >
+          <Dimensions x="32" y="32" />
+          <Anchor point="LEFT" offsetX="6" offsetY="0" />
+        </Texture>
+        <Texture name="$(parent)Rune2" hidden="true"  mouseEnabled="true" verticalAlignment="CENTER" horizontalAlignment="CENTER" >
+          <Dimensions x="32" y="32" />
+          <Anchor point="LEFT" relativeTo="$(parent)Rune1" relativePoint="RIGHT" offsetX="2" offsetY="0" />
+        </Texture>
+        <Texture name="$(parent)Rune3" hidden="true"  mouseEnabled="true" verticalAlignment="CENTER" horizontalAlignment="CENTER" >
+          <Dimensions x="32" y="32" />
+          <Anchor point="LEFT" relativeTo="$(parent)Rune2" relativePoint="RIGHT" offsetX="2" offsetY="0" />
+        </Texture>
+        <Label name="$(parent)InBag" font="ZoFontGame" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_NORMAL" wrapMode="ELLIPSIS" verticalAlignment="CENTER" horizontalAlignment="RIGHT">
+          <Dimensions x="28" />
+          <Anchor point="RIGHT" relativeTo="$(parent)" relativePoint="RIGHT" offsetX="-32" />
+          <HitInsets left="1000" top="0" right="0" bottom="0"/>
+        </Label>
+        <Texture name="$(parent)Favorite" hidden="true" mouseEnabled="false" verticalAlignment="CENTER" horizontalAlignment="CENTER" >
+          <Dimensions x="24" y="24" />
+          <Anchor point="RIGHT" offsetX="0" offsetY="0" />
+        </Texture>
+        <Label name="$(parent)Text" font="ZoFontWinH4" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_NORMAL" wrapMode="ELLIPSIS" verticalAlignment="CENTER" horizontalAlignment="LEFT">
+          <Dimensions y="48" />
+          <Anchor point="TOPLEFT" relativeTo="$(parent)Rune3" relativePoint="TOPRIGHT" offsetX="6" offsetY="-8"/>
+          <Anchor point="RIGHT" relativeTo="$(parent)InBag" relativePoint="LEFT" offsetX="-6" offsetY="0"/>
+          <DimensionConstraints minX="0" minY="0" maxX="400" maxY="48" />
+          <HitInsets left="1000" top="0" right="0" bottom="0"/>
+        </Label>
+      </Controls>
+    </Button>
+  </Controls>
+</GuiXml>

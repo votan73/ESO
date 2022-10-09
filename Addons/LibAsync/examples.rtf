@@ -1,0 +1,22 @@
+local async = LibStub("LibAsync")
+
+local i=1
+local function Hello() d("Hello") end
+local function World() d("World") end
+
+async:Call(function(task)
+ d(i)
+ task:Call(Hello):Then(World)
+ i = i + 1
+ return i<1000
+end):Then(function() d("end") end)
+
+-----------------------------------------------------------------------
+local async = LibStub("LibAsync")
+
+async:For (1,10):Do(function(index) d(index) end):Then(
+function()
+  async:For (pairs({"a", "b"})):Do(function(key, value) d(key,value)
+    async:For (pairs({"c", "d"})):Do(function(key, value) d(key,value)  end)
+ end)
+end):For(11,15):Do(function(index) d(index) end)

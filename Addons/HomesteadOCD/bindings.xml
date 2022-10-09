@@ -1,0 +1,49 @@
+<Bindings>
+	<Layer name="SI_KEYBINDINGS_LAYER_HOUSING_EDITOR" allowFallthrough="false">
+		<Category name="Homestead OCD">
+			<Action name="HOMESTEAD_OCD_PRECISE_SELECT">
+				<Down>HomesteadOCD_PreciseSelect()</Down>
+			</Action>
+			
+			<!--
+			<Action name="HOMESTEAD_OCD_NUDGE_X_POSITIVE">
+				<Down>HomesteadOCD_NudgeXPositive()</Down>
+			</Action>
+			<Action name="HOMESTEAD_OCD_NUDGE_X_NEGATIVE">
+				<Down>HomesteadOCD_NudgeXNegative()</Down>
+			</Action>
+			<Action name="HOMESTEAD_OCD_NUDGE_Y_POSITIVE">
+				<Down>HomesteadOCD_NudgeYPositive()</Down>
+			</Action>
+			<Action name="HOMESTEAD_OCD_NUDGE_Y_NEGATIVE">
+				<Down>HomesteadOCD_NudgeYNegative()</Down>
+			</Action>
+			<Action name="HOMESTEAD_OCD_NUDGE_Z_POSITIVE">
+				<Down>HomesteadOCD_NudgeZPositive()</Down>
+			</Action>
+			<Action name="HOMESTEAD_OCD_NUDGE_Z_NEGATIVE">
+				<Down>HomesteadOCD_NudgeZNegative()</Down>
+			</Action>
+			
+			<Action name="HOMESTEAD_OCD_NUDGE_PITCH_POSITIVE">
+				<Down>HomesteadOCD_NudgePitchPositive()</Down>
+			</Action>
+			<Action name="HOMESTEAD_OCD_NUDGE_PITCH_NEGATIVE">
+				<Down>HomesteadOCD_NudgePitchNegative()</Down>
+			</Action>
+			<Action name="HOMESTEAD_OCD_NUDGE_YAW_POSITIVE">
+				<Down>HomesteadOCD_NudgeYawPositive()</Down>
+			</Action>
+			<Action name="HOMESTEAD_OCD_NUDGE_YAW_NEGATIVE">
+				<Down>HomesteadOCD_NudgeYawNegative()</Down>
+			</Action>
+			<Action name="HOMESTEAD_OCD_NUDGE_ROLL_POSITIVE">
+				<Down>HomesteadOCD_NudgeRollPositive()</Down>
+			</Action>
+			<Action name="HOMESTEAD_OCD_NUDGE_ROLL_NEGATIVE">
+				<Down>HomesteadOCD_NudgeRollNegative()</Down>
+			</Action>
+			-->
+		</Category>
+	</Layer>
+</Bindings>

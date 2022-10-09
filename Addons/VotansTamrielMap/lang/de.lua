@@ -1,0 +1,20 @@
+SafeAddString(SI_VOTANS_TAMRIEL_MAP_HIDE_TRAVEL_PINS, "Wegschrein Pins ausblenden")
+SafeAddString(SI_VOTANS_TAMRIEL_MAP_FONT, "Schriftart")
+
+SafeAddString(SI_VOTANS_TAMRIEL_MAP_FONT_NONE, "Keinen")
+
+SafeAddString(SI_VOTANS_TAMRIEL_MAP_FONT_MEDIUM, "Keyboard Mittel")
+SafeAddString(SI_VOTANS_TAMRIEL_MAP_FONT_BOLD, "Keyboard Fett")
+SafeAddString(SI_VOTANS_TAMRIEL_MAP_FONT_CHAT, "Keyboard Chat")
+
+SafeAddString(SI_VOTANS_TAMRIEL_MAP_FONT_GAMEPAD_LIGHT, "Gamepad Schmall")
+SafeAddString(SI_VOTANS_TAMRIEL_MAP_FONT_GAMEPAD_MEDIUM, "Gamepad Mittel")
+SafeAddString(SI_VOTANS_TAMRIEL_MAP_FONT_GAMEPAD_BOLD, "Gamepad Fett")
+
+SafeAddString(SI_VOTANS_TAMRIEL_MAP_FONT_ANTIQUE, "Antik")
+SafeAddString(SI_VOTANS_TAMRIEL_MAP_FONT_HANDWRITTEN, "Handgeschrieben")
+SafeAddString(SI_VOTANS_TAMRIEL_MAP_FONT_STONE_TABLET, "Steintafel")
+
+SafeAddString(SI_VOTANS_TAMRIEL_MAP_FONT_ALLIANCE, "Allianz")
+SafeAddString(SI_VOTANS_TAMRIEL_MAP_FONT_BASE_DLC, "Base Game/DLC")
+SafeAddString(SI_VOTANS_TAMRIEL_MAP_FONT_NO_COLOR, "Keine Farben")

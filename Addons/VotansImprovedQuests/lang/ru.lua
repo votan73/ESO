@@ -1,0 +1,6 @@
+﻿SafeAddString(SI_VOTANSIMPROVEDQUESTS_SHOW_LEVELS, "Показывать уровни", 1)
+SafeAddString(SI_VOTANSIMPROVEDQUESTS_OTHER_ZONES, "Другие регионы", 1)
+SafeAddString(SI_VOTANSIMPROVEDQUESTS_ALWAYS_SHOW_QUESTS, "Показывать квесты на карте мира")
+SafeAddString(SI_VOTANSIMPROVEDQUESTS_ALWAYS_SHOW_ON_MAP, "Всегда показывать на карте")
+SafeAddString(SI_VOTANSIMPROVEDQUESTS_LOCATION_ON_MAP, "<<t:1>> <<l:2> <<t:2>>")
+SafeAddString(SI_VOTANSIMPROVEDQUESTS_CONSOLIDATE_OTHER_ZONES, "Объединить другие регионы")

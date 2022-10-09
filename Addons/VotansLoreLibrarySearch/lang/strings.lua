@@ -1,0 +1,7 @@
+ZO_CreateStringId("SI_VOTANS_LIBRARY", "Lore Searcher")
+ZO_CreateStringId("SI_VOTANS_LIBRARY_LOADING", "Searching...")
+ZO_CreateStringId("SI_VOTANS_LIBRARY_NO_RESULT", "No book found")
+ZO_CreateStringId("SI_VOTANS_LIBRARY_CANCELLED", "User cancelled")
+ZO_CreateStringId("SI_VOTANS_LIBRARY_HIGHLIGHT", "Highlight Words")
+ZO_CreateStringId("SI_VOTANS_LIBRARY_HIGHLIGHT_TOOLTIP", "Mark found words in text.")
+ZO_CreateStringId("SI_VOTANS_LIBRARY_HIGHLIGHT_COLOR", "Highlight Color")

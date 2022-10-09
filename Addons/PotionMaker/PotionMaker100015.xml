@@ -1,0 +1,347 @@
+<GuiXml>
+  <Controls>
+    <TopLevelControl name="PotionMakerTopLevel" inherits="ZO_RightPanelFootPrint" hidden="true">
+      <Dimensions x="612" y="588" />
+      <Controls>
+        <Control name="$(parent)ModeMenu" inherits="ZO_SceneMenu">
+          <Anchor point="TOPRIGHT" relativeTo="ZO_SharedRightPanelBackground" offsetX="-40"/>
+          <Dimensions x="550"/>
+        </Control>
+        <Control name="PotionMaker">
+          <Anchor point="TOPLEFT" offsetX="32" offsetY="76"/>
+          <Dimensions x="568" y="600" />
+          <Controls>
+            <Backdrop name="$(parent)SearchBG" integralWrapping="true">
+              <Dimensions x="540" y="287" />
+              <Anchor point="TOPLEFT" offsetX="0" offsetY="-32"/>
+              <Edge file="EsoUI/Art/ChatWindow/chat_BG_edge.dds" edgeFileWidth="256" edgeFileHeight="256" edgeSize="16"/>
+              <Center file="EsoUI/Art/ChatWindow/chat_BG_center.dds" />
+              <Insets left="16" top="16" right="-16" bottom="-16" />
+              <!--No child controls here! Auto-generated-->
+            </Backdrop>
+            <Backdrop name="$(parent)ReagentBG">
+              <Dimensions x="504" y="150" />
+              <ResizeToFitPadding width="40" height="40"/>
+              <Anchor point="TOPLEFT" relativeTo="$(parent)SearchBG" relativePoint="BOTTOMLEFT" offsetX="0" offsetY="24" />
+              <Edge file="EsoUI/Art/ChatWindow/chat_BG_edge.dds" edgeFileWidth="256" edgeFileHeight="256" edgeSize="32"/>
+              <Center file="EsoUI/Art/ChatWindow/chat_BG_center.dds" />
+              <Insets left="32" top="32" right="-32" bottom="-32" />
+              <!--No child controls here! Auto-generated-->
+            </Backdrop>
+            <Button name="PotionMakerOnlyReagent" inherits="ZO_CheckButton" text="only">
+              <Dimensions x="20" y="20" />
+              <Anchor point="TOPRIGHT" relativeTo="$(parent)" relativePoint="BOTTOMRIGHT" offsetX="-16" offsetY="-112" />
+              <Controls>
+                <Label name="PotionMakerOnlyReagentText" font="ZoFontGame" text="only" inherits="ZO_CheckButtonLabel">
+                  <Anchor point="RIGHT" relativeTo="PotionMakerOnlyReagent" relativePoint="LEFT" offsetX="-4" offsetY="1" />
+                </Label>
+              </Controls>
+            </Button>
+            <Button name="PotionMakerOnly2" inherits="ZO_CheckButton">
+              <Dimensions x="20" y="20" />
+              <Anchor point="LEFT" relativeTo="PotionMakerOnlyReagent" relativePoint="LEFT" offsetX="0" offsetY="24" />
+              <Controls>
+                <Label name="PotionMakerOnly2Text" font="ZoFontGame" text="only 2" inherits="ZO_CheckButtonLabel">
+                  <Anchor point="RIGHT" relativeTo="PotionMakerOnly2" relativePoint="LEFT" offsetX="-4" offsetY="1" />
+                </Label>
+              </Controls>
+            </Button>
+            <Button name="$(parent)SearchButton" font="ZoFontGame" hidden="false" inherits="ZO_DefaultButton">
+              <Dimensions x="175" y="30" />
+              <Anchor point="BOTTOMRIGHT" relativeTo="$(parent)" relativePoint="BOTTOMRIGHT" offsetX="-12" offsetY="-24" />
+            </Button>
+            <Button name="$(parent)QuestWrits" font="ZoFontGame" hidden="false" inherits="ZO_DefaultButton" text="SI_CUSTOMERSERVICESUBMITFEEDBACKSUBCATEGORIES212">
+              <Dimensions x="175" y="30" />
+              <Anchor point="TOPRIGHT" relativeTo="$(parent)SearchButton" relativePoint="TOPLEFT" offsetX="-12" offsetY="0" />
+            </Button>
+            <Button name="$(parent)Favorites" font="ZoFontGame" hidden="false" inherits="ZO_DefaultButton">
+              <Dimensions x="175" y="30" />
+              <Anchor point="TOPRIGHT" relativeTo="$(parent)QuestWrits" relativePoint="TOPLEFT" offsetX="-12" offsetY="0" />
+            </Button>
+            <Button name="$(parent)ClearFilter" font="ZoFontGame" mouseOverBlendMode="ADD" inherits="ZO_ButtonBehaviorClickSound">
+              <Dimensions x="32" y="32" />
+              <Anchor point="BOTTOMRIGHT" relativeTo="$(parent)SearchBG" relativePoint="BOTTOMRIGHT" offsetX="-12" offsetY="-12" />
+              <Textures
+                  normal="esoui/art/buttons/edit_cancel_up.dds"
+                  pressed="esoui/art/buttons/edit_cancel_down.dds"
+                  mouseOver="esoui/art/buttons/edit_cancel_over.dds"
+                    />
+            </Button>
+            <Button name="$(parent)BagButton" font="ZoFontGame" mouseEnabled="true" text="" hidden="false" >
+              <Dimensions x="32" y="32" />
+              <Anchor point="TOPLEFT" relativeTo="$(parent)ReagentBG" relativePoint="TOPRIGHT" offsetX="-6" offsetY="40" />
+              <Controls>
+                <Texture name="$(parent)Texture" color="FF6A00" alpha="0.8" >
+                  <Dimensions x="32" y="32" />
+                  <Anchor fill="$(parent)" point="TOPLEFT" offsetX="0" offsetY="0" />
+                </Texture>
+              </Controls>
+            </Button>
+            <Button name="$(parent)BankButton" font="ZoFontGame" mouseEnabled="true" text="" hidden="false">
+              <Dimensions x="32" y="32" />
+              <Anchor point="TOPLEFT" relativeTo="$(parent)BagButton" relativePoint="BOTTOMLEFT" offsetX="0" offsetY="2" />
+              <Controls>
+                <Texture name="$(parent)Texture" color="FF6A00" alpha="1" >
+                  <Dimensions x="28" y="28" />
+                  <Anchor fill="$(parent)" point="TOPLEFT" offsetX="0" offsetY="0" />
+                </Texture>
+              </Controls>
+            </Button>
+            <Label name="PotionMakerTraitLabel1" font="ZoFontWinH5" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_SELECTED">
+              <Anchor point="BOTTOMLEFT" relativeTo="$(parent)SearchBG" relativePoint="TOPLEFT" offsetY="0" offsetX="10" />
+            </Label>
+            <Label name="PotionMakerTraitLabel2" font="ZoFontWinH5" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_SELECTED">
+              <Anchor point="BOTTOMLEFT" relativeTo="PotionMakerTraitLabel1" relativePoint="BOTTOMLEFT" offsetY="0" offsetX="196" />
+            </Label>
+            <Label name="PotionMakerSolventLabel" font="ZoFontWinH5" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_SELECTED">
+              <Anchor point="BOTTOMLEFT" relativeTo="PotionMakerTraitLabel2" relativePoint="BOTTOMLEFT" offsetY="0" offsetX="196" />
+            </Label>
+            <Label name="PotionMakerReagentLabel" font="ZoFontWinH5" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_SELECTED">
+              <Anchor point="BOTTOMLEFT" relativeTo="$(parent)ReagentBG" relativePoint="TOPLEFT" offsetY="0" offsetX="12" />
+            </Label>
+          </Controls>
+        </Control>
+        <Control name="PotionMakerOutput" hidden="true">
+          <Anchor point="TOPLEFT" offsetX="32" offsetY="96"/>
+          <Dimensions x="568" y="601" />
+          <Controls>
+            <Control name="$(parent)ResultsBG" >
+              <Dimensions x="580" y="505" />
+              <Anchor point="TOPLEFT" offsetX="-10" />
+              <!--<Edge file="esoui/art/chatwindow/chat_bg_edge.dds" edgeFileWidth="256" edgeFileHeight="256" edgeSize="16"/>
+              <Center file="esoui/art/chatwindow/chat_bg_center.dds" />
+              <Insets left="16" top="16" right="-16" bottom="-16" />-->
+            </Control>
+            <Label name="$(parent)CombinationLabel" font="ZoFontWinH5" wrapMode="ELLIPSIS" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_SELECTED" text="Combinations of reagents:" >
+              <Anchor point="BOTTOMLEFT" relativeTo="$(parent)ResultsBG" relativePoint="TOPLEFT" offsetX="10" offsetY="0" />
+            </Label>
+            <Label name="$(parent)TraitLabel" font="ZoFontWinH5" wrapMode="ELLIPSIS" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_SELECTED" text="Traits:" >
+              <Anchor point="BOTTOMRIGHT" relativeTo="$(parent)ResultsBG" relativePoint="TOPRIGHT" offsetX="-24" offsetY="0" />
+            </Label>
+            <Button name="$(parent)SearchButton" font="ZoFontGame" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_NORMAL" hidden="false" inherits="ZO_DefaultButton" >
+              <Dimensions x="175" y="30" />
+              <Anchor point="BOTTOMRIGHT" relativeTo="$(parent)" relativePoint="BOTTOMRIGHT" offsetX="-12" offsetY="-24" />
+            </Button>
+            <Button name="$(parent)NextButton" font="ZoFontGame" mouseEnabled="true" verticalAlignment="CENTER" horizontalAlignment="CENTER" hidden="false" inherits="ZO_NextArrowButton" >
+              <Dimensions x="20" y="20" />
+              <Anchor point="TOPRIGHT" relativeTo="$(parent)ResultsBG" relativePoint="BOTTOMRIGHT" offsetX="-24" offsetY="0" />
+            </Button>
+            <Button name="$(parent)PreviousButton" font="ZoFontGame" mouseEnabled="true" verticalAlignment="CENTER" horizontalAlignment="CENTER" hidden="false" inherits="ZO_PreviousArrowButton" >
+              <Dimensions x="20" y="20" />
+              <Anchor point="RIGHT" relativeTo="$(parent)NextButton" relativePoint="LEFT" offsetX="0" offsetY="0" />
+            </Button>
+            <Label name="$(parent)PageLabel" hidden="true" font="ZoFontGame" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_NORMAL" text="Page" >
+              <Anchor point="RIGHT" relativeTo="$(parent)PreviousButton" relativePoint="LEFT" offsetX="-4" offsetY="0" />
+            </Label>
+            <Button name="$(parent)Favorite" font="ZoFontGame" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_NORMAL" hidden="false" inherits="ZO_DefaultButton">
+              <Dimensions x="200" y="30" />
+              <Anchor point="BOTTOMLEFT" relativeTo="$(parent)" relativePoint="BOTTOMLEFT" offsetX="24" offsetY="-24" />
+            </Button>
+          </Controls>
+        </Control>
+      </Controls>
+    </TopLevelControl>
+
+    <Button name="PotionMakerCheckBox" inherits="ZO_CheckButton" virtual="true">
+      <Dimensions x="20" y="20" />
+      <!--<Anchor point="TOPLEFT" offsetX="50" offsetY="50" />-->
+      <Controls>
+        <Label name="$(parent)Text" font="ZoFontGame" inherits="ZO_CheckButtonLabel">
+          <Anchor point="LEFT" relativePoint="RIGHT" offsetX="5" />
+        </Label>
+      </Controls>
+    </Button>
+
+    <Button name="PotionMakerToggleButton" virtual="true">
+      <Dimensions x="40" y="40" />
+      <OnMouseDown>
+        PotMaker.ToggleButton(self, button)
+      </OnMouseDown>
+      <Controls>
+        <Texture name="$(parent)Outline" color="00000000" hidden="true">
+          <Dimensions x="40" y="40" />
+          <Anchor fill="$(parent)" point="TOPLEFT" offsetX="-4" offsetY="2" />
+        </Texture>
+        <Texture name="$(parent)Texture" verticalAlignment="CENTER" horizontalAlignment="CENTER" >
+          <Dimensions x="32" y="32" />
+          <Anchor point="TOPLEFT" offsetX="0" offsetY="6" />
+        </Texture>
+        <Label name="$(parent)Number" font="ZoFontGameSmall" color="FAFAFA" verticalAlignment="CENTER" horizontalAlignment="CENTER" Text="0" >
+          <Dimensions x="40" y="16" />
+          <Anchor point="BOTTOMRIGHT" offsetX="0" offsetY="0" />
+        </Label>
+      </Controls>
+    </Button>
+
+    <Button name="PotionMakerTristateButton" virtual="true">
+      <Dimensions x="40" y="40" />
+      <OnMouseDown>
+        PotMaker.ToggleButton(self, button)
+      </OnMouseDown>
+      <Controls>
+        <Texture name="$(parent)Texture" verticalAlignment="CENTER" horizontalAlignment="CENTER" >
+          <Dimensions x="32" y="32" />
+          <Anchor point="TOPLEFT" offsetX="0" offsetY="6" />
+        </Texture>
+        <Texture name="$(parent)Outline" color="00000000" hidden="true" layer="OVERLAY">
+          <Dimensions x="20" y="20" />
+          <Anchor fill="$(parent)" point="BOTTOMLEFT" offsetX="0" offsetY="0" />
+        </Texture>
+      </Controls>
+    </Button>
+
+    <Button name="PotionMakerReagent" virtual="true" mouseEnabled="true" drawLevel="2" text="xxx">
+      <Dimensions x="40" y="40" />
+      <!--<Anchor point="TOPLEFT" offsetX="0" offsetY="0" />-->
+      <OnMouseEnter>
+        PotMaker.Ingredient.showTip(self, true)
+      </OnMouseEnter>
+      <OnMouseExit>
+        PotMaker.Ingredient.showTip(self, false)
+      </OnMouseExit>
+      <OnMouseDown>
+        PotMaker.ToggleButton(self, button)
+      </OnMouseDown>
+      <Controls>
+        <Texture name="$(parent)Outline" color="00000000" hidden="true">
+          <Dimensions x="40" y="40" />
+          <Anchor fill="$(parent)" point="TOPLEFT" offsetX="-4" offsetY="2" />
+        </Texture>
+        <Texture name="$(parent)Texture" verticalAlignment="CENTER" horizontalAlignment="CENTER" >
+          <Dimensions x="32" y="32" />
+          <Anchor point="TOPLEFT" offsetX="0" offsetY="6" />
+        </Texture>
+        <Label name="$(parent)Number" font="ZoFontGameSmall" color="FAFAFA" verticalAlignment="CENTER" horizontalAlignment="CENTER" Text="0" >
+          <Dimensions x="32" y="16" />
+          <Anchor point="BOTTOMRIGHT" offsetX="0" offsetY="0" />
+        </Label>
+      </Controls>
+    </Button>
+
+    <Button name="PotionMakerResult" virtual="true">
+      <Dimensions x="568" y="50" />
+      <Textures pressed="esoui/art/miscellaneous/listitem_selectedhighlight.dds" mouseOver="esoui/art/miscellaneous/listitem_highlight.dds" />
+      <TextureCoords left="0" right="1" top="0" bottom=".625" />
+      <MouseButton button="2" enabled="true" />
+      <OnClicked>
+        PotMaker.PotionClicked(self, button)
+      </OnClicked>
+      <OnMouseEnter>
+        PotMaker.showPotionTip(self, true)
+      </OnMouseEnter>
+      <OnMouseExit>
+        PotMaker.showPotionTip(self, false)
+      </OnMouseExit>
+
+      <Controls>
+        <Backdrop name="$(parent)BG" edgeColor="00000000">
+          <Anchor point="TOPLEFT" />
+          <Anchor point="BOTTOMRIGHT" offsetX="-22" />
+          <!--<Edge file="esoui/art/chatwindow/chat_bg_edge.dds" edgeFileWidth="256" edgeFileHeight="256" edgeSize="4"/>-->
+          <Center file="esoui/art/chatwindow/chat_bg_center.dds" />
+          <Insets left="0" top="2" right="0" bottom="-2" />
+        </Backdrop>
+        <Texture name="$(parent)Reagent1" hidden="true"  mouseEnabled="true" verticalAlignment="CENTER" horizontalAlignment="CENTER" >
+          <Dimensions x="32" y="32" />
+          <Anchor point="LEFT" offsetX="6" offsetY="0" />
+          <OnMouseEnter>
+            PotMaker.showReagentTip(self, true)
+          </OnMouseEnter>
+          <OnMouseExit>
+            PotMaker.showReagentTip(self, false)
+          </OnMouseExit>
+          <OnMouseUp>
+            PotMaker.ReagentClicked(self, button)
+          </OnMouseUp>
+        </Texture>
+        <Texture name="$(parent)Reagent2" hidden="true"  mouseEnabled="true" verticalAlignment="CENTER" horizontalAlignment="CENTER" >
+          <Dimensions x="32" y="32" />
+          <Anchor point="LEFT" relativeTo="$(parent)Reagent1" relativePoint="RIGHT" offsetX="2" offsetY="0" />
+          <OnMouseEnter>
+            PotMaker.showReagentTip(self, true)
+          </OnMouseEnter>
+          <OnMouseExit>
+            PotMaker.showReagentTip(self, false)
+          </OnMouseExit>
+          <OnMouseUp>
+            PotMaker.ReagentClicked(self, button)
+          </OnMouseUp>
+        </Texture>
+        <Texture name="$(parent)Reagent3" hidden="true"  mouseEnabled="true" verticalAlignment="CENTER" horizontalAlignment="CENTER" >
+          <Dimensions x="32" y="32" />
+          <Anchor point="LEFT" relativeTo="$(parent)Reagent2" relativePoint="RIGHT" offsetX="2" offsetY="0" />
+          <OnMouseEnter>
+            PotMaker.showReagentTip(self, true)
+          </OnMouseEnter>
+          <OnMouseExit>
+            PotMaker.showReagentTip(self, false)
+          </OnMouseExit>
+          <OnMouseUp>
+            PotMaker.ReagentClicked(self, button)
+          </OnMouseUp>
+        </Texture>
+        <Label name="$(parent)Text" font="ZoFontWinH4" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_NORMAL" wrapMode="ELLIPSIS" verticalAlignment="CENTER" horizontalAlignment="LEFT">
+          <Dimensions y="48" />
+          <Anchor point="TOPLEFT" relativeTo="$(parent)Reagent3" relativePoint="TOPRIGHT" offsetX="6" offsetY="-8"/>
+          <!--<Anchor point="RIGHT" relativeTo="$(parent)Trait4" relativePoint="LEFT" offsetX="-2" offsetY="0" />-->
+          <DimensionConstraints minX="334" minY="0" maxX="334" maxY="48" />
+          <OnMouseDown>
+            PotMaker.Potion.show(self:GetParent())
+          </OnMouseDown>
+          <HitInsets left="1000" top="0" right="0" bottom="0"/>
+        </Label>
+        <Label name="$(parent)InBag" font="ZoFontGame" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_NORMAL" wrapMode="ELLIPSIS" verticalAlignment="CENTER" horizontalAlignment="RIGHT">
+          <Dimensions x="28" />
+          <Anchor point="RIGHT" relativeTo="$(parent)" relativePoint="RIGHT" offsetX="-80" />
+          <HitInsets left="1000" top="0" right="0" bottom="0"/>
+        </Label>
+        <Texture name="$(parent)Favorite" hidden="true" mouseEnabled="false" verticalAlignment="CENTER" horizontalAlignment="CENTER" >
+          <Dimensions x="24" y="24" />
+          <Anchor point="RIGHT" offsetX="0" offsetY="0" />
+        </Texture>
+        <Texture name="$(parent)Trait1" hidden="true" mouseEnabled="true" verticalAlignment="CENTER" horizontalAlignment="CENTER" >
+          <Dimensions x="24" y="24" />
+          <OnMouseEnter>
+            PotMaker.showTraitTip(self, true)
+          </OnMouseEnter>
+          <OnMouseExit>
+            PotMaker.showTraitTip(self, false)
+          </OnMouseExit>
+        </Texture>
+        <Texture name="$(parent)Trait2" hidden="true" mouseEnabled="true" verticalAlignment="CENTER" horizontalAlignment="CENTER" >
+          <Dimensions x="24" y="24" />
+          <OnMouseEnter>
+            PotMaker.showTraitTip(self, true)
+          </OnMouseEnter>
+          <OnMouseExit>
+            PotMaker.showTraitTip(self, false)
+          </OnMouseExit>
+        </Texture>
+        <Texture name="$(parent)Trait3" hidden="true" mouseEnabled="true" verticalAlignment="CENTER" horizontalAlignment="CENTER" >
+          <Dimensions x="24" y="24" />
+          <OnMouseEnter>
+            PotMaker.showTraitTip(self, true)
+          </OnMouseEnter>
+          <OnMouseExit>
+            PotMaker.showTraitTip(self, false)
+          </OnMouseExit>
+        </Texture>
+        <Texture name="$(parent)Trait4" hidden="true"  mouseEnabled="true" verticalAlignment="CENTER" horizontalAlignment="CENTER" >
+          <Dimensions x="24" y="24" />
+          <OnMouseEnter>
+            PotMaker.showTraitTip(self, true)
+          </OnMouseEnter>
+          <OnMouseExit>
+            PotMaker.showTraitTip(self, false)
+          </OnMouseExit>
+        </Texture>
+
+      </Controls>
+    </Button>
+
+    <Tooltip name="PotionMakerTooltip" inherits="ZO_ItemIconTooltip" mouseEnabled="true" movable="true" hidden="true">
+      <ResizeToFitPadding width="48" height="57"/>
+      <DimensionConstraints minX="416" maxX="416" />
+    </Tooltip>
+  </Controls>
+</GuiXml>

@@ -1,0 +1,32 @@
+<GuiXml>
+  <Controls>
+    <Control name="LootWallBackyardRow" virtual="true" mouseEnabled="true">
+      <Dimensions x="400" y="30" />
+      <Controls>
+        <Texture name="$(parent)Highlight" textureFile="EsoUI/Art/Miscellaneous/listItem_highlight.dds" alpha="0">
+          <AnchorFill />
+          <TextureCoords left="0" right="1" top="0" bottom=".625" />
+        </Texture>
+        <Label name="$(parent)Name" font="ZoFontWinH4" wrapMode="ELLIPSIS" verticalAlignment="CENTER" horizontalAlignment="LEFT">
+          <Anchor point="TOPLEFT" relativeTo="$(parent)" relativePoint="TOPLEFT" offsetX="0" offsetY="1"/>
+          <Anchor point="BOTTOMLEFT" relativeTo="$(parent)" relativePoint="BOTTOMLEFT" offsetX="0" offsetY="-1"/>
+        </Label>
+        <Button name="$(parent)Reset" mouseEnabled="true">
+          <Dimensions x="26" y="26" />
+          <Anchor point="TOPRIGHT" relativeTo="$(parent)" relativePoint="TOPRIGHT" offsetX="0" offsetY="1"/>
+
+          <Textures
+              normal="LootWall/imgs/reset_up.dds"
+              pressed="LootWall/imgs/reset_down.dds"
+              mouseOver="LootWall/imgs/reset_mouseover.dds"
+              disabled="LootWall/imgs/reset_disabled.dds"
+             />
+        </Button>
+        <Label name="$(parent)Rule" font="ZoFontWinH5" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_NORMAL" wrapMode="ELLIPSIS" verticalAlignment="CENTER" horizontalAlignment="RIGHT">
+          <Dimensions x="125" y="26" />
+          <Anchor point="TOPRIGHT" relativeTo="$(parent)Reset" relativePoint="TOPLEFT" offsetX="-4" offsetY="0"/>
+        </Label>
+      </Controls>
+    </Control>
+  </Controls>
+</GuiXml>

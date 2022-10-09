@@ -1,0 +1,15 @@
+; This Add-on is not created by, affiliated with or sponsored by ZeniMax
+; Media Inc. or its affiliates. The Elder Scrolls® and related logos are
+; registered trademarks or trademarks of ZeniMax Media Inc. in the United
+; States and/or other countries. All rights reserved.
+
+## Title: |cEFEBBEDeconstruction Filter|r 1.8.8
+## APIVersion: 100033 100034
+## Description: This addon adds additional filters to deconstruction window.
+## Version: 1.8.12
+## Author: |cEFEBBE@estera|r & votan
+
+lang/strings.lua
+lang/$(language).lua
+
+DeconstructionFilter.lua

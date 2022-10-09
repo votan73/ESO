@@ -1,0 +1,10 @@
+## Title: Troublemaker
+## Author: @DeanGrey (US)
+## Version: 0.3.12
+## APIVersion: 100033 100034
+## Description: Make trouble when you need to and stop accidentally attacking the innocent! Use a keybind or type /trouble or /tm.
+## SavedVariables: Troublemaker_SavedVariables
+## DependsOn: LibStub LibAddonMenu-2.0
+
+Troublemaker.lua
+Bindings.xml

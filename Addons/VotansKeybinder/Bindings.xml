@@ -1,0 +1,9 @@
+<Bindings>
+  <Layer name="KeybindWindow">
+    <Category>
+      <Action name="VOTANS_KEYBINDER_TOGGLE" hideAction="true" inheritsBindFrom="UI_SHORTCUT_PRIMARY" allowFallthrough="false">
+        <Down>VOTANS_KEYBINDER:ToggleShareState()</Down>
+      </Action>
+    </Category>
+  </Layer>
+</Bindings>

@@ -1,0 +1,13 @@
+﻿; This Add-on is not created by, affiliated with or sponsored by ZeniMax
+; Media Inc. or its affiliates. The Elder Scrolls® and related logos are
+; registered trademarks or trademarks of ZeniMax Media Inc. in the United
+; States and/or other countries. All rights reserved.
+
+## Title: Harven's AS to LAM adapter
+## Description: This addon is an adapter which will convert Harven's Addons Settings layout to LAM settings layout.
+## APIVersion: 101033 101034
+## Version: 2.2.8
+## Author: Harven & votan
+## DependsOn: LibHarvensAddonSettings>=10705 LibAddonMenu-2.0>=32
+
+has2lam.lua

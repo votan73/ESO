@@ -1,0 +1,15 @@
+## Title: Votan's Improved Quests
+## Author: votan
+## Description: Adds additional information to quests tab in world map.
+## Version: 1.3.1
+## APIVersion: 101033 101034
+## DependsOn: LibAddonMenu-2.0>=31
+## SavedVariables: VotansImprovedQuests_Data
+
+## This Add-On is not created by, affiliated with or sponsored by ZeniMax Media Inc. or its affiliates. The Elder Scrolls® and related logos are registered trademarks or trademarks of ZeniMax Media Inc. in the United States and/or other countries. All rights reserved.
+
+lang/strings.lua
+lang/$(language).lua
+
+Controls.xml
+Main.lua

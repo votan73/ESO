@@ -1,0 +1,17 @@
+## Title: Enchant Maker
+## Author: votan
+## APIVersion: 101034 101035
+## Version: 2.1.2
+## DependsOn: LibAsync LibCustomMenu>=692 LibEnchantingStation>=232
+
+## This Add-On is not created by, affiliated with or sponsored by ZeniMax Media Inc. or its affiliates. The Elder Scrolls® and related logos are registered trademarks or trademarks of ZeniMax Media Inc. in the United States and/or other countries. All rights reserved.
+
+lang/strings.lua
+lang/$(language).lua
+
+RadialMenuBar.lua
+
+Controls.xml
+Main.lua
+
+Bindings.xml

@@ -1,0 +1,20 @@
+<GuiXml>
+  <Controls>
+    <TextureComposite name="VotansTamrielBlobControl" virtual="true" level="1" pixelRoundingEnabled="false" layer="BACKGROUND">
+      <Surface />
+      <Surface />
+      <Surface />
+      <Surface />
+      <Controls>
+        <Label name="$(parent)Location" font="$(ANTIQUE_FONT)|18|soft-shadow-thick" layer="BACKGROUND" level="2" tier="HIGH" horizontalAlignment="CENTER" lineSpacing="-8">
+          <Anchor point="CENTER" relativePoint="CENTER" />
+          <DimensionConstraints minX="0" maxX="161" />
+        </Label>
+        <Label name="$(parent)City" font="$(ANTIQUE_FONT)|12|soft-shadow-thick" layer="BACKGROUND" level="1" tier="HIGH">
+          <Anchor point="TOP" relativeTo="$(parent)Location" relativePoint="BOTTOM" />
+          <DimensionConstraints minX="0" maxX="161" />
+        </Label>
+      </Controls>
+    </TextureComposite>
+  </Controls>
+</GuiXml>

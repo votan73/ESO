@@ -1,0 +1,12 @@
+## Title: LibMainMenu-2.0
+## Author: Ayantir & Baertram & votan
+## APIVersion: 100033 100034
+## Version: 4.4.0
+## AddOnVersion: 40400
+## IsLibrary: true
+## OptionalDependsOn: LibStub LibAddonMenu-2.0 LibHarvensAddonSettings
+## Description: Library to add main menu entries.
+
+## This Add-On is not created by, affiliated with or sponsored by ZeniMax Media Inc. or its affiliates. The Elder Scrolls® and related logos are registered trademarks or trademarks of ZeniMax Media Inc. in the United States and/or other countries. All rights reserved.
+
+LibMainMenu-2.0.lua

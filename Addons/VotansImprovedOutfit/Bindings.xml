@@ -1,0 +1,40 @@
+<Bindings>
+  <Layer name="SI_KEYBINDINGS_LAYER_OUTFIT_STATION">
+    <Category name="SI_KEYBINDINGS_CATEGORY_IMPROVED_OUTFIT">
+      <!--<Action name="VOTANS_IMPROVED_OUTFIT_UNDO" rebindable="true">
+        <Down>return ZO_KeybindStrip_HandleKeybindDown(keybind)</Down>
+      </Action>
+      <Action name="VOTANS_IMPROVED_OUTFIT_REDO" rebindable="true">
+        <Down>return ZO_KeybindStrip_HandleKeybindDown(keybind)</Down>
+      </Action>-->
+      <Action name="VOTANS_IMPROVED_OUTFIT_NEW" rebindable="true">
+        <Down>return ZO_KeybindStrip_HandleKeybindDown(keybind)</Down>
+      </Action>
+      <Action name="VOTANS_IMPROVED_OUTFIT_UPDATE" rebindable="true">
+        <Down>return ZO_KeybindStrip_HandleKeybindDown(keybind)</Down>
+      </Action>
+      <Action name="VOTANS_IMPROVED_OUTFIT_DELETE" rebindable="true">
+        <Down>return ZO_KeybindStrip_HandleKeybindDown(keybind)</Down>
+      </Action>
+      <Action name="VOTANS_IMPROVED_OUTFIT_RANDOMIZE" rebindable="true">
+        <Down>return ZO_KeybindStrip_HandleKeybindDown(keybind)</Down>
+      </Action>
+    </Category>
+  </Layer>
+  <Layer name="SI_KEYBINDINGS_LAYER_IMPROVED_OUTFIT_NAVIGATION">
+    <Category name="SI_KEYBINDINGS_CATEGORY_IMPROVED_OUTFIT_DYE_STYLE">
+      <Action name="VOTANS_IMPROVED_OUTFIT_NEXT" rebindable="true">
+        <Down>return VOTANS_IMPROVED_OUTFIT:Navigation(keybind)</Down>
+      </Action>
+      <Action name="VOTANS_IMPROVED_OUTFIT_PREV" rebindable="true">
+        <Down>return VOTANS_IMPROVED_OUTFIT:Navigation(keybind)</Down>
+      </Action>
+      <Action name="VOTANS_IMPROVED_OUTFIT_UP" rebindable="true">
+        <Down>return VOTANS_IMPROVED_OUTFIT:Navigation(keybind)</Down>
+      </Action>
+      <Action name="VOTANS_IMPROVED_OUTFIT_DOWN" rebindable="true">
+        <Down>return VOTANS_IMPROVED_OUTFIT:Navigation(keybind)</Down>
+      </Action>
+    </Category>
+  </Layer>
+</Bindings>

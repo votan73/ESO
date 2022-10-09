@@ -1,0 +1,23 @@
+<GuiXml>
+  <Controls>
+    <Tooltip name="VotansFishermanStats" inherits="ZO_ItemIconTooltip" mouseEnabled="true" movable="true">
+      <ResizeToFitPadding width="0" height="57"/>
+      <Dimensions X="450" />
+      <DimensionConstraints minX="450" maxX="450" />
+
+      <Anchor point="CENTER" relativePoint="CENTER" />
+      <OnHide>
+        self.lastId = nil
+      </OnHide>
+
+      <Controls>
+        <Button name="$(parent)Close" inherits="ZO_CloseButton" excludeFromResizeToFitExtents="true">
+          <Anchor point="TOPRIGHT" offsetX="-6" offsetY="6" />
+          <OnClicked>
+            self:GetParent():SetHidden(true)
+          </OnClicked>
+        </Button>
+      </Controls>
+    </Tooltip>
+  </Controls>
+</GuiXml>

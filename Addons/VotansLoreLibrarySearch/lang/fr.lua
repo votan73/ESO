@@ -1,0 +1,6 @@
+﻿SafeAddString(SI_VOTANS_LIBRARY_LOADING, "Recherche...")
+SafeAddString(SI_VOTANS_LIBRARY_NO_RESULT, "Aucun terme trouvé")
+SafeAddString(SI_VOTANS_LIBRARY_CANCELLED, "Annulé")
+SafeAddString(SI_VOTANS_LIBRARY_HIGHLIGHT, "Accentuer le terme recherché")
+SafeAddString(SI_VOTANS_LIBRARY_HIGHLIGHT_TOOLTIP, "Affiche le terme de la recherche en surbrillance dans le texte.")
+SafeAddString(SI_VOTANS_LIBRARY_HIGHLIGHT_COLOR, "Couleur d'accentuation")

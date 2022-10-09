@@ -1,0 +1,18 @@
+<GuiXml>
+  <Animations>
+    <AnimationTimeline name="VotansMiniMapResizeAnimation">
+      <Animations>
+        <SizeAnimation duration="350">
+          <EasingFunction>
+            return ZO_EaseOutQuadratic(progress)
+          </EasingFunction>
+        </SizeAnimation>
+        <TranslateAnimation duration="500" anchorIndex="0">
+          <EasingFunction>
+            return ZO_EaseOutCubic(progress)
+          </EasingFunction>
+        </TranslateAnimation>
+      </Animations>
+    </AnimationTimeline>
+  </Animations>
+</GuiXml>

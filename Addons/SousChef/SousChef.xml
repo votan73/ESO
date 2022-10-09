@@ -1,0 +1,11 @@
+<GuiXml>
+    <Controls>
+        <TopLevelControl name="SousChef_Controller">
+        	<Controls>
+				<Button name="$(parent)OnlyQuality" inherits="ZO_CheckButton">
+					<Anchor point="LEFT" relativeTo="ZO_ProvisionerTopLevelHaveSkillsLabel" relativePoint="RIGHT" offsetX="20" />
+				</Button>
+			</Controls>
+        </TopLevelControl>		
+    </Controls>
+</GuiXml>

@@ -1,0 +1,11 @@
+-- Translated by @lexo1000
+SafeAddString(SI_VOTAN_SEARCHBOX_SHOW, "Afficher la barre de recherche", 0)
+SafeAddString(SI_VOTAN_SEARCHBOX_SHOW_TOOLTIP, "Ajoute une icône de loupe dans l'inventaire qui permet de filtrer les objets par nom.", 0)
+SafeAddString(SI_VOTAN_SEARCHBOX_STICKY, "Conserver les termes de recherche")
+SafeAddString(SI_VOTAN_SEARCHBOX_STICKY_TOOLTIP, "Garde en mémoire les termes de la recherche même après avoir fermer l'inventaire ou changer d'onglet. Appuyer sur clic droit ou la touche X pour effacer le contenu du champ de recherche.")
+SafeAddString(SI_VOTAN_SEARCHBOX_ALL_SAME_TEXT, "Unifier les termes de recherche")
+SafeAddString(SI_VOTAN_SEARCHBOX_ALL_SAME_TEXT_TOOLTIP, "Applique les termes de la recherche à travers tous les onglets.")
+SafeAddString(SI_VOTAN_SEARCHBOX_SEARCH_SETNAME, "Inclure le nom des objets d'ensembles")
+SafeAddString(SI_VOTAN_SEARCHBOX_SEARCH_SETNAME_TOOLTIP, "Recherche avancée qui prend en compte le nom des objets d'ensemble.")
+SafeAddString(SI_VOTAN_SEARCHBOX_SEARCH_MASTERWRIT, "Inclure les commandes de maître")
+SafeAddString(SI_VOTAN_SEARCHBOX_SEARCH_MASTERWRIT_TOOLTIP, "Recherche avancée qui prend en compte la description des commandes de maître.")

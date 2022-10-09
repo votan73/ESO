@@ -1,0 +1,20 @@
+## Title: Potion Maker (for Alchemy Crafting)
+## Author: Facit & |cFF6A00Khrill|r & votan
+## Description: Gives feedback for what potions you can make with alchemy using the ingredients you have.
+## Version: 5.8.4
+## APIVersion: 100033 100034
+## DependsOn: LibAddonMenu-2.0>=30 LibAlchemyStation>=340 LibAsync>=20100 LibCustomMenu>=692 LibMainMenu-2.0>=432
+## OptionalDependsOn: MultiCraft
+## SavedVariables: PotionMaker_Data
+
+## This Add-On is not created by, affiliated with or sponsored by ZeniMax Media Inc. or its affiliates. The Elder Scrolls® and related logos are registered trademarks or trademarks of ZeniMax Media Inc. in the United States and/or other countries. All rights reserved.
+
+PotionMaker100015.lua
+##PotionMaker100025.lua API not working yet
+
+lang/default_en.lua
+lang/$(language).lua
+##lang$(APIVersion)/$(language).lua
+
+PotionMaker100015.xml
+Bindings.xml

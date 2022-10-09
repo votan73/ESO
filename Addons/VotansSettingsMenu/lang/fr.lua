@@ -1,0 +1,5 @@
+﻿SafeAddString(SI_KEYBINDINGS_CATEGORY_SETTINGS_MENU, "Interface d'utilisateur")
+SafeAddString(SI_VOTANS_SETTINGS_MENU_SHOW_BUTTON, "Afficher le raccourci Extensions dans le menu")
+SafeAddString(SI_VOTANS_SETTINGS_MENU_MEM_USAGE, "Utilisation de la mémoire LUA")
+SafeAddString(SI_VOTANS_SETTINGS_MENU_USED_LIBRARIES, "Librairies utilisées")
+SafeAddString(SI_VOTANS_SETTINGS_MENU_MEM_TOO_LOW, "Le seuil de l'alerte de mémoire faible est inférieur à l'utilisation actuelle !")

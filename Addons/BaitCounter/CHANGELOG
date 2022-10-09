@@ -1,0 +1,36 @@
+1.4.3:
+- Now works with the API 100011 patch.
+
+1.4.2:
+ - Now works with the API 100010 patch.
+
+1.4.1:
+ - Now works with the API 100009 patch.
+
+1.4:
+ - Now works with the API 100008 patch.
+
+1.3:
+ - Fixed a bit of rude code that assumed things. It probably wasn't a big deal, but...
+
+1.2: 
+ - Now works with the Vet Crypt of Hearts patch.
+
+1.1:
+ - Found a localization-neutral way to test for fishing conditions. Thanks very
+ much to Garkin for the suggestions!
+
+1.0: 
+- Initial Release
+
+This Add-on is not created by, affiliated with or sponsored by ZeniMax Media Inc. 
+or its affiliates. The Elder Scrolls® and related logos are registered trademarks 
+or trademarks of ZeniMax Media Inc. in the United States and/or other countries. 
+All rights reserved.
+
+Credit to Garkin for helping me with the GetString() and 
+GetGameCameraInteractableActionInfo() help!
+
+Thanks to the ESOUI crowd, especially Garkin for his illuminating post on
+using the zo_strformat() function, and all the people who have contributed
+to the wiki there.

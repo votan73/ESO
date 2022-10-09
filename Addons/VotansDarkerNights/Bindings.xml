@@ -1,0 +1,9 @@
+<Bindings>
+  <Layer name="SI_KEYBINDINGS_LAYER_GENERAL">
+    <Category name="SI_KEYBINDINGS_CATEGORY_VOTANS_DARKER_NIGHTS">
+      <Action name="VOTANS_TOGGLE_DARKER_NIGHT">
+        <Down>SLASH_COMMANDS["/togglenight"]()</Down>
+      </Action>
+    </Category>
+  </Layer>
+</Bindings>

@@ -1,0 +1,14 @@
+; This Add-on is not created by, affiliated with or sponsored by ZeniMax
+; Media Inc. or its affiliates. The Elder Scrolls® and related logos are
+; registered trademarks or trademarks of ZeniMax Media Inc. in the United
+; States and/or other countries. All rights reserved.
+
+## Title: Votan's Info Bar
+## Author: votan
+## APIVersion: 100033 100034
+## SavedVariables: InfoBar_Saved_Variable
+## Version: 1.0.16
+## Description: Shows in-game clock, inventory usage and current durability
+
+InfoBar.lua
+InfoBarForm.xml

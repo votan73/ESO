@@ -1,0 +1,22 @@
+<GuiXml>
+  <Controls>
+    <Button name="VotansSmithingQuickAccessSlot" virtual="true">
+      <Dimensions x="420" y="32" />
+      <Controls>
+        <Texture name="$(parent)Icon" pixelRoundingEnabled="false" level="2">
+          <Dimensions x="32" y="32" />
+          <Anchor point="LEFT" />
+        </Texture>
+        <Label name="$(parent)Quantity" font="ZoFontWinH5" verticalAlignment="RIGHT">
+          <Dimensions y="15"/>
+          <Anchor point="BOTTOMRIGHT" relativePoint="BOTTOMRIGHT" relativeTo="$(parent)Icon" />
+        </Label>
+        <Label name="$(parent)Name" font="ZoFontGame" verticalAlignment="CENTER">
+          <Dimensions y="30"/>
+          <Anchor point="LEFT" relativePoint="RIGHT" relativeTo="$(parent)Icon" offsetX="6"/>
+          <Anchor point="RIGHT" relativePoint="RIGHT" relativeTo="$(parent)" offsetX="-6"/>
+        </Label>
+      </Controls>
+    </Button>
+  </Controls>
+</GuiXml>

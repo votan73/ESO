@@ -1,0 +1,22 @@
+<Bindings>
+  <Layer name="SI_KEYBINDINGS_LAYER_GENERAL">
+    <Category name="SI_KEYBINDINGS_CATEGORY_USER_INTERFACE">
+      <Action name="POTIONMAKER">
+        <Down>SLASH_COMMANDS["/potionmaker"]()</Down>
+      </Action>
+    </Category>
+  </Layer>
+  <Layer name="SI_KEYBINDINGS_LAYER_POTIONMAKER">
+    <Category name="SI_KEYBINDINGS_CATEGORY_USER_INTERFACE">
+      <Action name="POTIONMAKER_SEARCH" rebindable="true">
+        <Down>return ZO_KeybindStrip_HandleKeybindDown(keybind)</Down>
+      </Action>
+      <Action name="POTIONMAKER_SEARCH_WRITS" rebindable="true">
+        <Down>return ZO_KeybindStrip_HandleKeybindDown(keybind)</Down>
+      </Action>
+      <Action name="POTIONMAKER_SEARCH_FAVORITS" rebindable="true">
+        <Down>return ZO_KeybindStrip_HandleKeybindDown(keybind)</Down>
+      </Action>
+    </Category>
+  </Layer>
+</Bindings>

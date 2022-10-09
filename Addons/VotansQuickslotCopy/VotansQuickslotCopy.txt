@@ -1,0 +1,18 @@
+## Title: Votan's Quickslot Copy
+## Author: votan
+## Description: Allows you to copy all five quckslot menus from character to character.
+## APIVersion: 101034 101035
+## Version: 1.0.0
+## DependsOn:
+## OptionalDependsOn:
+## SavedVariables: VOTANS_QUICKSLOTCOPY_DATA
+
+## This Add-On is not created by, affiliated with or sponsored by ZeniMax Media Inc. or its affiliates. The Elder Scrolls® and related logos are registered trademarks or trademarks of ZeniMax Media Inc. in the United States and/or other countries. All rights reserved.
+
+lang/strings.lua
+lang/$(language).lua
+
+#Controls.xml
+Main.lua
+
+#Bindings.xml

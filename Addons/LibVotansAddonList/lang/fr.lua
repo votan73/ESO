@@ -1,0 +1,10 @@
+﻿-- Translation by @Frackou and @lexo1000
+SafeAddString(SI_VOTANS_ADDONLIST_LIB, "Librairie")
+SafeAddString(SI_VOTANS_ADDONLIST_OUTDATED, "Cette extension a été publiée lors d'une version antérieure du jeu.\nVeuillez vérifier si une nouvelle version est disponible.")
+SafeAddString(SI_ADDON_MANAGER_LOAD_OUT_OF_DATE_ADDONS, "Autoriser les extensions compatibles avec d'autres versions du jeu", 1)
+SafeAddString(SI_VOTANS_ADDONLIST_LOAD_OUT_OF_DATE_ADDONS_DESC, "Si cette case est cochée, vous pouvez utiliser des extensions qui ont été créées pour une autre version du jeu.\n\nCeci ne corrigera pas l'extension !\n\nVous devrez vérifier sur la page web de l'extension si elle est compatible ou non avec la version actuelle du jeu.")
+SafeAddString(SI_VOTANS_ADDONLIST_DISABLE_ALL_ADDONS, "Désactiver toutes les extensions")
+SafeAddString(SI_VOTANS_ADDONLIST_DISABLE_ALL_LIBS, "Désactiver toutes les librairies")
+SafeAddString(SI_VOTANS_ADDONLIST_OPTIONAL_LIB, "Librairie optionelle")
+SafeAddString(SI_VOTANS_ADDONLIST_USED_BY, "Utilisée par :")
+SafeAddString(SI_VOTANS_ADDONLIST_SUSPICIOUS_PATH, "Chemin suspect. Attendu :\n%s")
