@@ -1,9 +1,10 @@
-﻿local addon = {
+﻿if VOTANS_MINIMAP then
+	return
+end
+
+local addon = {
 	name = "VotansMiniMap",
-	isSpecialZoom = false,
-	IsZoomHandledExternal = function()
-		return false
-	end
+	isSpecialZoom = false
 }
 
 local am = GetAnimationManager()
@@ -39,10 +40,6 @@ local function NoGamepad(func, ...)
 	IsInGamepadPreferredMode = FakeIsInGamepadPreferredMode
 	func(...)
 	IsInGamepadPreferredMode = orgIsInGamepadPreferredMode
-end
-
-local function GetAddon()
-	return string.match(debug.traceback(), "'GetAddon'.+user:/AddOns/(.+)")
 end
 
 addon.pinManager = ZO_WorldMap_GetPinManager()
@@ -188,42 +185,42 @@ function addon:InitTweaks()
 				return orgZO_WorldMap_PanToWayshrine(nodeIndex)
 			end
 		end
-		local orgZO_WorldMap_SetMapByIndex = ZO_WorldMap_SetMapByIndex
-		function ZO_WorldMap_SetMapByIndex(mapIndex)
+		local orgZO_WorldMap_SetMapByIndex = WORLD_MAP_MANAGER.SetMapByIndex
+		function WORLD_MAP_MANAGER.SetMapByIndex(self, mapIndex)
 			running = running or GetCurrentMapIndex() ~= mapIndex
-			return orgZO_WorldMap_SetMapByIndex(mapIndex)
+			return orgZO_WorldMap_SetMapByIndex(self, mapIndex)
 		end
 	end
 
-	do
-		local task = async:Create("VOTAN_RefreshLocations")
+	-- do
+	-- 	local task = async:Create("VOTAN_RefreshLocations")
 
-		local locations
-		local function DrawPin(i)
-			locations:AddLocation(i)
-		end
-		local function releaseAllObjects()
-			locations:ReleaseAllObjects()
-		end
-		local function removePins(task)
-			addon.pinManager:RemovePins("loc")
-			task:For(1, GetNumMapLocations()):Do(DrawPin):Call(WaitForGPS)
-		end
-		local function delayStart(task)
-			task:Call(releaseAllObjects):Then(removePins)
-		end
-		local function start(task)
-			if GetScene():IsShowing() then
-				task:Delay(25, delayStart)
-			else
-				task:Delay(200, delayStart)
-			end
-		end
-		function ZO_MapLocations:RefreshLocations()
-			locations = self
-			task:Cancel():Call(WaitForGPS):Then(start)
-		end
-	end
+	-- 	local locations
+	-- 	local function DrawPin(i)
+	-- 		locations:AddLocation(i)
+	-- 	end
+	-- 	local function releaseAllObjects()
+	-- 		locations:ReleaseAllObjects()
+	-- 	end
+	-- 	local function removePins(task)
+	-- 		addon.pinManager:RemovePins("loc")
+	-- 		task:For(1, GetNumMapLocations()):Do(DrawPin):Call(WaitForGPS)
+	-- 	end
+	-- 	local function delayStart(task)
+	-- 		task:Call(releaseAllObjects):Then(removePins)
+	-- 	end
+	-- 	local function start(task)
+	-- 		if GetScene():IsShowing() then
+	-- 			task:Delay(25, delayStart)
+	-- 		else
+	-- 			task:Delay(200, delayStart)
+	-- 		end
+	-- 	end
+	-- 	function ZO_MapLocationPins_Manager:RefreshLocations()
+	-- 		locations = self
+	-- 		task:Cancel():Call(WaitForGPS):Then(start)
+	-- 	end
+	-- end
 
 	local function DeferRefresh(methodName, identifier, delay)
 		local task = async:Create("VOTAN_" .. identifier)
@@ -235,8 +232,8 @@ function addon:InitTweaks()
 			task:Cancel():Delay(GetScene():IsShowing() and 0 or (delay * 7), runRefresh)
 		end
 	end
-	DeferRefresh("ZO_WorldMap_RefreshAllPOIs", "MAP_RefreshAllPOIs", 20)
-	DeferRefresh("ZO_WorldMap_RefreshAvAObjectives", "MAP_RefreshAvAObjectives", 50)
+	-- DeferRefresh("ZO_WorldMap_RefreshAllPOIs", "MAP_RefreshAllPOIs", 20)
+	-- DeferRefresh("ZO_WorldMap_RefreshAvAObjectives", "MAP_RefreshAvAObjectives", 50)
 	DeferRefresh("ZO_WorldMap_RefreshKeeps", "MAP_RefreshKeeps", 30)
 	DeferRefresh("ZO_WorldMap_RefreshKillLocations", "MAP_RefreshKillLocations", 60)
 	DeferRefresh("ZO_WorldMap_RefreshWayshrines", "MAP_RefreshWayshrines", 10)
@@ -280,11 +277,9 @@ function addon:InitTweaks()
 			drawPins(pins)
 		end
 
-		function ZO_WorldMapPins:RefreshCustomPins(optionalPinType)
+		function ZO_WorldMapPins_Manager:RefreshCustomPins(optionalPinType)
 			pins = self
 			if optionalPinType then
-				-- d("Request RefreshCustomPins single", optionalPinType, GetAddon())
-				-- Dummy pins are used to get pinManager. This must be done without delay.
 				local pinData = self.customPins[optionalPinType]
 				if pinData then
 					refreshPinType[optionalPinType] = pinData
@@ -292,7 +287,6 @@ function addon:InitTweaks()
 					return
 				end
 			else
-				-- d("Request RefreshCustomPins all", GetAddon())
 				for pinTypeId, pinData in pairs(self.customPins) do
 					refreshPinType[pinTypeId] = pinData
 				end
@@ -303,7 +297,7 @@ function addon:InitTweaks()
 
 	do
 		local task = async:Create("VOTANS_MAP_UPDATE_MAP_SIZE_CHANGE")
-		local orgUpdatePinsForMapSizeChange = ZO_WorldMapPins.UpdatePinsForMapSizeChange
+		local orgUpdatePinsForMapSizeChange = ZO_WorldMapPins_Manager.UpdatePinsForMapSizeChange
 		local lastW, lastH, lastZone = -1, -1, -1
 		local pins, w, h
 		local function updateLocationAndSize(pinKey, pin)
@@ -316,7 +310,6 @@ function addon:InitTweaks()
 			end
 		end
 		local function resizePins(task)
-			-- df("resize run %ix%i %s", lastW, lastH, lastZone)
 			local pinControls = pins:GetActiveObjects()
 			task:For(pairs(pinControls)):Do(updateLocationAndSize):For(pairs(pins.customPins)):Do(callResizeCallback)
 		end
@@ -331,7 +324,7 @@ function addon:InitTweaks()
 			highlightControl:SetDrawLevel(pinLevel - 1)
 			labelControl:SetDrawLevel(pinLevel + 1)
 		end
-		function ZO_WorldMapPins:UpdatePinsForMapSizeChange()
+		function ZO_WorldMapPins_Manager:UpdatePinsForMapSizeChange()
 			w, h = ZO_WorldMapContainer:GetDimensions()
 			local zone = GetMapTileTexture()
 			if lastW ~= w or lastH ~= h or lastZone ~= zone then
@@ -350,16 +343,6 @@ function addon:InitTweaks()
 		end
 	end
 
-	do
-		local orgZO_WorldMap_GetMapDimensions = ZO_WorldMap_GetMapDimensions
-		function ZO_WorldMap_GetMapDimensions()
-			if WORLD_MAP_MANAGER:IsInMode(MAP_MODE_VOTANS_MINIMAP) then
-				return ZO_WorldMapContainer:GetDimensions()
-			else
-				return orgZO_WorldMap_GetMapDimensions()
-			end
-		end
-	end
 	---- Delaying ZO_WorldMap_UpdateMap is a bad idea, because it breaks zoom sliders.
 	do
 		local function roundGet(control, funcName)
@@ -387,9 +370,9 @@ function addon:InitTweaks()
 end
 
 function addon:InitRequiredModifications()
-	local orgUpdatePinsForMapSizeChange = ZO_WorldMapPins.UpdatePinsForMapSizeChange
+	local orgUpdatePinsForMapSizeChange = ZO_WorldMapPins_Manager.UpdatePinsForMapSizeChange
 	local lastW, lastH, lastZone = -1, -1, -1
-	function ZO_WorldMapPins:UpdatePinsForMapSizeChange()
+	function ZO_WorldMapPins_Manager:UpdatePinsForMapSizeChange()
 		local w, h = ZO_WorldMapContainer:GetDimensions()
 		w, h = zo_round(w), zo_round(h)
 		local zone = GetMapTileTexture()
@@ -397,34 +380,6 @@ function addon:InitRequiredModifications()
 			lastW, lastH, lastZone = w, h, zone
 			return orgUpdatePinsForMapSizeChange(self)
 		end
-	end
-end
-
-local isDirty = false
-local function UpdateVisibility()
-	isDirty = false
-	if GetScene():IsShowing() or not WORLD_MAP_MANAGER:IsInMode(MAP_MODE_VOTANS_MINIMAP) then
-		return true
-	end
-
-	if not addon.player.showMap then
-		return false
-	end
-
-	local settings = addon.account
-	if IsMounted() then
-		return settings.showMounted
-	end
-	if SIEGE_BAR_SCENE:IsShowing() then
-		return settings.showSiege
-	end
-	if LOOT_SCENE:IsShowing() then
-		return settings.showLoot
-	end
-	if IsUnitInCombat("player") then
-		return settings.showCombat
-	else
-		return settings.showHUD
 	end
 end
 
@@ -473,6 +428,16 @@ function addon:InitCameraAngle()
 end
 
 function addon:InitMiniMap()
+	do
+		local orgZO_WorldMap_GetMapDimensions = ZO_WorldMap_GetMapDimensions
+		function ZO_WorldMap_GetMapDimensions()
+			if WORLD_MAP_MANAGER:IsInMode(MAP_MODE_VOTANS_MINIMAP) then
+				return ZO_WorldMapContainer:GetDimensions()
+			else
+				return orgZO_WorldMap_GetMapDimensions()
+			end
+		end
+	end
 	-- Used by GoToWorldMapMode, too
 	local orgUpdateSize = ZO_MapPin.UpdateSize
 
@@ -593,8 +558,6 @@ function addon:InitMiniMap()
 	if self.account.showCameraAngle then
 		self:InitCameraAngle()
 	end
-
-	WORLD_MAP_FRAGMENT:SetConditional(UpdateVisibility)
 
 	local function PlayerActivated()
 		self:UpdateVisibility()
@@ -981,6 +944,35 @@ function addon:InitMiniMap()
 		function addon:StopFollowPlayer()
 		end
 
+		local isDirty = false
+		local function RefreshVisibility()
+			isDirty = false
+			if GetScene():IsShowing() or not WORLD_MAP_MANAGER:IsInMode(MAP_MODE_VOTANS_MINIMAP) then
+				return true
+			end
+
+			if not addon.player.showMap then
+				return false
+			end
+
+			local settings = addon.account
+			if IsMounted() then
+				return settings.showMounted
+			end
+			if SIEGE_BAR_SCENE:IsShowing() then
+				return settings.showSiege
+			end
+			if LOOT_SCENE:IsShowing() then
+				return settings.showLoot
+			end
+			if IsUnitInCombat("player") then
+				return settings.showCombat
+			else
+				return settings.showHUD
+			end
+		end
+		WORLD_MAP_FRAGMENT:SetConditional(RefreshVisibility)
+
 		function addon:UpdateVisibility()
 			if not isDirty then
 				isDirty = true
@@ -1109,7 +1101,7 @@ function addon:InitMiniMap()
 			self:SetCurrentZoom(0)
 			-- This triggers internal handlers. One of them would call ZO_WorldMap_UpdateMap, but not this time
 			CALLBACK_MANAGER:FireCallbacks("OnWorldMapChanged", true)
-			if self.account.zoomToPlayer and not self.IsZoomHandledExternal() and not skipPanToPlayer and DoesCurrentMapMatchMapForPlayerLocation() then
+			if self.account.zoomToPlayer and not skipPanToPlayer and DoesCurrentMapMatchMapForPlayerLocation() then
 				ZO_WorldMap_JumpToPlayer()
 			end
 
@@ -1331,16 +1323,6 @@ do
 			return -100
 		end
 	end
-	-- local orgZO_WorldMapSetAnchor = ZO_WorldMap.SetAnchor
-	-- function ZO_WorldMap:SetAnchor(...)
-	-- 	d("SetAnchor", GetAddon())
-	-- 	return orgZO_WorldMapSetAnchor(self, ...)
-	-- end
-	-- local orgZO_WorldMapSetDimensions = ZO_WorldMap.SetDimensions
-	--  function ZO_WorldMap:SetDimensions(...)
-	--  	d("SetDimensions", GetAddon())
-	--  	return orgZO_WorldMapSetDimensions(self, ...)
-	-- end
 
 	do
 		local ZO_MapPanAndZoom = addon.panZoom
@@ -1370,7 +1352,6 @@ do
 	do
 		local function ApplyModeStyle()
 			ApplyTemplateToControl(ZO_WorldMapMapFrame, ZO_GetPlatformTemplate("ZO_WorldMapFrame"))
-			--ApplyTemplateToControl(ZO_WorldMapButtonsFloors, ZO_GetPlatformTemplate("ZO_DungeonFloorNavigation"))
 		end
 
 		function addon:UpdateBorder()
@@ -1645,11 +1626,6 @@ end
 
 local function OnAddonLoaded(event, name)
 	if name ~= addon.name then
-		if name == "TweakIt" then
-			addon.IsZoomHandledExternal = function()
-				return TweakIt.SavedVariables["WORLD_MAP_MAX_ZOOM"] ~= 0
-			end
-		end
 		return
 	end
 	em:UnregisterForEvent(addon.name, EVENT_ADD_ON_LOADED)

@@ -30,7 +30,7 @@ local lookup = {
 }
 
 function addon:GetFontSizeBySizeName(sizeName)
-	return lookup.nameToFontSize[ssizeName]
+	return lookup.nameToFontSize[sizeName]
 end
 
 function addon:GetStyleByName(name)
