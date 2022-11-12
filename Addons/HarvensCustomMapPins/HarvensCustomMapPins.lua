@@ -637,7 +637,7 @@ end
 function HarvensCustomMapPins:SetupOptions()
 	local LibHarvensAddonSettings = LibHarvensAddonSettings or LibStub("LibHarvensAddonSettings-1.0")
 	local settings = LibHarvensAddonSettings:AddAddon("Harven's Custom Map Pins")
-	settings.version = "3.2.0"
+	settings.version = "3.2.1"
 
 	local pinSize = {
 		type = LibHarvensAddonSettings.ST_SLIDER,
