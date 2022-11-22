@@ -2,6 +2,7 @@
     type = "description",
     text = "My description text to display.", -- or string id or function returning a string
     title = "My Title", -- or string id or function returning a string (optional)
+    tooltip = "My Tooltip", -- or string id or function returning a string (optional)
     width = "full", -- or "half" (optional)
     disabled = function() return db.someBooleanSetting end, -- or boolean (optional)
     enableLinks = nil, -- or true for default tooltips, or function OnLinkClicked handler (optional)
@@ -11,7 +12,7 @@
 } ]]
 
 
-local widgetVersion = 11
+local widgetVersion = 13
 local LAM = LibAddonMenu2
 if not LAM:RegisterWidget("description", widgetVersion) then return end
 
@@ -61,6 +62,7 @@ function LAMCreateControl.description(parent, descriptionData, controlName)
     desc:SetFont("ZoFontGame")
     desc:SetText(LAM.util.GetStringFromValue(descriptionData.text))
     desc:SetWidth(isHalfWidth and width / 2 or width)
+    LAM.util.SetUpTooltip(desc, descriptionData)
 
     if descriptionData.title then
         control.title = wm:CreateControl(nil, control, CT_LABEL)
@@ -69,11 +71,11 @@ function LAMCreateControl.description(parent, descriptionData, controlName)
         title:SetAnchor(TOPLEFT, control, TOPLEFT)
         title:SetFont("ZoFontWinH4")
         title:SetText(LAM.util.GetStringFromValue(descriptionData.title))
+        LAM.util.SetUpTooltip(title, descriptionData, desc.data)
         desc:SetAnchor(TOPLEFT, title, BOTTOMLEFT)
     else
         desc:SetAnchor(TOPLEFT)
     end
-    
     if descriptionData.enableLinks then
         desc:SetMouseEnabled(true)
         desc:SetLinkEnabled(true)

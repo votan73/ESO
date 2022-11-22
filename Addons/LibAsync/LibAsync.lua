@@ -7,16 +7,8 @@ local warn = log and function(...)
 		log:Warn(...)
 	end or df
 
-local async = LibStub and LibStub:GetLibrary(MAJOR, LibStub.SILENT)
-if LibStub and async then
-	warn("Someone using LibAsync via LibStub!")
-end
-async = async or {}
+local async = {}
 --async.registered = {}
-
-if async.Unload then
-	async:Unload()
-end
 
 local em = GetEventManager()
 local remove, min, max, pcall = table.remove, math.min, math.max, pcall
@@ -47,7 +39,11 @@ local function DoCallback(job, callstackIndex)
 
 		call = job.onError
 		if call then
-			pcall(safeCall)
+			local msg
+			success, msg = pcall(safeCall)
+			if not success then
+				warn(msg)
+			end
 		else
 			job:Suspend()
 			error(job.Error)

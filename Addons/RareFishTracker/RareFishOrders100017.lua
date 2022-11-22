@@ -405,15 +405,15 @@ function RFT.MakeOrders()
 			RFT.window.column1,
 			RFT.window.column1,
 			RFT.window.column1,
+			RFT.window.column1,
+			RFT.window.column2,
 			RFT.window.column2,
 			RFT.window.column2,
 			RFT.window.column2,
 			RFT.window.column3,
 			RFT.window.column3,
 			RFT.window.column3,
-			RFT.window.column4,
-			RFT.window.column4,
-			RFT.window.column4,
+			RFT.window.column3,
 		}
 	}
 	RFT.quality = {
@@ -674,13 +674,13 @@ function RFT.MakeOrders()
 			ITEM_QUALITY_ARCANE,
 			ITEM_QUALITY_MAGIC,
 			ITEM_QUALITY_MAGIC,
-			ITEM_QUALITY_ARCANE,
-			ITEM_QUALITY_MAGIC,
-			ITEM_QUALITY_MAGIC,
-			ITEM_QUALITY_MAGIC,
-			ITEM_QUALITY_MAGIC,
 			ITEM_QUALITY_MAGIC,
 			ITEM_QUALITY_ARCANE,
+			ITEM_QUALITY_MAGIC,
+			ITEM_QUALITY_MAGIC,
+			ITEM_QUALITY_MAGIC,
+			ITEM_QUALITY_ARCANE,
+			ITEM_QUALITY_MAGIC,
 		}
 	}
 	RFT.types = {
@@ -815,6 +815,12 @@ function RFT.MakeOrders()
 			SI_RARE_FISH_TRACKER_TYPE_FOUL,
 			SI_RARE_FISH_TRACKER_TYPE_FOUL
 		},
+		[1383] = {
+			-- Galen
+			SI_RARE_FISH_TRACKER_TYPE_OCEAN,
+			SI_RARE_FISH_TRACKER_TYPE_LAKE,
+			SI_RARE_FISH_TRACKER_TYPE_FOUL
+		}
 	}
 	RFT.typeSymbols = {
 		[SI_RARE_FISH_TRACKER_TYPE_OCEAN] = zo_iconFormatInheritColor("RareFishTracker/art/ocean.dds", "110%", "110%"),

@@ -744,7 +744,7 @@ do
 					if result == ACTION_RESULT_DAMAGE or result == ACTION_RESULT_CRITICAL_DAMAGE or results == ACTION_RESULT_HEAL or result == ACTION_RESULT_CRITICAL_HEAL or result == ACTION_RESULT_EFFECT_GAINED then
 						d(lastAllowedAction ~= 0 and "lightattack hit: good" or "lightattack hit: bad")
 					elseif isInCombat then
-						d("no lightattack hit")
+						d(result == ACTION_RESULT_QUEUED and "queued lightattack hit" or "no lightattack hit")
 					end
 				else
 					--df("event %s %i %i", abilityName, result, abilityActionSlotType)
@@ -868,12 +868,18 @@ do
 			return PlayerHealthPercent() <= 0.9
 		end,
 		[26797] = function()
+			-- Durchschlagender Schwung
 			--d(GetUnitReaction(unitTagTarget))
-			return isInCombat or (HasTarget() and TargetHealth() > 4000)
+			return isInCombat and not IsBlockActive() or (HasTarget() and TargetHealth() > 4000)
 		end,
 		[26869] = function()
 			--lodernder Speer
-			return isInCombat and not CooldownRunning(26869, 8000) and StartCooldown(26869) and RegisterRecast(26869, 12000)
+			local result = not IsAutoAttack() or (isInCombat and not CooldownRunning(26869, 8000) and StartCooldown(26869) and RegisterRecast(26869, 12000))
+			if isInCombat and not result then
+				RegisterRecast(26869, 6000)
+			end
+			d("gfgf", result)
+			return result
 		end,
 		[29338] = function()
 			--neutralisierende Magie
@@ -885,7 +891,7 @@ do
 		end,
 		[35750] = function()
 			--Bestienfalle
-			return HasTarget() and TargetHealth() > 100000 and not CooldownRunning(35750, 12000) and StartCooldown(35750)
+			return HasTarget() and TargetHealth() > 100000 and not CooldownRunning(35750, 12000) and StartCooldown(35750) and RegisterRecast(35750, 12000)
 		end,
 		[35762] = function()
 			-- Meisterjäger
@@ -924,7 +930,7 @@ do
 			return isInCombat
 		end,
 		[38701] = function()
-			local current, max = GetUnitPower(unitTagPlayer, POWERTYPE_STAMINA)
+			local current = PlayerStamia()
 			if current < 2562 then
 				return false
 			end
@@ -981,6 +987,10 @@ do
 		[40317] = function()
 			--erholende Seelenfalle
 			return HasTarget() and not IsTargetBuffedWithAbility(126897) --and not CooldownRunning(40317, 8550) and StartCooldown(40317)
+		end,
+		[40328] = function()
+			--trennende Seelenfalle
+			return HasTarget() and not IsTargetBuffedWithAbility(126897) --and not CooldownRunning(40328, 8550) and StartCooldown(40328)
 		end,
 		[39182] = function()
 			-- absorbierende Magie
@@ -1135,7 +1145,7 @@ do
 		end,
 		[117805] = function()
 			--aufreibender Friedhof
-			return not CooldownRunning(117805, 10000) and StartCooldown(117805) and RegisterRecast(117805, 20000)
+			return (isInCombat or HasTarget()) and not CooldownRunning(117805, 10000) and StartCooldown(117805) and RegisterRecast(117805, 20000)
 		end,
 		[117749] = function()
 			--nachstellende Sprengknochen
@@ -1216,7 +1226,7 @@ do
 		end,
 		[26792] = function()
 			--harsche Hiebe
-			return isInCombat and not CooldownRunning(26792, 800) and StartCooldown(26792)
+			return isInCombat and not IsBlockActive() and not CooldownRunning(26792, 800) and StartCooldown(26792)
 		end,
 		[21763] = function()
 			--Macht des Lichts
@@ -1324,8 +1334,12 @@ do
 				keyWasDown[actionButton] = true
 				local lastAction = GetGameTimeMilliseconds() - lastAllowActionTime
 				local latency = GetLatency() --/ 2
+				local noCooldown = GetSlotCooldownInfo(actionButton) <= latency
+				if noCooldown then
+					lastAllowedAction = 0
+				end
 				local allow = lastAllowedAction == 0 or not IsAutoAttack()
-				allow = allow and lastAction >= latency and GetSlotCooldownInfo(actionButton) <= latency and doNotKillMaelstromHealer() and checkAction(actionButton)
+				allow = allow and lastAction >= latency and noCooldown and doNotKillMaelstromHealer() and checkAction(actionButton)
 				wasAllowed[actionButton] = allow
 				--d("---", allow, lastAllowedAction == 0 ,not IsAutoAttack(), checkAction(actionButton))
 				if allow then
@@ -1383,9 +1397,9 @@ do
 	end
 
 	local function OnCombatStateChange(eventCode, inCombat)
-		--if inCombat and TargetHealth() >= 200000 then
-		--	needBarSwap = ACTIVE_WEAPON_PAIR_BACKUP
-		--end
+		if inCombat and TargetHealth() >= 200000 then
+			needBarSwap = ACTIVE_WEAPON_PAIR_BACKUP
+		end
 		isInCombat = inCombat
 		SetCurrentQuickslot(isInCombat and 8 or 4)
 
@@ -1400,6 +1414,7 @@ do
 			ClearCooldown(86130)
 			ClearCooldown(38250)
 			ClearCooldown(28304)
+			ClearCooldown(117805)
 		end
 	end
 	em:RegisterForEvent("VOTANS_COMBAT_HELPER", EVENT_PLAYER_COMBAT_STATE, OnCombatStateChange)

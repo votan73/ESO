@@ -102,13 +102,23 @@ function addon:InitTweaks()
 							return
 						end
 					end
-					addon.pinManager:CreatePin(iconType, createTag(zoneIndex, poiIndex, icon, linkedCollectibleIsLocked), xLoc, zLoc)
+					local tag = createTag(zoneIndex, poiIndex, icon, linkedCollectibleIsLocked)
+					addon.pinManager:CreatePin(iconType, tag, xLoc, zLoc)
+
+					local worldEventInstanceId = GetPOIWorldEventInstanceId(zoneIndex, poiIndex)
+					if worldEventInstanceId ~= 0 then
+						local worldEventTag = ZO_MapPin.CreateWorldEventPOIPinTag(worldEventInstanceId, zoneIndex, poiIndex)
+						-- TODO: May need to add handling for additional event states
+						addon.pinManager:CreatePin(MAP_PIN_TYPE_WORLD_EVENT_POI_ACTIVE, worldEventTag, xLoc, zLoc)
+					end
 				end
 			end
 		end
 
 		local function RemovePins(task)
 			addon.pinManager:RemovePins("poi")
+			addon.pinManager:RemovePins("worldEventPOI")
+
 			zoneIndex = GetCurrentMapZoneIndex()
 			if zoneIndex <= 1 or zoneIndex >= 2147483648 then
 				return
@@ -116,7 +126,7 @@ function addon:InitTweaks()
 			if not ZO_WorldMap_IsPinGroupShown(MAP_FILTER_OBJECTIVES) then
 				return
 			end
-			task:For(1, GetNumPOIs(zoneIndex)):Do(DrawPin):Call(WaitForGPS)
+			task:For(1, GetNumPOIs(zoneIndex)):Do(DrawPin)
 			-- d("do ZO_WorldMap_RefreshAllPOIs")
 		end
 		function ZO_WorldMap_RefreshAllPOIs()
@@ -232,7 +242,9 @@ function addon:InitTweaks()
 			task:Cancel():Delay(GetScene():IsShowing() and 0 or (delay * 7), runRefresh)
 		end
 	end
-	-- DeferRefresh("ZO_WorldMap_RefreshAllPOIs", "MAP_RefreshAllPOIs", 20)
+	DeferRefresh("ZO_WorldMap_RefreshAllPOIs", "MAP_RefreshAllPOIs", 20)
+	--DeferRefresh("ZO_WorldMap_RefreshWorldEvent", "MAP_RefreshWorldEvent", 50)
+	DeferRefresh("ZO_WorldMap_RefreshWorldEvents", "MAP_RefreshWorldEvents", 50)
 	-- DeferRefresh("ZO_WorldMap_RefreshAvAObjectives", "MAP_RefreshAvAObjectives", 50)
 	DeferRefresh("ZO_WorldMap_RefreshKeeps", "MAP_RefreshKeeps", 30)
 	DeferRefresh("ZO_WorldMap_RefreshKillLocations", "MAP_RefreshKillLocations", 60)

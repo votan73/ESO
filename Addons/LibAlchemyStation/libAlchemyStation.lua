@@ -1,13 +1,7 @@
 -- Feel free to use this library --
 -- but do not modify without sending a pm to me (votan at www.esoui.com) to avoid version conflicts --
 
--- Register with LibStub
-local MAJOR, MINOR = "LibAlchemyStation", 9999
-local lib, oldminor = LibStub and LibStub:NewLibrary(MAJOR, MINOR)
-if LibStub and lib then
-	assert(MAJOR .. " still loaded via LibStub.")
-end
-lib = lib or {}
+lib = {}
 
 local function HideOtherTabs(descriptor)
 	for otherDescriptor, tabData in pairs(lib.tabs) do

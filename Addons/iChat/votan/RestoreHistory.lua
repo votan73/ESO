@@ -39,7 +39,7 @@ local function callback(chat)
 
 	task:For(1, #history):Do(
 		function(i)
-			if i < #history then
+			if i <= #history then
 				CHAT_ROUTER:FormatAndAddChatMessage(unpack(history[i]))
 			end
 		end

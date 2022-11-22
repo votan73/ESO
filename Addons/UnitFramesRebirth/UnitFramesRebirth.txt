@@ -1,9 +1,9 @@
 ## Title: Unit Frames Rebirth
 ## Author: Scootworks & votan
-## APIVersion: 100031 100032
-## Version: 1.2.6
-## AddOnVersion: 10206
-## DependsOn: LibAsync LibHarvensAddonSettings>=10705
+## APIVersion: 100033 100034
+## Version: 1.2.8
+## AddOnVersion: 10208
+## DependsOn: LibAsync>=20100 LibHarvensAddonSettings>=10705
 ## SavedVariables: UnitFramesRebirth_Data
 
 ; This Add-On is not created by, affiliated with or sponsored by ZeniMax Media Inc. or its affiliates. The Elder Scrolls® and related logos are registered trademarks or trademarks of ZeniMax Media Inc. in the United States and/or other countries. All rights reserved.

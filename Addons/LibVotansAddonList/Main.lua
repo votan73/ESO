@@ -29,16 +29,9 @@ addon.libKeepEnabledList = {
 	["LibDialog"] = true
 }
 
-if GetAPIVersion() < 101034 then
-	function addon:RefreshMultiButton()
-		ADD_ON_MANAGER.isDirty = true
-		ADD_ON_MANAGER:RefreshMultiButton()
-	end
-else
-	function addon:RefreshMultiButton()
-		ADD_ON_MANAGER.isDirty = true
-		ADD_ON_MANAGER:RefreshKeybinds()
-	end
+function addon:RefreshMultiButton()
+	ADD_ON_MANAGER.isDirty = true
+	ADD_ON_MANAGER:RefreshKeybinds()
 end
 
 function addon:DisableAllAddons()

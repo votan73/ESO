@@ -52,12 +52,9 @@
           <Anchor point="BOTTOMRIGHT" offsetX="-5" />
 
           <Controls>
-            <EditBox name="$(parent)SearchBox" font="ZoFontWinT1" inherits="ZO_DefaultEdit ZO_EditDefaultText">
+            <EditBox name="$(parent)SearchBox" font="ZoFontWinT1" inherits="ZO_DefaultEdit">
               <Dimensions x="540" />
               <Anchor point="TOPLEFT" offsetY="4" />
-              <OnInitialized>
-                ZO_EditDefaultText_Initialize(self, GetString(SI_ITEM_FILTER_BY_TEXT))
-              </OnInitialized>
 
               <OnEscape>
                 ESO_PROFILER:EndSearch(self)

@@ -108,7 +108,7 @@ function addon:InitializeKeybindStripDescriptor()
 				return self.hotbarCategory ~= nil
 			end,
 			enabled = function()
-				return self.wheel:GetHotbarCategory() == self.hotbarCategory
+				return self.wheel and self.wheel:GetHotbarCategory() == self.hotbarCategory
 			end
 		},
 		{

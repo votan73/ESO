@@ -14,7 +14,7 @@ function RFT.MakeMenu()
 		name = "Rare Fish Tracker",
 		displayName = "Rare Fish Tracker",
 		author = "katkat42 & votan",
-		version = "1.40.4",
+		version = "1.40.6",
 		registerForRefresh = true,
 		registerForDefaults = true,
 		slashCommand = "/rft",

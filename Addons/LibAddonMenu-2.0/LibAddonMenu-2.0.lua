@@ -3,7 +3,7 @@
 ------------------------------------------------------------------
 
 
-local MAJOR, MINOR = "LibAddonMenu-2.0", 33
+local MAJOR, MINOR = "LibAddonMenu-2.0", 34
 
 local lam
 if(not LibStub) then
@@ -205,6 +205,14 @@ local function CreateLabelAndContainerControl(parent, controlData, controlName)
     control:SetHandler("OnMouseEnter", ZO_Options_OnMouseEnter)
     control:SetHandler("OnMouseExit", ZO_Options_OnMouseExit)
     return control
+end
+
+local function SetUpTooltip(control, data, tooltipData)
+    if not data.tooltip then return end
+    control:SetMouseEnabled(true)
+    control.data = tooltipData or {tooltipText = util.GetStringFromValue(data.tooltip)}
+    control:SetHandler("OnMouseEnter", ZO_Options_OnMouseEnter)
+    control:SetHandler("OnMouseExit", ZO_Options_OnMouseExit)
 end
 
 local function GetTopPanel(panel)
@@ -570,6 +578,7 @@ util.GetDefaultValue = GetDefaultValue
 util.GetColorForState = GetColorForState
 util.CreateBaseControl = CreateBaseControl
 util.CreateLabelAndContainerControl = CreateLabelAndContainerControl
+util.SetUpTooltip = SetUpTooltip
 util.RequestRefreshIfNeeded = RequestRefreshIfNeeded
 util.RegisterForRefreshIfNeeded = RegisterForRefreshIfNeeded
 util.RegisterForReloadIfNeeded = RegisterForReloadIfNeeded

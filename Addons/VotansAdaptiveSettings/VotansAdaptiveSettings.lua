@@ -377,7 +377,7 @@ function addon:InitSettings()
 		return
 	end
 	addon.settingsControls = settings
-	settings.version = "1.5.4"
+	settings.version = "1.5.6"
 	settings.website = "http://www.esoui.com/downloads/info1239-VotansAdaptiveVideo-Settings.html"
 	settings.allowDefaults = true
 
