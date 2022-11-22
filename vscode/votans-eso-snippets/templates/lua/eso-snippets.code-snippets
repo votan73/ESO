@@ -1,0 +1,202 @@
+﻿{
+    "New Addon": {
+        "prefix": "!esoNewAddon",
+        "body": [
+            "local addon = {",
+            "\tname = \"${1:Title}\"",
+            "}",
+            "local em = GetEventManager()",
+            "local wm = WINDOW_MANAGER",
+            "",
+            "---- Init ----",
+            "",
+            "function addon:Initialize()",
+            "$0",
+            "end",
+            "",
+            "local function OnAddonLoaded(event, name)",
+            "\tif name ~= addon.name then",
+            "\t\treturn",
+            "\tend",
+            "\tem:UnregisterForEvent(addon.name, EVENT_ADD_ON_LOADED)",
+            "\taddon:Initialize()",
+            "end",
+            "",
+            "em:RegisterForEvent(addon.name, EVENT_ADD_ON_LOADED, OnAddonLoaded)"
+        ],
+        "description": "Blank new addon",
+        "scope": "lua"
+    },
+    "ZGOO": {
+        "prefix": "!esoZgoo",
+        "body": [
+            "SLASH_COMMANDS[\"/zgoo\"]($CLIPBOARD)$0"
+        ],
+        "description": "Inspect object, those name is in clipboard, with zgoo.",
+        "scope": "lua"
+    },
+    "Event Player Activated": {
+        "prefix": "!esoPlayerActivated",
+        "body": [
+            "local function OnPlayerActivated(event, initial)",
+            "\tem:UnregisterForEvent(addon.name, EVENT_PLAYER_ACTIVATED)",
+            "\t$0",
+            "end",
+            "",
+            "em:RegisterForEvent(addon.name, EVENT_PLAYER_ACTIVATED, OnPlayerActivated)",
+            ""
+        ],
+        "description": "Handle player activated event",
+        "scope": "lua"
+    },
+    "Scene State Change": {
+        "prefix": "!esoSceneState",
+        "body": [
+            "$TM_SELECTED_TEXT:RegisterCallback(\"StateChange\", function(oldState, newState)",
+            "\tif newState == SCENE_SHOWING then$0",
+            "\telseif newState == SCENE_SHOWN then",
+            "\telseif newState == SCENE_HIDING then",
+            "\telseif newState == SCENE_HIDDEN then",
+            "\tend",
+            "end)",
+            ""
+        ],
+        "description": "Insert scene state change callback",
+        "scope": "lua"
+    },
+    "Keybind Descriptor": {
+        "prefix": "!esoKeybindDescriptor",
+        "body": [
+            "self.${1:keybindStripDescriptor} = {",
+            "\talignment = KEYBIND_STRIP_ALIGN_${2:RIGHT},",
+            "\t{",
+            "\t\tname = GetString(SI_${3:STRING}),",
+            "\t\tkeybind = \"${4:ACTION_NAME}\",",
+            "\t\tcallback = function()$0",
+            "\t\tend,",
+            "\t\tenabled = function() return true end,",
+            "\t\tvisible = function(keybindButtonDescriptor)",
+            "\t\t\treturn GetHighestPriorityActionBindingInfoFromName(keybindButtonDescriptor.keybind) ~= KEY_INVALID",
+            "\t\tend",
+            "\t}",
+            "}",
+            "",
+            "${5:SCENE}:RegisterCallback(\"StateChange\", function(oldState, newState)",
+            "\tif newState == SCENE_SHOWN then",
+            "\t\tPushActionLayerByName(GetString(SI_${6:LAYER_NAME})) -- optional",
+            "\t\tKEYBIND_STRIP:AddKeybindButtonGroup(self.${1:keybindStripDescriptor})",
+            "\telseif newState == SCENE_HIDING then",
+            "\t\tKEYBIND_STRIP:RemoveKeybindButtonGroup(self.${1:keybindStripDescriptor})",
+            "\t\tRemoveActionLayerByName(GetString(SI_${6:LAYER_NAME})) -- optional",
+            "\tend",
+            "end)",
+            ""
+        ],
+        "description": "Create a new keybind descriptor with scene based activation",
+        "scope": "lua"
+    },
+    "Keybind Action": {
+        "prefix": "!esoKeybindAction",
+        "body": [
+            ",",
+            "{",
+            "\tname = GetString(SI_${1:STRING}),",
+            "\tkeybind = \"${2:ACTION_NAME}\",",
+            "\tcallback = function()$0",
+            "\tend,",
+            "-- enabled = function() return true end,",
+            "-- visible = function(keybindButtonDescriptor) -- optional hide unbound",
+            "-- \treturn GetHighestPriorityActionBindingInfoFromName(keybindButtonDescriptor.keybind) ~= KEY_INVALID",
+            "-- end",
+            "}"
+        ],
+        "description": "Add additional keybind action",
+        "scope": "lua"
+    },
+    "Register Callback": {
+        "prefix": "!esoRegisterCallback",
+        "body": [
+            "CALLBACK_MANAGER:RegisterCallback(\"${1:EventName}\", function(${2}) $0end)"
+        ],
+        "description": "Register to CALLBACK_MANAGER event",
+        "scope": "lua"
+    },
+    "Fire Callbacks": {
+        "prefix": "!esoFireCallbacks",
+        "body": [
+            "CALLBACK_MANAGER:FireCallbacks(\"${1:EventName}\"$0)"
+        ],
+        "description": "Register to CALLBACK_MANAGER event",
+        "scope": "lua"
+    },
+    "Hook Tail Call": {
+        "prefix": "!esoHookTailCall",
+        "body": [
+            "do",
+            "\tlocal org = ${1:original}",
+            "\tlocal function ${2:hook}()",
+            "\t\t$0",
+            "\tend",
+            "\tfunction ${1:original}(...)",
+            "\t\t${2:hook}(...)",
+            "\t\treturn org(...)",
+            "\tend",
+            "end"
+        ],
+        "description": "Hook function with tail call",
+        "scope": "lua"
+    },
+    "Control from Virual": {
+        "prefix": "!esoCreateControlFromVirtual",
+        "body": [
+            "wm:CreateControlFromVirtual(\"${1:$(parent)Name}\", ${2:parent}, \"${3:templateName}\")"
+        ],
+        "description": "Create a new control instance from XML template. *templateName* must be an XML control marked as \"virtual\".",
+        "scope": "lua"
+    },
+    "New Control": {
+        "prefix": "!esoCreateControl",
+        "body": [
+            "wm:CreateControl(\"${1:$(parent)Name}\", ${2:parent}, \"${3|CT_BACKDROP,CT_BUTTON,CT_COLORSELECT,CT_COMPASS,CT_CONTROL,CT_COOLDOWN,CT_DEBUGTEXT,CT_EDITBOX,CT_LABEL,CT_LINE,CT_MAPDISPLAY,CT_ROOT_WINDOW,CT_SCROLL,CT_SLIDER,CT_STATUSBAR,CT_TEXTBUFFER,CT_TEXTURE,CT_TEXTURECOMPOSITE,CT_TOOLTIP,CT_TOPLEVELCONTROL|}\")"
+        ],
+        "description": "Create a new basic control instance.",
+        "scope": "lua"
+    },
+    "New Scroll Control": {
+        "prefix": "!esoScrollListControl",
+        "body": [
+            "wm:CreateControlFromVirtual(\"${1:$(parent)List}\", ${2:parent}, \"ZO_ScrollList\")"
+        ],
+        "description": "Create new scroll-list control",
+        "scope": "lua"
+    },
+    "New Scroll List": {
+        "prefix": "!esoScrollListNew",
+        "body": [
+            "local function ${3:onSelectionChanged}(previouslySelectedData, selectedData, selectingDuringRebuild)",
+            "end",
+            "ZO_ScrollList_EnableSelection(${1:scrollList}, \"${2|ZO_ThinListHighlight,ZO_TallListSelectedHighlight|}\", ${3:onSelectionChanged})",
+            "ZO_ScrollList_SetDeselectOnReselect(${1:scrollList}, ${4|true,false|})",
+            "",
+            "ZO_ScrollList_EnableHighlight(${1:scrollList}, \"${5|ZO_ThinListHighlight,ZO_TallListHighlight|}\")",
+            "",
+            "${0:-- ToDo: add data type (!esoScrollListDataType)}"
+        ],
+        "description": "Insert code skeleton for a new scroll-list",
+        "scope": "lua"
+    },
+    "Add Scroll List Data Type": {
+        "prefix": "!esoScrollListDataType",
+        "body": [
+            "local ROW_ID${6:1} = ${6:1}",
+            "local function ${4:setupDataRow}(rowControl, rowData, scrollList)",
+            "end",
+            "ZO_ScrollList_AddDataType(${1:scrollList}, ROW_ID${6:1}, \"${2:rowTemplateName}\", ${3:24}, ${4:setupDataRow})",
+            "ZO_ScrollList_SetTypeSelectable(${1:scrollList}, ROW_ID${6:1}, ${5|true,false|})",
+            "",
+            "$0"
+        ],
+        "description": "Insert code skeleton for an additional scroll list data type. *rowTemplateName* must be an XML control marked as \"virtual\".",
+        "scope": "lua"
+    }
+}

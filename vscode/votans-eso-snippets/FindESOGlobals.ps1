@@ -1,4 +1,4 @@
-param($Path=".", [switch]$OmitReferences=$false, [switch]$ParseXml=$false, $Compiler=$null)
+param($Path="", [switch]$OmitReferences=$false, [switch]$ParseXml=$false, $Compiler=$null)
 
 # need luac
 # download lua-5.1.5_Win32_bin or lua-5.1.5_Win64_bin, e.g. from http://sourceforge.net/projects/luabinaries/files/5.1.5/Tools%20Executables/
@@ -104,7 +104,7 @@ function Parse($source) {
     }
     else {
         foreach($line in $o){
-            $match = [regex]::Match($line, "\[(?<line>\d+)\]\s+(?<global>.ETGLOBAL)\s*.+\s*;\s*(?<fn>.+)")
+            $match = [regex]::Match($line, "\[(?<line>\d+)\]\s+(?<global>SETGLOBAL)\s*.+\s*;\s*(?<fn>.+)")
             if ($match.Success) {
                 $g = $match.Groups["global"].Value
                 $fn = $match.Groups["fn"].Value
@@ -159,8 +159,8 @@ $rootUri = [uri] $rootUri
 
 Set-Location -Path $root.FullName
 
-$files = $addonsFolder.GetFiles("*.lua", "AllDirectories")
-$files += $addonsFolder.GetFiles("*.xml", "AllDirectories")
+$files = $addonsFolder.GetFiles("*.lua", "AllDirectories") | Where-Object { !$_.FullName.Contains("pregame\") }
+$files += $addonsFolder.GetFiles("*.xml", "AllDirectories") | Where-Object { !$_.FullName.Contains("pregame\") }
 $luaFiles = @()
 $xmlFiles = @()
 foreach($fileInfo in $files) {
@@ -243,7 +243,7 @@ $globals.ExceptWith($manager)
 $globals
 
 $snippnetFile = "snippets\eso-snippets.code-snippets"
-$json = ConvertFrom-Json -InputObject (Get-Content -Path $snippnetFile -Raw -Encoding UTF8)
+$json = ConvertFrom-Json -InputObject (Get-Content -Path "templates\lua\eso-snippets.code-snippets" -Raw -Encoding UTF8)
 
 $json|Add-Member "ESO Manager Instances" -Value @{} -MemberType NoteProperty -ErrorAction SilentlyContinue
 
@@ -283,4 +283,52 @@ $snippet.'body' = ("`${1|" + [String]::Join(",", $fragments) + "|}_FRAGMENT")
 $snippet.'description' = "ESO Fragments"
 $snippet.'scope' = "lua"
 
-Set-Content -Path $snippnetFile -Value (ConvertTo-Json -InputObject $json -Compress) -Encoding UTF8
+$file = "C:\Users\Votan.Defiant\Data\Documents\Visual Studio 2012\Projects\ElderScrollsResources\ElderScrollsResources\bin\Debug\esoui\ESOUIDocumentation.txt"
+
+$content = Get-Content -Path $file -Raw -Encoding Default
+
+$variables = [System.Text.RegularExpressions.Regex]::new('h2\. Global Variables\n(.+)h2\. Game API', "SingleLine").Match($content).Groups[1].Value
+
+$regex = [System.Text.RegularExpressions.Regex]::new('h5\.\s(?<type>.+?)\n(\*\s(?<lines>.+?)\n)+?\n', "SingleLine")
+
+<#
+foreach($match in $regex.Matches($variables)) {
+    if ($match.Groups["lines"].Captures.Count -eq 0) { continue }
+
+    $name = $match.Groups["type"].Value
+    $json|Add-Member "$name" -Value @{} -MemberType NoteProperty -ErrorAction SilentlyContinue
+    $snippet = $json.$name
+    $snippet.'prefix' = "!eso$name"
+    $snippet.'body' = ("`${1|" + [String]::Join(",", $match.Groups["lines"].Captures.Value) + "|}")
+    $snippet.'description' = $name
+    $snippet.'scope' = "lua"
+}
+#>
+
+$function = [System.Collections.Generic.List[string]]::new()
+
+$regex = [System.Text.RegularExpressions.Regex]::new('^(\*\s(?<lines>.+?)$)+?', "Multiline")
+$replace = [regex]'\*[^\*]+?\*\s'
+
+$variables = [System.Text.RegularExpressions.Regex]::new('h2\. VM Functions\n(.+)h2\. Global Variables', "SingleLine").Match($content).Groups[1].Value
+foreach($match in $regex.Matches($variables)) {
+    $fn = $match.Groups["lines"].Value
+    if ($fn.Contains("*private*")) { continue }
+    $x=$function.Add($replace.Replace($fn, "").Replace("_", "").Replace(",", "\,"))
+}
+$variables = [System.Text.RegularExpressions.Regex]::new('h2\. Game API\n(.+)h2\. Object API', "SingleLine").Match($content).Groups[1].Value
+foreach($match in $regex.Matches($variables)) {
+    $fn = $match.Groups["lines"].Value
+    if ($fn.Contains("*private*")) { continue }
+    $x=$function.Add($replace.Replace($fn, "").Replace("_", "").Replace(",", "\,"))
+}
+$function.Sort()
+
+$json|Add-Member "ESO GAME API" -Value @{} -MemberType NoteProperty -ErrorAction SilentlyContinue
+$snippet = $json.'ESO GAME API'
+$snippet.'prefix' = "!esoGameAPI"
+$snippet.'body' = ("`${1|" + [String]::Join(",", $function) + "|}")
+$snippet.'description' = "ESO Game API"
+$snippet.'scope' = "lua"
+
+Set-Content -Path $snippnetFile -Value (ConvertTo-Json -InputObject $json -Compress) -Encoding Default
