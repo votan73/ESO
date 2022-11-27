@@ -1,6 +1,6 @@
 *.db
 *.suo
 *.user
+**\.vs
 **\obj
 **\app.publish
-
