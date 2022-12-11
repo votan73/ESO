@@ -1,7 +1,7 @@
 ﻿## Title: ESO Profiler
 ## Author: sirinsidiator & votan
-## APIVersion: 101034 101035
-## Version: 1.3.5
+## APIVersion: 101036
+## Version: 1.4.0
 ## DependsOn: LibAsync>=20100 LibCustomMenu>=690
 ## SavedVariables: ESOProfiler_Export
 
