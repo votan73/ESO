@@ -1,4 +1,4 @@
-﻿local addon = {
+local addon = {
 	name = "ESOProfiler",
 }
 local em = GetEventManager()
@@ -10,21 +10,22 @@ local function SetAutoStartEnabled(on)
 	SetCVar("StartLuaProfilingOnUILoad", on and "1" or "0")
 end
 
+local function CaptureFrameMetrics()
+	local fps = GetFramerate() * 100
+	local latency = GetLatency()
+	local memory = collectgarbage("count") * 1024
+	local data = string.format("stats,%d,%d,%d", fps, latency, memory)
+	RecordScriptProfilerUserEvent(data)
+end
+
 local function NewRun()
 	addon.newRun = GetGameTimeMilliseconds()
 	addon.startTime = GetTimeStamp()
 	addon.profiling = true
+	EVENT_MANAGER:RegisterForUpdate(addon.name, 0, CaptureFrameMetrics)
 end
 
 do
-	local function CaptureFrameMetrics()
-		local fps = tostring(math.floor(GetFramerate()) * 100)
-		local latency = tostring(GetLatency())
-		local memory = tostring(collectgarbage("count") * 1024) -- TODO remove
-		local name = string.format("statsF%sL%sM%s", fps, latency, memory)
-		RecordScriptProfilerUserEvent(name)
-	end
-
 	local function UpdateKeybind()
 		if addon.keybindButtonGroupRight and KEYBIND_STRIP:HasKeybindButtonGroup(addon.keybindButtonGroupRight) then
 			KEYBIND_STRIP:UpdateKeybindButtonGroup(addon.keybindButtonGroupRight)
@@ -35,7 +36,6 @@ do
 	function StartScriptProfiler()
 		if addon.profiling then return end
 		NewRun()
-		EVENT_MANAGER:RegisterForUpdate(addon.name, 500, CaptureFrameMetrics)
 		UpdateKeybind()
 		d("Start profiler....")
 		return orgStartScriptProfiler()

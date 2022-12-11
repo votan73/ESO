@@ -36,7 +36,7 @@ function ProfilerData:GetClosureInfo(recordDataIndex, recordDataType, frameIndex
 			if recordDataType == SCRIPT_PROFILER_RECORD_DATA_TYPE_CFUNCTION then
 				-- C Functions are functions defined by ZOS as part of the game's API.
 				name = GetScriptProfilerCFunctionInfo(recordDataIndex)
-				file = "@Client"
+				file = "@unknown"
 			elseif recordDataType == SCRIPT_PROFILER_RECORD_DATA_TYPE_GARBAGE_COLLECTION then
 				-- At arbitrary times, the lua intepreter will automatically try to reclaim memory you are no longer using. When it does this we generate a GC event to track it.
 				name = GetScriptProfilerGarbageCollectionInfo(recordDataIndex) == SCRIPT_PROFILER_GARBAGE_COLLECTION_TYPE_AUTOMATIC and "Lua GC Step" or "Manual collectgarbage() GC step"
@@ -46,7 +46,13 @@ function ProfilerData:GetClosureInfo(recordDataIndex, recordDataType, frameIndex
 				-- Similar to console.log() of javascript or System.Diagnostics.Debug.WriteLine() of C#.
 				name = GetScriptProfilerUserEventInfo(recordDataIndex)
 				file = "@UserEvent"
-				fps, latency, memory = name:match("statsF(%d+)L(%d+)M(%d+)")
+
+				local data = {zo_strsplit(",", name)}
+				if(data[1] == "stats") then
+					fps, latency, memory = tonumber(data[2]), tonumber(data[3]), tonumber(data[4])
+				else
+					fps, latency, memory = nil, nil, nil
+				end
 			end
 		end
 		if(not fps or not frameIndex) then
@@ -64,9 +70,9 @@ function ProfilerData:GetClosureInfo(recordDataIndex, recordDataType, frameIndex
 			assert(not self.frameStats[frameIndex], "more than one stats entry for same frame found")
 			self.frameStats[frameIndex] = {
 				start = startTime,
-				fps = tonumber(fps) / 100,
-				latency = tonumber(latency),
-				memory = tonumber(memory)
+				fps = fps,
+				latency = latency,
+				memory = memory
 			}
 		end
 	end
