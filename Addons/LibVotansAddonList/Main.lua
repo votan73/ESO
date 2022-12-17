@@ -4,8 +4,6 @@ local addon = {}
 local em = GetEventManager()
 local AddOnManager = GetAddOnManager()
 
-local legacy = GetAPIVersion() < 100035
-
 local function areAddonsCurrentlyEnabled()
 	local areAllAddonsCurrentlyEnabled = true
 	if AddOnManager.AreAddOnsEnabled then
@@ -130,19 +128,6 @@ do
 	function ZO_AddOnManager.SetupSectionHeaderRow(...)
 		setupHeaderFunction(...)
 		return orgSetupSectionHeaderRow(...)
-	end
-end
-
-do
-	local orgAddAddonTypeSection = ZO_AddOnManager.AddAddonTypeSection
-	function ZO_AddOnManager.AddAddonTypeSection(...)
-		local self, isLibrary = ...
-		if isLibrary then
-			local addonEntries = self.addonTypes[isLibrary]
-			local scrollData = ZO_ScrollList_GetDataList(self.list)
-			addon.libSectionDataIndex = #addonEntries ~= 0 and #scrollData + 1 or 0
-		end
-		return orgAddAddonTypeSection(...)
 	end
 end
 
@@ -342,10 +327,6 @@ do
 			AddLinePath(ItemTooltip, path)
 		end
 
-		if legacy and data.isOutOfDate then
-			AddLineCenter(ItemTooltip, GetString(SI_VOTANS_ADDONLIST_OUTDATED), HINT_COLOR)
-		end
-
 		if data.isLibrary and not data.hasReference then
 			AddLineCenter(ItemTooltip, GetString(SI_VOTANS_ADDONLIST_OPTIONAL_LIB), OPTIONAL_COLOR)
 		end
@@ -413,7 +394,7 @@ do
 		expandButton:SetHidden(true)
 		local enableButton = control:GetNamedChild("Enabled")
 		enableButton:SetAnchor(TOPLEFT, nil, TOPLEFT, 7 + indent, 7)
-		enableButton:SetHidden(legacy and data.isOutOfDate and not AddOnManager:GetLoadOutOfDateAddOns())
+		enableButton:SetHidden(false)
 		enableButton:SetMouseEnabled(areAllAddonsCurrentlyEnabled)
 		if data.hasDependencyError then
 			ZO_TriStateCheckButton_SetState(enableButton, TRISTATE_CHECK_BUTTON_UNCHECKED)
@@ -427,7 +408,7 @@ do
 		local stateText
 		-- out-dated libs coming from out-dated main-addons. If an out-dated lib is used by an up-to-date addon, it is still working.
 		-- if it is a patch, but its parent is not enabled, show out-of-date warning only.
-		if (data.isOutOfDate and legacy and not data.isLibrary) or data.unloadable or data.expectedPath then
+		if data.unloadable or data.expectedPath then
 			stateText = attentionIcon
 			if not data.unloadable and AddOnManager:GetLoadOutOfDateAddOns() or (data.isPatch and not data.isPatchFor.addOnEnabled) then
 				stateText = HINT_COLOR:Colorize(stateText)
@@ -547,10 +528,6 @@ function ZO_AddOnManager:OnExpandButtonClicked(row)
 	-- Disabled.
 end
 
-if legacy then
-	ZO_AddOnsLoadOutOfDateAddOnsText:SetText(GetString(SI_ADDON_MANAGER_LOAD_OUT_OF_DATE_ADDONS))
-end
-
 function addon:SetSection(mode)
 	local function endAnim()
 		ZO_MenuBar_ClearSelection(self.sectionBar)
@@ -562,8 +539,16 @@ function addon:SetSection(mode)
 		else
 			endAnim()
 		end
-	elseif self.libSectionDataIndex then
-		ZO_ScrollList_ScrollDataToCenter(ADD_ON_MANAGER.list, self.libSectionDataIndex, endAnim)
+	elseif mode == 2 then
+		local scrollData = ZO_ScrollList_GetDataList(ADD_ON_MANAGER.list)
+		local categoryLibs = GetString(SI_ADDON_MANAGER_SECTION_LIBRARIES)
+		for i = #scrollData, 1, -1 do
+			local entry = scrollData[i]
+			if entry.typeId == 2 and ZO_ScrollList_GetDataEntryData(entry).text == categoryLibs then
+				ZO_ScrollList_ScrollDataToCenter(ADD_ON_MANAGER.list, i, endAnim)
+				break
+			end
+		end
 	end
 end
 
@@ -608,18 +593,6 @@ do
 		ZO_MenuBar_SetDescriptorEnabled(self.sectionBar, 2, self.libSectionDataIndex ~= 0)
 
 		ZO_MenuBar_ClearSelection(self.sectionBar)
-	end
-
-	if legacy then
-		ZO_AddOnsLoadOutOfDateAddOnsText:SetMouseEnabled(true)
-
-		local function showOutOfDateAddonsTooltip()
-			ZO_Tooltips_ShowTextTooltip(ZO_AddOnsLoadOutOfDateAddOns, BOTTOM, GetString(SI_VOTANS_ADDONLIST_LOAD_OUT_OF_DATE_ADDONS_DESC))
-		end
-		ZO_AddOnsLoadOutOfDateAddOns:SetHandler("OnMouseEnter", showOutOfDateAddonsTooltip)
-		ZO_AddOnsLoadOutOfDateAddOnsText:SetHandler("OnMouseEnter", showOutOfDateAddonsTooltip)
-		ZO_AddOnsLoadOutOfDateAddOns:SetHandler("OnMouseExit", ZO_Tooltips_HideTextTooltip)
-		ZO_AddOnsLoadOutOfDateAddOnsText:SetHandler("OnMouseExit", ZO_Tooltips_HideTextTooltip)
 	end
 
 	local function initTabs(oldState, newState)
