@@ -51,7 +51,6 @@ local codes = {
 	["DSC1"] = 198, --Dungeon: Darkshade Caverns I
 	["DSC2"] = 264, --Dungeon: Darkshade Caverns II
 	["DSR"] = 488, --Trial: Dreadsail Reef
-	["DSR"] = 488, --Trial: Dreadsail Reef
 	["EH"] = 191, --Dungeon: Elden Hollow I
 	["EH1"] = 191, --Dungeon: Elden Hollow I
 	["EH2"] = 265, --Dungeon: Elden Hollow II
@@ -122,15 +121,26 @@ local codes = {
 }
 local trigger = {
 	["lf "] = true,
+	["lfdd "] = true,
+	["lft "] = true,
+	["lfh "] = true,
 	["lfm "] = true,
 	["lfg "] = true,
 	["LF "] = true,
+	["LFDD "] = true,
+	["LFT "] = true,
+	["LFH "] = true,
 	["LFM "] = true,
 	["LFG "] = true
 }
 local tooltipCodes = {}
 for keyword, nodeIndex in pairs(codes) do
-	if not tooltipCodes[nodeIndex] or string.len(tooltipCodes[nodeIndex]) == 3 then
+	if string.len(keyword) <= 3 then
+		tooltipCodes[nodeIndex] = keyword
+	end
+end
+for keyword, nodeIndex in pairs(codes) do
+	if not tooltipCodes[nodeIndex] or string.len(keyword) == 3 then
 		tooltipCodes[nodeIndex] = keyword
 	end
 end
@@ -138,20 +148,14 @@ for keyword, nodeIndex in pairs(codes) do
 	local locationName = select(2, GetFastTravelNodeInfo(nodeIndex))
 	codes[keyword] = locationName
 end
-local replacement2 = {}
-local replacement3 = {}
-local normalText = string.format(" (%s)", GetString(SI_DUNGEONDIFFICULTY1))
-local vetText = string.format(" (%s)", GetString(SI_DUNGEONDIFFICULTY2))
+local replacement = {}
+local normalText = GetString(SI_DUNGEONDIFFICULTY1)
+local vetText = GetString(SI_DUNGEONDIFFICULTY2)
 for keyword, name in pairs(codes) do
-	local replacement
-	if string.len(keyword) == 2 then
-		replacement = replacement2
-	else
-		replacement = replacement3
-	end
-	local default = zo_strformat("<<!AT:1>> (<<2>>)", name, keyword)
-	local normal = default .. normalText
-	local vet = default .. vetText
+	local name = zo_strformat("<<!AT:1>>", name)
+	local default = string.format("%s [%s]", keyword, name)
+	local normal = string.format("n%s [%s] |c00ef00(%s)|r", keyword, name, normalText)
+	local vet = string.format("v%s [%s] |cED8200(%s)|r", keyword, name, vetText)
 	replacement[keyword] = default
 	replacement["n" .. keyword] = normal
 	replacement["v" .. keyword] = vet
@@ -165,17 +169,11 @@ for keyword, name in pairs(codes) do
 	replacement["v" .. alter] = vet
 end
 do
-	local function replaceCode(replacement, prefix, keyword, suffix)
+	local function replaceCode(prefix, keyword)
 		local name = replacement[keyword]
 		if name then
-			return string.format("%s%s%s", prefix or "", name, suffix or "")
+			return string.format("%s%s", prefix or "", name)
 		end
-	end
-	local function replace2Code(prefix, keyword, suffix)
-		return replaceCode(replacement2, prefix, keyword, suffix)
-	end
-	local function replace3Code(prefix, keyword, suffix)
-		return replaceCode(replacement3, prefix, keyword, suffix)
 	end
 	local FormatAndAddChatMessage = CHAT_ROUTER.FormatAndAddChatMessage
 	function CHAT_ROUTER:FormatAndAddChatMessage(eventCode, ...)
@@ -189,9 +187,7 @@ do
 				end
 			end
 			if triggered then
-				--Do longer codes first
-				msg = msg:gsub("(%A)(%a%a%w+)(%W)", replace3Code):gsub("(%A)(%a%a%w+)$", replace3Code)
-				msg = msg:gsub("(%A)(%a%w+)(%W)", replace2Code):gsub("(%A)(%a%w+)$", replace2Code)
+				msg = msg:gsub("(%A)(%a%w+)", replaceCode)
 				local result = {...}
 				result[3] = msg
 				return FormatAndAddChatMessage(self, eventCode, unpack(result))
