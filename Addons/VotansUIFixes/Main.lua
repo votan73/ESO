@@ -685,7 +685,7 @@ do
 		lastAutoAttack = lastAllowActionTime --GetGameTimeMilliseconds()
 	end
 	local function IsAutoAttack()
-		return (GetGameTimeMilliseconds() - lastAutoAttack) < 500
+		return (GetGameTimeMilliseconds() - lastAutoAttack) < 800
 	end
 
 	local function IsDummy()
@@ -722,13 +722,15 @@ do
 		return true
 	end
 	local function RegisterRecast(abilityId, milliseconds)
+		if not isInCombat then
+			return
+		end
 		recast[abilityId] = GetGameTimeMilliseconds() + milliseconds
 		abilityBar[abilityId] = currentBar
 		return true
 	end
 	local function NeedRecast(abilityId)
 		if recast[abilityId] and recast[abilityId] < GetGameTimeMilliseconds() then
-			recast[abilityId] = nil
 			return true
 		end
 		return false
@@ -740,8 +742,7 @@ do
 			EVENT_COMBAT_EVENT,
 			function(eventCode, result, isError, abilityName, abilityGraphic, abilityActionSlotType, sourceName, sourceType, targetName, targetType, hitValue, powerType, damageType, log, sourceUnitId, targetUnitId, abilityId, overflow)
 				if abilityActionSlotType == ACTION_SLOT_TYPE_LIGHT_ATTACK then
-					-- -- d(result, isError)
-					if result == ACTION_RESULT_DAMAGE or result == ACTION_RESULT_CRITICAL_DAMAGE or results == ACTION_RESULT_HEAL or result == ACTION_RESULT_CRITICAL_HEAL or result == ACTION_RESULT_EFFECT_GAINED then
+					if result == ACTION_RESULT_DAMAGE or result == ACTION_RESULT_CRITICAL_DAMAGE or result == ACTION_RESULT_HEAL or result == ACTION_RESULT_CRITICAL_HEAL or result == ACTION_RESULT_EFFECT_GAINED then
 						d(lastAllowedAction ~= 0 and "lightattack hit: good" or "lightattack hit: bad")
 					elseif isInCombat then
 						d(result == ACTION_RESULT_QUEUED and "queued lightattack hit" or "no lightattack hit")
@@ -751,6 +752,9 @@ do
 					--if abilityId == lastAllowedAction then
 					--	df("action done %i", result)
 					--end
+					if result == ACTION_RESULT_FAILED or result == ACTION_RESULT_INTERRUPT or result == ACTION_RESULT_FAILED_REQUIREMENTS or result == ACTION_RESULT_BAD_TARGET then
+						cooldown[abilityId] = nil
+					end
 				end
 			end
 		)
@@ -874,12 +878,7 @@ do
 		end,
 		[26869] = function()
 			--lodernder Speer
-			local result = not IsAutoAttack() or (isInCombat and not CooldownRunning(26869, 8000) and StartCooldown(26869) and RegisterRecast(26869, 12000))
-			if isInCombat and not result then
-				RegisterRecast(26869, 6000)
-			end
-			d("gfgf", result)
-			return result
+			return not IsAutoAttack() or (RegisterRecast(26869, 6000) and not CooldownRunning(26869, 8000) and StartCooldown(26869) and RegisterRecast(26869, 12000))
 		end,
 		[29338] = function()
 			--neutralisierende Magie
@@ -990,7 +989,7 @@ do
 		end,
 		[40328] = function()
 			--trennende Seelenfalle
-			return HasTarget() and not IsTargetBuffedWithAbility(126897) --and not CooldownRunning(40328, 8550) and StartCooldown(40328)
+			return HasTarget() and not IsTargetBuffedWithAbility(126897) and not IsTargetBuffedWithAbility(87416) --and not CooldownRunning(40328, 8550) and StartCooldown(40328)
 		end,
 		[39182] = function()
 			-- absorbierende Magie
@@ -1018,7 +1017,7 @@ do
 		end,
 		[40457] = function()
 			--Degeneration
-			return not IsAutoAttack() or isInCombat and HasTarget() and not IsAbilityCasted(61687)
+			return RegisterRecast(40457, 6000) and not IsAutoAttack() or isInCombat and HasTarget() and not IsAbilityCasted(61687) and not CooldownRunning(40457, 12000) and StartCooldown(40457) and RegisterRecast(40457, 24000)
 			-- not CooldownRunning(40457, 10000) and StartCooldown(40457)
 		end,
 		[40478] = function()
@@ -1288,7 +1287,7 @@ do
 	--MAP_PIN_TYPE_ANTIQUITY_DIG_SITE
 	local function showAction(actionId)
 		lastAllowedAction = actionId
-		--df("action %i %ims %s", actionId, GetGameTimeMilliseconds() - lastAllowActionTime, GetAbilityName(actionId))
+		df("action %i %ims %s", actionId, GetGameTimeMilliseconds() - lastAllowActionTime, GetAbilityName(actionId))
 		return true
 	end
 	local function checkAbility(actionId)
@@ -1338,10 +1337,11 @@ do
 				if noCooldown then
 					lastAllowedAction = 0
 				end
-				local allow = lastAllowedAction == 0 or not IsAutoAttack()
+				--local allow = lastAllowedAction == 0 or not IsAutoAttack()
+				local allow = true
 				allow = allow and lastAction >= latency and noCooldown and doNotKillMaelstromHealer() and checkAction(actionButton)
 				wasAllowed[actionButton] = allow
-				--d("---", allow, lastAllowedAction == 0 ,not IsAutoAttack(), checkAction(actionButton))
+				--d("---", allow, lastAllowedAction == 0, not IsAutoAttack(), checkAction(actionButton))
 				if allow then
 					-- if lastAction >= (latency * 2) then
 					-- 	d("zum langsam")
@@ -1388,6 +1388,7 @@ do
 		else
 			for ability, bar in pairs(abilityBar) do
 				if NeedRecast(ability) then
+					df("NeedRecast %i", ability)
 					needBarSwap = bar
 					break
 				end
@@ -1400,11 +1401,15 @@ do
 		if inCombat and TargetHealth() >= 200000 then
 			needBarSwap = ACTIVE_WEAPON_PAIR_BACKUP
 		end
+		if not inCombat then
+			needBarSwap = ACTIVE_WEAPON_PAIR_BACKUP
+		end
 		isInCombat = inCombat
 		SetCurrentQuickslot(isInCombat and 8 or 4)
 
 		if not inCombat then
 			ClearCooldown(22262)
+			ClearCooldown(26869)
 			ClearCooldown(38845)
 			ClearCooldown(39012)
 			ClearCooldown(39018)
