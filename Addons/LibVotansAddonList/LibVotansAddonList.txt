@@ -2,9 +2,9 @@
 ## Author: votan
 ## Description: Alternative Addon List Design
 ## APIVersion: 101036 101037
-## AddOnVersion: 10904
+## AddOnVersion: 10903
 ## IsLibrary: false
-## Version: 1.9.4
+## Version: 1.9.3
 ## OptionalDependsOn: AddonSelector AddonCategory
 
 ## This Add-On is not created by, affiliated with or sponsored by ZeniMax Media Inc. or its affiliates. The Elder Scrolls® and related logos are registered trademarks or trademarks of ZeniMax Media Inc. in the United States and/or other countries. All rights reserved.
