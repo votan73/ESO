@@ -1,4 +1,4 @@
-param($Path="", [switch]$Upload=$false, [switch]$Test=$false, [switch]$NoBundle=$false)
+param($Path="", [switch]$Upload=$false, [switch]$Test=$false, [switch]$Bundle=$false)
 
 if ($Path.Length -eq 0){ return }
 if (![System.IO.Directory]::Exists($Path)) { return }
@@ -23,7 +23,7 @@ foreach($line in $lines) {
     if ($line.StartsWith("## ApiVersion: ", "OrdinalIgnoreCase")) {
         $compatible = $line.Substring(15).Trim().Split(" ")
     }
-    if (!$NoBundle -and $line.StartsWith("## DependsOn: ", "OrdinalIgnoreCase")) {
+    if ($line.StartsWith("## DependsOn: ", "OrdinalIgnoreCase")) {
         $dependency = $line.Substring(14).Trim().Split(" ")
         for ($i = 0; $i -lt $dependency.Length; $i++) {
             $d = $dependency[$i]
@@ -38,7 +38,7 @@ $targetPath = [System.IO.Path]::Combine($PSScriptRoot,$targetName)
 Remove-Item -Path $targetPath -Recurse -ErrorAction SilentlyContinue
 Remove-Item -Path ($targetPath + "_v$ver.zip") -ErrorAction SilentlyContinue
 
-svn export $Path $targetPath
+Copy-Item -Recurse $Path $targetPath
 if ($Title -ne "ESO Profiler") {
     Remove-Item -Path ([System.IO.Path]::Combine($targetPath, "*")) -Recurse -Include "*.png","*.pdn"
 }
@@ -51,50 +51,6 @@ foreach($file in [System.IO.Directory]::GetFiles($targetPath, "Lib*.txt", "AllDi
         Read-Host
     }
 }
-
-$libTargetPath = [System.IO.Path]::Combine($targetPath, "libs")
-if (![System.IO.Directory]::Exists($libTargetPath)) { $libTargetPath = $targetPath }
-
-foreach($lib in $dependency | Where-Object { $_ -like "Lib*" }) {
-    $found = $false
-    foreach($file in [System.IO.Directory]::GetFiles($targetPath, "$lib.txt", "AllDirectories")) {
-        if ([System.IO.Path]::GetFileName([System.IO.Path]::GetDirectoryName($file)) -eq $lib) {
-            $found = $true
-            break
-        }
-    }
-    if (!$found) {
-        $isLibStubIncluded = [System.IO.Directory]::GetFiles($targetPath, "LibStub.txt", "AllDirectories").Count -gt 0
-        $libSourcePath = [System.IO.Path]::Combine([System.IO.Path]::GetDirectoryName($Path), $lib)
-        if (![System.IO.Directory]::Exists($libSourcePath)) {
-            $libSourcePath = [System.IO.Path]::GetDirectoryName(([System.IO.Directory]::GetFiles([System.IO.Path]::GetDirectoryName($Path), "$lib.txt", "AllDirectories"))[0])
-        }
-        $bundlePath = [System.IO.Path]::Combine($libTargetPath, $lib)
-        if ([System.IO.Directory]::Exists($libSourcePath)) {
-            $result = svn export $libSourcePath $bundlePath
-            if ($result -eq $null) {
-                Copy-Item -Path $libSourcePath -Destination $bundlePath -Recurse
-            }
-            $result
-            $found = $true
-        }
-        #if ($isLibStubIncluded) {
-        #    foreach($libSourcePath in [System.IO.Directory]::GetDirectories($bundlePath, "LibStub", "AllDirectories")) {
-        #        [System.IO.Directory]::Delete($libSourcePath, $true)
-        #    }
-        #}
-    }
-    if (!$found) {
-        Write-Host "$lib not found."
-        return
-    }
-}
-
-#foreach($libSourcePath in ([System.IO.Directory]::GetDirectories($targetPath, "*", "AllDirectories")|Sort-Object -Descending)) {
-#    try {
-#    $result = [System.IO.Directory]::Delete($libSourcePath)
-#    } catch {}
-#}
 
 $Filename = ($targetPath + "_v$ver.zip")
 &"C:\Program Files\7-Zip\7z.exe" a -tzip -r $Filename $targetPath
@@ -194,19 +150,19 @@ function WriteMultipartForm([System.IO.Stream]$s, $data, [System.IO.FileInfo] $f
 
     $s.Write($boundaryBytes, 0, $boundaryBytes.Length)
     WriteText -s $s -text ([string]::Format($fileheaderTemplate, "updatefile", $fileName.Name))
-    
+
     # Dump the file to the stream.
     $fs = $fileName.OpenRead()
     $fs.CopyTo($s)
     $fs.Close()
-    
+
     $s.Write($trailer, 0, $trailer.Length)
 }
 
-$log = [xml](svn log -l 1 -g --xml $Path)
+$log = (git log -n 1 --pretty=format:"%B" "$Path")
 
 try {
-	$log = $log.log.logentry.msg.Trim() + "`r`n`r`n" + $details.changelog.Trim()
+	$log = [String]::Join("`r`n", $log).Trim() + "`r`n`r`n" + $details.changelog.Trim()
 }
 catch {
 	$log = $details.changelog.Trim()
@@ -217,8 +173,13 @@ $data.id = $details.id
 $data.version = $ver
 $data.title = $details.title
 $list = @()
-if ($compatible -ccontains "101032") { $list+="7.2.5" }
-if ($compatible -ccontains "101033") { $list+="7.3.5" }
+if ($compatible -ccontains "101035") { $list+="8.1.5" }
+if ($compatible -ccontains "101036") { $list+="8.2.5" }
+if ($compatible -ccontains "101037") { $list+="8.3.5" }
+if ($list.Count -lt 2) {
+    Write-Host "API Version mismatch. Either manifest or script not up-to-date."
+    return
+}
 $data.compatible = [String]::Join(",", $list) # comma delimited
 
 #$data.description {"Type":"STR","Required":"No","Description":"Full description of your AddOn."}
@@ -240,7 +201,7 @@ $response.StatusCode
 [int]$response.StatusCode
 
 $sr = New-Object System.IO.StreamReader -ArgumentList @($response.GetResponseStream())
-$result = $json.Deserialize($sr.ReadToEnd(), [System.Collections.Hashtable])
+#$result = $json.Deserialize($sr.ReadToEnd(), [System.Collections.Hashtable])
 $sr.Dispose()
 
 if ($result -ne $null) {
