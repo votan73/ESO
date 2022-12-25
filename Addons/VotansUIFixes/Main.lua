@@ -591,10 +591,14 @@ do
 	local unitTagPlayer = "player"
 	local unitTagTarget = "reticleover"
 
-	local isInCombat
+	local isInCombat, doNotStartCooldown
+	local playerHealth, playerStamia, playerMagicka, playerHealthPercent, playerStamiaPercent, playerMagickaPercent = 0, 0, 0, 0, 0, 0
 
 	local function HasTarget()
 		return GetUnitNameHighlightedByReticle() ~= "" and GetUnitReaction(unitTagTarget) == UNIT_REACTION_COLOR_HOSTILE
+	end
+	local function TargetIsInRange()
+		return HasTarget() and IsUnitInGroupSupportRange(unitTagTarget)
 	end
 	local function IsAbilityCasted(abilityIdToCheck)
 		local abilityId, _, castByPlayer
@@ -636,16 +640,25 @@ do
 		return false
 	end
 	local function PlayerHealthPercent()
-		local current, max = GetUnitPower(unitTagPlayer, POWERTYPE_HEALTH)
-		return max > 0 and (current / max) or 0
+		return playerHealthPercent
 	end
 	local function PlayerMagickaPercent()
-		local current, max = GetUnitPower(unitTagPlayer, POWERTYPE_MAGICKA)
-		return max > 0 and (current / max) or 0
+		return playerMagickaPercent
 	end
 	local function PlayerStamiaPercent()
-		local current, max = GetUnitPower(unitTagPlayer, POWERTYPE_STAMINA)
-		return max > 0 and (current / max) or 0
+		return playerStamiaPercent
+	end
+	local function PlayerHealth()
+		return playerHealth
+	end
+	local function PlayerStamia()
+		return playerStamia
+	end
+	local function PlayerMagicka()
+		return playerMagicka
+	end
+	local function PlayerUltimate()
+		return GetUnitPower(unitTagPlayer, POWERTYPE_ULTIMATE)
 	end
 	local function TargetHealth()
 		local current = GetUnitPower(unitTagTarget, POWERTYPE_HEALTH)
@@ -655,22 +668,12 @@ do
 		local current, max = GetUnitPower(unitTagTarget, POWERTYPE_HEALTH)
 		return max > 0 and (current / max) or 0
 	end
-	local function PlayerMagicka()
-		local current = GetUnitPower(unitTagPlayer, POWERTYPE_MAGICKA)
-		return current
-	end
-	local function PlayerStamia()
-		local current = GetUnitPower(unitTagPlayer, POWERTYPE_STAMINA)
-		return current
-	end
-	local function PlayerUltimate()
-		return GetUnitPower(unitTagPlayer, POWERTYPE_ULTIMATE)
-	end
 	local orgZO_ActionBar_CanUseActionSlots = ZO_ActionBar_CanUseActionSlots
 	local stackToActionButton = {}
 	local keyWasDown = {}
 	local wasAllowed = {}
 	local abilityBar = {}
+	local processAbility
 	local lastAllowedAction = 0
 	local lastAllowActionTime = 0
 	local needBarSwap = ACTIVE_WEAPON_PAIR_BACKUP
@@ -683,6 +686,13 @@ do
 		currentBar = GetActiveWeaponPairInfo()
 		df("lightattack start. Interval: %ims", lastAllowActionTime - lastAutoAttack)
 		lastAutoAttack = lastAllowActionTime --GetGameTimeMilliseconds()
+		local max
+		playerHealth, max = GetUnitPower(unitTagPlayer, POWERTYPE_HEALTH)
+		playerHealthPercent = max > 0 and (playerHealth / max) or 0
+		playerStamia, max = GetUnitPower(unitTagPlayer, POWERTYPE_STAMINA)
+		playerStamiaPercent = max > 0 and (playerStamia / max) or 0
+		playerMagicka, max = GetUnitPower(unitTagPlayer, POWERTYPE_MAGICKA)
+		playerMagickaPercent = max > 0 and (playerMagicka / max) or 0
 	end
 	local function IsAutoAttack()
 		return (GetGameTimeMilliseconds() - lastAutoAttack) < 800
@@ -707,6 +717,26 @@ do
 		end
 	end
 
+	--MAP_PIN_TYPE_ANTIQUITY_DIG_SITE
+	local function showAction(actionId)
+		lastAllowedAction = actionId
+		df("action %i %ims %s", actionId, GetGameTimeMilliseconds() - lastAllowActionTime, GetAbilityName(actionId))
+		return true
+	end
+	local function checkAbility(actionId)
+		--df("action %i %s", actionId, GetAbilityName(actionId))
+		local action = processAbility[actionId]
+		if action then
+			return action()
+		end
+		df("action unknown %i %s", actionId, GetAbilityName(actionId))
+		return isInCombat and not IsAutoAttack()
+	end
+	local function checkAction(actionButton, hotbarCategory)
+		local actionId = GetSlotBoundId(actionButton, hotbarCategory)
+		return checkAbility(actionId) and showAction(actionId)
+	end
+
 	local cooldown = {}
 	local recast = {}
 	local function CooldownRunning(abilityId, milliseconds)
@@ -714,7 +744,9 @@ do
 		return (GetGameTimeMilliseconds() - milliseconds - 50) < lastTime
 	end
 	local function StartCooldown(abilityId)
-		cooldown[abilityId] = GetGameTimeMilliseconds()
+		if not doNotStartCooldown then
+			cooldown[abilityId] = GetGameTimeMilliseconds()
+		end
 		return true
 	end
 	local function ClearCooldown(abilityId)
@@ -725,14 +757,19 @@ do
 		if not isInCombat then
 			return
 		end
-		recast[abilityId] = GetGameTimeMilliseconds() + milliseconds
-		abilityBar[abilityId] = currentBar
+		if not doNotStartCooldown then
+			recast[abilityId] = GetGameTimeMilliseconds() + milliseconds
+			abilityBar[abilityId] = currentBar
+		end
 		return true
 	end
 	local function NeedRecast(abilityId)
-		if recast[abilityId] and recast[abilityId] < GetGameTimeMilliseconds() then
+		doNotStartCooldown = true
+		if recast[abilityId] and recast[abilityId] < GetGameTimeMilliseconds() and checkAbility(abilityId) then
+			doNotStartCooldown = false
 			return true
 		end
+		doNotStartCooldown = false
 		return false
 	end
 	do
@@ -795,7 +832,7 @@ do
 	--RegisterCooldown(26797)
 	--RegisterCooldown(46348)
 
-	local processAbility = {
+	processAbility = {
 		[0] = function(actionButton)
 			--local remain, _, _, slotType = GetSlotCooldownInfo(actionButton)
 			--return remain <= 0 and (not isInCombat and actionButton >= 9)
@@ -873,12 +910,11 @@ do
 		end,
 		[26797] = function()
 			-- Durchschlagender Schwung
-			--d(GetUnitReaction(unitTagTarget))
-			return isInCombat and not IsBlockActive() or (HasTarget() and TargetHealth() > 4000)
+			return isInCombat and not IsBlockActive() or (TargetIsInRange() and TargetHealth() > 4000) and not CooldownRunning(26797, 800) and StartCooldown(26797)
 		end,
 		[26869] = function()
 			--lodernder Speer
-			return not IsAutoAttack() or (RegisterRecast(26869, 6000) and not CooldownRunning(26869, 8000) and StartCooldown(26869) and RegisterRecast(26869, 12000))
+			return not IsAutoAttack() or (RegisterRecast(26869, 6000) and not CooldownRunning(26869, 8000) and StartCooldown(26869)) and RegisterRecast(26869, 12000)
 		end,
 		[29338] = function()
 			--neutralisierende Magie
@@ -898,7 +934,7 @@ do
 		end,
 		[40161] = function()
 			--makelloser Dämmerbrecher
-			return not IsAutoAttack() or PlayerUltimate() >= 119 and TargetHealth() > 300000 and currentBar == ACTIVE_WEAPON_PAIR_MAIN
+			return not IsAutoAttack() or PlayerUltimate() >= 119 and TargetHealth() > 300000 and currentBar == ACTIVE_WEAPON_PAIR_MAIN and TargetIsInRange()
 		end,
 		[40420] = function()
 			--Seelenangriff
@@ -1225,7 +1261,8 @@ do
 		end,
 		[26792] = function()
 			--harsche Hiebe
-			return isInCombat and not IsBlockActive() and not CooldownRunning(26792, 800) and StartCooldown(26792)
+			return isInCombat and not IsBlockActive() or (TargetIsInRange() and TargetHealth() > 4000) and not CooldownRunning(26792, 800) and StartCooldown(26792)
+			--return isInCombat and not IsBlockActive() and not CooldownRunning(26792, 800) and StartCooldown(26792)
 		end,
 		[21763] = function()
 			--Macht des Lichts
@@ -1237,7 +1274,7 @@ do
 		end,
 		[38788] = function()
 			--kritisches Toben
-			return not IsAutoAttack() or HasTarget() and PlayerStamiaPercent() >= 0.5 and not CooldownRunning(38788, 11000) and StartCooldown(38788) and RegisterRecast(38788, 20000)
+			return not IsAutoAttack() or (HasTarget() and PlayerStamiaPercent() >= 0.5 and not CooldownRunning(38788, 8000)) and StartCooldown(38788) and RegisterRecast(38788, 16000)
 		end,
 		[22237] = function()
 			--wiederherstellender Fokus
@@ -1284,26 +1321,6 @@ do
 			return isInCombat and PlayerStamiaPercent() <= 0.5 and not CooldownRunning(26821, 4000) and StartCooldown(26821) and RegisterRecast(22223, 24000)
 		end
 	}
-	--MAP_PIN_TYPE_ANTIQUITY_DIG_SITE
-	local function showAction(actionId)
-		lastAllowedAction = actionId
-		df("action %i %ims %s", actionId, GetGameTimeMilliseconds() - lastAllowActionTime, GetAbilityName(actionId))
-		return true
-	end
-	local function checkAbility(actionId)
-		--df("action %i %s", actionId, GetAbilityName(actionId))
-		local action = processAbility[actionId] or processAbility[actionButton]
-		if action then
-			return action(actionButton)
-		end
-		df("action unknown %i %s", actionId, GetAbilityName(actionId))
-		return isInCombat and not IsAutoAttack()
-	end
-	local function checkAction(actionButton, hotbarCategory)
-		local actionId = GetSlotBoundId(actionButton, hotbarCategory)
-		return checkAbility(actionId) and showAction(actionId)
-	end
-
 	local function doNotKillMaelstromHealer()
 		local name = GetUnitNameHighlightedByReticle()
 		return name ~= "Argonier-Pflegerin" and name ~= "Argonier-Pfleger"
@@ -1320,7 +1337,7 @@ do
 			local hotbarCategory = HOTBAR_CATEGORY_QUICKSLOT_WHEEL
 			actionButton = GetCurrentQuickslot()
 			local latency = GetLatency() / 2
-			local allow = lastAllowedAction == 0 or not IsAutoAttack()
+			local allow = true -- lastAllowedAction == 0 or not IsAutoAttack()
 			allow = allow and GetSlotCooldownInfo(actionButton, hotbarCategory) <= latency and checkAction(actionButton, hotbarCategory)
 			if allow then
 				return orgZO_ActionBar_CanUseActionSlots(...)
@@ -1333,13 +1350,14 @@ do
 				keyWasDown[actionButton] = true
 				local lastAction = GetGameTimeMilliseconds() - lastAllowActionTime
 				local latency = GetLatency() --/ 2
-				local noCooldown = GetSlotCooldownInfo(actionButton) <= latency
-				if noCooldown then
-					lastAllowedAction = 0
-				end
+				local hotbarCategory = currentBar == ACTIVE_WEAPON_PAIR_MAIN and HOTBAR_CATEGORY_PRIMARY or HOTBAR_CATEGORY_BACKUP
+				local noCooldown = GetSlotCooldownInfo(actionButton, hotbarCategory) <= latency
+				-- if noCooldown then
+				-- 	lastAllowedAction = 0
+				-- end
 				--local allow = lastAllowedAction == 0 or not IsAutoAttack()
-				local allow = true
-				allow = allow and lastAction >= latency and noCooldown and doNotKillMaelstromHealer() and checkAction(actionButton)
+				local allow = noCooldown and not ActionSlotHasCostFailure(actionButton, hotbarCategory) and not ActionSlotHasNonCostStateFailure(actionButton, hotbarCategory)
+				allow = allow and lastAction >= latency and doNotKillMaelstromHealer() and checkAction(actionButton)
 				wasAllowed[actionButton] = allow
 				--d("---", allow, lastAllowedAction == 0, not IsAutoAttack(), checkAction(actionButton))
 				if allow then
@@ -1383,7 +1401,7 @@ do
 		end
 		if PlayerHealthPercent() <= 0.5 then
 			needBarSwap = selfHealBar
-		elseif (HasTarget() and TargetHealth() < 30000) then
+		elseif HasTarget() and TargetHealth() < 30000 then
 			needBarSwap = ACTIVE_WEAPON_PAIR_MAIN
 		else
 			for ability, bar in pairs(abilityBar) do
@@ -1394,7 +1412,12 @@ do
 				end
 			end
 		end
-		return GetActiveWeaponPairInfo() ~= needBarSwap
+		if GetActiveWeaponPairInfo() ~= needBarSwap then
+			d("Do bar swap")
+			return true
+		else
+			return false
+		end
 	end
 
 	local function OnCombatStateChange(eventCode, inCombat)
