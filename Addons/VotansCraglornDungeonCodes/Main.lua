@@ -119,20 +119,7 @@ local codes = {
 	["WS1"] = 189, --Dungeon: Wayrest Sewers I
 	["WS2"] = 263 --Dungeon: Wayrest Sewers II
 }
-local trigger = {
-	["lf "] = true,
-	["lfdd "] = true,
-	["lft "] = true,
-	["lfh "] = true,
-	["lfm "] = true,
-	["lfg "] = true,
-	["LF "] = true,
-	["LFDD "] = true,
-	["LFT "] = true,
-	["LFH "] = true,
-	["LFM "] = true,
-	["LFG "] = true
-}
+
 local tooltipCodes = {}
 for keyword, nodeIndex in pairs(codes) do
 	if string.len(keyword) <= 3 then
@@ -153,41 +140,42 @@ local normalText = GetString(SI_DUNGEONDIFFICULTY1)
 local vetText = GetString(SI_DUNGEONDIFFICULTY2)
 for keyword, name in pairs(codes) do
 	local name = zo_strformat("<<!AT:1>>", name)
-	local default = string.format("%s [%s]", keyword, name)
-	local normal = string.format("n%s [%s] |c00ef00(%s)|r", keyword, name, normalText)
-	local vet = string.format("v%s [%s] |cED8200(%s)|r", keyword, name, vetText)
-	replacement[keyword] = default
+	local default = string.format("%s %s", keyword, name)
+	local normal = string.format("n%s %s |c00ef00%s|r", keyword, name, normalText)
+	local vet = string.format("v%s %s |cED8200%s|r", keyword, name, vetText)
 	replacement["n" .. keyword] = normal
 	replacement["v" .. keyword] = vet
 	local alter = keyword:lower()
-	replacement[alter] = default
 	replacement["n" .. alter] = normal
 	replacement["v" .. alter] = vet
 	alter = keyword:upper()
 	replacement[alter] = default
 	replacement["n" .. alter] = normal
 	replacement["v" .. alter] = vet
+	replacement["N" .. alter] = normal
+	replacement["V" .. alter] = vet
 end
 do
+	local prefixes = {
+		[" "] = true,
+		[","] = true,
+		["/"] = true,
+		[":"] = true
+	}
 	local function replaceCode(prefix, keyword)
-		local name = replacement[keyword]
+		local name = prefixes[prefix] and replacement[keyword]
 		if name then
-			return string.format("%s%s", prefix or "", name)
+			return string.format("%s%s", prefix, name)
 		end
 	end
 	local FormatAndAddChatMessage = CHAT_ROUTER.FormatAndAddChatMessage
 	function CHAT_ROUTER:FormatAndAddChatMessage(eventCode, ...)
 		if eventCode == EVENT_CHAT_MESSAGE_CHANNEL then
+			local count
 			local msg = select(3, ...)
-			local triggered = false
-			for keyword in pairs(trigger) do
-				if zo_plainstrfind(msg, keyword) then
-					triggered = true
-					break
-				end
-			end
-			if triggered then
-				msg = msg:gsub("(%A)(%a%w+)", replaceCode)
+
+			msg, count = msg:gsub("(%A)(%a%w+)", replaceCode)
+			if count > 0 then
 				local result = {...}
 				result[3] = msg
 				return FormatAndAddChatMessage(self, eventCode, unpack(result))
