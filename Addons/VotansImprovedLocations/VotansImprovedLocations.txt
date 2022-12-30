@@ -1,8 +1,8 @@
 ## Title: Votan's Improved Locations
 ## Author: votan
 ## Description: Adds additional information to location tab in world map.
-## Version: 1.22.1
-## APIVersion: 101035 101036
+## Version: 1.22.2
+## APIVersion: 101036 101037
 ## DependsOn: LibAddonMenu-2.0>=31
 ## OptionalDependsOn: AccurateWorldMap
 ## SavedVariables: VotansImprovedLocations_Data

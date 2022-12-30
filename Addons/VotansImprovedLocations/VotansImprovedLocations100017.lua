@@ -267,6 +267,51 @@
 		{
 			-- "Blackreach",
 			alliance = ALLIANCE_EBONHEART_PACT
+		},
+		-- [40] =
+		{
+			-- "Blackreach",
+			alliance = 999
+		},
+		-- [41] =
+		{
+			-- "Blackreach: Arkthzand",
+			alliance = ALLIANCE_EBONHEART_PACT
+		},
+		-- [42] =
+		{
+			-- "Reik",
+			alliance = ALLIANCE_EBONHEART_PACT
+		},
+		-- [43] =
+		{
+			-- "Blackwood",
+			alliance = 999
+		},
+		-- [44] =
+		{
+			-- "Fargrave",
+			alliance = 999
+		},
+		-- [45] =
+		{
+			-- "Deathlands",
+			alliance = 999
+		},
+		-- [46] =
+		{
+			-- "High Isle",
+			alliance = ALLIANCE_DAGGERFALL_COVENANT
+		},
+		-- [47] =
+		{
+			-- "Fargrave City"
+			alliance = 999
+		},
+		-- [48] =
+		{
+			-- "Galen",
+			alliance = ALLIANCE_DAGGERFALL_COVENANT
 		}
 	},
 	tresureMap = {},
