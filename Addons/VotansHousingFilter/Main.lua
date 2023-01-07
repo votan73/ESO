@@ -1,4 +1,4 @@
-﻿local addon = {
+local addon = {
 	name = "VotansHousingFilter"
 }
 
@@ -40,17 +40,7 @@ function addon:InitPlaceableFilter()
 		}
 	end
 
-	ZO_MenuBar_AddButton(
-		self.toolBar,
-		CreateButtonData(
-			SI_ITEMFILTERTYPE0,
-			1,
-			"/esoui/art/inventory/inventory_tabicon_all_up.dds",
-			"/esoui/art/inventory/inventory_tabicon_all_down.dds",
-			"/esoui/art/inventory/inventory_tabicon_all_over.dds",
-			"/esoui/art/inventory/inventory_tabicon_all_disabled.dds"
-		)
-	)
+	ZO_MenuBar_AddButton(self.toolBar, CreateButtonData(SI_ITEMFILTERTYPE0, 1, "/esoui/art/inventory/inventory_tabicon_all_up.dds", "/esoui/art/inventory/inventory_tabicon_all_down.dds", "/esoui/art/inventory/inventory_tabicon_all_over.dds", "/esoui/art/inventory/inventory_tabicon_all_disabled.dds"))
 	ZO_MenuBar_AddButton(
 		self.toolBar,
 		CreateButtonData(
@@ -62,6 +52,64 @@ function addon:InitPlaceableFilter()
 			"/esoui/art/mainmenu/menubar_inventory_disabled.dds",
 			function(slot)
 				return slot.bagId == BAG_BACKPACK
+			end
+		)
+	)
+	local bankSlot = {
+		[BAG_BANK] = true,
+		[BAG_SUBSCRIBER_BANK] = true
+	}
+	ZO_MenuBar_AddButton(
+		self.toolBar,
+		CreateButtonData(
+			SI_GAMEPAD_BANK_CATEGORY_HEADER,
+			3,
+			"VotansHousingFilter/tabicon_bank_up.dds",
+			"VotansHousingFilter/tabicon_bank_down.dds",
+			"VotansHousingFilter/tabicon_bank_over.dds",
+			"VotansHousingFilter/tabicon_bank_disabled.dds",
+			function(slot)
+				return bankSlot[slot.bagId]
+			end
+		)
+	)
+	local chestSlot = {
+		[BAG_HOUSE_BANK_ONE] = true,
+		[BAG_HOUSE_BANK_TWO] = true,
+		[BAG_HOUSE_BANK_THREE] = true,
+		[BAG_HOUSE_BANK_FOUR] = true,
+		[BAG_HOUSE_BANK_FIVE] = true,
+		[BAG_HOUSE_BANK_SIX] = true,
+		[BAG_HOUSE_BANK_SEVEN] = true,
+		[BAG_HOUSE_BANK_EIGHT] = true,
+		[BAG_HOUSE_BANK_NINE] = true,
+		[BAG_HOUSE_BANK_TEN] = true
+	}
+	ZO_MenuBar_AddButton(
+		self.toolBar,
+		CreateButtonData(
+			SI_ITEMTYPE18,
+			4,
+			"/esoui/art/inventory/inventory_tabicon_container_up.dds",
+			"/esoui/art/inventory/inventory_tabicon_container_down.dds",
+			"/esoui/art/inventory/inventory_tabicon_container_over.dds",
+			"/esoui/art/inventory/inventory_tabicon_container_disabled.dds",
+			function(slot)
+				return chestSlot[slot.bagId]
+			end
+		)
+	)
+	ZO_MenuBar_AddButton(
+		self.toolBar,
+		CreateButtonData(
+			SI_HOUSINGFURNISHINGLIMITTYPE2,
+			5,
+			"/esoui/art/icons/achievements_indexicon_collections_up.dds",
+			"/esoui/art/icons/achievements_indexicon_collections_down.dds",
+			"/esoui/art/icons/achievements_indexicon_collections_over.dds",
+			"/esoui/art/icons/achievements_indexicon_collections_disabled.dds",
+			function(slot)
+				return false
 			end
 		)
 	)
@@ -79,7 +127,7 @@ function addon:InitPlaceableFilter()
 	do
 		local orgGetPassesTextFilter = ZO_PlaceableFurnitureCollectible.GetPassesTextFilter
 		function ZO_PlaceableFurnitureCollectible.GetPassesTextFilter(...)
-			if selectedMode == 1 then
+			if selectedMode == 1 or selectedMode == 5 then
 				return orgGetPassesTextFilter(...)
 			end
 			return false
@@ -139,17 +187,7 @@ function addon:InitProductFilter()
 		}
 	end
 
-	ZO_MenuBar_AddButton(
-		self.toolBar,
-		CreateButtonData(
-			SI_ITEMFILTERTYPE0,
-			1,
-			"/esoui/art/inventory/inventory_tabicon_all_up.dds",
-			"/esoui/art/inventory/inventory_tabicon_all_down.dds",
-			"/esoui/art/inventory/inventory_tabicon_all_over.dds",
-			"/esoui/art/inventory/inventory_tabicon_all_disabled.dds"
-		)
-	)
+	ZO_MenuBar_AddButton(self.toolBar, CreateButtonData(SI_ITEMFILTERTYPE0, 1, "/esoui/art/inventory/inventory_tabicon_all_up.dds", "/esoui/art/inventory/inventory_tabicon_all_down.dds", "/esoui/art/inventory/inventory_tabicon_all_over.dds", "/esoui/art/inventory/inventory_tabicon_all_disabled.dds"))
 	local function IsCraftable(slot)
 		if not craftables then
 			createCraftablesLookup()
