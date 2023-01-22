@@ -1,0 +1,20 @@
+; This Add-on is not created by, affiliated with or sponsored by ZeniMax
+; Media Inc. or its affiliates. The Elder Scrolls® and related logos are
+; registered trademarks or trademarks of ZeniMax Media Inc. in the United
+; States and/or other countries. All rights reserved.
+
+## Title: Harven's Quest Journal
+## Version: 2.9.1
+## Author: Harven & votan
+## APIVersion: 101036 101037
+## DependsOn: LibHarvensAddonSettings>=10900
+## OptionalDependsOn: LibMainMenu2
+## SavedVariables: HarvensQuestJournal_SavedVariables
+## Description: Quest Journal replacement. Type |cff0000/journal|r or set some binding in the controls menu to open the journal.
+
+lang/strings.lua
+lang/$(language).lua
+
+HarvensQuestJournal.lua
+HarvensQuestJournal.xml
+Bindings.xml

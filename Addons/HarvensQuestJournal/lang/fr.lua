@@ -1,0 +1,42 @@
+﻿local strings = {
+	["SI_BINDING_NAME_TOGGLE_HARVENSQUESTJOURNAL"] = "Basculer Harven's Quest Journal",
+	["HARVEN_QUEST_JOURNAL_DONE_BY_NAME"] = " par <<1>>",
+	["HARVEN_QUEST_JOURNAL_COMPLETED_AT_TIME"] = "Accomplie le <<1>> <<2>>",
+	["HARVEN_QUEST_JOURNAL_COMPLETED_AT_LOCATION"] = "<<l:1>>",
+	["HARVEN_QUEST_JOURNAL_SENTENCE_END"] = ".",
+	["HARVEN_QUEST_JOURNAL_REWARD_XP"] = "<<1>> <<1[Point d'expérience/Points d'expérience]>>",
+	["HARVEN_QUEST_JOURNAL_REWARD_CP"] = "<<1>> <<1[Points d'expérience de champion/Points d'expérience de champion]>>",
+	["HARVEN_QUEST_JOURNAL_REWARD_GOLD"] = "|t16:16:EsoUI/Art/currency/currency_gold.dds|t <<1>>",
+	["HARVEN_QUEST_JOURNAL_CURRENT_QUESTS_TITLE"] = "Quêtes en cours",
+	["HARVEN_QUEST_JOURNAL_COMPLETED_QUESTS_TITLE"] = "Quêtes accomplies",
+	["HARVEN_QUEST_JOURNAL_CURRENT_QUESTS_KEYBIND"] = "En cours",
+	["HARVEN_QUEST_JOURNAL_COMPLETED_QUESTS_KEYBIND"] = "Accomplies",
+	["HARVEN_QUEST_JOURNAL_SORT_BY"] = "Trier par:",
+	["HARVEN_QUEST_JOURNAL_SORT_ALPHABETICALLY"] = "Ordre alphabétique",
+	["HARVEN_QUEST_JOURNAL_SORT_TIMEOFCOMPLETION"] = "Date de complétion",
+	["HARVEN_QUEST_JOURNAL_SORT_TIMEOFSTART"] = "Date d'acceptation",
+	["HARVEN_QUEST_JOURNAL_SORT_LEVEL"] = GetString(SI_ITEM_FORMAT_STR_LEVEL),
+	["HARVEN_QUEST_JOURNAL_SORT_ASC"] = "Ordre croissant",
+	["HARVEN_QUEST_JOURNAL_SET_FOCUS"] = "Suivre cette quête",
+	["HARVEN_QUEST_JOURNAL_BACK"] = "Retour",
+	["HARVEN_QUEST_JOURNAL_DELETE"] = "Supprimer",
+	["HARVEN_QUEST_JOURNAL_DELETE_QUEST"] = "Abandonner la quête",
+	["HARVEN_QUEST_JOURNAL_DELETE_QUEST_CONFIRM"] = 'Êtes-vous sûr de vouloir abandonner "<<1>>"?',
+	["HARVEN_QUEST_JOURNAL_BOOK_SKIN"] = "Style du livre",
+	["HARVEN_QUEST_JOURNAL_BODY_FONT"] = "Police du contenu",
+	["HARVEN_QUEST_JOURNAL_TITLE_FONT"] = "Police de titre",
+	["HARVEN_QUEST_JOURNAL_FONT_COLOR"] = "Couleur de la police",
+	["HARVEN_QUEST_JOURNAL_QUEST_NAME_COLOR"] = "Couleur des noms de quête",
+	["HARVEN_QUEST_JOURNAL_NPC_NAME_COLOR"] = "Couleur des noms de PNJ",
+	["HARVEN_QUEST_JOURNAL_LIST_COMPLETED_QUESTS_CATEGORYIES"] = "Liste des catégories de quêtes accomplies",
+	["HARVEN_QUEST_JOURNAL_LIST_COMPLETED_QUESTS_CATEGORYIES_TOOLTIP"] = "Lorsque cette option est activée, les catégories et les zones de quêtes accomplies sont répertoriées sur la page d'index. Ensuite, vous pouvez cliquer sur une catégorie ou un nom de zone pour lister toutes les quêtes.",
+	["HARVEN_QUEST_JOURNAL_OPEN_FOCUSED_QUEST"] = "Journal ouvert à la quête suivie",
+	["HARVEN_QUEST_JOURNAL_SAVED_COMPLETED_DAILIES"] = "Enregistrer les journalières accomplies",
+	["HARVEN_QUEST_JOURNAL_COMPLETED_REPEATABLE"] = "Enregistrer les répétables accomplies",
+	["HARVEN_QUEST_JOURNAL_PLAY_EMOTE"] = "Jouer l'émote à l'ouverture du journal",
+	["HARVEN_QUEST_JOURNAL_SHOW_MAIN_MENU"] = "Afficher dans le menu principal"
+}
+local SafeAddString = SafeAddString
+for id, text in pairs(strings) do
+	SafeAddString(_G[id], text)
+end

@@ -1,0 +1,41 @@
+﻿local strings = {
+	["SI_BINDING_NAME_TOGGLE_HARVENSQUESTJOURNAL"] = "Harven's Quest Journal ein-/ausblenden",
+	["HARVEN_QUEST_JOURNAL_DONE_BY_NAME"] = " von <<1>>",
+	["HARVEN_QUEST_JOURNAL_COMPLETED_AT_TIME"] = "Abgeschlossen am <<1>> um <<2>>",
+	--["HARVEN_QUEST_JOURNAL_COMPLETED_AT_LOCATION"] = "<<l:1>>",
+	["HARVEN_QUEST_JOURNAL_REWARD_XP"] = "<<1>> <<1[Erfahrungspunkt/Erfahrungspunkte]>>",
+	["HARVEN_QUEST_JOURNAL_REWARD_CP"] = "<<1>> <<1[Champion Erfahrungspunkt/Champion Erfahrungspunkte]>>",
+	--["HARVEN_QUEST_JOURNAL_REWARD_GOLD"] = "|t16:16:EsoUI/Art/currency/currency_gold.dds|t <<1>>",
+	["HARVEN_QUEST_JOURNAL_CURRENT_QUESTS_TITLE"] = "Aktuelle Quests",
+	["HARVEN_QUEST_JOURNAL_COMPLETED_QUESTS_TITLE"] = "Abgeschlossene Quests",
+	["HARVEN_QUEST_JOURNAL_CURRENT_QUESTS_KEYBIND"] = "Aktuelle",
+	["HARVEN_QUEST_JOURNAL_COMPLETED_QUESTS_KEYBIND"] = "Abgeschlossene",
+	["HARVEN_QUEST_JOURNAL_SORT_BY"] = "Sortiert nach:",
+	["HARVEN_QUEST_JOURNAL_SORT_ALPHABETICALLY"] = "Alphabeticsch",
+	["HARVEN_QUEST_JOURNAL_SORT_TIMEOFCOMPLETION"] = "Abschlussdatum",
+	["HARVEN_QUEST_JOURNAL_SORT_TIMEOFSTART"] = "Beginndatum",
+	--["HARVEN_QUEST_JOURNAL_SORT_LEVEL"] = GetString(SI_ITEM_FORMAT_STR_LEVEL),
+	["HARVEN_QUEST_JOURNAL_SORT_ASC"] = "Aufsteigend",
+	["HARVEN_QUEST_JOURNAL_SET_FOCUS"] = "Fokus setzen",
+	["HARVEN_QUEST_JOURNAL_BACK"] = "Zurück",
+	["HARVEN_QUEST_JOURNAL_DELETE"] = "Löschen",
+	["HARVEN_QUEST_JOURNAL_DELETE_QUEST"] = "Quest löschen",
+	["HARVEN_QUEST_JOURNAL_DELETE_QUEST_CONFIRM"] = "Sind Sie sicher, das Sie \"<<1>>\" löschen wollen?",
+	["HARVEN_QUEST_JOURNAL_BOOK_SKIN"] = "Buchstil",
+	["HARVEN_QUEST_JOURNAL_BODY_FONT"] = "Schriftart - Inhalt",
+	["HARVEN_QUEST_JOURNAL_TITLE_FONT"] = "Schriftart - Titel",
+	["HARVEN_QUEST_JOURNAL_FONT_COLOR"] = "Textfarbe",
+	["HARVEN_QUEST_JOURNAL_QUEST_NAME_COLOR"] = "Farbe für Quest Namen",
+	["HARVEN_QUEST_JOURNAL_NPC_NAME_COLOR"] = "Farbe für NPC Namen",
+	["HARVEN_QUEST_JOURNAL_LIST_COMPLETED_QUESTS_CATEGORYIES"] = "Kategorien anzeigen",
+	["HARVEN_QUEST_JOURNAL_LIST_COMPLETED_QUESTS_CATEGORYIES_TOOLTIP"] = "Wenn aktiviert, wird auf der Inhaltsseite eine Liste mit den Kategorien von abgeschlossenen Quests und Gebieten angezeigt. Dort kannst Du dann auf die Kategorie oder das Gebiet klicken um die Liste der Quests anzuzeigen.",
+	["HARVEN_QUEST_JOURNAL_OPEN_FOCUSED_QUEST"] = "Mit der fokusierten Quest öffnen",
+	["HARVEN_QUEST_JOURNAL_SAVED_COMPLETED_DAILIES"] = "Tägliche Quests speichern",
+	["HARVEN_QUEST_JOURNAL_COMPLETED_REPEATABLE"] = "Wiederholbare Quests speichern",
+	["HARVEN_QUEST_JOURNAL_PLAY_EMOTE"] = "Beim Öffnen Emote abspielen",
+	["HARVEN_QUEST_JOURNAL_SHOW_MAIN_MENU"] = "Im Hauptmenü anzeigen"
+}
+local SafeAddString = SafeAddString
+for id, text in pairs(strings) do
+	SafeAddString(_G[id], text)
+end

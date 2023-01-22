@@ -1,0 +1,42 @@
+local strings = {
+	["SI_BINDING_NAME_TOGGLE_HARVENSQUESTJOURNAL"] = "Toggle Harven's Quest Journal",
+	["HARVEN_QUEST_JOURNAL_DONE_BY_NAME"] = " by <<1>>",
+	["HARVEN_QUEST_JOURNAL_COMPLETED_AT_TIME"] = "Completed at <<1>> <<2>>",
+	["HARVEN_QUEST_JOURNAL_COMPLETED_AT_LOCATION"] = "<<l:1>>",
+	["HARVEN_QUEST_JOURNAL_SENTENCE_END"] = ".",
+	["HARVEN_QUEST_JOURNAL_REWARD_XP"] = "<<1>> <<1[Experience Point/Experience Points]>>",
+	["HARVEN_QUEST_JOURNAL_REWARD_CP"] = "<<1>> <<1[Champion Experience Point/Champion Experience Points]>>",
+	["HARVEN_QUEST_JOURNAL_REWARD_GOLD"] = "|t16:16:EsoUI/Art/currency/currency_gold.dds|t <<1>>",
+	["HARVEN_QUEST_JOURNAL_CURRENT_QUESTS_TITLE"] = "Current Quests",
+	["HARVEN_QUEST_JOURNAL_COMPLETED_QUESTS_TITLE"] = "Completed Quests",
+	["HARVEN_QUEST_JOURNAL_CURRENT_QUESTS_KEYBIND"] = "Current",
+	["HARVEN_QUEST_JOURNAL_COMPLETED_QUESTS_KEYBIND"] = "Completed",
+	["HARVEN_QUEST_JOURNAL_SORT_BY"] = "Sort by:",
+	["HARVEN_QUEST_JOURNAL_SORT_ALPHABETICALLY"] = "Alphabetically",
+	["HARVEN_QUEST_JOURNAL_SORT_TIMEOFCOMPLETION"] = "Date of completion",
+	["HARVEN_QUEST_JOURNAL_SORT_TIMEOFSTART"] = "Date of acceptance",
+	["HARVEN_QUEST_JOURNAL_SORT_LEVEL"] = GetString(SI_ITEM_FORMAT_STR_LEVEL),
+	["HARVEN_QUEST_JOURNAL_SORT_ASC"] = "Ascending",
+	["HARVEN_QUEST_JOURNAL_SET_FOCUS"] = "Set Focus",
+	["HARVEN_QUEST_JOURNAL_BACK"] = "Back",
+	["HARVEN_QUEST_JOURNAL_DELETE"] = "Delete",
+	["HARVEN_QUEST_JOURNAL_DELETE_QUEST"] = "Delete Quest",
+	["HARVEN_QUEST_JOURNAL_DELETE_QUEST_CONFIRM"] = 'Are you sure you want to delete "<<1>>"?',
+	["HARVEN_QUEST_JOURNAL_BOOK_SKIN"] = "Book Skin",
+	["HARVEN_QUEST_JOURNAL_BODY_FONT"] = "Body Font",
+	["HARVEN_QUEST_JOURNAL_TITLE_FONT"] = "Title Font",
+	["HARVEN_QUEST_JOURNAL_FONT_COLOR"] = "Font Color",
+	["HARVEN_QUEST_JOURNAL_QUEST_NAME_COLOR"] = "Quest Names Color",
+	["HARVEN_QUEST_JOURNAL_NPC_NAME_COLOR"] = "NPC Names Color",
+	["HARVEN_QUEST_JOURNAL_LIST_COMPLETED_QUESTS_CATEGORYIES"] = "List Completed Quests Categories",
+	["HARVEN_QUEST_JOURNAL_LIST_COMPLETED_QUESTS_CATEGORYIES_TOOLTIP"] = "When enabled lists completed quests categories and zones at index page. Then you can click on a category or zone name to list all quest.",
+	["HARVEN_QUEST_JOURNAL_OPEN_FOCUSED_QUEST"] = "Open Journal at Focused Quest",
+	["HARVEN_QUEST_JOURNAL_SAVED_COMPLETED_DAILIES"] = "Save Completed Daily Quests",
+	["HARVEN_QUEST_JOURNAL_COMPLETED_REPEATABLE"] = "Save Completed Repeatable Quests",
+	["HARVEN_QUEST_JOURNAL_PLAY_EMOTE"] = "Play Emote on opening Journal",
+	["HARVEN_QUEST_JOURNAL_SHOW_MAIN_MENU"] = "Show In Main Menu"
+}
+local ZO_CreateStringId = ZO_CreateStringId
+for id, text in pairs(strings) do
+	ZO_CreateStringId(id, text)
+end
