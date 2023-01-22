@@ -637,7 +637,7 @@ end
 function HarvensCustomMapPins:SetupOptions()
 	local LibHarvensAddonSettings = LibHarvensAddonSettings or LibStub("LibHarvensAddonSettings-1.0")
 	local settings = LibHarvensAddonSettings:AddAddon("Harven's Custom Map Pins")
-	settings.version = "3.2.1"
+	settings.version = "3.2.2"
 
 	local pinSize = {
 		type = LibHarvensAddonSettings.ST_SLIDER,
@@ -969,11 +969,20 @@ do
 	local pinIdToPredefined = {}
 	local function AddPinFilterCheckBox(self, mapPinGroup, refreshFunction, header)
 		if not self.checkBoxPool then
-			self.checkBoxPool = ZO_ControlPool:New("ZO_CheckButton", self.control, "CheckBox")
+			self.checkBoxPool = ZO_ControlPool:New("ZO_CheckButton", self.control, "HCPCheckBox")
 		end
 
 		local checkBox = self.checkBoxPool:AcquireObject()
-		ZO_CheckButton_SetLabelText(checkBox, " |u12:0::|u" .. header)
+		local predefined = pinIdToPredefined[mapPinGroup]
+		predefined = predefined and HarvensCustomMapPins.sv.predefined[predefined]
+		if predefined then
+			local color = HarvensCustomMapPins:GetColor(predefined.color)
+			local icon = HarvensCustomMapPinsIconList[predefined.icon] or HarvensCustomMapPinsIconList[1]
+
+			ZO_CheckButton_SetLabelText(checkBox, string.format(" |u12:0::|u|c%s|t%d:%d:%s:inheritColor|t|r%s", color:ToHex(), 28, 28, icon, header))
+		else
+			ZO_CheckButton_SetLabelText(checkBox, " |u12:0::|u" .. header)
+		end
 		ZO_CheckButton_SetToggleFunction(
 			checkBox,
 			function(button, checked)
