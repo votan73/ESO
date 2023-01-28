@@ -1,7 +1,6 @@
 ﻿local addon = {
 	name = "VotansCraglornDungeonCodes"
 }
-local em = GetEventManager()
 
 -- Bingo Code to Fast Travel Node
 local codes = {
@@ -165,7 +164,7 @@ do
 	local function replaceCode(prefix, keyword)
 		local name = prefixes[prefix] and replacement[keyword]
 		if name then
-			return string.format("%s%s", prefix, name)
+			return string.format("%s|o%s", prefix, name)
 		end
 	end
 	local FormatAndAddChatMessage = CHAT_ROUTER.FormatAndAddChatMessage
@@ -186,24 +185,16 @@ do
 end
 
 do
-	local function GetInformationTooltip(isGamepadMode)
-		if isGamepadMode then
-			return ZO_MapLocationTooltip_Gamepad
-		else
-			return InformationTooltip
-		end
-	end
-
-	local function GetPlatformInformationTooltip()
-		return GetInformationTooltip(IsInGamepadPreferredMode())
-	end
-
 	local function showCode(pin)
 		local nodeIndex = pin:GetFastTravelNodeIndex()
-		local code = tooltipCodes[nodeIndex]
+		local code = nodeIndex and tooltipCodes[nodeIndex]
 		if code then
-			local informationTooltip = GetPlatformInformationTooltip()
-			informationTooltip:AddLine(zo_strformat("Code: |cFFFFFFn<<1>>, v<<1>>|r", code), "", ZO_TOOLTIP_DEFAULT_COLOR:UnpackRGB())
+			local text = zo_strformat("Code: |cFFFFFFn<<1>>, v<<1>>|r", code)
+			if IsInGamepadPreferredMode() then
+				ZO_MapLocationTooltip_Gamepad.tooltip:AddLine(text)
+			else
+				InformationTooltip:AddLine(text, "", ZO_TOOLTIP_DEFAULT_COLOR:UnpackRGB())
+			end
 		end
 	end
 	SecurePostHook(ZO_MapPin.TOOLTIP_CREATORS[MAP_PIN_TYPE_FAST_TRAVEL_WAYSHRINE], "creator", showCode)
