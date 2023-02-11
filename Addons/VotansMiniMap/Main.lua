@@ -202,35 +202,35 @@ function addon:InitTweaks()
 		end
 	end
 
-	-- do
-	-- 	local task = async:Create("VOTAN_RefreshLocations")
+	if ZO_MapLocationPins_Manager then
+		local task = async:Create("VOTAN_RefreshLocations")
 
-	-- 	local locations
-	-- 	local function DrawPin(i)
-	-- 		locations:AddLocation(i)
-	-- 	end
-	-- 	local function releaseAllObjects()
-	-- 		locations:ReleaseAllObjects()
-	-- 	end
-	-- 	local function removePins(task)
-	-- 		addon.pinManager:RemovePins("loc")
-	-- 		task:For(1, GetNumMapLocations()):Do(DrawPin):Call(WaitForGPS)
-	-- 	end
-	-- 	local function delayStart(task)
-	-- 		task:Call(releaseAllObjects):Then(removePins)
-	-- 	end
-	-- 	local function start(task)
-	-- 		if GetScene():IsShowing() then
-	-- 			task:Delay(25, delayStart)
-	-- 		else
-	-- 			task:Delay(200, delayStart)
-	-- 		end
-	-- 	end
-	-- 	function ZO_MapLocationPins_Manager:RefreshLocations()
-	-- 		locations = self
-	-- 		task:Cancel():Call(WaitForGPS):Then(start)
-	-- 	end
-	-- end
+		local locations
+		local function DrawPin(i)
+			locations:AddLocation(i)
+		end
+		local function releaseAllObjects()
+			locations:ReleaseAllObjects()
+		end
+		local function removePins(task)
+			addon.pinManager:RemovePins("loc")
+			task:For(1, GetNumMapLocations()):Do(DrawPin):Call(WaitForGPS)
+		end
+		local function delayStart(task)
+			task:Call(releaseAllObjects):Then(removePins)
+		end
+		local function start(task)
+			if GetScene():IsShowing() then
+				task:Delay(25, delayStart)
+			else
+				task:Delay(200, delayStart)
+			end
+		end
+		function ZO_MapLocationPins_Manager:RefreshLocations()
+			locations = self
+			task:Cancel():Call(WaitForGPS):Then(start)
+		end
+	end
 
 	local function DeferRefresh(methodName, identifier, delay)
 		local task = async:Create("VOTAN_" .. identifier)
@@ -554,14 +554,12 @@ function addon:InitMiniMap()
 	self.clockRealTime = control
 	control:SetFont("ZoFontWindowTitle")
 	control:SetDimensions(66, 40)
-	control:SetResizeToFitDescendents(true)
 	control:SetAnchor(BOTTOMLEFT, nil, BOTTOMLEFT, 14, -4)
 
 	control = CreateControl("$(parent)ClockInGame", self.background, CT_LABEL)
 	self.clockInGame = control
 	control:SetFont("ZoFontWindowSubtitle")
 	control:SetDimensions(70, 32)
-	control:SetResizeToFitDescendents(true)
 	control:SetAnchor(BOTTOMLEFT, self.clockRealTime, BOTTOMRIGHT, 6, -2)
 	control:SetVerticalAlignment(BOTTOM)
 
