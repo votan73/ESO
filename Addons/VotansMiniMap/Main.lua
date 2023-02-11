@@ -553,13 +553,13 @@ function addon:InitMiniMap()
 	control = CreateControl("$(parent)ClockRealTime", self.background, CT_LABEL)
 	self.clockRealTime = control
 	control:SetFont("ZoFontWindowTitle")
-	control:SetDimensions(66, 40)
+	control:SetDimensionConstraints(66, 37, 0, 0)
 	control:SetAnchor(BOTTOMLEFT, nil, BOTTOMLEFT, 14, -4)
 
 	control = CreateControl("$(parent)ClockInGame", self.background, CT_LABEL)
 	self.clockInGame = control
 	control:SetFont("ZoFontWindowSubtitle")
-	control:SetDimensions(70, 32)
+	control:SetDimensionConstraints(66, 32, 0, 0)
 	control:SetAnchor(BOTTOMLEFT, self.clockRealTime, BOTTOMRIGHT, 6, -2)
 	control:SetVerticalAlignment(BOTTOM)
 
