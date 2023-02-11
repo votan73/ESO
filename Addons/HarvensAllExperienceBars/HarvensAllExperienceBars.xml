@@ -1,0 +1,36 @@
+<GuiXml>
+	<Animations>
+		<AnimationTimeline name="Harvens_ExperienceBarGainFade">
+			<Animations>
+				<AlphaAnimation delay="4000" duration="500" startAlpha="1.0" endAlpha="0.0"/>
+			</Animations>
+		</AnimationTimeline>
+		<AnimationTimeline name="Harvens_ExperienceBarFade">
+			<Animations>
+				<AlphaAnimation delay="8000" duration="500" startAlpha="1.0" endAlpha="0.0"/>
+			</Animations>
+		</AnimationTimeline>
+		<AnimationTimeline name="Harvens_ExperienceBarSparkleAnim">
+			<Animations>
+				<TextureRotateAnimation duration="750" startRotation="0" endRotation="1.57079632679" />
+				<TextureRotateAnimation duration="750" startRotation="0" endRotation="-1.57079632679" />
+				<AlphaAnimation duration="75" startAlpha="0.0" endAlpha="1.0"/>
+				<AlphaAnimation duration="125" delay="625" startAlpha="1.0" endAlpha="0.0"/>
+			</Animations>
+		</AnimationTimeline>
+	</Animations>
+	<Controls>
+		<StatusBar name="Harvens_ExperienceBar" virtual="true" inherits="ZO_ArrowStatusBarWithBG">
+			<Controls>
+				<Label name="$(parent)SkillName" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_SELECTED" modifyTextType="UPPERCASE" />
+				<Label name="$(parent)SkillProgress" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_SELECTED" />
+				<Label name="$(parent)SkillRank" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_SELECTED" />
+				<Label name="$(parent)Gain" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_SELECTED">
+					<Controls>
+						<Texture name="$(parent)Sparkle" inherits="ZO_SparkleTemplate" />
+					</Controls>
+				</Label>
+			</Controls>
+		</StatusBar>
+	</Controls>
+</GuiXml>
