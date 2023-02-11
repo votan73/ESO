@@ -1,0 +1,13 @@
+; This Add-on is not created by, affiliated with or sponsored by ZeniMax
+; Media Inc. or its affiliates. The Elder Scrolls® and related logos are
+; registered trademarks or trademarks of ZeniMax Media Inc. in the United
+; States and/or other countries. All rights reserved.
+
+## Title: Harven's Stack Split Slider
+## APIVersion: 101036 101037
+## Author: Harven & votan
+## Version: 2.0.0
+## Description: This addon add a slider control to the stack split window.
+## SavedVariables: HarvensStackSplitSlider_SavedVariables
+
+HarvensStackSplitSlider.lua
