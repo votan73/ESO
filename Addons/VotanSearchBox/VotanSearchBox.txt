@@ -1,8 +1,8 @@
 ## Title: Votan's Search Box
 ## Author: votan
 ## Description: Shows a magnifier symbol in your inventory to filter items by name, equip type, style and set name.
-## Version: 1.8.4
-## APIVersion: 101034 101035
+## Version: 1.8.5
+## APIVersion: 101036 101037
 ## DependsOn: LibHarvensAddonSettings>=10705 LibTextFilter>=10
 ## OptionalDependsOn: AdvancedFilters FilterIt AwesomeGuildStore CraftBagExtended LibDebugLogger
 ## SavedVariables: VotanSearchBox_SavedVariables

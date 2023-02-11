@@ -259,7 +259,11 @@ local function SetupInventoryControl(inventoryType, ...)
 	local subTabs = inventory.subFilterBar
 	local parent = subTabs:GetParent()
 	if bagSearch:GetParent() == parent then
-		parent:SetResizeToFitDescendents(false)
+		local w1, h1, w2, h2 = parent:GetDimensionConstraints()
+		h1 = math.max(32, h1)
+		parent:SetDimensionConstraints(w1, h1, w2, h2)
+		parent:SetResizeToFitDescendents(true)
+
 		bagSearch:SetParent(parent:GetParent())
 		AnchorSearchBox(bagSearch)
 		subTabs:ClearAnchors()
