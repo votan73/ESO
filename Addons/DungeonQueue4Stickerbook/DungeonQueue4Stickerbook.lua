@@ -2,7 +2,7 @@ DungeonQueue4Stickerbook = DungeonQueue4Stickerbook or {}
 local ttq = DungeonQueue4Stickerbook
 ttq = {
 	name = "DungeonQueue4Stickerbook",
-	author = "tim99",
+	author = "tim99 & votan",
 	svChar = {},
 	firstCall = true,
 	complSets = false,
@@ -56,7 +56,64 @@ local DungeonSets = {
 	[599] = {sets = {621, 619, 620}}, --Korallenhort
 	[601] = {sets = {624, 622, 623}}, --Gram des Schiffsbauers
 	[608] = {sets = {660, 661, 662}}, --Erdwurz-Enklave
-	[610] = {sets = {663, 664, 665}} --Kentertiefen
+	[610] = {sets = {663, 664, 665}}, --Kentertiefen
+	[613] = {sets = {680, 681, 682}}, --Bal Sunnar
+	[615] = {sets = {684, 685, 686}} --Halle der Schriftmeister
+}
+local DungeonSetsVet = {
+	--ActivityId
+	[19] = {sets = {163}}, -- Spindeltiefen I
+	[20] = {sets = {170}}, -- Verbannungszellen I
+	[21] = {sets = {268}}, -- Dunkelschattenkavernen II
+	[23] = {sets = {167}}, -- Eldengrund I
+	[261] = {sets = {168}}, -- Krypta der Herzen I
+	[267] = {sets = {272}}, -- Stadt der Asche II
+	[268] = {sets = {164}}, -- Gefängnis der Kaiserstadt
+	[287] = {sets = {183}}, -- Weißgoldturm
+	[294] = {sets = {256}}, -- Ruinen von Mazzatun
+	[296] = {sets = {257}}, -- Wiege der Schatten
+	[299] = {sets = {162}}, -- Pilzgrotte I
+	[301] = {sets = {265}}, -- Verbannungszellen II
+	[302] = {sets = {269}}, -- Eldengrund II
+	[304] = {sets = {276}}, -- Volenfell
+	[305] = {sets = {271}}, -- Arx Corinium
+	[306] = {sets = {165}}, -- Kanalisation von Wegesruh I
+	[307] = {sets = {270}}, -- Kanalisation von Wegesruh II
+	[309] = {sets = {166}}, -- Dunkelschattenkavernen I
+	[310] = {sets = {169}}, -- Stadt der Asche I
+	[311] = {sets = {275}}, -- Orkaninsel
+	[312] = {sets = {266}}, -- Pilzgrotte II
+	[313] = {sets = {279}}, -- Selenes Netz
+	[314] = {sets = {280}}, -- Kammern des Wahnsinns
+	[315] = {sets = {163}}, -- Spindeltiefen I
+	[318] = {sets = {273}}, -- Krypta der Herzen II
+	[319] = {sets = {274}}, -- Burg Grauenfrost
+	[320] = {sets = {278}}, -- Gesegnete Feuerprobe
+	[321] = {sets = {277}}, -- Schwarzherz-Unterschlupf
+	[325] = {sets = {341}}, -- Blutquellschmiede
+	[369] = {sets = {342}}, -- Falkenring
+	[419] = {sets = {350}}, -- Gipfel der Schuppenruferin
+	[421] = {sets = {349}}, -- Krallenhort
+	[427] = {sets = {398}}, -- Mondjägerfeste
+	[429] = {sets = {397}}, -- Marsch der Aufopferung
+	[434] = {sets = {432}}, -- Frostgewölbe
+	[436] = {sets = {436}}, -- Tiefen von Malatar
+	[495] = {sets = {458}}, -- Mondgrab-Tempelstadt
+	[497] = {sets = {459}}, -- Hort von Maarselok
+	[504] = {sets = {478}}, -- Eiskap
+	[506] = {sets = {479}}, -- Unheiliges Grab
+	[508] = {sets = {534}}, -- Steingarten
+	[510] = {sets = {535}}, -- Kastell Dorn
+	[592] = {sets = {577}}, -- Schwarzdrachenvilla
+	[594] = {sets = {578}}, -- Der Kessel
+	[596] = {sets = {608}}, -- Rotblütenbastion
+	[598] = {sets = {609}}, -- Schreckenskeller
+	[600] = {sets = {632}}, -- Korallenhorst
+	[602] = {sets = {633}}, -- Gram des Schiffbauers
+	[609] = {sets = {666}}, -- Erdwurz-Enklave
+	[611] = {sets = {667}}, -- Kentertiefen
+	[614] = {sets = {683}}, -- Bal Sunnar",
+	[616] = {sets = {687}} -- Halle der Schriftmeister",
 }
 local DungeonQuest = {
 	--QuestId
@@ -128,17 +185,43 @@ function ttq.checkCompletedSets()
 		local numSetsDone = 0
 		for j = 1, #v.sets do
 			local itemSetCollectionData = ITEM_SET_COLLECTIONS_DATA_MANAGER:GetItemSetCollectionData(v.sets[j])
-			local numUnlockedPieces, numPieces = itemSetCollectionData:GetNumUnlockedPieces(), itemSetCollectionData:GetNumPieces()
-			if numUnlockedPieces == numPieces then
-				numSetsDone = numSetsDone + 1
+			if itemSetCollectionData then
+				local numUnlockedPieces, numPieces = itemSetCollectionData:GetNumUnlockedPieces(), itemSetCollectionData:GetNumPieces()
+				if numUnlockedPieces == numPieces then
+					numSetsDone = numSetsDone + 1
+				end
+			else
+				numSetsDone = numSetsDone + 1 -- does not exist yet
 			end
 		end
 		if numSetsDone == #v.sets then
 			DungeonSets[i] = nil
 		end
 	end
+	for i, v in pairs(DungeonSetsVet) do
+		local numSetsDone = 0
+		for j = 1, #v.sets do
+			local itemSetCollectionData = ITEM_SET_COLLECTIONS_DATA_MANAGER:GetItemSetCollectionData(v.sets[j])
+			if itemSetCollectionData then
+				local numUnlockedPieces = 0
+				for _, pieceData in itemSetCollectionData:PieceIterator() do
+					if pieceData:IsUnlocked() and GetItemLinkEquipType(pieceData:GetItemLink()) == EQUIP_TYPE_HEAD then
+						numUnlockedPieces = numUnlockedPieces + 1
+					end
+				end
+				if numUnlockedPieces >= 3 then
+					numSetsDone = numSetsDone + 1
+				end
+			else
+				numSetsDone = numSetsDone + 1 -- does not exist yet
+			end
+		end
+		if numSetsDone == #v.sets then
+			DungeonSetsVet[i] = nil
+		end
+	end
 	local next = next
-	if next(DungeonSets) == nil then
+	if next(DungeonSets) == nil and next(DungeonSetsVet) == nil then
 		ttq.complSets = true
 	end
 	--d("checkCompletedSets:complSets = "..tostring(ttq.complSets))
@@ -161,8 +244,6 @@ function ttq.markAndQueueNormalInis(DungeonTable)
 	if IsUnitGrouped("player") and not IsUnitGroupLeader("player") then
 		return
 	end
-	--init locs
-	ZO_ACTIVITY_FINDER_ROOT_MANAGER:ClearAndUpdate()
 	--select missing
 	local parent = _G["ZO_DungeonFinder_KeyboardListSectionScrollChildContainer2"] --2=normal
 	if parent then
@@ -180,9 +261,33 @@ function ttq.markAndQueueNormalInis(DungeonTable)
 				end
 			end
 		end
-		--start Queue
-		if ttq.svChar.autoqueue and not ZO_DungeonFinder_KeyboardListSectionScrollChildZO_ActivityFinderTemplateNavigationHeader_Keyboard1:IsHidden() then
-			ZO_ActivityFinderTemplateQueueButtonKeyboard_OnClicked(ZO_DungeonFinder_KeyboardQueueButton)
+	--start Queue
+	-- if ttq.svChar.autoqueue and not ZO_DungeonFinder_KeyboardListSectionScrollChildZO_ActivityFinderTemplateNavigationHeader_Keyboard1:IsHidden() then
+	-- 	ZO_ActivityFinderTemplateQueueButtonKeyboard_OnClicked(ZO_DungeonFinder_KeyboardQueueButton)
+	-- end
+	end
+end
+----------------------------------------------------------------------------------------------------
+function ttq.markAndQueueVetInis(DungeonTable)
+	if IsUnitGrouped("player") and not IsUnitGroupLeader("player") then
+		return
+	end
+	--select missing
+	local parent = _G["ZO_DungeonFinder_KeyboardListSectionScrollChildContainer3"] --3=vet
+	if parent then
+		for i = 1, parent:GetNumChildren() do
+			local obj = parent:GetChild(i)
+			if obj then
+				local id = obj.node.data.id
+				if DungeonTable[id] then
+					if obj.check:GetState() == 0 then
+						obj.check:SetState(BSTATE_PRESSED, true)
+						ZO_ACTIVITY_FINDER_ROOT_MANAGER:ToggleLocationSelected(obj.node.data)
+					end
+					ZO_SelectableLabel_SetNormalColor(obj.text, obj.node.data.isSelected and ttq.col_tim99 or ZO_NORMAL_TEXT)
+					obj.text:RefreshTextColor()
+				end
+			end
 		end
 	end
 end
@@ -193,58 +298,79 @@ end
 function ttq.markAndQueueNormalInisQust()
 	ttq.markAndQueueNormalInis(DungeonQuest)
 end
-----------------------------------------------------------------------------------------------------
-function ttq.createQueueButton()
-	local button = WINDOW_MANAGER:CreateControlFromVirtual("TIM99_SearchingForMissingSetsQueueButton", ZO_SearchingForGroup, "ZO_DefaultButton")
-	button:SetDimensions(206, 28)
-	button:SetAnchor(BOTTOM, ZO_SearchingForGroupStatus, TOP, 0, -45) --dont overlay BUI_AutoQueue
-	button:SetFont("ZoFontGameBold")
-	button:SetText(string.format("|u1:17::|u%s   Missing Sets", zo_iconFormat("/esoui/art/icons/collectible_memento_pumpkincarving.dds", 26, 31)))
-	button:SetClickSound("Click")
-	button:SetVerticalAlignment(TEXT_ALIGN_CENTER)
-	button:SetHorizontalAlignment(TEXT_ALIGN_LEFT)
-	button:SetHidden(true)
-	button:SetHandler("OnClicked", ttq.markAndQueueNormalInisSets)
-
-	local button = WINDOW_MANAGER:CreateControlFromVirtual("TIM99_SearchingForMissingQuestQueueButton", ZO_SearchingForGroup, "ZO_DefaultButton")
-	button:SetDimensions(206, 28)
-	button:SetAnchor(BOTTOM, ZO_SearchingForGroupStatus, TOP, 0, -88)
-	button:SetFont("ZoFontGameBold")
-	button:SetText(string.format("|u1:17::|u%s   Missing Quests", zo_iconFormat("/esoui/art/icons/collectible_memento_pumpkincarving.dds", 26, 31)))
-	button:SetClickSound("Click")
-	button:SetVerticalAlignment(TEXT_ALIGN_CENTER)
-	button:SetHorizontalAlignment(TEXT_ALIGN_LEFT)
-	button:SetHidden(true)
-	button:SetHandler("OnClicked", ttq.markAndQueueNormalInisQust)
+function ttq.markAndQueueVetInisQust()
+	ttq.markAndQueueVetInis(DungeonSetsVet)
 end
 ----------------------------------------------------------------------------------------------------
-local function sceneChange(oldState, newState)
-	if newState ~= SCENE_SHOWN then
-		if TIM99_SearchingForMissingSetsQueueButton then
-			TIM99_SearchingForMissingSetsQueueButton:SetHidden(true)
+function ttq.createQueueButton()
+	local icon = zo_iconFormat("/esoui/art/icons/collectible_memento_pumpkincarving.dds", 26, 31)
+
+	local dropdown = CreateControlFromVirtual("TIM99_SearchingForMissing", ZO_SearchingForGroup, "ZO_MultiselectComboBox")
+	dropdown:SetDimensions(200, ZO_DungeonFinder_KeyboardFilter:GetHeight())
+	dropdown:ClearAnchors()
+	dropdown:SetAnchor(TOPRIGHT, ZO_DungeonFinder_KeyboardFilter, TOPLEFT, -9, 0)
+	dropdown:SetHidden(true)
+
+	local comboBox = ZO_ComboBox_ObjectFromContainer(dropdown)
+	comboBox:SetDisabledColor(ZO_DEFAULT_ENABLED_COLOR)
+	comboBox:SetFont("ZoFontWinT1")
+	comboBox:SetSortsItems(false)
+	comboBox:SetSpacing(4)
+	comboBox:SetNoSelectionText(string.format("%s   Select", icon))
+	comboBox:SetMultiSelectionTextFormatter(string.format("%s   <<1>> <<1[Category/Categories]>>", icon))
+
+	local inchanged
+	ZO_PreHook(
+		ZO_ACTIVITY_FINDER_ROOT_MANAGER,
+		"ClearSelections",
+		function(self)
+			if not inchanged then
+				ttq.comboBox:ClearAllSelections()
+			end
 		end
-		if TIM99_SearchingForMissingQuestQueueButton then
-			TIM99_SearchingForMissingQuestQueueButton:SetHidden(true)
+	)
+
+	local function OnFiltersChanged(comboBox, entryText, entry)
+		--init locs
+		inchanged = true
+		ZO_ACTIVITY_FINDER_ROOT_MANAGER:ClearAndUpdate()
+		local selectedItems = comboBox:GetSelectedItemData()
+		for _, item in ipairs(selectedItems) do
+			item.filterValue()
 		end
+		inchanged = false
 	end
+	do
+		local filterName = string.format("%s   Missing Sets", icon)
+		local entry = comboBox:CreateItemEntry(filterName, OnFiltersChanged)
+		entry.filterValue = ttq.markAndQueueNormalInisSets
+		comboBox:AddItem(entry)
+	end
+	do
+		local filterName = string.format("%s   Missing Quests", icon)
+		local entry = comboBox:CreateItemEntry(filterName, OnFiltersChanged)
+		entry.filterValue = ttq.markAndQueueNormalInisQust
+		comboBox:AddItem(entry)
+	end
+	do
+		local filterName = string.format("%s   Missing Helmets", icon)
+		local entry = comboBox:CreateItemEntry(filterName, OnFiltersChanged)
+		entry.filterValue = ttq.markAndQueueVetInisQust
+		comboBox:AddItem(entry)
+	end
+
+	ttq.comboBox = comboBox
 end
 ----------------------------------------------------------------------------------------------------
 local function fragmentChange(oldState, newState)
-	if newState == SCENE_FRAGMENT_SHOWN then
-		if TIM99_SearchingForMissingSetsQueueButton then
-			TIM99_SearchingForMissingSetsQueueButton:SetHidden(true)
-		end
-		if TIM99_SearchingForMissingQuestQueueButton then
-			TIM99_SearchingForMissingQuestQueueButton:SetHidden(true)
-		end
+	if ttq.fragment:IsShowing() and DUNGEON_FINDER_KEYBOARD.filterComboBox.m_selectedItemData and not DUNGEON_FINDER_KEYBOARD.filterComboBox.m_selectedItemData.data.singular then
+		TIM99_SearchingForMissing:SetHidden(false)
+	else
+		TIM99_SearchingForMissing:SetHidden(true)
 	end
 end
 ----------------------------------------------------------------------------------------------------
 function ttq.playerActivated()
-	--just once at login
-	--if ttq.firstCall==true then
-	--	ttq.firstCall=false
-
 	EVENT_MANAGER:UnregisterForEvent(ttq.name, EVENT_PLAYER_ACTIVATED)
 	EVENT_MANAGER:RegisterForEvent(
 		ttq.name,
@@ -267,7 +393,6 @@ function ttq.playerActivated()
 			ttq.checkCompletedSets()
 		end
 	)
-	--EVENT_MANAGER:RegisterForEvent(ttq.name, EVENT_QUEST_COMPLETE_DIALOG, function() ttq.checkCompletedQuests() end)
 	EVENT_MANAGER:RegisterForEvent(
 		ttq.name,
 		EVENT_SKILL_POINTS_CHANGED,
@@ -276,15 +401,12 @@ function ttq.playerActivated()
 		end
 	)
 
-	SCENE_MANAGER:GetScene("groupMenuKeyboard"):RegisterCallback("StateChange", sceneChange)
-
-	GROUP_LIST_FRAGMENT:RegisterCallback("StateChange", fragmentChange)
-	TIMED_ACTIVITIES_FRAGMENT:RegisterCallback("StateChange", fragmentChange)
-	ZONE_STORIES_FRAGMENT:RegisterCallback("StateChange", fragmentChange)
-
 	ttq.createQueueButton()
 	ttq.checkCompletedSets()
 	ttq.checkCompletedQuests()
+
+	ttq.fragment = DUNGEON_FINDER_KEYBOARD:GetFragment()
+	ttq.fragment:RegisterCallback("StateChange", fragmentChange)
 
 	ZO_PostHook(
 		DUNGEON_FINDER_KEYBOARD.navigationTree.templateInfo.ZO_ActivityFinderTemplateNavigationEntry_Keyboard,
@@ -309,35 +431,17 @@ function ttq.playerActivated()
 		ZO_ActivityFinderTemplate_Keyboard,
 		"OnFilterChanged",
 		function(comboBox, entryText, entry)
-			if DUNGEON_FINDER_KEYBOARD.filterComboBox.m_selectedItemData and not DUNGEON_FINDER_KEYBOARD.filterComboBox.m_selectedItemData.data.singular then
-				TIM99_SearchingForMissingSetsQueueButton:SetHidden(false)
-				TIM99_SearchingForMissingQuestQueueButton:SetHidden(false)
-			else
-				TIM99_SearchingForMissingSetsQueueButton:SetHidden(true)
-				TIM99_SearchingForMissingQuestQueueButton:SetHidden(true)
-			end
+			fragmentChange()
 		end
 	)
 
-	ZO_PostHook(
-		ZO_ActivityFinderTemplate_Keyboard,
-		"RefreshJoinQueueButton",
-		function()
-			if ZO_DungeonFinder_KeyboardListSectionScrollChildZO_ActivityFinderTemplateNavigationHeader_Keyboard1 and not ZO_DungeonFinder_KeyboardListSectionScrollChildZO_ActivityFinderTemplateNavigationHeader_Keyboard1:IsHidden() then
-				TIM99_SearchingForMissingSetsQueueButton:SetHidden(false)
-				TIM99_SearchingForMissingQuestQueueButton:SetHidden(false)
-				TIM99_SearchingForMissingSetsQueueButton:SetEnabled(not ZO_ACTIVITY_FINDER_ROOT_MANAGER:GetIsCurrentlyInQueue() and ttq.complSets == false)
-				TIM99_SearchingForMissingQuestQueueButton:SetEnabled(not ZO_ACTIVITY_FINDER_ROOT_MANAGER:GetIsCurrentlyInQueue() and ttq.complQust == false)
-			else
-				TIM99_SearchingForMissingSetsQueueButton:SetHidden(true)
-				TIM99_SearchingForMissingQuestQueueButton:SetHidden(true)
-			end
-		end
-	)
-	--end
-
-	--each loading screen
-	--ttq.checkCompletedSets()
+	-- ZO_PostHook(ZO_ActivityFinderTemplate_Keyboard, "RefreshJoinQueueButton", function()
+	--	if ZO_DungeonFinder_KeyboardListSectionScrollChildZO_ActivityFinderTemplateNavigationHeader_Keyboard1 and not ZO_DungeonFinder_KeyboardListSectionScrollChildZO_ActivityFinderTemplateNavigationHeader_Keyboard1:IsHidden() then
+	--		TIM99_SearchingForMissing:SetHidden(false)
+	--	else
+	--		TIM99_SearchingForMissing:SetHidden(true)
+	--	end
+	-- end)
 end
 ----------------------------------------------------------------------------------------------------
 function ttq.addonLoaded(event, addonName)
@@ -394,3 +498,90 @@ end
 ----------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------
 EVENT_MANAGER:RegisterForEvent(ttq.name, EVENT_ADD_ON_LOADED, ttq.addonLoaded)
+
+SLASH_COMMANDS["/test"] = function()
+	local activityToName = {}
+	local locations = ZO_ACTIVITY_FINDER_ROOT_MANAGER:GetLocationsData(LFG_ACTIVITY_DUNGEON)
+	for i = 1, #locations do
+		local activityId = locations[i]:GetId()
+		activityToName[activityId] = locations[i]:GetRawName():gsub("\194\160II", ""):gsub("\194\160I", "")
+	end
+	local setIdToActivity = {}
+	for _, collectionData in ITEM_SET_COLLECTIONS_DATA_MANAGER:ItemSetCollectionIterator() do
+		for _, pieceData in collectionData:PieceIterator() do
+			local quality = pieceData:GetDisplayQuality()
+			if quality < 4 then
+				local categoryData = collectionData:GetCategoryData()
+				for activityId, name in pairs(activityToName) do
+					if name == categoryData:GetFormattedName() then
+						local list = setIdToActivity[activityId] or {sets = {}}
+						list.sets[#list.sets + 1] = collectionData:GetId()
+						list.name = name
+						setIdToActivity[activityId] = list
+					end
+				end
+				break
+			end
+		end
+	end
+	-- 	local lines = {}
+	-- 	for activityId, list in pairs(setIdToActivity) do
+	-- 		lines[#lines + 1] = string.format("[%i] = {sets={%s}}, -- %s", activityId, table.concat(list.sets,","), GetActivityName(activityId))
+	-- 	end
+	-- 	DungeonQueue4Stickerbook.normal = lines
+
+	-- 	local activityToName = {}
+	-- 	local locations = ZO_ACTIVITY_FINDER_ROOT_MANAGER:GetLocationsData(LFG_ACTIVITY_MASTER_DUNGEON)
+	--     for i = 1, #locations do
+	--         local activityId = locations[i]:GetId()
+	-- 		activityToName[activityId] = locations[i]:GetRawName():gsub("\194\160II", ""):gsub("\194\160I", "")
+	-- 	end
+	-- 	local setIdToActivity = {}
+	-- 	for _, collectionData in ITEM_SET_COLLECTIONS_DATA_MANAGER:ItemSetCollectionIterator() do
+	-- 		if collectionData:GetNumPieces() == 6 then
+	-- 			for _, pieceData in collectionData:PieceIterator() do
+	-- 				local quality = pieceData:GetDisplayQuality()
+	-- 				if quality == 4 then
+	-- 					if GetItemLinkEquipType(pieceData:GetItemLink()) == EQUIP_TYPE_HEAD then
+	-- 						local categoryData = collectionData:GetCategoryData()
+	-- 						for activityId, name in pairs(activityToName) do
+	-- 							if name == categoryData:GetFormattedName() then
+	-- 								local list = setIdToActivity[activityId] or { sets={} }
+	-- 								list.sets[#list.sets+1] = collectionData:GetId()
+	-- 								list.name = name
+	-- 								setIdToActivity[activityId] = list
+	-- 							end
+	-- 						end
+	-- 						break
+	-- 					end
+	-- 				end
+	-- 			end
+	-- 		end
+	-- 	end
+
+	for i = 1, #locations do
+		local activityId = locations[i]:GetId()
+		activityToName[activityId] = locations[i]:GetRawName()
+	end
+
+	local activeQuests = {}
+	-- for i = 1, MAX_JOURNAL_QUESTS do
+	-- 	if IsValidQuestIndex(i) then
+	-- 		local rawName, _, _, _, _, _, _, _, _, questType = select(10, GetJournalQuestInfo(i))
+	-- 		if questType == QUEST_TYPE_UNDAUNTED_PLEDGE then
+	-- 			activeQuests[zo_strformat(SI_QUEST_JOURNAL_QUEST_NAME_FORMAT, rawName)] =
+	-- 		end
+	-- 	end
+	-- end
+	-- DungeonQueue4Stickerbook.pledges=activeQuests
+	for activityId, name in pairs(activityToName) do
+		local questId = GetActivityTypeGatingQuest(activityId)
+		activeQuests[activityId] = {questId, name}
+	end
+	DungeonQueue4Stickerbook.pledges = activeQuests
+	-- 	local lines = {}
+	-- 	for activityId, list in pairs(setIdToActivity) do
+	-- 		lines[#lines + 1] = string.format("[%i] = {sets={%s}}, -- %s", activityId, table.concat(list.sets,","), GetActivityName(activityId))
+	-- 	end
+	-- 	DungeonQueue4Stickerbook.vet = lines
+end
