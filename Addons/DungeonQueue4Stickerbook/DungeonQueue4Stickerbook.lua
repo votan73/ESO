@@ -14,7 +14,7 @@ ttq.svCharDef = {
 }
 --todo: merge tables
 local DungeonSets = {
-	--ActivityId
+	--ActivityId -> SetId
 	[2] = {sets = {33, 61, 297}}, --Fungal Grotto 1
 	[3] = {sets = {35, 55, 296}}, --Spindleclutch 1
 	[4] = {sets = {110, 197, 295}}, --Banished Cells 1
@@ -61,7 +61,7 @@ local DungeonSets = {
 	[615] = {sets = {684, 685, 686}} --Halle der Schriftmeister
 }
 local DungeonSetsVet = {
-	--ActivityId
+	--ActivityId -> SetId
 	[19] = {sets = {163}}, -- Spindeltiefen I
 	[20] = {sets = {170}}, -- Verbannungszellen I
 	[21] = {sets = {268}}, -- Dunkelschattenkavernen II
@@ -116,7 +116,7 @@ local DungeonSetsVet = {
 	[616] = {sets = {687}} -- Halle der Schriftmeister",
 }
 local DungeonQuest = {
-	--QuestId
+	-- ActivityId -> QuestId
 	[2] = 3993, --FungalGrottoI
 	[3] = 4054, --SpindleclutchI
 	[4] = 4107, --BanishedCellsI
@@ -167,6 +167,60 @@ local DungeonQuest = {
 	[601] = 6742, --ShipwrightsRegret
 	[608] = 6835, --ErdwurzEnklave
 	[610] = 6837 --Kentertiefen
+}
+local UndauntedPledges = {
+	[5244] = {n = 4, v = 20}, -- Verbannungszellen I
+	[5246] = {n = 300, v = 301}, -- Verbannungszellen II
+	[5247] = {n = 2, v = 299}, -- Pilzgrotte I
+	[5248] = {n = 18, v = 312}, -- Pilzgrotte II
+	[5260] = {n = 3, v = 315}, -- Spindeltiefen I
+	[5273] = {n = 316, v = 19}, -- Spindeltiefen II
+	[5274] = {n = 5, v = 309}, -- Dunkelschattenkavernen I
+	[5275] = {n = 308, v = 21}, -- Dunkelschattenkavernen II
+	[5276] = {n = 7, v = 23}, -- Eldengrund I
+	[5277] = {n = 303, v = 302}, -- Eldengrund II
+	[5278] = {n = 6, v = 306}, -- Kanalisation von Wegesruh I
+	[5282] = {n = 22, v = 307}, -- Kanalisation von Wegesruh II
+	[5283] = {n = 9, v = 261}, -- Krypta der Herzen I
+	[5284] = {n = 317, v = 318}, -- Krypta der Herzen II
+	[5288] = {n = 8, v = 305}, -- Arx Corinium
+	[5290] = {n = 10, v = 310}, -- Stadt der Asche I
+	[5291] = {n = 11, v = 319}, -- Burg Grauenfrost
+	[5301] = {n = 13, v = 311}, -- Orkaninsel
+	[5303] = {n = 12, v = 304}, -- Volenfell
+	[5305] = {n = 15, v = 321}, -- Schwarzherz-Unterschlupf
+	[5306] = {n = 14, v = 320}, -- Gesegnete Feuerprobe
+	[5307] = {n = 16, v = 313}, -- Selenes Netz
+	[5309] = {n = 17, v = 314}, -- Kammern des Wahnsinns
+	[5381] = {n = 322, v = 267} -- Stadt der Asche II
+}
+local UndauntedDLCPledges = {
+	[5382] = {n = 289, v = 268}, -- Gefängnis der Kaiserstadt
+	[5431] = {n = 288, v = 287}, -- Weißgoldturm
+	[5636] = {n = 293, v = 294}, -- Ruinen von Mazzatun
+	[5780] = {n = 295, v = 296}, -- Wiege der Schatten
+	[6053] = {n = 324, v = 325}, -- Blutquellschmiede
+	[6054] = {n = 368, v = 369}, -- Falkenring
+	[6154] = {n = 418, v = 419}, -- Gipfel der Schuppenruferin
+	[6155] = {n = 420, v = 421}, -- Krallenhort
+	[6187] = {n = 426, v = 427}, -- Mondjägerfeste
+	[6189] = {n = 428, v = 429}, -- Marsch der Aufopferung
+	[6250] = {n = 433, v = 434}, -- Frostgewölbe
+	[6252] = {n = 435, v = 436}, -- Tiefen von Malatar
+	[6350] = {n = 494, v = 495}, -- Mondgrab-Tempelstadt
+	[6352] = {n = 496, v = 497}, -- Hort von Maarselok
+	[6415] = {n = 503, v = 504}, -- Eiskap
+	[6417] = {n = 505, v = 506}, -- Unheiliges Grab
+	[6506] = {n = 507, v = 508}, -- Steingarten
+	[6508] = {n = 509, v = 510}, -- Kastell Dorn
+	[6577] = {n = 591, v = 592}, -- Schwarzdrachenvilla
+	[6579] = {n = 593, v = 594}, -- Kessel
+	[6684] = {n = 595, v = 596}, -- Rotblütenbastion
+	[6686] = {n = 597, v = 598}, -- Schreckenskeller
+	[6741] = {n = 599, v = 600}, -- Korallenhorst
+	[6743] = {n = 601, v = 602}, -- Gram des Schiffbauers
+	[6836] = {n = 608, v = 609}, -- Erdwurz-Enklave
+	[6838] = {n = 610, v = 611} -- Kentertiefen
 }
 ----------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------
@@ -240,56 +294,36 @@ function ttq.checkCompletedQuests()
 	--d("checkCompletedQuests:complQust = "..tostring(ttq.complQust))
 end
 ----------------------------------------------------------------------------------------------------
-function ttq.markAndQueueNormalInis(DungeonTable)
+function ttq.markInis(DungeonTable, parent)
 	if IsUnitGrouped("player") and not IsUnitGroupLeader("player") then
 		return
 	end
 	--select missing
-	local parent = _G["ZO_DungeonFinder_KeyboardListSectionScrollChildContainer2"] --2=normal
-	if parent then
-		for i = 1, parent:GetNumChildren() do
-			local obj = parent:GetChild(i)
-			if obj then
-				local id = obj.node.data.id
-				if DungeonTable[id] then
-					if obj.check:GetState() == 0 then
-						obj.check:SetState(BSTATE_PRESSED, true)
-						ZO_ACTIVITY_FINDER_ROOT_MANAGER:ToggleLocationSelected(obj.node.data)
-					end
-					ZO_SelectableLabel_SetNormalColor(obj.text, obj.node.data.isSelected and ttq.col_tim99 or ZO_NORMAL_TEXT)
-					obj.text:RefreshTextColor()
+	if not parent then
+		return
+	end
+	for i = 1, parent:GetNumChildren() do
+		local obj = parent:GetChild(i)
+		if obj then
+			local id = obj.node.data.id
+			if DungeonTable[id] then
+				if obj.check:GetState() == 0 then
+					obj.check:SetState(BSTATE_PRESSED, true)
+					ZO_ACTIVITY_FINDER_ROOT_MANAGER:ToggleLocationSelected(obj.node.data)
 				end
+				ZO_SelectableLabel_SetNormalColor(obj.text, obj.node.data.isSelected and ttq.col_tim99 or ZO_NORMAL_TEXT)
+				obj.text:RefreshTextColor()
 			end
 		end
-	--start Queue
-	-- if ttq.svChar.autoqueue and not ZO_DungeonFinder_KeyboardListSectionScrollChildZO_ActivityFinderTemplateNavigationHeader_Keyboard1:IsHidden() then
-	-- 	ZO_ActivityFinderTemplateQueueButtonKeyboard_OnClicked(ZO_DungeonFinder_KeyboardQueueButton)
-	-- end
 	end
 end
 ----------------------------------------------------------------------------------------------------
+function ttq.markAndQueueNormalInis(DungeonTable)
+	ttq.markInis(DungeonTable, ZO_DungeonFinder_KeyboardListSectionScrollChildContainer2) --2=normal
+end
+----------------------------------------------------------------------------------------------------
 function ttq.markAndQueueVetInis(DungeonTable)
-	if IsUnitGrouped("player") and not IsUnitGroupLeader("player") then
-		return
-	end
-	--select missing
-	local parent = _G["ZO_DungeonFinder_KeyboardListSectionScrollChildContainer3"] --3=vet
-	if parent then
-		for i = 1, parent:GetNumChildren() do
-			local obj = parent:GetChild(i)
-			if obj then
-				local id = obj.node.data.id
-				if DungeonTable[id] then
-					if obj.check:GetState() == 0 then
-						obj.check:SetState(BSTATE_PRESSED, true)
-						ZO_ACTIVITY_FINDER_ROOT_MANAGER:ToggleLocationSelected(obj.node.data)
-					end
-					ZO_SelectableLabel_SetNormalColor(obj.text, obj.node.data.isSelected and ttq.col_tim99 or ZO_NORMAL_TEXT)
-					obj.text:RefreshTextColor()
-				end
-			end
-		end
-	end
+	ttq.markInis(DungeonTable, ZO_DungeonFinder_KeyboardListSectionScrollChildContainer3) --3=vet
 end
 ----------------------------------------------------------------------------------------------------
 function ttq.markAndQueueNormalInisSets()
@@ -356,6 +390,70 @@ function ttq.createQueueButton()
 		local filterName = string.format("%s   Missing Helmets", icon)
 		local entry = comboBox:CreateItemEntry(filterName, OnFiltersChanged)
 		entry.filterValue = ttq.markAndQueueVetInisQust
+		comboBox:AddItem(entry)
+	end
+
+	local function QuestsToActivity()
+		-- for questId, activities in pairs(UndauntedPledges) do
+		-- 	if HasQuest(questId) then
+		-- 	end
+		-- end
+		return ZO_FilteredNonContiguousTableIterator(UndauntedPledges, HasQuest)
+	end
+	do
+		local filterName = string.format("%s   My Pledges Normal", icon)
+		local entry = comboBox:CreateItemEntry(filterName, OnFiltersChanged)
+		entry.filterValue = function()
+			local activities = {}
+			for questId, a in pairs(UndauntedPledges) do
+				if HasQuest(questId) then
+					activities[a.n] = true
+				end
+			end
+			ttq.markAndQueueNormalInis(activities)
+		end
+		comboBox:AddItem(entry)
+	end
+	do
+		local filterName = string.format("%s   My Pledges Vet", icon)
+		local entry = comboBox:CreateItemEntry(filterName, OnFiltersChanged)
+		entry.filterValue = function()
+			local activities = {}
+			for questId, a in pairs(UndauntedPledges) do
+				if HasQuest(questId) then
+					activities[a.v] = true
+				end
+			end
+			ttq.markAndQueueVetInis(activities)
+		end
+		comboBox:AddItem(entry)
+	end
+	do
+		local filterName = string.format("%s   My DLC Pledges Normal", icon)
+		local entry = comboBox:CreateItemEntry(filterName, OnFiltersChanged)
+		entry.filterValue = function()
+			local activities = {}
+			for questId, a in pairs(UndauntedDLCPledges) do
+				if HasQuest(questId) then
+					activities[a.n] = true
+				end
+			end
+			ttq.markAndQueueNormalInis(activities)
+		end
+		comboBox:AddItem(entry)
+	end
+	do
+		local filterName = string.format("%s   My DLC Pledges Vet", icon)
+		local entry = comboBox:CreateItemEntry(filterName, OnFiltersChanged)
+		entry.filterValue = function()
+			local activities = {}
+			for questId, a in pairs(UndauntedDLCPledges) do
+				if HasQuest(questId) then
+					activities[a.v] = true
+				end
+			end
+			ttq.markAndQueueVetInis(activities)
+		end
 		comboBox:AddItem(entry)
 	end
 
@@ -500,30 +598,30 @@ end
 EVENT_MANAGER:RegisterForEvent(ttq.name, EVENT_ADD_ON_LOADED, ttq.addonLoaded)
 
 SLASH_COMMANDS["/test"] = function()
-	local activityToName = {}
-	local locations = ZO_ACTIVITY_FINDER_ROOT_MANAGER:GetLocationsData(LFG_ACTIVITY_DUNGEON)
-	for i = 1, #locations do
-		local activityId = locations[i]:GetId()
-		activityToName[activityId] = locations[i]:GetRawName():gsub("\194\160II", ""):gsub("\194\160I", "")
-	end
-	local setIdToActivity = {}
-	for _, collectionData in ITEM_SET_COLLECTIONS_DATA_MANAGER:ItemSetCollectionIterator() do
-		for _, pieceData in collectionData:PieceIterator() do
-			local quality = pieceData:GetDisplayQuality()
-			if quality < 4 then
-				local categoryData = collectionData:GetCategoryData()
-				for activityId, name in pairs(activityToName) do
-					if name == categoryData:GetFormattedName() then
-						local list = setIdToActivity[activityId] or {sets = {}}
-						list.sets[#list.sets + 1] = collectionData:GetId()
-						list.name = name
-						setIdToActivity[activityId] = list
-					end
-				end
-				break
-			end
-		end
-	end
+	-- local activityToName = {}
+	-- local locations = ZO_ACTIVITY_FINDER_ROOT_MANAGER:GetLocationsData(LFG_ACTIVITY_DUNGEON)
+	-- for i = 1, #locations do
+	-- 	local activityId = locations[i]:GetId()
+	-- 	activityToName[activityId] = locations[i]:GetRawName():gsub("\194\160II", ""):gsub("\194\160I", "")
+	-- end
+	-- local setIdToActivity = {}
+	-- for _, collectionData in ITEM_SET_COLLECTIONS_DATA_MANAGER:ItemSetCollectionIterator() do
+	-- 	for _, pieceData in collectionData:PieceIterator() do
+	-- 		local quality = pieceData:GetDisplayQuality()
+	-- 		if quality < 4 then
+	-- 			local categoryData = collectionData:GetCategoryData()
+	-- 			for activityId, name in pairs(activityToName) do
+	-- 				if name == categoryData:GetFormattedName() then
+	-- 					local list = setIdToActivity[activityId] or {sets = {}}
+	-- 					list.sets[#list.sets + 1] = collectionData:GetId()
+	-- 					list.name = name
+	-- 					setIdToActivity[activityId] = list
+	-- 				end
+	-- 			end
+	-- 			break
+	-- 		end
+	-- 	end
+	-- end
 	-- 	local lines = {}
 	-- 	for activityId, list in pairs(setIdToActivity) do
 	-- 		lines[#lines + 1] = string.format("[%i] = {sets={%s}}, -- %s", activityId, table.concat(list.sets,","), GetActivityName(activityId))
@@ -558,30 +656,48 @@ SLASH_COMMANDS["/test"] = function()
 	-- 			end
 	-- 		end
 	-- 	end
-
-	for i = 1, #locations do
-		local activityId = locations[i]:GetId()
-		activityToName[activityId] = locations[i]:GetRawName()
-	end
-
-	local activeQuests = {}
-	-- for i = 1, MAX_JOURNAL_QUESTS do
-	-- 	if IsValidQuestIndex(i) then
-	-- 		local rawName, _, _, _, _, _, _, _, _, questType = select(10, GetJournalQuestInfo(i))
-	-- 		if questType == QUEST_TYPE_UNDAUNTED_PLEDGE then
-	-- 			activeQuests[zo_strformat(SI_QUEST_JOURNAL_QUEST_NAME_FORMAT, rawName)] =
-	-- 		end
-	-- 	end
-	-- end
-	-- DungeonQueue4Stickerbook.pledges=activeQuests
-	for activityId, name in pairs(activityToName) do
-		local questId = GetActivityTypeGatingQuest(activityId)
-		activeQuests[activityId] = {questId, name}
-	end
-	DungeonQueue4Stickerbook.pledges = activeQuests
 	-- 	local lines = {}
 	-- 	for activityId, list in pairs(setIdToActivity) do
 	-- 		lines[#lines + 1] = string.format("[%i] = {sets={%s}}, -- %s", activityId, table.concat(list.sets,","), GetActivityName(activityId))
 	-- 	end
 	-- 	DungeonQueue4Stickerbook.vet = lines
+
+	local activityToName = {}
+	local locations = ZO_ACTIVITY_FINDER_ROOT_MANAGER:GetLocationsData(LFG_ACTIVITY_DUNGEON)
+	for i = 1, #locations do
+		local activityId = locations[i]:GetId()
+		local name = locations[i]:GetRawName():gsub("Der ", "")
+		local list = activityToName[name] or {}
+		list[#list + 1] = activityId
+		activityToName[name] = list
+	end
+	local locations = ZO_ACTIVITY_FINDER_ROOT_MANAGER:GetLocationsData(LFG_ACTIVITY_MASTER_DUNGEON)
+	for i = 1, #locations do
+		local activityId = locations[i]:GetId()
+		local name = locations[i]:GetRawName():gsub("Der ", "")
+		local list = activityToName[name] or {}
+		list[#list + 1] = activityId
+		activityToName[name] = list
+	end
+
+	local lines = {}
+	local questId = nil
+	while true do
+		questId = GetNextCompletedQuestId(questId)
+		if questId then
+			local name, questType = GetCompletedQuestInfo(questId)
+			if questType == QUEST_TYPE_UNDAUNTED_PLEDGE then
+				name = name:gsub("Der ", "")
+				local list = activityToName[name]
+				if list then
+					lines[#lines + 1] = string.format("[%i] = {n=%i,v=%i}, -- %s", questId, list[1] or 0, list[2] or 0, name)
+				else
+					lines[#lines + 1] = string.format("[%i] = {n=%i,v=%i}, -- %s", questId, 0, 0, name)
+				end
+			end
+		else
+			break
+		end
+	end
+	DungeonQueue4Stickerbook.pledges = lines
 end
