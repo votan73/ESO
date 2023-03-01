@@ -393,24 +393,20 @@ function ttq.createQueueButton()
 		comboBox:AddItem(entry)
 	end
 
-	local function QuestsToActivity()
-		-- for questId, activities in pairs(UndauntedPledges) do
-		-- 	if HasQuest(questId) then
-		-- 	end
-		-- end
-		return ZO_FilteredNonContiguousTableIterator(UndauntedPledges, HasQuest)
+	local function QuestsToActivity(pledges, difficulty)
+		local activities = {}
+		for questId, a in pairs(pledges) do
+			if HasQuest(questId) then
+				activities[a[difficulty]] = true
+			end
+		end
+		return activities
 	end
 	do
 		local filterName = string.format("%s   My Pledges Normal", icon)
 		local entry = comboBox:CreateItemEntry(filterName, OnFiltersChanged)
 		entry.filterValue = function()
-			local activities = {}
-			for questId, a in pairs(UndauntedPledges) do
-				if HasQuest(questId) then
-					activities[a.n] = true
-				end
-			end
-			ttq.markAndQueueNormalInis(activities)
+			ttq.markAndQueueNormalInis(QuestsToActivity(UndauntedPledges, "n"))
 		end
 		comboBox:AddItem(entry)
 	end
@@ -418,13 +414,7 @@ function ttq.createQueueButton()
 		local filterName = string.format("%s   My Pledges Vet", icon)
 		local entry = comboBox:CreateItemEntry(filterName, OnFiltersChanged)
 		entry.filterValue = function()
-			local activities = {}
-			for questId, a in pairs(UndauntedPledges) do
-				if HasQuest(questId) then
-					activities[a.v] = true
-				end
-			end
-			ttq.markAndQueueVetInis(activities)
+			ttq.markAndQueueVetInis(QuestsToActivity(UndauntedPledges, "v"))
 		end
 		comboBox:AddItem(entry)
 	end
@@ -432,13 +422,7 @@ function ttq.createQueueButton()
 		local filterName = string.format("%s   My DLC Pledges Normal", icon)
 		local entry = comboBox:CreateItemEntry(filterName, OnFiltersChanged)
 		entry.filterValue = function()
-			local activities = {}
-			for questId, a in pairs(UndauntedDLCPledges) do
-				if HasQuest(questId) then
-					activities[a.n] = true
-				end
-			end
-			ttq.markAndQueueNormalInis(activities)
+			ttq.markAndQueueNormalInis(QuestsToActivity(UndauntedDLCPledges, "n"))
 		end
 		comboBox:AddItem(entry)
 	end
@@ -446,13 +430,7 @@ function ttq.createQueueButton()
 		local filterName = string.format("%s   My DLC Pledges Vet", icon)
 		local entry = comboBox:CreateItemEntry(filterName, OnFiltersChanged)
 		entry.filterValue = function()
-			local activities = {}
-			for questId, a in pairs(UndauntedDLCPledges) do
-				if HasQuest(questId) then
-					activities[a.v] = true
-				end
-			end
-			ttq.markAndQueueVetInis(activities)
+			ttq.markAndQueueVetInis(QuestsToActivity(UndauntedDLCPledges, "v"))
 		end
 		comboBox:AddItem(entry)
 	end
