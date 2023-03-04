@@ -397,7 +397,15 @@ function ttq.createQueueButton()
 		local activities = {}
 		for questId, a in pairs(pledges) do
 			if HasQuest(questId) then
-				activities[a[difficulty]] = true
+				local findName = GetQuestName(questId)
+				for i = 1, MAX_JOURNAL_QUESTS do
+					if IsValidQuestIndex(i) then
+						local questName, _, _, activeStepType = GetJournalQuestInfo(i)
+						if activeStepType == 1 and questName == findName then
+							activities[a[difficulty]] = true
+						end
+					end
+				end
 			end
 		end
 		return activities
