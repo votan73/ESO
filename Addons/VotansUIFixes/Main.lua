@@ -1034,11 +1034,15 @@ do
 		end,
 		[39018] = function()
 			--Sturmblockade
-			return (isInCombat or HasTarget()) and not CooldownRunning(39018, 12000) and StartCooldown(39018) and RegisterRecast(39018, 20000)
+			return not IsAutoAttack() or ((isInCombat or HasTarget()) and not CooldownRunning(39018, 12000) and StartCooldown(39018) and RegisterRecast(39018, 20000))
+		end,
+		[28854] = function()
+			--Sturmwand
+			return not IsAutoAttack() or ((isInCombat or HasTarget()) and not CooldownRunning(28854, 12000) and StartCooldown(28854) and RegisterRecast(28854, 20000))
 		end,
 		[39073] = function()
 			--instabile Sturmwand
-			return (isInCombat or HasTarget()) and not CooldownRunning(39073, 12000) and StartCooldown(39073) and RegisterRecast(39073, 20000)
+			return not IsAutoAttack() or ((isInCombat or HasTarget()) and not CooldownRunning(39073, 12000) and StartCooldown(39073) and RegisterRecast(39073, 20000))
 		end,
 		[39095] = function()
 			--elementarer Entzug
@@ -1385,7 +1389,7 @@ do
 		end,
 		[46331] = function()
 			--Kristallwaffe
-			return isInCombat and HasTarget() and not CooldownRunning(46331, 3000) and StartCooldown(46331) and RegisterRecast(46331, 6000)
+			return not IsAutoAttack() or (isInCombat and HasTarget() and not CooldownRunning(46331, 3000) and StartCooldown(46331) and RegisterRecast(46331, 6000))
 		end,
 		[24636] = function()
 			--Zwielichtquälerin beschwören
@@ -1410,6 +1414,18 @@ do
 		[23492] = function()
 			--größerer Sturmatronach
 			return HasTarget() and PlayerUltimate() >= 150 and TargetHealth() > 300000 and currentBar == ACTIVE_WEAPON_PAIR_MAIN and TargetIsInRange()
+		end,
+		[40489] = function()
+			--Eiskomet
+			return HasTarget() and PlayerUltimate() >= 190 and TargetHealth() > 300000 and currentBar == ACTIVE_WEAPON_PAIR_MAIN and TargetIsInRange()
+		end,
+		[22095] = function()
+			--solarer Ausbruch
+			return not IsAutoAttack() or ((isInCombat and HasTarget()) and not CooldownRunning(22095, 6000) and StartCooldown(22095) and RegisterRecast(22095, 7000))
+		end,
+		[86156] = function()
+			--Arktisstoß
+			return not IsAutoAttack() or ((isInCombat and HasTarget()) and not CooldownRunning(86156, 19000) and StartCooldown(86156) and RegisterRecast(86156, 20000))
 		end
 	}
 	local function doNotKillMaelstromHealer()
