@@ -6,3 +6,5 @@ SafeAddString(SI_WAYPOINTIT_NO_NEAREST_QUEST, "Von hier aus kann keine nahe Ques
 
 SafeAddString(SI_BINDING_NAME_WAYPOINTIT_TOGGLE_SORT, "Sort. umst.")
 SafeAddString(SI_BINDING_NAME_WAYPOINTIT_ADD_FOLLOW, "Folgen")
+
+SafeAddString(SI_WAYPOINTIT_WAYPOINT, "Wegpunkt")

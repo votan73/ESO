@@ -6,3 +6,6 @@ ZO_CreateStringId("SI_WAYPOINTIT_NO_NEAREST_QUEST", "Not possible to select near
 
 ZO_CreateStringId("SI_BINDING_NAME_WAYPOINTIT_TOGGLE_SORT", "Toggle Sort")
 ZO_CreateStringId("SI_BINDING_NAME_WAYPOINTIT_ADD_FOLLOW", "Follow")
+
+ZO_CreateStringId("SI_WAYPOINTIT_WAYPOINT", "Waypoint")
+

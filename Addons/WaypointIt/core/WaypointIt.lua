@@ -6,7 +6,7 @@ WaypointIt = {}
 
 local WaypointIt = WaypointIt
 local ADDON_NAME = "WaypointIt"
-local CODE_VERSION = "1.14.2"
+local CODE_VERSION = "1.14.3"
 -- Holds the requested taskID
 local CURRENT_TASK
 local ROW_TYPE_ID = 1
@@ -78,6 +78,17 @@ local function dw(msg)
 	local self = CHAT_ROUTER
 	local event = EVENT_CHAT_MESSAGE_CHANNEL
 	self:FormatAndAddChatMessage(event, CHAT_CHANNEL_MONSTER_SAY, ADDON_NAME, msg, false, "")
+end
+
+local function addChatMessageForScreenReader(soundToPlay, chatText)
+	if chatText ~= nil and chatText ~= "" then
+		if soundToPlay ~= nil then
+			PlaySound(soundToPlay)
+			PlaySound(soundToPlay)
+			PlaySound(soundToPlay)
+		end
+		d(chatText)
+	end
 end
 
 function WaypointIt:GetDistanceToLocalCoords(locX, locY, playerOffsetX, playerOffsetY)
@@ -418,8 +429,14 @@ function WaypointIt:SetupEvents()
 			lastWaypointBy, lastZoneId = setBy, GetCurrentZoneId()
 
 			db("waypoint set: mode %s", lastWaypointBy or "nil")
-			if (waypoint and setBy == "rowClick" and self.sv["WAYPOINT_MESSAGES_USER_DEFINED"]) then
-				CENTER_SCREEN_ANNOUNCE:AddMessage(0, CSA_CATEGORY_SMALL_TEXT, SOUNDS.ACHIEVEMENT_AWARDED, GetString(SI_WAYPOINTIT_WAYPOINT_SET))
+			if (waypoint and setBy == "rowClick") then
+				if self.sv["WAYPOINT_MESSAGES_USER_DEFINED"] then
+					CENTER_SCREEN_ANNOUNCE:AddMessage(0, CSA_CATEGORY_SMALL_TEXT, SOUNDS.ACHIEVEMENT_AWARDED, GetString(SI_WAYPOINTIT_WAYPOINT_SET))
+				end
+				--Baertram, 2022-03-03,Accessibility chat messages for screen reader
+				if self.sv["WAYPOINT_MESSAGES_USER_DEFINED_TO_CHAT"] then
+					addChatMessageForScreenReader(SOUNDS.ACHIEVEMENT_AWARDED, GetString(SI_WAYPOINTIT_WAYPOINT_SET))
+				end
 			end
 			self:RunWaypointRemoveUpdates(true, lastWaypointBy == "follow")
 			self:RunHeadingUpdates(true)
@@ -580,8 +597,14 @@ function WaypointIt:SetupQuestEvents()
 				["setBy"] 		= "autoQuest"
 			}
 			--]]
-				if (lastWaypointBy ~= "autoQuest" and self.sv["WAYPOINT_MESSAGES_AUTO_QUEST"]) then
-					CENTER_SCREEN_ANNOUNCE:AddMessage(0, CSA_CATEGORY_SMALL_TEXT, SOUNDS.ACHIEVEMENT_AWARDED, GetString(SI_WAYPOINTIT_WAYPOINT_SET))
+				if (lastWaypointBy ~= "autoQuest") then
+					if self.sv["WAYPOINT_MESSAGES_AUTO_QUEST"] then
+						CENTER_SCREEN_ANNOUNCE:AddMessage(0, CSA_CATEGORY_SMALL_TEXT, SOUNDS.ACHIEVEMENT_AWARDED, GetString(SI_WAYPOINTIT_WAYPOINT_SET))
+					end
+					--Baertram, 2022-03-03,Accessibility chat messages for screen reader
+					if self.sv["WAYPOINT_MESSAGES_AUTO_QUEST_TO_CHAT"] then
+						addChatMessageForScreenReader(SOUNDS.ACHIEVEMENT_AWARDED, GetString(SI_WAYPOINTIT_WAYPOINT_SET))
+					end
 				end
 
 				nextWaypoint = {
@@ -608,7 +631,8 @@ function WaypointIt:SetupQuestEvents()
 				db(fText)
 			end
 			if lastWaypointBy == "autoQuest" and HasWaypoint() then
-				RemovePlayerWaypoint()
+				ZO_WorldMap_RemovePlayerWaypoint() -- Baertram, 2022-03-03, Fix WorldMap removal of waypoint so that the keybind will allow to add a new one (instead of remove a non existing)
+				--RemovePlayerWaypoint()
 			end
 		-- CURRENT_TASK = nil
 		end
@@ -631,7 +655,8 @@ function WaypointIt:SetupQuestEvents()
 		if not foundValidCondition then
 			db("OnQuestComplete: Valid Condition Not Found for quest")
 			if lastWaypointBy == "autoQuest" and HasWaypoint() then
-				RemovePlayerWaypoint()
+				ZO_WorldMap_RemovePlayerWaypoint() -- Baertram, 2022-03-03, Fix WorldMap removal of waypoint so that the keybind will allow to add a new one (instead of remove a non existing)
+				--RemovePlayerWaypoint()
 			end
 			return
 		end
@@ -921,7 +946,8 @@ do
 			db("OnQuestConditionCounterChanged: Valid Condition not found for quest %i", journalQuestIndex)
 
 			if HasWaypoint() then
-				RemovePlayerWaypoint()
+				ZO_WorldMap_RemovePlayerWaypoint() -- Baertram, 2022-03-03, Fix WorldMap removal of waypoint so that the keybind will allow to add a new one (instead of remove a non existing)
+				--RemovePlayerWaypoint()
 			end
 		end
 		em:UnregisterForUpdate(identifier)
@@ -1319,7 +1345,8 @@ function WaypointIt:TryFollowNextCustomPin()
 	local list = self.followList
 	if #list == 0 then
 		if HasWaypoint() then
-			RemovePlayerWaypoint()
+				ZO_WorldMap_RemovePlayerWaypoint() -- Baertram, 2022-03-03, Fix WorldMap removal of waypoint so that the keybind will allow to add a new one (instead of remove a non existing)
+				--RemovePlayerWaypoint()
 		end
 		return false
 	end
@@ -1864,7 +1891,8 @@ function WaypointIt:SetWaypointByRowControl(rowControl)
 
 	-- if already have a waypoint here, shut it off
 	if self:IsLocCurrentWaypoint(data) then
-		RemovePlayerWaypoint()
+		ZO_WorldMap_RemovePlayerWaypoint() -- Baertram, 2022-03-03, Fix WorldMap removal of waypoint so that the keybind will allow to add a new one (instead of remove a non existing)
+		--RemovePlayerWaypoint()
 		-- do nothing else
 		return
 	end
@@ -1889,7 +1917,8 @@ function WaypointIt:SetWaypointByRowControl(rowControl)
 		dw(string.format("%s%s", self.color.magenta, "Waypoint is within the waypoint removal distance. The waypoint will not be set."))
 		db("Waypoint is within the waypoint removal distance. The waypoint will not be set.")
 		if lastWaypointBy == "autoQuest" then
-			RemovePlayerWaypoint()
+			ZO_WorldMap_RemovePlayerWaypoint() -- Baertram, 2022-03-03, Fix WorldMap removal of waypoint so that the keybind will allow to add a new one (instead of remove a non existing)
+			--RemovePlayerWaypoint()
 		end
 	end
 end
@@ -2009,6 +2038,8 @@ do
 end
 
 do
+	local lastWaypointToChatOutput, lastWaypointToChatText -- Baertram, 2023-03-03, Accessibility features
+
 	local RunHeadingUpdates
 	function WaypointIt:RunHeadingUpdates(_bOn)
 		if _bOn and self.sv["WAYPOINT_DIRECTIONAL_ARROW"] then
@@ -2024,7 +2055,10 @@ do
 					self.reticleTexture:SetTextureRotation(rotateHeading)
 
 					-- If the show distance isn't turned on, return, no need to update
-					if not self.sv["WAYPOINT_RETICLE_DISTANCE"] then
+					---v- Baertram, 2023-03-03, Accessibility features
+					local waypointReticleDistance = self.sv["WAYPOINT_RETICLE_DISTANCE"]
+					local waypointChatDistance = self.sv["WAYPOINT_DISTANCE_TO_CHAT"]
+					if not waypointReticleDistance and not waypointChatDistance then
 						return
 					end
 
@@ -2032,10 +2066,25 @@ do
 					-- coordinates get converted to global, so distances are consistent
 					-- accross all maps.
 					local dist = self:GetDistanceToLocalCoords(iWaypointOffsetX, iWaypointOffsetY)
-					if self.reticleDistance.lastDistance ~= dist then
+
+					if waypointReticleDistance and self.reticleDistance.lastDistance ~= dist then
 						self.reticleDistance.lastDistance = dist
 						self.reticleDistance:SetText(self:GetDistanceText(dist))
 					end
+
+					if waypointChatDistance then
+						local now = GetGameTimeMilliseconds()
+						local waypointChatDistanceDelay = self.sv["WAYPOINT_DISTANCE_TO_CHAT_DELAY_SECONDS"] * 1000 --transfer seconds to milliseconds
+						if lastWaypointToChatOutput == nil or (now >= (lastWaypointToChatOutput + waypointChatDistanceDelay)) then
+							lastWaypointToChatOutput = now
+							local waypointDistanceText = string.format(GetString(SI_WAYPOINTIT_WAYPOINT) .. " " .. GetString(SI_WAYPOINTIT_WAYPOINT_DISTANCE), dist)
+							if lastWaypointToChatText == nil or lastWaypointToChatText ~= waypointDistanceText then
+								lastWaypointToChatText = waypointDistanceText
+								addChatMessageForScreenReader(SOUNDS.EDIT_CLICK, waypointDistanceText)
+							end
+						end
+					end
+					---^- Baertram, 2023-03-03, Accessibility features
 				end
 			em:RegisterForUpdate("WaypointItUpdateHeadingArrow", 50, RunHeadingUpdates)
 
@@ -2084,11 +2133,19 @@ function WaypointIt:CheckWaypointLoc()
 		local waypoint = self.sv.currentWaypoint
 		local setBy = waypoint and waypoint.setBy or "rowClick"
 
-		if (setBy == "rowClick" and self.sv["WAYPOINT_MESSAGES_USER_DEFINED"]) or (setBy == "autoQuest" and self.sv["WAYPOINT_MESSAGES_AUTO_QUEST"]) then
-			CENTER_SCREEN_ANNOUNCE:AddMessage(0, CSA_CATECORY_SMALL_TEXT, SOUNDS.ACHIEVEMENT_AWARDED, GetString(SI_WAYPOINTIT_WAYPOINT_REACHED))
+		if (setBy == "rowClick" or setBy == "autoQuest") then
+			if self.sv["WAYPOINT_MESSAGES_USER_DEFINED"] or self.sv["WAYPOINT_MESSAGES_AUTO_QUEST"] then
+				CENTER_SCREEN_ANNOUNCE:AddMessage(0, CSA_CATECORY_SMALL_TEXT, SOUNDS.ACHIEVEMENT_AWARDED, GetString(SI_WAYPOINTIT_WAYPOINT_REACHED))
+			end
+
+			--Baertram, 2022-03-03,Accessibility chat messages for screen reader
+			if self.sv["WAYPOINT_MESSAGES_USER_DEFINED_TO_CHAT"] or self.sv["WAYPOINT_MESSAGES_AUTO_QUEST_TO_CHAT"] then
+				addChatMessageForScreenReader(SOUNDS.ACHIEVEMENT_AWARDED, GetString(SI_WAYPOINTIT_WAYPOINT_REACHED))
+			end
 		end
 		if lastWaypointBy ~= "follow" or (lastWaypointBy == "follow" and not self:TryFollowNextCustomPin()) then
-			RemovePlayerWaypoint()
+			ZO_WorldMap_RemovePlayerWaypoint() -- Baertram, 2022-03-03, Fix WorldMap removal of waypoint so that the keybind will allow to add a new one (instead of remove a non existing)
+			--RemovePlayerWaypoint()
 		end
 	end
 end

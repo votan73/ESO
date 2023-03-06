@@ -43,6 +43,12 @@ function WaypointIt:InitSettings()
 		["WAYPOINT_WINDOW_NAME_DISTANCE"] = false,
 		["WAYPOINT_DISTANCEIN_METERS"] = true,
 
+		--Baertram, 2023-03-03 - Accessibility setings: Output as text to chat for Accessibility screen reader
+		["WAYPOINT_DISTANCE_TO_CHAT"] = false,
+		["WAYPOINT_DISTANCE_TO_CHAT_DELAY_SECONDS"] = 5,
+		["WAYPOINT_MESSAGES_USER_DEFINED_TO_CHAT"] = false,
+		["WAYPOINT_MESSAGES_AUTO_QUEST_TO_CHAT"] = false,
+
 
 		["QUEST_PRINT_STEPS"] = true,
 		["QUEST_FORCE_ASSIST"] = true,
@@ -229,6 +235,35 @@ function WaypointIt:CreateSettingsMenu()
 						end
 					end
 				},
+
+				--Baertram, 2022-03-03,Accessibility chat messages for screen reader
+				{
+					type = "checkbox",
+					name = "Accessibility: Write distance to chat",
+					tooltip = "Write the distance to your waypoint to the chat, so that the Accessibility chat reader can read it.",
+					default = false,
+					disabled = function() return not self.sv["WAYPOINT_DIRECTIONAL_ARROW"] end,
+					getFunc = function() return self.sv["WAYPOINT_DISTANCE_TO_CHAT"] end,
+					setFunc = function(bValue)
+						self.sv["WAYPOINT_DISTANCE_TO_CHAT"] = bValue
+					end
+				},
+				{
+					type = "slider",
+					name = "Accessibility: Distance to chat delay (seconds)",
+					tooltip = "Adjusts the distance to chat delay (in seconds) so that the chat is not spammed with the distance to the waypoint.",
+					min = 1,
+					max = 60,
+					step = 1,
+					clamp = true,
+					readOnly = false,
+					decimals = 0,
+					default = 5,
+					disabled = function() return not self.sv["WAYPOINT_DISTANCE_TO_CHAT"] or not self.sv["WAYPOINT_DIRECTIONAL_ARROW"] end,
+					getFunc = function() return self.sv["WAYPOINT_DISTANCE_TO_CHAT_DELAY_SECONDS"] end,
+					setFunc = function(iValue) self.sv["WAYPOINT_DISTANCE_TO_CHAT_DELAY_SECONDS"] = iValue end,
+				},
+
 				{
 					type = "checkbox",
 					name = "Show Distances in WaypointIt List",
@@ -279,17 +314,38 @@ function WaypointIt:CreateSettingsMenu()
 					type = "checkbox",
 					name = "Waypoints Messages",
 					tooltip = "Displays a center screen announcement when you set and reach waypoints.\n" .. self.color.darkOrange .. "This setting is for waypoints you set manually.",
-					width = "half",
+					width = "full",
 					getFunc = function() return self.sv["WAYPOINT_MESSAGES_USER_DEFINED"] end,
 					setFunc = function(bValue) self.sv["WAYPOINT_MESSAGES_USER_DEFINED"] = bValue end
 				},
+
+				--Baertram, 2022-03-03,Accessibility chat messages for screen reader
+				{
+					type = "checkbox",
+					name = "Accessibility: Waypoint Message to chat",
+					tooltip = "Displays a chat message when you set and reach waypoints, so that the Accessibility screen reader can read it.\n" .. self.color.darkOrange .. "This setting is for waypoints you set manually.",
+					width = "full",
+					getFunc = function() return self.sv["WAYPOINT_MESSAGES_USER_DEFINED_TO_CHAT"] end,
+					setFunc = function(bValue) self.sv["WAYPOINT_MESSAGES_USER_DEFINED_TO_CHAT"] = bValue end
+				},
+
 				{
 					type = "checkbox",
 					name = "Auto-Waypoint Messages",
 					tooltip = "Displays a center screen announcement when the auto-quest feature sets a waypoint for you & when you reach that waypoint.\n" .. self.color.darkOrange .. "This setting is for waypoints set for you by the auto-quest waypoints.",
-					width = "half",
+					width = "full",
 					getFunc = function() return self.sv["WAYPOINT_MESSAGES_AUTO_QUEST"] end,
 					setFunc = function(bValue) self.sv["WAYPOINT_MESSAGES_AUTO_QUEST"] = bValue end
+				},
+
+				--Baertram, 2022-03-03,Accessibility chat messages for screen reader
+				{
+					type = "checkbox",
+					name = "Accessibility: Auto-Waypoint Messages",
+					tooltip = "Displays a chat message when the auto-quest feature sets a waypoint for you & when you reach that waypoint, so that the Accessibility screen reader can read it.\n" .. self.color.darkOrange .. "This setting is for waypoints set for you by the auto-quest waypoints.",
+					width = "full",
+					getFunc = function() return self.sv["WAYPOINT_MESSAGES_AUTO_QUEST_TO_CHAT"] end,
+					setFunc = function(bValue) self.sv["WAYPOINT_MESSAGES_AUTO_QUEST_TO_CHAT"] = bValue end
 				},
 				{
 					type = "slider",
@@ -299,6 +355,9 @@ function WaypointIt:CreateSettingsMenu()
 					max = 75,
 					step = 1,
 					default = 5,
+					readOnly = false,
+					clamped = true,
+					decimals = 0,
 					getFunc = function() return self.sv["WAYPOINT_DELTA_SCALE"] end,
 					setFunc = function(iValue) self.sv["WAYPOINT_DELTA_SCALE"] = iValue end,
 				},
@@ -310,6 +369,9 @@ function WaypointIt:CreateSettingsMenu()
 					max = 25000,
 					step = 100,
 					default = 5000,
+					readOnly = false,
+					clamped = true,
+					decimals = 0,
 					getFunc = function() return self.sv["WAYPOINT_DELTA_SCALE_MAX"] end,
 					setFunc = function(iValue) self.sv["WAYPOINT_DELTA_SCALE_MAX"] = iValue end,
 				},
