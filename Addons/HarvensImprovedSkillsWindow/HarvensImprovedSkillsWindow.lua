@@ -289,28 +289,37 @@ function HarvensImprovedSkillsWindow:Initialize()
 		end
 	end
 
-	local function AddSkillLineInfo(tooltip, progressionIndex, skillMorph, skillRank)
-		local skillType, skillLineIndex, skillIndex = GetSkillAbilityIndicesFromProgressionIndex(progressionIndex)
-		local skillData = SKILLS_DATA_MANAGER:GetSkillDataByIndices(skillType, skillLineIndex, skillIndex)
-		if not skillData then
-			return
-		end
-		--local progressionData = skillData.skillProgressions[skillMorph]
-		local progressionData = skillData:GetProgressionData(skillMorph)
+	local function AddInfo(tooltip, progressionData, skillRank)
 		if not progressionData then
 			return
 		end
 		local rank = progressionData:GetCurrentRank()
 		local startXP, endXP = progressionData:GetRankXPExtents(rank)
 		local currentXP = progressionData:GetCurrentXP()
-		local completed = rank >= skillRank and currentXP >= endXP
+		local completed = rank and rank >= skillRank and currentXP >= endXP
 		if not completed then
-			local r, g, b = ZO_TOOLTIP_DEFAULT_COLOR:UnpackRGB()
+			local r, g, b = ZO_WHITE:UnpackRGB()
 			tooltip:AddLine(GetString(SI_ABILITYPROGRESSIONRESULT1), "ZoFontWinH5", r, g, b, TOPLEFT, MODIFY_TEXT_TYPE_NONE, TEXT_ALIGN_CENTER, SET_TO_FULL_SIZE)
 		end
 	end
+	local function AddSkillLineInfo(tooltip, progressionIndex, skillMorph, skillRank)
+		local skillType, skillLineIndex, skillIndex = GetSkillAbilityIndicesFromProgressionIndex(progressionIndex)
+		local skillData = SKILLS_DATA_MANAGER:GetSkillDataByIndices(skillType, skillLineIndex, skillIndex)
+		if not skillData then
+			return
+		end
+		local progressionData = skillData:GetProgressionData(skillMorph)
+		AddInfo(tooltip, progressionData, skillRank)
+	end
 	ZO_PostHook(HarvensSkillTooltipMorph1, "SetProgressionAbility", AddSkillLineInfo)
 	ZO_PostHook(HarvensSkillTooltipMorph2, "SetProgressionAbility", AddSkillLineInfo)
+
+	local function AddSkillLineAbilityInfo(tooltip, abilityId, skillType, skillLineIndex, skillIndex, skillMorph)
+		local progressionData = SKILLS_DATA_MANAGER:GetProgressionDataByAbilityId(abilityId)
+		AddInfo(tooltip, progressionData, 4)
+	end
+	ZO_PostHook(HarvensSkillTooltipMorph1, "SetSkillLineAbilityId", AddSkillLineAbilityInfo)
+	ZO_PostHook(HarvensSkillTooltipMorph2, "SetSkillLineAbilityId", AddSkillLineAbilityInfo)
 end
 
 local function OnAddonLoaded(eventCode, addonName)
