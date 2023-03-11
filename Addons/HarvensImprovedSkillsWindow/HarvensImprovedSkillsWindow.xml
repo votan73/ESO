@@ -1,0 +1,53 @@
+<GuiXml>
+  <Controls>
+    <TopLevelControl name="HarvensSkillTooltipTopLevelMorph1" inherits="TooltipTopLevel">
+      <Controls>
+        <Tooltip name="HarvensSkillTooltipMorph1"  inherits="ZO_BaseTooltip">
+          <ResizeToFitPadding width="32" height="40"/>
+          <DimensionConstraints minX="384" maxX="384" />
+          <OnInitialized>
+            ZO_SkillTooltip_Initialize(self)
+          </OnInitialized>
+
+          <OnAddGameData>
+            ZO_SkillTooltip_OnAddGameData(...)
+          </OnAddGameData>
+
+          <OnCleared>
+            ZO_SkillTooltip_Cleared(self)
+          </OnCleared>
+
+          <Controls>
+            <StatusBar name="$(parent)Progression" inherits="SkillTooltipProgressionBar" hidden="true" />
+          </Controls>
+        </Tooltip>
+      </Controls>
+    </TopLevelControl>
+    <TopLevelControl name="HarvensSkillTooltipTopLevelMorph2" inherits="TooltipTopLevel">
+      <Controls>
+        <Tooltip name="HarvensSkillTooltipMorph2"  inherits="ZO_BaseTooltip">
+          <ResizeToFitPadding width="32" height="40"/>
+          <DimensionConstraints minX="384" maxX="384" />
+          <OnInitialized>
+            ZO_SkillTooltip_Initialize(self)
+          </OnInitialized>
+
+          <OnAddGameData>
+            ZO_SkillTooltip_OnAddGameData(...)
+          </OnAddGameData>
+
+          <OnCleared>
+            ZO_SkillTooltip_Cleared(self)
+          </OnCleared>
+
+          <Controls>
+            <StatusBar name="$(parent)Progression" inherits="SkillTooltipProgressionBar" hidden="true" />
+          </Controls>
+        </Tooltip>
+      </Controls>
+    </TopLevelControl>
+    <Label name="HarvensImprovedSkillsWindowLabel" font="$(MEDIUM_FONT)|18|thick-outline" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_SELECTED" virtual="true" />
+    <Label name="HarvensImprovedSkillsWindowMorphLabel" font="$(MEDIUM_FONT)|18|soft-shadow-thick" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_SELECTED" virtual="true" />
+    <Button name="HarvensImprovedSkillsWindowShowDetails" inherits="ZO_CheckButton" virtual="true" />
+  </Controls>
+</GuiXml>
