@@ -720,7 +720,7 @@ function AddCustomMenuItem(mytext, myfunction, itemType, myFont, normalColor, hi
 		itemType = MENU_ADD_OPTION_LABEL
 	end
 
-	local index = AddMenuItem(mytext, myfunction, itemType, myFont, normalColor, highlightColor, itemYPad, horizontalAlignment)
+	local index = AddMenuItem(mytext, myfunction or function() end, itemType, myFont, normalColor, highlightColor, itemYPad, horizontalAlignment)
 
 	local lastAdded = ZO_Menu.items[index]
 	if itemType == MENU_ADD_OPTION_CHECKBOX then
