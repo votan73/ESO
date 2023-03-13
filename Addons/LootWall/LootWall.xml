@@ -2,7 +2,6 @@
   <Controls>
     <Tooltip name="LootWallLootable" virtual="true" movable="true" mouseEnabled="true" inherits="ZO_ItemIconTooltip">
       <Anchor point="CENTER" offsetX="0" offsetY="0"/>
-      <Dimensions x="470" y="150" />
       <DimensionConstraints minX="470" maxX="470" minY="150" />
       <Controls>
         <Button name="$(parent)_BKeepAlways" text="Keep (Always)" inherits="ZO_DefaultButton" excludeFromResizeToFitExtents="true" level="3">
