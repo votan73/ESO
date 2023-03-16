@@ -4,7 +4,7 @@
 			<Dimensions x="64" y="64"/>
 		</Texture>
 		<TopLevelControl name="HarvensCustomMapPinsEditDialog" inherits="ZO_CustomDialogBase">
-			<Dimensions x="550" y="256" />
+			<DimensionConstraints minX="550" minY="256" />
 			<Anchor point="CENTER" offsetY="-45" />
 			<Controls>
 				<Control name="$(parent)Content" inherits="ZO_DialogContentAnchors">
