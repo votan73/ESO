@@ -50,3 +50,7 @@ SafeAddString(SI_RARE_FISH_TRACKER_LOCK_POSITION_TOOLTIP, "Verhindert das versch
 
 SafeAddString(SI_RARE_FISH_TRACKER_BIGGER_FONT, "Größere Schrift")
 SafeAddString(SI_RARE_FISH_TRACKER_BIGGER_FONT_TOOLTIP, "Erhöht die Schriftgröße um eine Kategorie und die Symbolgröße von 32 auf 40.")
+
+SafeAddString(SI_RARE_FISH_TRACKER_RELOADUI, "Erfordert Neuladen der UI")
+SafeAddString(SI_RARE_FISH_TRACKER_ALLOW_PER_CHAR, "Track pro Charakter")
+SafeAddString(SI_RARE_FISH_TRACKER_ALLOW_PER_CHAR_TOOLTIP, "Trackt die Fische pro Charakter.\nErlaubt es das Tracking mit \"/rftzone clear\" von vorne zu beginnen.\nOder den kontoweiten Status mit \"/rftzone\" zu übernehmen.")

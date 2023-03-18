@@ -9,7 +9,9 @@
 local wm = GetWindowManager()
 local em = GetEventManager()
 
-if RFT == nil then RFT = { } end
+if RFT == nil then
+	RFT = {}
+end
 
 local RFT = RFT
 
@@ -17,19 +19,16 @@ RFT.fishCat = nil
 RFT.fishSubCat = nil
 RFT.numFishAch = nil
 RFT.progress = {
-	[0] =
-	{
-		-- ["None"] = true
-	},
+	[0] = {}
 }
-RFT.achnames = { }
+RFT.achnames = {}
 RFT.fishnames = {
-	[0] = { "None" },
+	[0] = {"None"}
 }
 RFT.fishIcons = {
-	[0] = { "" },
+	[0] = {""}
 }
-RFT.settings = { }
+RFT.settings = {}
 RFT.defaults = {
 	x = 20,
 	y = 20,
@@ -37,7 +36,7 @@ RFT.defaults = {
 	x_world = 20,
 	y_world = 120,
 	apiVersion = GetAPIVersion(),
-	shown_world = true,
+	shown_world = true
 }
 RFT.accountDefaults = {
 	alpha = 50,
@@ -53,20 +52,21 @@ RFT.accountDefaults = {
 	captionAlphaNormal = 100,
 	lockPosition = false,
 	biggerFont = false,
+	allowPerCharacter = false
 }
 local iconSize = 30
 RFT.zone = ""
-RFT.zones = { }
-RFT.trackedAchievements = { }
+RFT.zones = {}
+RFT.trackedAchievements = {}
 
 -- define some business logic stuff
 
 -- ScanAchievementsById() is run once, at load time, and scans the player's recorded fishing achievements so far.
 -- cat is the number of the fishing achievements category, and num is the number of achievements in the category.
 function RFT.ScanAchievementsById(id)
-	RFT.progress[id] = { }
-	RFT.fishnames[id] = { }
-	RFT.fishIcons[id] = { }
+	RFT.progress[id] = {}
+	RFT.fishnames[id] = {}
+	RFT.fishIcons[id] = {}
 	RFT.achnames[id] = GetAchievementInfo(id)
 	local numCrit = GetAchievementNumCriteria(id)
 	local GetAchievementCriterion, giln = GetAchievementCriterion, GetItemLinkName
@@ -76,7 +76,7 @@ function RFT.ScanAchievementsById(id)
 
 	local desc, done, needed, itemLink, icon
 	for j = 1, numCrit, 1 do
-		desc, done, needed = GetAchievementCriterion(id, j)
+		desc, done, needed = RFT:GetAchievementCriterion(id, j)
 		if itemLinks then
 			itemLink = itemLinks[j]
 			if itemLink then
@@ -109,7 +109,7 @@ function RFT.RecordProgress(achieveId)
 	local itemLinks, giln, GetItemLinkInfo = RFT.achievementToItem[achieveId], GetItemLinkName, GetItemLinkInfo
 	local format, GetAchievementCriterion = string.format, GetAchievementCriterion
 	for i = 1, numCrit, 1 do
-		local desc, done = GetAchievementCriterion(achieveId, i)
+		local desc, done = RFT:GetAchievementCriterion(achieveId, i)
 		if itemLinks then
 			local itemLink = itemLinks[i]
 			if itemLink then
@@ -143,7 +143,9 @@ do
 	local function findZone(zone)
 		local count = 4
 		while not RFT.zoneToAchievement[zone] do
-			if count == 0 or zone == 0 then break end
+			if count == 0 or zone == 0 then
+				break
+			end
 			zone = GetParentZoneId(zone)
 			count = count - 1
 		end
@@ -151,7 +153,7 @@ do
 	end
 
 	function RFT.RefreshWindow()
-		RFT.RefreshWindowForZone(WORLD_MAP_SCENE:IsShowing() and RFT.zone or findZone(GetZoneId(GetUnitZoneIndex('player'))))
+		RFT.RefreshWindowForZone(WORLD_MAP_SCENE:IsShowing() and RFT.zone or findZone(GetZoneId(GetUnitZoneIndex("player"))))
 	end
 
 	function RFT.GetAchievementsByZoneId(zone)
@@ -159,15 +161,19 @@ do
 		return zone, RFT.zoneToAchievement[zone] or 0
 	end
 	function RFT.RefreshWindowZoneChanged()
-		local zone = findZone(GetZoneId(GetUnitZoneIndex('player')))
+		local zone = findZone(GetZoneId(GetUnitZoneIndex("player")))
 		RFT.isAutoRefresh = true
-		if RFT.zone == zone then return end
+		if RFT.zone == zone then
+			return
+		end
 		RFT.RefreshWindowForZone(zone)
 	end
 	function RFT.RefreshWindowMapChanged()
 		local zone = findZone(GetZoneId(GetCurrentMapZoneIndex()))
 		RFT.isAutoRefresh = true
-		if RFT.zone == zone then return end
+		if RFT.zone == zone then
+			return
+		end
 		RFT.RefreshWindowForZone(zone)
 	end
 end
@@ -194,48 +200,84 @@ local function ZoneNameToIndex()
 	local zone
 	while true do
 		zone = zbn(i)
-		if zone == "" then break end
+		if zone == "" then
+			break
+		end
 		zones[format("<<!A:1>>", zone)] = GetZoneId(i)
 		i = i + 1
 	end
 end
 
+function RFT:RescanAchievements()
+	local tracked = self.trackedAchievements
+	for _, achs in pairs(self.zoneToAchievement) do
+		for _, ach in ipairs(achs) do
+			tracked[ach] = true
+			self.ScanAchievementsById(ach)
+		end
+	end
+end
+
 -- initialization stuff
 function RFT.Init()
-
 	-- load our saved variables
 	RFT.settings = ZO_SavedVars:NewCharacterIdSettings("RareFishTrackerSavedVars", 1, nil, RFT.defaults)
 	RFT.account = ZO_SavedVars:NewAccountWide("RareFishTrackerSavedVars", 1, nil, RFT.accountDefaults)
-	local commonDefaults = { }
+	local commonDefaults = {}
 	RFT.common = ZO_SavedVars:New("RareFishTrackerSavedVars", GetAPIVersion(), nil, commonDefaults, "Default", "$Machine", "$UserProfileWide")
 
 	RFT.common.subzoneToZone = nil
 
+	RFT:InitCatchTracker()
+
 	-- make our options menu
 	RFT.MakeMenu()
 
-	local tracked = RFT.trackedAchievements
-	for _, achs in pairs(RFT.zoneToAchievement) do
-		for _, ach in ipairs(achs) do
-			tracked[ach] = true
-			RFT.ScanAchievementsById(ach)
-		end
-	end
+	RFT:RescanAchievements()
 
 	RFT.MakeWindow()
 
 	-- and then let us know when those updates happen
-	em:RegisterForEvent("RareFishTracker", EVENT_ACHIEVEMENT_UPDATED, function(...) return RFT.ProcessUpdate(...) end)
-	em:RegisterForEvent("RareFishTracker", EVENT_ACHIEVEMENT_AWARDED, function(event, _, _, id) RFT.ProcessUpdate(event, id) end)
-	CALLBACK_MANAGER:RegisterCallback("OnWorldMapChanged", function() RFT.RefreshWindowMapChanged() end)
+	em:RegisterForEvent(
+		"RareFishTracker",
+		EVENT_ACHIEVEMENT_UPDATED,
+		function(...)
+			return RFT.ProcessUpdate(...)
+		end
+	)
+	em:RegisterForEvent(
+		"RareFishTracker",
+		EVENT_ACHIEVEMENT_AWARDED,
+		function(event, _, _, id)
+			RFT.ProcessUpdate(event, id)
+		end
+	)
+	CALLBACK_MANAGER:RegisterCallback(
+		"OnWorldMapChanged",
+		function()
+			RFT.RefreshWindowMapChanged()
+		end
+	)
 
 	-- also, do this last, to minimize the chance of problem zone transitions
-	em:RegisterForEvent("RareFishStart", EVENT_PLAYER_ACTIVATED, function() RFT.RefreshWindowZoneChanged(EVENT_PLAYER_ACTIVATED, nil, nil, false) end)
+	em:RegisterForEvent(
+		"RareFishStart",
+		EVENT_PLAYER_ACTIVATED,
+		function()
+			RFT.RefreshWindowZoneChanged(EVENT_PLAYER_ACTIVATED, nil, nil, false)
+		end
+	)
 end
 
 -- register to be initialized when we're ready
-em:RegisterForEvent("RareFishInitialize", EVENT_ADD_ON_LOADED, function(event, addon)
-	if addon ~= "RareFishTracker" then return end
-	em:UnregisterForEvent("RareFishInitialize", EVENT_ADD_ON_LOADED)
-	RFT.Init()
-end )
+em:RegisterForEvent(
+	"RareFishInitialize",
+	EVENT_ADD_ON_LOADED,
+	function(event, addon)
+		if addon ~= "RareFishTracker" then
+			return
+		end
+		em:UnregisterForEvent("RareFishInitialize", EVENT_ADD_ON_LOADED)
+		RFT.Init()
+	end
+)

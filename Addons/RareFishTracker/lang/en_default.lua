@@ -50,3 +50,7 @@ ZO_CreateStringId("SI_RARE_FISH_TRACKER_LOCK_POSITION_TOOLTIP", "Do not allow to
 
 ZO_CreateStringId("SI_RARE_FISH_TRACKER_BIGGER_FONT", "Bigger Font")
 ZO_CreateStringId("SI_RARE_FISH_TRACKER_BIGGER_FONT_TOOLTIP", "Use one category greater font size and increase symbol-size from 32 to 40.")
+
+ZO_CreateStringId("SI_RARE_FISH_TRACKER_RELOADUI", "Requires to reload UI")
+ZO_CreateStringId("SI_RARE_FISH_TRACKER_ALLOW_PER_CHAR", "Track per character")
+ZO_CreateStringId("SI_RARE_FISH_TRACKER_ALLOW_PER_CHAR_TOOLTIP", "Tracks fishes per character.\nAllows you to restart tracking with \"/rftzone clear\".\nOr to take over account-wide state with \"/rftzone\".")

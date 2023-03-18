@@ -14,7 +14,7 @@ function RFT.MakeMenu()
 		name = "Rare Fish Tracker",
 		displayName = "Rare Fish Tracker",
 		author = "katkat42 & votan",
-		version = "1.40.6",
+		version = "1.41.0",
 		registerForRefresh = true,
 		registerForDefaults = true,
 		slashCommand = "/rft",
@@ -137,7 +137,30 @@ function RFT.MakeMenu()
 				account.autoShowHide = value
 				RFT.RefreshWindow()
 			end,
+			width = "half",
 			default = RFT.accountDefaults.autoShowHide
+		},
+		{
+			type = "checkbox",
+			name = GetString(SI_RARE_FISH_TRACKER_ALLOW_PER_CHAR),
+			tooltip = GetString(SI_RARE_FISH_TRACKER_ALLOW_PER_CHAR_TOOLTIP),
+			getFunc = function()
+				return account.allowPerCharacter
+			end,
+			setFunc = function(value)
+				if account.allowPerCharacter ~= value then
+					account.allowPerCharacter = value
+					zo_callLater(
+						function()
+							SLASH_COMMANDS["/reloadui"]()
+						end,
+						250
+					)
+				end
+			end,
+			width = "half",
+			warning = GetString(SI_RARE_FISH_TRACKER_RELOADUI),
+			default = RFT.accountDefaults.allowPerCharacter
 		},
 		{
 			type = "checkbox",
