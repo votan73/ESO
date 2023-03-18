@@ -14,7 +14,16 @@ end
 local database
 function RFT:InitCatchTracker()
 	if not self.account.allowPerCharacter then
+		function RFT:GetAchievementCriterion(achieveId, index)
+			local desc, done = GetAchievementCriterion(achieveId, index)
+			return desc, done
+		end
 		return
+	end
+	function RFT:GetAchievementCriterion(achieveId, index)
+		local desc, done = GetAchievementCriterion(achieveId, index)
+		-- done is a number, not boolean
+		return desc, done and (BitAnd(database[achieveId] or 0, BitLShift(1, index - 1)) ~= 0) and 1 or 0
 	end
 	local charId = GetCurrentCharacterId()
 	database = RareFishTrackerSavedVars[charId]
@@ -67,14 +76,5 @@ function RFT:InitCatchTracker()
 			end
 		end
 		RFT.RefreshWindow()
-	end
-end
-
-function RFT:GetAchievementCriterion(achieveId, index)
-	local desc, done = GetAchievementCriterion(achieveId, index)
-	if self.account.allowPerCharacter then
-		return desc, done and BitAnd(database[achieveId] or 0, BitLShift(1, index - 1)) ~= 0
-	else
-		return desc, done
 	end
 end

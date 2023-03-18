@@ -69,14 +69,14 @@ function RFT.ScanAchievementsById(id)
 	RFT.fishIcons[id] = {}
 	RFT.achnames[id] = GetAchievementInfo(id)
 	local numCrit = GetAchievementNumCriteria(id)
-	local GetAchievementCriterion, giln = GetAchievementCriterion, GetItemLinkName
+	local giln = GetItemLinkName
 	local GetItemLinkInfo = GetItemLinkInfo
 	local strformat = string.format
 	local progress, fishnames, itemLinks, fishIcons = RFT.progress[id], RFT.fishnames[id], RFT.achievementToItem[id], RFT.fishIcons[id]
 
-	local desc, done, needed, itemLink, icon
+	local desc, done, itemLink, icon
 	for j = 1, numCrit, 1 do
-		desc, done, needed = RFT:GetAchievementCriterion(id, j)
+		desc, done = RFT:GetAchievementCriterion(id, j)
 		if itemLinks then
 			itemLink = itemLinks[j]
 			if itemLink then
@@ -107,7 +107,7 @@ function RFT.RecordProgress(achieveId)
 	local numCrit = GetAchievementNumCriteria(achieveId)
 
 	local itemLinks, giln, GetItemLinkInfo = RFT.achievementToItem[achieveId], GetItemLinkName, GetItemLinkInfo
-	local format, GetAchievementCriterion = string.format, GetAchievementCriterion
+	local format = string.format
 	for i = 1, numCrit, 1 do
 		local desc, done = RFT:GetAchievementCriterion(achieveId, i)
 		if itemLinks then
