@@ -129,15 +129,8 @@ local function HideLabel(hidden)
 	ZO_SmithingTopLevelModeMenuBarLabel:SetHidden(hidden)
 end
 
-local setDefaultText
-if GetAPIVersion() <= 101034 then
-	function setDefaultText(control, text)
-		return ZO_EditDefaultText_Initialize(control, text)
-	end
-else
-	function setDefaultText(control, text)
-		control:SetDefaultText(text)
-	end
+local function setDefaultText(control, text)
+	control:SetDefaultText(text)
 end
 
 local function SetupControl(bagSearchBg, ...)
@@ -183,8 +176,8 @@ local function SetupControl(bagSearchBg, ...)
 			for _, control in pairs(otherControls) do
 				control:SetHidden(othersVisibility[control])
 			end
+			setDefaultText(bagSearch, glass)
 		end
-		--bagSearchTx:SetText(glass)
 		return false
 	end
 	local function VotanSearchBoxTextChanged(control, ...)
