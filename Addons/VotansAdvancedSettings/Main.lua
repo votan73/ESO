@@ -17,7 +17,8 @@ local addon = {
 		PPFXOverlays = true,
 		RLS = false,
 		ColorPicker = false,
-		BlobShadows = true
+		BlobShadows = true,
+		OcclusionCulling = false
 	}
 }
 
@@ -120,7 +121,8 @@ local UserSettings = {
 	PPFXOverlays = "PPFXOverlaysEnabled",
 	RLS = "RLSEnabled",
 	ColorPicker = "COLOR_PICKER",
-	BlobShadows = "BlobShadowsEnabled"
+	BlobShadows = "BlobShadowsEnabled",
+	OcclusionCulling = "SoftwareOcclusionCullingEnabled"
 }
 
 function addon:InitSettings()
@@ -302,6 +304,7 @@ function addon:InitSettings()
 	AddCheckBox("PPFXOverlays", SI_VOTANS_ADAPTIVE_SETTINGS_PPFX_OVERLAYS, SI_VOTANS_ADAPTIVE_SETTINGS_PPFX_OVERLAYS_TOOLTIP)
 	AddCheckBox("RLS", SI_VOTANS_ADAPTIVE_SETTINGS_RLS, SI_VOTANS_ADAPTIVE_SETTINGS_RLS_TOOLTIP)
 	AddCheckBox("ColorPicker", SI_VOTANS_ADAPTIVE_SETTINGS_COLOR_PICKER, SI_VOTANS_ADAPTIVE_SETTINGS_COLOR_PICKER_TOOLTIP)
+	AddCheckBox(UserSettings.OcclusionCulling, SI_VOTANS_ADAPTIVE_SETTINGS_OCCLUSION_CULLING, SI_VOTANS_ADAPTIVE_SETTINGS_OCCLUSION_CULLING_TOOLTIP)
 
 	settings:AddSetting {
 		type = LibHarvensAddonSettings.ST_SECTION,
