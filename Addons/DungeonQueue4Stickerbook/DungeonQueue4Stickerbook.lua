@@ -112,8 +112,8 @@ local DungeonSetsVet = {
 	[602] = {sets = {633}}, -- Gram des Schiffbauers
 	[609] = {sets = {666}}, -- Erdwurz-Enklave
 	[611] = {sets = {667}}, -- Kentertiefen
-	[614] = {sets = {683}}, -- Bal Sunnar",
-	[616] = {sets = {687}} -- Halle der Schriftmeister",
+	[614] = {sets = {683}}, -- Bal Sunnar
+	[616] = {sets = {687}} -- Halle der Schriftmeister
 }
 local DungeonQuest = {
 	-- ActivityId -> QuestId
