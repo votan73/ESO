@@ -220,7 +220,9 @@ local UndauntedDLCPledges = {
 	[6741] = {n = 599, v = 600}, -- Korallenhorst
 	[6743] = {n = 601, v = 602}, -- Gram des Schiffbauers
 	[6836] = {n = 608, v = 609}, -- Erdwurz-Enklave
-	[6838] = {n = 610, v = 611} -- Kentertiefen
+	[6838] = {n = 610, v = 611}, -- Kentertiefen
+	[6897] = {n = 613, v = 614}, -- Bal Sunnar
+	[7028] = {n = 615, v = 616} -- Halle der Schriftmeister
 }
 ----------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------
@@ -583,107 +585,107 @@ end
 ----------------------------------------------------------------------------------------------------
 EVENT_MANAGER:RegisterForEvent(ttq.name, EVENT_ADD_ON_LOADED, ttq.addonLoaded)
 
-SLASH_COMMANDS["/test"] = function()
-	-- local activityToName = {}
-	-- local locations = ZO_ACTIVITY_FINDER_ROOT_MANAGER:GetLocationsData(LFG_ACTIVITY_DUNGEON)
-	-- for i = 1, #locations do
-	-- 	local activityId = locations[i]:GetId()
-	-- 	activityToName[activityId] = locations[i]:GetRawName():gsub("\194\160II", ""):gsub("\194\160I", "")
-	-- end
-	-- local setIdToActivity = {}
-	-- for _, collectionData in ITEM_SET_COLLECTIONS_DATA_MANAGER:ItemSetCollectionIterator() do
-	-- 	for _, pieceData in collectionData:PieceIterator() do
-	-- 		local quality = pieceData:GetDisplayQuality()
-	-- 		if quality < 4 then
-	-- 			local categoryData = collectionData:GetCategoryData()
-	-- 			for activityId, name in pairs(activityToName) do
-	-- 				if name == categoryData:GetFormattedName() then
-	-- 					local list = setIdToActivity[activityId] or {sets = {}}
-	-- 					list.sets[#list.sets + 1] = collectionData:GetId()
-	-- 					list.name = name
-	-- 					setIdToActivity[activityId] = list
-	-- 				end
-	-- 			end
-	-- 			break
-	-- 		end
-	-- 	end
-	-- end
-	-- 	local lines = {}
-	-- 	for activityId, list in pairs(setIdToActivity) do
-	-- 		lines[#lines + 1] = string.format("[%i] = {sets={%s}}, -- %s", activityId, table.concat(list.sets,","), GetActivityName(activityId))
-	-- 	end
-	-- 	DungeonQueue4Stickerbook.normal = lines
+-- SLASH_COMMANDS["/test"] = function()
+-- 	-- local activityToName = {}
+-- 	-- local locations = ZO_ACTIVITY_FINDER_ROOT_MANAGER:GetLocationsData(LFG_ACTIVITY_DUNGEON)
+-- 	-- for i = 1, #locations do
+-- 	-- 	local activityId = locations[i]:GetId()
+-- 	-- 	activityToName[activityId] = locations[i]:GetRawName():gsub("\194\160II", ""):gsub("\194\160I", "")
+-- 	-- end
+-- 	-- local setIdToActivity = {}
+-- 	-- for _, collectionData in ITEM_SET_COLLECTIONS_DATA_MANAGER:ItemSetCollectionIterator() do
+-- 	-- 	for _, pieceData in collectionData:PieceIterator() do
+-- 	-- 		local quality = pieceData:GetDisplayQuality()
+-- 	-- 		if quality < 4 then
+-- 	-- 			local categoryData = collectionData:GetCategoryData()
+-- 	-- 			for activityId, name in pairs(activityToName) do
+-- 	-- 				if name == categoryData:GetFormattedName() then
+-- 	-- 					local list = setIdToActivity[activityId] or {sets = {}}
+-- 	-- 					list.sets[#list.sets + 1] = collectionData:GetId()
+-- 	-- 					list.name = name
+-- 	-- 					setIdToActivity[activityId] = list
+-- 	-- 				end
+-- 	-- 			end
+-- 	-- 			break
+-- 	-- 		end
+-- 	-- 	end
+-- 	-- end
+-- 	-- 	local lines = {}
+-- 	-- 	for activityId, list in pairs(setIdToActivity) do
+-- 	-- 		lines[#lines + 1] = string.format("[%i] = {sets={%s}}, -- %s", activityId, table.concat(list.sets,","), GetActivityName(activityId))
+-- 	-- 	end
+-- 	-- 	DungeonQueue4Stickerbook.normal = lines
 
-	-- 	local activityToName = {}
-	-- 	local locations = ZO_ACTIVITY_FINDER_ROOT_MANAGER:GetLocationsData(LFG_ACTIVITY_MASTER_DUNGEON)
-	--     for i = 1, #locations do
-	--         local activityId = locations[i]:GetId()
-	-- 		activityToName[activityId] = locations[i]:GetRawName():gsub("\194\160II", ""):gsub("\194\160I", "")
-	-- 	end
-	-- 	local setIdToActivity = {}
-	-- 	for _, collectionData in ITEM_SET_COLLECTIONS_DATA_MANAGER:ItemSetCollectionIterator() do
-	-- 		if collectionData:GetNumPieces() == 6 then
-	-- 			for _, pieceData in collectionData:PieceIterator() do
-	-- 				local quality = pieceData:GetDisplayQuality()
-	-- 				if quality == 4 then
-	-- 					if GetItemLinkEquipType(pieceData:GetItemLink()) == EQUIP_TYPE_HEAD then
-	-- 						local categoryData = collectionData:GetCategoryData()
-	-- 						for activityId, name in pairs(activityToName) do
-	-- 							if name == categoryData:GetFormattedName() then
-	-- 								local list = setIdToActivity[activityId] or { sets={} }
-	-- 								list.sets[#list.sets+1] = collectionData:GetId()
-	-- 								list.name = name
-	-- 								setIdToActivity[activityId] = list
-	-- 							end
-	-- 						end
-	-- 						break
-	-- 					end
-	-- 				end
-	-- 			end
-	-- 		end
-	-- 	end
-	-- 	local lines = {}
-	-- 	for activityId, list in pairs(setIdToActivity) do
-	-- 		lines[#lines + 1] = string.format("[%i] = {sets={%s}}, -- %s", activityId, table.concat(list.sets,","), GetActivityName(activityId))
-	-- 	end
-	-- 	DungeonQueue4Stickerbook.vet = lines
+-- 	-- 	local activityToName = {}
+-- 	-- 	local locations = ZO_ACTIVITY_FINDER_ROOT_MANAGER:GetLocationsData(LFG_ACTIVITY_MASTER_DUNGEON)
+-- 	--     for i = 1, #locations do
+-- 	--         local activityId = locations[i]:GetId()
+-- 	-- 		activityToName[activityId] = locations[i]:GetRawName():gsub("\194\160II", ""):gsub("\194\160I", "")
+-- 	-- 	end
+-- 	-- 	local setIdToActivity = {}
+-- 	-- 	for _, collectionData in ITEM_SET_COLLECTIONS_DATA_MANAGER:ItemSetCollectionIterator() do
+-- 	-- 		if collectionData:GetNumPieces() == 6 then
+-- 	-- 			for _, pieceData in collectionData:PieceIterator() do
+-- 	-- 				local quality = pieceData:GetDisplayQuality()
+-- 	-- 				if quality == 4 then
+-- 	-- 					if GetItemLinkEquipType(pieceData:GetItemLink()) == EQUIP_TYPE_HEAD then
+-- 	-- 						local categoryData = collectionData:GetCategoryData()
+-- 	-- 						for activityId, name in pairs(activityToName) do
+-- 	-- 							if name == categoryData:GetFormattedName() then
+-- 	-- 								local list = setIdToActivity[activityId] or { sets={} }
+-- 	-- 								list.sets[#list.sets+1] = collectionData:GetId()
+-- 	-- 								list.name = name
+-- 	-- 								setIdToActivity[activityId] = list
+-- 	-- 							end
+-- 	-- 						end
+-- 	-- 						break
+-- 	-- 					end
+-- 	-- 				end
+-- 	-- 			end
+-- 	-- 		end
+-- 	-- 	end
+-- 	-- 	local lines = {}
+-- 	-- 	for activityId, list in pairs(setIdToActivity) do
+-- 	-- 		lines[#lines + 1] = string.format("[%i] = {sets={%s}}, -- %s", activityId, table.concat(list.sets,","), GetActivityName(activityId))
+-- 	-- 	end
+-- 	-- 	DungeonQueue4Stickerbook.vet = lines
 
-	local activityToName = {}
-	local locations = ZO_ACTIVITY_FINDER_ROOT_MANAGER:GetLocationsData(LFG_ACTIVITY_DUNGEON)
-	for i = 1, #locations do
-		local activityId = locations[i]:GetId()
-		local name = locations[i]:GetRawName():gsub("Der ", "")
-		local list = activityToName[name] or {}
-		list[#list + 1] = activityId
-		activityToName[name] = list
-	end
-	local locations = ZO_ACTIVITY_FINDER_ROOT_MANAGER:GetLocationsData(LFG_ACTIVITY_MASTER_DUNGEON)
-	for i = 1, #locations do
-		local activityId = locations[i]:GetId()
-		local name = locations[i]:GetRawName():gsub("Der ", "")
-		local list = activityToName[name] or {}
-		list[#list + 1] = activityId
-		activityToName[name] = list
-	end
+-- 	local activityToName = {}
+-- 	local locations = ZO_ACTIVITY_FINDER_ROOT_MANAGER:GetLocationsData(LFG_ACTIVITY_DUNGEON)
+-- 	for i = 1, #locations do
+-- 		local activityId = locations[i]:GetId()
+-- 		local name = locations[i]:GetRawName():gsub("Der ", "")
+-- 		local list = activityToName[name] or {}
+-- 		list[#list + 1] = activityId
+-- 		activityToName[name] = list
+-- 	end
+-- 	local locations = ZO_ACTIVITY_FINDER_ROOT_MANAGER:GetLocationsData(LFG_ACTIVITY_MASTER_DUNGEON)
+-- 	for i = 1, #locations do
+-- 		local activityId = locations[i]:GetId()
+-- 		local name = locations[i]:GetRawName():gsub("Der ", "")
+-- 		local list = activityToName[name] or {}
+-- 		list[#list + 1] = activityId
+-- 		activityToName[name] = list
+-- 	end
 
-	local lines = {}
-	local questId = nil
-	while true do
-		questId = GetNextCompletedQuestId(questId)
-		if questId then
-			local name, questType = GetCompletedQuestInfo(questId)
-			if questType == QUEST_TYPE_UNDAUNTED_PLEDGE then
-				name = name:gsub("Der ", "")
-				local list = activityToName[name]
-				if list then
-					lines[#lines + 1] = string.format("[%i] = {n=%i,v=%i}, -- %s", questId, list[1] or 0, list[2] or 0, name)
-				else
-					lines[#lines + 1] = string.format("[%i] = {n=%i,v=%i}, -- %s", questId, 0, 0, name)
-				end
-			end
-		else
-			break
-		end
-	end
-	DungeonQueue4Stickerbook.pledges = lines
-end
+-- 	local lines = {}
+-- 	local questId = nil
+-- 	while true do
+-- 		questId = GetNextCompletedQuestId(questId)
+-- 		if questId then
+-- 			local name, questType = GetCompletedQuestInfo(questId)
+-- 			if questType == QUEST_TYPE_UNDAUNTED_PLEDGE then
+-- 				name = name:gsub("Der ", "")
+-- 				local list = activityToName[name]
+-- 				if list then
+-- 					lines[#lines + 1] = string.format("[%i] = {n=%i,v=%i}, -- %s", questId, list[1] or 0, list[2] or 0, name)
+-- 				else
+-- 					lines[#lines + 1] = string.format("[%i] = {n=%i,v=%i}, -- %s", questId, 0, 0, name)
+-- 				end
+-- 			end
+-- 		else
+-- 			break
+-- 		end
+-- 	end
+-- 	DungeonQueue4Stickerbook.pledges = lines
+-- end
