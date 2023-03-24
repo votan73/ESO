@@ -116,7 +116,9 @@ local codes = {
 	["WRS1"] = 189, --Dungeon: Wayrest Sewers I
 	["WS"] = 189, --Dungeon: Wayrest Sewers I
 	["WS1"] = 189, --Dungeon: Wayrest Sewers I
-	["WS2"] = 263 --Dungeon: Wayrest Sewers II
+	["WS2"] = 263, --Dungeon: Wayrest Sewers II
+	["BS"] = 531, --Dungeon: Bal Sunnar
+	["SH"] = 532 --Dungeon: Scrivener's Hall
 }
 
 local tooltipCodes = {}
