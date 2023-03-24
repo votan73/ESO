@@ -1,6 +1,6 @@
 ## Title: Dungeon Queue 4 Stickerbook
 ## Author: tim99 & votan
-## Version: 1.1.1
+## Version: 1.1.2
 ## APIVersion: 101036 101037
 ## OptionalDependsOn: pchat
 ## SavedVariables: DungeonQueue4Stickerbook

@@ -166,7 +166,9 @@ local DungeonQuest = {
 	[599] = 6740, --CoralAerie
 	[601] = 6742, --ShipwrightsRegret
 	[608] = 6835, --ErdwurzEnklave
-	[610] = 6837 --Kentertiefen
+	[610] = 6837, --Kentertiefen
+	[613] = 6896, -- Bal Sunnar
+	[615] = 7027 -- Scrivener's Hall
 }
 local UndauntedPledges = {
 	[5244] = {n = 4, v = 20}, -- Verbannungszellen I
@@ -675,6 +677,7 @@ EVENT_MANAGER:RegisterForEvent(ttq.name, EVENT_ADD_ON_LOADED, ttq.addonLoaded)
 -- 		if questId then
 -- 			local name, questType = GetCompletedQuestInfo(questId)
 -- 			if questType == QUEST_TYPE_UNDAUNTED_PLEDGE then
+-- 			--if questType == QUEST_TYPE_DUNGEON then
 -- 				name = name:gsub("Der ", "")
 -- 				local list = activityToName[name]
 -- 				if list then
