@@ -133,6 +133,8 @@ function addon:ShowTooltip(achievementId)
 			statusBar:SetValue(numCompleted)
 			statusBar.progress:SetText(string.format("%i/%i", numCompleted, numRequired))
 			if hasMultipleCriteria then
+				local width = statusBar.progress:GetWidth()
+				statusBar.label:SetDimensionConstraints(width, 0, width, 0)
 				statusBar.label:SetText(zo_strformat(SI_ACHIEVEMENTS_DESCRIPTION, description, gender))
 				statusBar.label:SetColor(((numRequired == numCompleted) and selectedColor or disabledColor):UnpackRGB())
 			else
