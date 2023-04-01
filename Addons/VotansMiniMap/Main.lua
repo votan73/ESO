@@ -87,30 +87,37 @@ function addon:InitTweaks()
 
 		local zoneIndex
 		local POI_TYPE_GROUP_DUNGEON, POI_TYPE_WAYSHRINE, MAP_PIN_TYPE_POI_SEEN = POI_TYPE_GROUP_DUNGEON, POI_TYPE_WAYSHRINE, MAP_PIN_TYPE_POI_SEEN
-		local createTag = ZO_MapPin.CreatePOIPinTag
+
+		local createTag
 		local function DrawPin(poiIndex)
 			local xLoc, zLoc, iconType, icon, isShownInCurrentMap, linkedCollectibleIsLocked, isDiscovered, isNearby = GetPOIMapInfo(zoneIndex, poiIndex)
 
-			if isShownInCurrentMap and (isDiscovered or isNearby) then
-				if ZO_MapPin.POI_PIN_TYPES[iconType] then
-					local poiType = GetPOIType(zoneIndex, poiIndex)
+			if isShownInCurrentMap and (isDiscovered or isNearby) and ZO_MapPin.POI_PIN_TYPES[iconType] then
+				local poiType = GetPOIType(zoneIndex, poiIndex)
 
-					if iconType ~= MAP_PIN_TYPE_POI_SEEN then
-						-- Seen Wayshines are POIs, discovered Wayshrines are handled by AddWayshrines()
-						-- Request was made by design to have houses and dungeons behave like wayshrines.
-						if poiType == POI_TYPE_WAYSHRINE or poiType == POI_TYPE_HOUSE or poiType == POI_TYPE_GROUP_DUNGEON then
-							return
-						end
+				if iconType ~= MAP_PIN_TYPE_POI_SEEN then
+					-- Seen Wayshines are POIs, discovered Wayshrines are handled by AddWayshrines()
+					-- Request was made by design to have houses and dungeons behave like wayshrines.
+					if poiType == POI_TYPE_WAYSHRINE or poiType == POI_TYPE_HOUSE or poiType == POI_TYPE_GROUP_DUNGEON then
+						return
 					end
-					local tag = createTag(zoneIndex, poiIndex, icon, linkedCollectibleIsLocked)
-					addon.pinManager:CreatePin(iconType, tag, xLoc, zLoc)
+				end
 
-					local worldEventInstanceId = GetPOIWorldEventInstanceId(zoneIndex, poiIndex)
-					if worldEventInstanceId ~= 0 then
-						local worldEventTag = ZO_MapPin.CreateWorldEventPOIPinTag(worldEventInstanceId, zoneIndex, poiIndex)
-						-- TODO: May need to add handling for additional event states
-						addon.pinManager:CreatePin(MAP_PIN_TYPE_WORLD_EVENT_POI_ACTIVE, worldEventTag, xLoc, zLoc)
-					end
+				local pinManager = addon.pinManager
+				-- RefreshSinglePOI could be called inbetween
+				pinManager:RemovePins("poi", zoneIndex, poiIndex)
+				local worldEventInstanceId = GetPOIWorldEventInstanceId(zoneIndex, poiIndex)
+				if worldEventInstanceId ~= 0 then
+					pinManager:RemovePins("worldEventPOI", worldEventInstanceId)
+				end
+
+				local tag = createTag(zoneIndex, poiIndex, icon, linkedCollectibleIsLocked)
+				pinManager:CreatePin(iconType, tag, xLoc, zLoc)
+
+				if worldEventInstanceId ~= 0 then
+					local worldEventTag = ZO_MapPin.CreateWorldEventPOIPinTag(worldEventInstanceId, zoneIndex, poiIndex)
+					-- TODO: May need to add handling for additional event states
+					pinManager:CreatePin(MAP_PIN_TYPE_WORLD_EVENT_POI_ACTIVE, worldEventTag, xLoc, zLoc)
 				end
 			end
 		end
@@ -127,11 +134,10 @@ function addon:InitTweaks()
 				return
 			end
 			task:For(1, GetNumPOIs(zoneIndex)):Do(DrawPin)
-			-- d("do ZO_WorldMap_RefreshAllPOIs")
 		end
 		function ZO_WorldMap_RefreshAllPOIs()
 			createTag = ZO_MapPin.CreatePOIPinTag
-			task:Cancel():Call(WaitForGPS):Then(RemovePins)
+			task:Cancel():StopTimer():Call(WaitForGPS):Then(RemovePins)
 		end
 	end
 
@@ -214,7 +220,7 @@ function addon:InitTweaks()
 		end
 		local function removePins(task)
 			addon.pinManager:RemovePins("loc")
-			task:For(1, GetNumMapLocations()):Do(DrawPin):Call(WaitForGPS)
+			task:For(1, GetNumMapLocations()):Do(DrawPin)
 		end
 		local function delayStart(task)
 			task:Call(releaseAllObjects):Then(removePins)
@@ -242,10 +248,9 @@ function addon:InitTweaks()
 			task:Cancel():Delay(GetScene():IsShowing() and 0 or (delay * 7), runRefresh)
 		end
 	end
-	DeferRefresh("ZO_WorldMap_RefreshAllPOIs", "MAP_RefreshAllPOIs", 20)
 	--DeferRefresh("ZO_WorldMap_RefreshWorldEvent", "MAP_RefreshWorldEvent", 50)
 	DeferRefresh("ZO_WorldMap_RefreshWorldEvents", "MAP_RefreshWorldEvents", 50)
-	-- DeferRefresh("ZO_WorldMap_RefreshAvAObjectives", "MAP_RefreshAvAObjectives", 50)
+	DeferRefresh("ZO_WorldMap_RefreshObjectives", "MAP_RefreshObjectives", 50)
 	DeferRefresh("ZO_WorldMap_RefreshKeeps", "MAP_RefreshKeeps", 30)
 	DeferRefresh("ZO_WorldMap_RefreshKillLocations", "MAP_RefreshKillLocations", 60)
 	DeferRefresh("ZO_WorldMap_RefreshWayshrines", "MAP_RefreshWayshrines", 10)
@@ -997,17 +1002,36 @@ function addon:InitMiniMap()
 	end
 
 	local ZO_CachedStrFormat, SI_ZONE_NAME = ZO_CachedStrFormat, SI_ZONE_NAME
+	local function IsPresentlyShowingKeeps()
+		return GetMapFilterType() == MAP_FILTER_TYPE_AVA_CYRODIIL or GetMapFilterType() == MAP_FILTER_TYPE_AVA_IMPERIAL
+	end
+
 	local function SetMapTitle(zoneName, subZoneName)
 		if subZoneName and #subZoneName > 0 then
-			zoneName = ZO_CachedStrFormat(SI_ZONE_NAME, subZoneName)
+			zoneName = subZoneName
 		end
 		if not zoneName or #zoneName == 0 then
 			zoneName = GetMapName()
+			if not zoneName or #zoneName == 0 then
+				zoneName = GetZoneNameByIndex(GetUnitZoneIndex("player"))
+			end
 		end
-		if not zoneName or #zoneName == 0 then
-			zoneName = GetZoneNameByIndex(GetUnitZoneIndex("player"))
+		if self.account.showFullTitle then
+			local dungeonDifficulty = ZO_WorldMap_GetMapDungeonDifficulty()
+			local isInAvAMap = IsPresentlyShowingKeeps()
+			if isInAvAMap then
+				local campaignId = GetCurrentCampaignId()
+				if campaignId ~= 0 then
+					local campaignName = GetCampaignName(campaignId)
+					zoneName = ZO_CachedStrFormat(SI_WINDOW_TITLE_WORLD_MAP_WITH_CAMPAIGN_NAME, zoneName, campaignName)
+					return zoneName
+				end
+			elseif dungeonDifficulty ~= DUNGEON_DIFFICULTY_NONE then
+				zoneName = ZO_CachedStrFormat(SI_WINDOW_TITLE_WORLD_MAP_WITH_DUNGEON_DIFFICULTY, zoneName, GetString("SI_DUNGEONDIFFICULTY", dungeonDifficulty))
+				return zoneName
+			end
 		end
-		zoneName = ZO_CachedStrFormat(SI_ZONE_NAME, zoneName)
+		zoneName = ZO_CachedStrFormat(SI_WINDOW_TITLE_WORLD_MAP, zoneName)
 		return zoneName
 	end
 	local function SetMapTitleCurrentLocation()
@@ -1023,7 +1047,7 @@ function addon:InitMiniMap()
 
 	local orgZO_WorldMap_GetMapTitle = ZO_WorldMap_GetMapTitle
 	function ZO_WorldMap_GetMapTitle(...)
-		if WORLD_MAP_MANAGER:IsInMode(MAP_MODE_VOTANS_MINIMAP) and not self.account.showFullTitle and DoesCurrentMapMatchMapForPlayerLocation() then
+		if WORLD_MAP_MANAGER:IsInMode(MAP_MODE_VOTANS_MINIMAP) and DoesCurrentMapMatchMapForPlayerLocation() then
 			return SetMapTitleCurrentLocation(...)
 		end
 
