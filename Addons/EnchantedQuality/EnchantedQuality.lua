@@ -1,7 +1,7 @@
 local EnchantedQuality = {
 	Name = "EnchantedQuality",
 	Author = "Rhyono & votan",
-	Version = "1.34",
+	Version = "1.35",
 	SettingsVersion = "1.13"
 }
 
