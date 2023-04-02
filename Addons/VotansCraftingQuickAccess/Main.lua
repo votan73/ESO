@@ -1,7 +1,7 @@
 local smithingQuickAccess = CreateControlFromVirtual("VotansSmithingQuickAccess", PopupTooltipTopLevel, "ZO_ItemIconTooltip")
-smithingQuickAccess:SetResizeToFitDescendents(false)
+--smithingQuickAccess:SetResizeToFitDescendents(false)
 smithingQuickAccess:SetDimensionConstraints(439, 24, 439, 571)
-smithingQuickAccess:SetDimensions(439, 571)
+--smithingQuickAccess:SetDimensions(439, 571)
 
 local onGlobalMouseDown
 
