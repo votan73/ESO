@@ -257,18 +257,6 @@ function ZO_InventoryManager:ClearNewStatusOnItemsThePlayerHasSeen(bagId)
 end
 
 do
-	local orgSelectFragment = STORE_WINDOW.modeBar.SelectFragment
-	function STORE_WINDOW.modeBar.SelectFragment(...)
-		local self = STORE_WINDOW
-		local mode = select(2, ...)
-		if IsStoreEmpty() and mode == SI_STORE_MODE_SELL and not KEYBIND_STRIP:HasKeybindButtonGroup(self.keybindStripDescriptor) then
-			KEYBIND_STRIP:AddKeybindButtonGroup(self.keybindStripDescriptor)
-		end
-		return orgSelectFragment(...)
-	end
-end
-
-do
 	local function SetInverseKinematics(value)
 		SetSetting(SETTING_TYPE_IN_WORLD, IN_WORLD_UI_SETTING_FOOT_INVERSE_KINEMATICS, value and "1" or "0")
 	end
