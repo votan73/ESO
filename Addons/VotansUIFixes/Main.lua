@@ -595,7 +595,11 @@ do
 	local playerStamia, playerMagicka, playerStamiaPercent, playerMagickaPercent = 0, 0, 0, 0
 
 	local function HasTarget()
-		return GetUnitNameHighlightedByReticle() ~= "" and GetUnitReaction(unitTagTarget) == UNIT_REACTION_COLOR_HOSTILE
+		local result = GetUnitNameHighlightedByReticle() ~= "" and GetUnitReaction(unitTagTarget) == UNIT_REACTION_COLOR_HOSTILE
+		if not result then
+			PlaySound(SOUNDS.NEGATIVE_CLICK)
+		end
+		return result
 	end
 	local function TargetIsInRange()
 		return HasTarget() and IsUnitInGroupSupportRange(unitTagTarget)
@@ -1419,6 +1423,10 @@ do
 			--Eiskomet
 			return HasTarget() and PlayerUltimate() >= 190 and TargetHealth() > 300000 and currentBar == ACTIVE_WEAPON_PAIR_MAIN and TargetIsInRange()
 		end,
+		[40493] = function()
+			--Sternschnuppe
+			return HasTarget() and PlayerUltimate() >= 190 and TargetHealth() > 300000 and currentBar == ACTIVE_WEAPON_PAIR_MAIN and TargetIsInRange()
+		end,
 		[22095] = function()
 			--solarer Ausbruch
 			return not IsAutoAttack() or ((isInCombat and HasTarget()) and not CooldownRunning(22095, 6000) and StartCooldown(22095) and RegisterRecast(22095, 7000))
@@ -1426,6 +1434,14 @@ do
 		[86156] = function()
 			--Arktisstoß
 			return not IsAutoAttack() or ((isInCombat and HasTarget()) and not CooldownRunning(86156, 19000) and StartCooldown(86156) and RegisterRecast(86156, 20000))
+		end,
+		[38570] = function()
+			--Belagerungsschild
+			return not IsAutoAttack()
+		end,
+		[114317] = function()
+			--Skelett-Magier
+			return ((isInCombat and HasTarget()) and not CooldownRunning(114317, 19000) and StartCooldown(114317) and RegisterRecast(114317, 20000))
 		end
 	}
 	local function doNotKillMaelstromHealer()
@@ -1523,7 +1539,7 @@ do
 		end
 		if not g_activeWeaponSwapInProgress and GetActiveWeaponPairInfo() ~= needBarSwap then
 			--d("Do bar swap")
-			return true
+			return orgCanCycleHotbars(...)
 		else
 			return false
 		end
@@ -1553,6 +1569,9 @@ do
 			ClearCooldown(28304)
 			ClearCooldown(39073)
 			ClearCooldown(117805)
+			ClearCooldown(114317)
+			ClearCooldown(39095)
+			ClearCooldown(39089)
 		end
 	end
 	em:RegisterForEvent("VOTANS_COMBAT_HELPER", EVENT_PLAYER_COMBAT_STATE, OnCombatStateChange)
