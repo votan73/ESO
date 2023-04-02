@@ -70,7 +70,6 @@ if not LibStub or LibStub.minor < LIBSTUB_MINOR then
 	end
 	
 	function LibStub:NewLibrary(major, minor)
-		LogDeprecationWarning(not LibDebugLogger, true)
 		assert(type(major) == "string", "Bad argument #2 to `NewLibrary' (string expected)")
 		if type(minor) ~= "number" then
 			minor = assert(tonumber(zo_strmatch(minor, "%d+%.?%d*")), "Minor version must either be a number or contain a number.")
@@ -79,7 +78,6 @@ if not LibStub or LibStub.minor < LIBSTUB_MINOR then
 		local oldminor = self.minors[major]
 		if oldminor and oldminor >= minor then return nil end
 		self.minors[major], self.libs[major] = minor, self.libs[major] or {}
-d(debug.traceback())
 		return self.libs[major], oldminor
 	end
 	
