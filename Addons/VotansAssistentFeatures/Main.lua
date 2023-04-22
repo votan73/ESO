@@ -22,7 +22,7 @@ do
 		alignment = KEYBIND_STRIP_ALIGN_LEFT,
 		{
 			name = "",
-			keybind = "UI_SHORTCUT_QUATERNARY",
+			keybind = "UI_SHORTCUT_QUICK_SLOTS",
 			callback = function()
 				UseCollectible(currentAssistent:GetId())
 			end,
