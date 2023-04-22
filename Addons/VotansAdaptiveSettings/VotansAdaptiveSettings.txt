@@ -1,13 +1,12 @@
 ## Title: Votan's Adaptive (Video-)Settings
 ## Author: votan
-## APIVersion: 101035 101036
-## Version: 1.5.6
+## APIVersion: 101037 101038
+## Version: 1.5.7
 ## DependsOn: LibHarvensAddonSettings>=10705
 ## OptionalDependsOn: InfoPanel
 ## SavedVariables: VotansAdaptiveSettings_Data
 
 lang/strings.lua
-lang\$(language).lua
 
 VotansAdaptiveSettings.lua
 

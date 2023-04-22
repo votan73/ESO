@@ -212,9 +212,10 @@ function addon:Init()
 	EVENT_MANAGER:RegisterForEvent(self.name, EVENT_PLAYER_ACTIVATED, self.PlayerActivated)
 	EVENT_MANAGER:RegisterForEvent(self.name, EVENT_PLAYER_DEACTIVATED, self.PlayerDeactivated)
 
-	self.orgStartInteraction = FISHING_MANAGER.StartInteraction
+	local manager = FISHING_MANAGER or INTERACTIVE_WHEEL_MANAGER
+	self.orgStartInteraction = manager.StartInteraction
 	-- This is called when interacting with things
-	FISHING_MANAGER.StartInteraction = HookStartInteraction
+	manager.StartInteraction = HookStartInteraction
 	StartTimer(0)
 end
 
@@ -377,7 +378,7 @@ function addon:InitSettings()
 		return
 	end
 	addon.settingsControls = settings
-	settings.version = "1.5.6"
+	settings.version = "1.5.7"
 	settings.website = "http://www.esoui.com/downloads/info1239-VotansAdaptiveVideo-Settings.html"
 	settings.allowDefaults = true
 
