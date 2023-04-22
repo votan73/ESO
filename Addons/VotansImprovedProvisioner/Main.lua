@@ -135,7 +135,6 @@ end
 
 local function SetupControl(bagSearchBg, ...)
 	local bagSearch = bagSearchBg:GetNamedChild("Box")
-	local bagSearchTx = bagSearch:GetNamedChild("Text")
 	local closeButton = WINDOW_MANAGER:CreateControlFromVirtual(nil, bagSearchBg, "ZO_CloseButton")
 
 	local textWidth = 170
@@ -190,8 +189,8 @@ local function SetupControl(bagSearchBg, ...)
 		if bagSearch:GetText() ~= "" then
 			bagSearch:SetText("")
 			PROVISIONER:DirtyRecipeList()
-			PlaySound(SOUNDS.DEFAULT_CLICK)
 		end
+		PlaySound(SOUNDS.DEFAULT_CLICK)
 		bagSearch:LoseFocus()
 	end
 
@@ -201,8 +200,6 @@ local function SetupControl(bagSearchBg, ...)
 	closeButton:SetHandler("OnMouseDown", VotanSearchBoxCloseClick)
 	closeButton:SetInheritAlpha(false)
 
-	bagSearchBg:ClearAnchors()
-	bagSearchBg:SetAnchor(BOTTOMLEFT, nil, TOPLEFT, -12, -5)
 	bagSearchBg:SetHidden(false)
 	bagSearchBg:SetEdgeTexture("EsoUI/Art/Tooltips/UI-SliderBackdrop.dds", 32, 4)
 	bagSearchBg:SetInsets(1, 1, 1, 1)
@@ -212,10 +209,6 @@ local function SetupControl(bagSearchBg, ...)
 	bagSearch:SetInheritAlpha(false)
 	bagSearch:SetEditEnabled(true)
 	setDefaultText(bagSearch, glass)
-	if bagSearchTx then
-		bagSearchTx:ClearAnchors()
-		bagSearchTx:SetAnchorFill()
-	end
 	VotanSearchBoxFocusLost(bagSearch)
 
 	ZO_PreHookHandler(bagSearch, "OnMouseDown", VotanSearchBoxMouseDown)
@@ -310,9 +303,17 @@ function addon:HookProvisionerRefreshRecipeList()
 			self.searchBoxBg:SetAnchor(TOPLEFT, ZO_SharedRightPanelBackground, TOPLEFT, -12, 6)
 		end
 	)
-	local function RemoveFromCraftingScene()
-		self.searchBoxBg:ClearAnchors()
-		self.searchBoxBg:SetAnchor(BOTTOMLEFT, ZO_ProvisionerTopLevelNavigationDivider, TOPLEFT, 0, -80)
+	local RemoveFromCraftingScene
+	if GetAPIVersion() < 101038 then
+		function RemoveFromCraftingScene()
+			self.searchBoxBg:ClearAnchors()
+			self.searchBoxBg:SetAnchor(BOTTOMLEFT, ZO_ProvisionerTopLevelNavigationDivider, TOPLEFT, 0, -84)
+		end
+	else
+		function RemoveFromCraftingScene()
+			self.searchBoxBg:ClearAnchors()
+			self.searchBoxBg:SetAnchor(TOPLEFT, ZO_SharedRightPanelBackground, TOPLEFT, -12, 6)
+		end
 	end
 	ZO_PreHook(PROVISIONER, "RemoveFromCraftingScene", RemoveFromCraftingScene)
 	PROVISIONER_SCENE:RegisterCallback(
@@ -345,9 +346,13 @@ do
 	}
 
 	function addon:InitQualityBar()
-		self.qualityBar = WINDOW_MANAGER:CreateControlFromVirtual("$(parent)Quality", ZO_ProvisionerTopLevel, "ZO_MenuBarTemplate")
-		--self.qualityBar.label = self.qualityBar:GetNamedChild("Label")
-		self.qualityBar:SetAnchor(TOPLEFT, ZO_ProvisionerTopLevelHaveIngredients, BOTTOMLEFT, -8.5, 5)
+		if GetAPIVersion() < 101038 then
+			self.qualityBar = WINDOW_MANAGER:CreateControlFromVirtual("$(parent)Quality", ZO_ProvisionerTopLevel, "ZO_MenuBarTemplate")
+			self.qualityBar:SetAnchor(TOPLEFT, ZO_ProvisionerTopLevelHaveIngredients, BOTTOMLEFT, -8.5, 5)
+		else
+			self.qualityBar = WINDOW_MANAGER:CreateControlFromVirtual("$(parent)Quality", ZO_ProvisionerTopLevelProvisioningFilters, "ZO_MenuBarTemplate")
+			self.qualityBar:SetAnchor(TOPLEFT, ZO_ProvisionerTopLevelProvisioningFiltersHaveIngredients, BOTTOMLEFT, -8.5, 5)
+		end
 
 		ZO_MenuBar_OnInitialized(self.qualityBar)
 		ZO_MenuBar_SetClickSound(self.qualityBar, SOUNDS.DEFAULT_CLICK)
@@ -440,10 +445,20 @@ end
 function addon:Init()
 	ZO_ProvisionerTopLevelDetailsDivider:SetHidden(true)
 	ZO_ProvisionerTopLevelDetails:SetHidden(true)
-	ZO_ProvisionerTopLevelNavigationContainer:ClearAnchors()
-	ZO_ProvisionerTopLevelNavigationDivider:SetAnchor(TOPLEFT, ZO_ProvisionerTopLevelMenuBarDivider, BOTTOMLEFT, 0, ZO_ProvisionerTopLevelMenuBarDivider:GetTop() + 24)
-	ZO_ProvisionerTopLevelNavigationContainer:SetAnchor(TOPLEFT, ZO_ProvisionerTopLevelNavigationDivider, BOTTOMLEFT, 40, 0)
-	ZO_ProvisionerTopLevelNavigationContainer:SetAnchor(BOTTOMLEFT, ZO_ProvisionerTopLevelInfoBar, TOPLEFT, 0, -12)
+	if GetAPIVersion() < 101038 then
+		ZO_ProvisionerTopLevelNavigationContainer:ClearAnchors()
+		ZO_ProvisionerTopLevelNavigationDivider:SetAnchor(TOPLEFT, ZO_ProvisionerTopLevelMenuBarDivider, BOTTOMLEFT, 0, ZO_ProvisionerTopLevelMenuBarDivider:GetTop() + 24)
+		ZO_ProvisionerTopLevelNavigationContainer:SetAnchor(TOPLEFT, ZO_ProvisionerTopLevelNavigationDivider, BOTTOMLEFT, 40, 0)
+		ZO_ProvisionerTopLevelNavigationContainer:SetAnchor(BOTTOMLEFT, ZO_ProvisionerTopLevelInfoBar, TOPLEFT, 0, -12)
+	else
+		ZO_ProvisionerTopLevelNavigationContainer:ClearAnchors()
+		ZO_ProvisionerTopLevelProvisioningFiltersNavigationDivider:SetAnchor(TOPLEFT, ZO_ProvisionerTopLevelMenuBarDivider, BOTTOMLEFT, 0, ZO_ProvisionerTopLevelMenuBarDivider:GetTop() + 24)
+		ZO_ProvisionerTopLevelNavigationContainer:SetAnchor(TOPLEFT, ZO_ProvisionerTopLevelProvisioningFiltersNavigationDivider, BOTTOMLEFT, 40, 0)
+		ZO_ProvisionerTopLevelNavigationContainer:SetAnchor(BOTTOMLEFT, ZO_ProvisionerTopLevelInfoBar, TOPLEFT, 0, -12)
+		ZO_ProvisionerTopLevelDetailsIngredientsLabel:SetHidden(true)
+		ZO_ProvisionerTopLevelDetailsDivider.SetHidden = function()
+		end
+	end
 
 	local wm = GetWindowManager()
 
@@ -461,6 +476,7 @@ function addon:Init()
 	ZO_ProvisionerTopLevelDetailsIngredients:SetParent(slotContainer)
 	ZO_ProvisionerTopLevelDetailsIngredients:ClearAnchors()
 	ZO_ProvisionerTopLevelDetailsIngredients:SetAnchor(TOP)
+
 	local function setupSlot(slot)
 		slot:SetDimensions(ZO_PROVISIONER_SLOT_ROW_WIDTH - 66, ZO_PROVISIONER_SLOT_ROW_HEIGHT - 6)
 
@@ -506,31 +522,37 @@ function addon:Init()
 		ZO_Anchor_BoxLayout(ingredientAnchor, control, i - 1, 3, 0, 0, ZO_PROVISIONER_SLOT_ROW_WIDTH - 64, ZO_PROVISIONER_SLOT_ROW_HEIGHT - 4, 0, 18)
 	end
 
-	if ZO_ProvisionerTopLevelMultiCraftContainer then
-		ZO_ProvisionerTopLevelMultiCraftContainerBg:SetDimensions(720, 512)
-		ZO_ProvisionerTopLevelMultiCraftContainerSpinner:ClearAnchors()
-		ZO_ProvisionerTopLevelMultiCraftContainerSpinner:SetParent(slotContainer)
-		ZO_ProvisionerTopLevelMultiCraftContainerSpinner:SetAnchor(BOTTOMLEFT, nil, BOTTOM, 40, 7)
-		ZO_ProvisionerTopLevelMultiCraftContainerSpinner:SetDimensions(256, 32)
-		ZO_ProvisionerTopLevelMultiCraftContainerSpinnerDecrease:ClearAnchors()
-		ZO_ProvisionerTopLevelMultiCraftContainerSpinnerDecrease:SetAnchor(LEFT, nil, LEFT, 0, 0)
-		ZO_ProvisionerTopLevelMultiCraftContainerSpinnerIncrease:ClearAnchors()
-		ZO_ProvisionerTopLevelMultiCraftContainerSpinnerIncrease:SetAnchor(RIGHT, nil, CENTER, 0, 0)
-		ZO_ProvisionerTopLevelMultiCraftContainerSpinnerMinMax:ClearAnchors()
-		ZO_ProvisionerTopLevelMultiCraftContainerSpinnerMinMax:SetAnchor(RIGHT, nil, RIGHT, 0, 0)
+	ZO_ProvisionerTopLevelMultiCraftContainerBg:SetDimensions(720, 512)
+	ZO_ProvisionerTopLevelMultiCraftContainerSpinner:ClearAnchors()
+	ZO_ProvisionerTopLevelMultiCraftContainerSpinner:SetParent(slotContainer)
+	ZO_ProvisionerTopLevelMultiCraftContainerSpinner:SetAnchor(BOTTOMLEFT, nil, BOTTOM, 40, 7)
+	ZO_ProvisionerTopLevelMultiCraftContainerSpinner:SetDimensions(256, 32)
+	ZO_ProvisionerTopLevelMultiCraftContainerSpinnerDecrease:ClearAnchors()
+	ZO_ProvisionerTopLevelMultiCraftContainerSpinnerDecrease:SetAnchor(LEFT, nil, LEFT, 0, 0)
+	ZO_ProvisionerTopLevelMultiCraftContainerSpinnerIncrease:ClearAnchors()
+	ZO_ProvisionerTopLevelMultiCraftContainerSpinnerIncrease:SetAnchor(RIGHT, nil, CENTER, 0, 0)
+	ZO_ProvisionerTopLevelMultiCraftContainerSpinnerMinMax:ClearAnchors()
+	ZO_ProvisionerTopLevelMultiCraftContainerSpinnerMinMax:SetAnchor(RIGHT, nil, RIGHT, 0, 0)
 
-		local orgGetMultiCraftNumIterations = ZO_Provisioner.GetMultiCraftNumIterations
-		function ZO_Provisioner.GetMultiCraftNumIterations(...)
-			local self = ...
-			if self.multiCraftContainer:IsControlHidden() and not slotContainer:IsControlHidden() then
-				return self.multiCraftSpinner:GetValue()
-			end
-			return orgGetMultiCraftNumIterations(...)
+	local orgGetMultiCraftNumIterations = ZO_Provisioner.GetMultiCraftNumIterations
+	function ZO_Provisioner.GetMultiCraftNumIterations(...)
+		local self = ...
+		if self.multiCraftContainer:IsControlHidden() and not slotContainer:IsControlHidden() then
+			return self.multiCraftSpinner:GetValue()
 		end
+		return orgGetMultiCraftNumIterations(...)
 	end
 
-	local templateName = GetAPIVersion() < 100033 and "ZO_InventorySearch" or "ZO_InventorySearchTemplate"
-	local searchBoxBg = wm:CreateControlFromVirtual("$(parent)VotanSearch", ZO_ProvisionerTopLevel, templateName)
+	if GetAPIVersion() >= 101038 then
+		SecurePostHook(
+			ZO_Provisioner,
+			"OnTabFilterChanged",
+			function(provisioner)
+				slotContainer:SetHidden(provisioner.filterType == PROVISIONER_SPECIAL_INGREDIENT_TYPE_FILLET)
+			end
+		)
+	end
+	local searchBoxBg = wm:CreateControlFromVirtual("$(parent)VotanSearch", GetAPIVersion() < 101038 and ZO_ProvisionerTopLevel or ZO_ProvisionerTopLevelProvisioningFilters, "ZO_InventorySearchTemplate")
 	self.searchBoxBg = searchBoxBg
 	self.searchBox = searchBoxBg:GetNamedChild("Box")
 	SetupControl(searchBoxBg)
