@@ -319,6 +319,18 @@
 			-- "Galen",
 			alliance = ALLIANCE_DAGGERFALL_COVENANT,
 			poi = 529
+		},
+		-- [49] =
+		{
+			-- "Telvani",
+			alliance = ALLIANCE_EBONHEART_PACT,
+			poi = 536
+		},
+		-- [50] =
+		{
+			-- "Apocrypha",
+			alliance = 999,
+			cosmic = true
 		}
 	},
 	color = {
@@ -381,7 +393,7 @@ function addon:InitSettings()
 	end
 	addon.settingsControls = settings
 	settings.allowDefaults = true
-	settings.version = "1.1.4"
+	settings.version = "1.1.5"
 	settings.website = "https://www.esoui.com/downloads/info2672-VotansTamrielMap.html"
 
 	settings:AddSetting {
