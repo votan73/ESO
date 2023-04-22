@@ -228,7 +228,7 @@ do
 		lastInteractionType = false
 	end
 	ZO_PreHook(
-		FISHING_MANAGER,
+		FISHING_MANAGER or INTERACTIVE_WHEEL_MANAGER,
 		"StopInteraction",
 		function()
 			local action = GetGameCameraInteractableActionInfo()
@@ -742,7 +742,7 @@ function addon:InitSettings()
 	if not settings then
 		return
 	end
-	settings.version = "1.1.7"
+	settings.version = "1.1.8"
 	addon.settingsControls = settings
 
 	settings:AddSetting {

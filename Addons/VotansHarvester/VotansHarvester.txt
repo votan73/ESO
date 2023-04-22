@@ -1,7 +1,7 @@
 ## Title: Votan's Harvester
 ## Author: votan
-## APIVersion: 100033 100034
-## Version: 1.1.7
+## APIVersion: 101037 101038
+## Version: 1.1.8
 ## DependsOn: LibGPS>=28 LibHarvensAddonSettings>=10705 LibAsync
 ## SavedVariables: VotansHarvester_Data VotansHarvester_Zones
 
