@@ -6,7 +6,7 @@ WaypointIt = {}
 
 local WaypointIt = WaypointIt
 local ADDON_NAME = "WaypointIt"
-local CODE_VERSION = "1.14.3"
+local CODE_VERSION = "1.14.4"
 -- Holds the requested taskID
 local CURRENT_TASK
 local ROW_TYPE_ID = 1
@@ -691,7 +691,7 @@ function WaypointIt:SetupQuestEvents()
 			self:RefreshQuestWaypoint()
 		end
 		ZO_PreHook(
-			FISHING_MANAGER,
+			FISHING_MANAGER or INTERACTIVE_WHEEL_MANAGER,
 			"StopInteraction",
 			function()
 				local actionName = GetGameCameraInteractableActionInfo()
