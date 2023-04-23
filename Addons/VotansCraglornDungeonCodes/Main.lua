@@ -118,7 +118,8 @@ local codes = {
 	["WS1"] = 189, --Dungeon: Wayrest Sewers I
 	["WS2"] = 263, --Dungeon: Wayrest Sewers II
 	["BS"] = 531, --Dungeon: Bal Sunnar
-	["SH"] = 532 --Dungeon: Scrivener's Hall
+	["SH"] = 532, --Dungeon: Scrivener's Hall
+	["SE"] = 534 --Trial: Sanity's Edge
 }
 
 local tooltipCodes = {}
@@ -166,7 +167,11 @@ do
 	local function replaceCode(prefix, keyword)
 		local name = prefixes[prefix] and replacement[keyword]
 		if name then
-			return string.format("%s|o%s", prefix, name)
+			if prefix == " " then
+				return string.format("\194\160%s", name)
+			else
+				return string.format("%s\194\160%s", prefix, name)
+			end
 		end
 	end
 	local FormatAndAddChatMessage = CHAT_ROUTER.FormatAndAddChatMessage
@@ -203,7 +208,7 @@ do
 end
 
 -- SLASH_COMMANDS["/bingo"] = function()
--- 	for nodeIndex = 1, 600 do
+-- 	for nodeIndex = 533, 700 do
 -- 		local name, _, _, texture = select(2, GetFastTravelNodeInfo(nodeIndex))
 -- 		if texture:find("instance_") or texture:find("raiddungeon_") or texture:find("arena_") then
 -- 			df("%i, --%s", nodeIndex, name)
