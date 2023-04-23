@@ -290,7 +290,7 @@ do
 		self.outputPanel:SetHidden(false)
 		self.searchBox:SetHidden(false)
 
-		local filteredDataTable = SHARED_INVENTORY:GenerateFullSlotData(EnchantItemsOnly, BAG_BACKPACK, BAG_VIRTUAL)
+		local filteredDataTable = SHARED_INVENTORY:GenerateFullSlotData(EnchantItemsOnly, BAG_BACKPACK, BAG_BANK, BAG_VIRTUAL, BAG_SUBSCRIBER_BANK)
 
 		local GetEnchantingResultingItemLink, GetItemLinkName = GetEnchantingResultingItemLink, GetItemLinkName
 		local byRawName = self.byRawName
