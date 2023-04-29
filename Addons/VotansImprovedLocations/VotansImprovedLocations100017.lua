@@ -312,6 +312,16 @@
 		{
 			-- "Galen",
 			alliance = ALLIANCE_DAGGERFALL_COVENANT
+		},
+		-- [49] =
+		{
+			-- "Telvani",
+			alliance = ALLIANCE_EBONHEART_PACT
+		},
+		-- [50] =
+		{
+			-- "Apocrypha",
+			alliance = 999
 		}
 	},
 	tresureMap = {},
@@ -1115,7 +1125,7 @@ function addon:InitSettings()
 		type = "panel",
 		name = "Improved Locations",
 		author = "votan",
-		version = "1.22.1",
+		version = "1.22.3",
 		registerForRefresh = false,
 		registerForDefaults = true,
 		website = "http://www.esoui.com/downloads/info1096-VotansImprovedLocations.html"
