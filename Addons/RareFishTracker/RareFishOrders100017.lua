@@ -414,6 +414,21 @@ function RFT.MakeOrders()
 			RFT.window.column3,
 			RFT.window.column3,
 			RFT.window.column3,
+		},
+		[3636] = {
+			-- Telvani-Halbinsel
+			RFT.window.column4,
+			RFT.window.column4,
+			RFT.window.column4,
+			RFT.window.column2,
+			RFT.window.column2,
+			RFT.window.column2,
+			RFT.window.column1,
+			RFT.window.column1,
+			RFT.window.column1,
+			RFT.window.column3,
+			RFT.window.column3,
+			RFT.window.column3,
 		}
 	}
 	RFT.quality = {
@@ -681,6 +696,21 @@ function RFT.MakeOrders()
 			ITEM_QUALITY_MAGIC,
 			ITEM_QUALITY_ARCANE,
 			ITEM_QUALITY_MAGIC,
+		},
+		[3636] = {
+			-- Telvani
+			ITEM_QUALITY_MAGIC,
+			ITEM_QUALITY_MAGIC,
+			ITEM_QUALITY_ARCANE,
+			ITEM_QUALITY_MAGIC,
+			ITEM_QUALITY_MAGIC,
+			ITEM_QUALITY_ARCANE,
+			ITEM_QUALITY_MAGIC,
+			ITEM_QUALITY_MAGIC,
+			ITEM_QUALITY_ARCANE,
+			ITEM_QUALITY_MAGIC,
+			ITEM_QUALITY_MAGIC,
+			ITEM_QUALITY_ARCANE,
 		}
 	}
 	RFT.types = {

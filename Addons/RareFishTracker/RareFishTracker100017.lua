@@ -140,6 +140,9 @@ end
 
 do
 	local GetParentZoneId = GetZoneStoryZoneIdForZoneId or GetParentZoneId
+	local function getPlayerZoneId()
+		return GetZoneId(GetUnitZoneIndex("player"))
+	end
 	local function findZone(zone)
 		local count = 4
 		while not RFT.zoneToAchievement[zone] do
@@ -153,7 +156,7 @@ do
 	end
 
 	function RFT.RefreshWindow()
-		RFT.RefreshWindowForZone(WORLD_MAP_SCENE:IsShowing() and RFT.zone or findZone(GetZoneId(GetUnitZoneIndex("player"))))
+		RFT.RefreshWindowForZone(WORLD_MAP_SCENE:IsShowing() and RFT.zone or findZone(getPlayerZoneId()))
 	end
 
 	function RFT.GetAchievementsByZoneId(zone)
@@ -161,7 +164,7 @@ do
 		return zone, RFT.zoneToAchievement[zone] or 0
 	end
 	function RFT.RefreshWindowZoneChanged()
-		local zone = findZone(GetZoneId(GetUnitZoneIndex("player")))
+		local zone = findZone(getPlayerZoneId())
 		RFT.isAutoRefresh = true
 		if RFT.zone == zone then
 			return
@@ -169,7 +172,7 @@ do
 		RFT.RefreshWindowForZone(zone)
 	end
 	function RFT.RefreshWindowMapChanged()
-		local zone = findZone(GetZoneId(GetCurrentMapZoneIndex()))
+		local zone = findZone(WORLD_MAP_SCENE:IsShowing() and GetZoneId(GetCurrentMapZoneIndex()) or getPlayerZoneId())
 		RFT.isAutoRefresh = true
 		if RFT.zone == zone then
 			return

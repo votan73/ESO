@@ -346,8 +346,20 @@ function RFT.MakeWindow()
 	RFT.columns = {rft.entries.ocean, rft.entries.lake, rft.entries.river, rft.entries.foul}
 	rft.labelPools = {rft.column1, rft.column2, rft.column3, rft.column4}
 
-	local function ZoneIdOfPlayer()
-		return ZO_ExplorationUtils_GetZoneStoryZoneIdByZoneIndex(GetUnitZoneIndex("player"))
+	local GetParentZoneId = GetZoneStoryZoneIdForZoneId or GetParentZoneId
+	local function getPlayerZoneId()
+		return GetZoneId(GetUnitZoneIndex("player"))
+	end
+	local function findZone(zone)
+		local count = 4
+		while not RFT.zoneToAchievement[zone] do
+			if count == 0 or zone == 0 then
+				break
+			end
+			zone = GetParentZoneId(zone)
+			count = count - 1
+		end
+		return zone
 	end
 	local lastZoneId
 	RARE_FISH_TRACKER_FRAGMENT = ZO_HUDFadeSceneFragment:New(rft, 500, 0)
@@ -366,7 +378,7 @@ function RFT.MakeWindow()
 					return true
 				end
 				if RFT.isAutoRefresh and RFT.account.autoShowHide then
-					local zoneId = ZoneIdOfPlayer()
+					local zoneId = findZone(getPlayerZoneId())
 					if lastZoneId ~= zoneId then
 						lastZoneId = zoneId
 						RFT.settings.shown = (RFT.numFishes or 0) > 0 and not (RFT.numCaught == RFT.numFishes)
@@ -393,7 +405,7 @@ function RFT.MakeWindow()
 				if not RFT.window:IsHidden() then
 					RFT:RestorePosition()
 				end
-				RFT.RefreshWindowForZone(ZoneIdOfPlayer())
+				RFT.RefreshWindowForZone(findZone(getPlayerZoneId()))
 			end
 		end
 	)
@@ -407,9 +419,9 @@ function RFT.MakeWindow()
 						return
 					end
 				end
-				RFT.RefreshWindowForZone(GetZoneId(GetCurrentMapZoneIndex()))
+				RFT.RefreshWindowForZone(findZone(GetZoneId(GetCurrentMapZoneIndex())))
 			else
-				RFT.RefreshWindowForZone(ZoneIdOfPlayer())
+				RFT.RefreshWindowForZone(findZone(getPlayerZoneId()))
 			end
 		end
 	)
