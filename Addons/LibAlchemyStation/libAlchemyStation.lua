@@ -1,7 +1,7 @@
 -- Feel free to use this library --
 -- but do not modify without sending a pm to me (votan at www.esoui.com) to avoid version conflicts --
 
-lib = {}
+local lib = {}
 
 local function HideOtherTabs(descriptor)
 	for otherDescriptor, tabData in pairs(lib.tabs) do
