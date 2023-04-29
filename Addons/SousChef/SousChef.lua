@@ -69,14 +69,10 @@ local function ChangeMainChar()
 	SousChef.Cookbook = {}
 	SousChef.Pantry = {}
 	SousChef.ReverseCookbook = {}
-	local GetRecipeResultItemInfo, GetRecipeInfo, GetRecipeIngredientItemLink, GetRecipeResultItemLink =
-		GetRecipeResultItemInfo,
-		GetRecipeInfo,
-		GetRecipeIngredientItemLink,
-		GetRecipeResultItemLink
+	local GetRecipeResultItemInfo, GetRecipeInfo, GetRecipeIngredientItemLink, GetRecipeResultItemLink = GetRecipeResultItemInfo, GetRecipeInfo, GetRecipeIngredientItemLink, GetRecipeResultItemLink
 	local function reverseCookBook(name, data)
 		local resultLink = GetRecipeResultItemLink(data.listIndex, data.recipeIndex)
-		SousChef.Cookbook[u.GetItemID(resultLink)] = true
+		SousChef.Cookbook[u.GetItemID(resultLink)] = 1
 		local _, _, _, level, color, specialType = GetRecipeInfo(data.listIndex, data.recipeIndex)
 		for ingredient = 1, data.numIngredients do
 			local link = GetRecipeIngredientItemLink(data.listIndex, data.recipeIndex, ingredient)
@@ -92,27 +88,16 @@ local function ChangeMainChar()
 					if ingredient == 1 and (data.listIndex == 1 or data.listIndex == 4 or data.listIndex == 5 or data.listIndex == 7) then
 						-- meats
 						SousChef.Pantry[ingredientID] = 3
-					elseif
-						(ingredient == 1 and (data.listIndex == 2 or data.listIndex == 6) or
-							(ingredient == 2 and (data.listIndex == 4 or data.listIndex == 7)))
-					 then
+					elseif (ingredient == 1 and (data.listIndex == 2 or data.listIndex == 6) or (ingredient == 2 and (data.listIndex == 4 or data.listIndex == 7))) then
 						-- fruits
 						SousChef.Pantry[ingredientID] = 4
-					elseif
-						(ingredient == 1 and data.listIndex == 3) or (ingredient == 2 and (data.listIndex == 5 or data.listIndex == 6)) or
-							(ingredient == 3 and data.listIndex == 7)
-					 then
+					elseif (ingredient == 1 and data.listIndex == 3) or (ingredient == 2 and (data.listIndex == 5 or data.listIndex == 6)) or (ingredient == 3 and data.listIndex == 7) then
 						-- veggies
 						SousChef.Pantry[ingredientID] = 5
-					elseif
-						(ingredient == 1 and (data.listIndex == 8 or data.listIndex == 11 or data.listIndex == 12 or data.listIndex == 14))
-					 then
+					elseif (ingredient == 1 and (data.listIndex == 8 or data.listIndex == 11 or data.listIndex == 12 or data.listIndex == 14)) then
 						-- booze
 						SousChef.Pantry[ingredientID] = 6
-					elseif
-						(ingredient == 1 and (data.listIndex == 9 or data.listIndex == 13)) or
-							(ingredient == 2 and (data.listIndex == 11 or data.listIndex == 14))
-					 then
+					elseif (ingredient == 1 and (data.listIndex == 9 or data.listIndex == 13)) or (ingredient == 2 and (data.listIndex == 11 or data.listIndex == 14)) then
 						-- tea
 						SousChef.Pantry[ingredientID] = 7
 					else
@@ -135,14 +120,8 @@ end
 
 -- ParseRecipes() goes through the player's known recipes and records their info.
 function SousChef:ParseRecipes()
-	local lists = GetNumRecipeLists()
-
 	local unitName = GetCurrentCharacterId()
-	local GetRecipeListInfo, GetRecipeResultItemInfo, GetRecipeResultItemLink, GetRecipeIngredientItemLink =
-		GetRecipeListInfo,
-		GetRecipeResultItemInfo,
-		GetRecipeResultItemLink,
-		GetRecipeIngredientItemLink
+	local GetRecipeListInfo, GetRecipeResultItemInfo, GetRecipeResultItemLink, GetRecipeIngredientItemLink = GetRecipeListInfo, GetRecipeResultItemInfo, GetRecipeResultItemLink, GetRecipeIngredientItemLink
 	local Cookbook = SousChef.common.Cookbook
 	local CookbookIndex = SousChef.common.CookbookIndex
 	local ReverseCookbook = SousChef.common.ReverseCookbook
@@ -157,17 +136,17 @@ function SousChef:ParseRecipes()
 	local function scanRecipe(recipeIndex)
 		-- now record information about the recipe's ingregients
 		local known, _, ingredientCount, level, color, specialType = GetRecipeInfo(listIndex, recipeIndex)
+		local resultLink = GetRecipeResultItemLink(listIndex, recipeIndex)
+		local recipeItemId = u.GetItemID(resultLink)
+		if not Cookbook[recipeItemId] then
+			Cookbook[recipeItemId] = {}
+		end
 		if known then
 			-- Store the recipes known:
-			local resultLink = GetRecipeResultItemLink(listIndex, recipeIndex)
-			local recipeName = u.GetItemID(resultLink)
-			if not Cookbook[recipeName] then
-				Cookbook[recipeName] = {}
-			end
-			Cookbook[recipeName][unitName] = 1
+			Cookbook[recipeItemId][unitName] = 1
 
 			-- store the recipe's index numbers and number of ingredients
-			CookbookIndex[recipeName] = {listIndex = listIndex, recipeIndex = recipeIndex, numIngredients = ingredientCount}
+			CookbookIndex[recipeItemId] = {listIndex = listIndex, recipeIndex = recipeIndex, numIngredients = ingredientCount}
 			-- now, for every ingredient in the current recipe...
 			for ingredientIndex = 1, ingredientCount do
 				local link = u.GetItemID(GetRecipeIngredientItemLink(listIndex, recipeIndex, ingredientIndex, LINK_STYLE_DEFAULT))
@@ -183,25 +162,16 @@ function SousChef:ParseRecipes()
 						if ingredientIndex == 1 and (listIndex == 1 or listIndex == 4 or listIndex == 5 or listIndex == 7) then
 							-- meats
 							Pantry[link] = 3
-						elseif
-							(ingredientIndex == 1 and (listIndex == 2 or listIndex == 6) or
-								(ingredientIndex == 2 and (listIndex == 4 or listIndex == 7)))
-						 then
+						elseif (ingredientIndex == 1 and (listIndex == 2 or listIndex == 6) or (ingredientIndex == 2 and (listIndex == 4 or listIndex == 7))) then
 							-- fruits
 							Pantry[link] = 4
-						elseif
-							(ingredientIndex == 1 and listIndex == 3) or (ingredientIndex == 2 and (listIndex == 5 or listIndex == 6)) or
-								(ingredientIndex == 3 and listIndex == 7)
-						 then
+						elseif (ingredientIndex == 1 and listIndex == 3) or (ingredientIndex == 2 and (listIndex == 5 or listIndex == 6)) or (ingredientIndex == 3 and listIndex == 7) then
 							-- veggies
 							Pantry[link] = 5
 						elseif (ingredientIndex == 1 and (listIndex == 8 or listIndex == 11 or listIndex == 12 or listIndex == 14)) then
 							-- booze
 							Pantry[link] = 6
-						elseif
-							(ingredientIndex == 1 and (listIndex == 9 or listIndex == 13)) or
-								(ingredientIndex == 2 and (listIndex == 11 or listIndex == 14))
-						 then
+						elseif (ingredientIndex == 1 and (listIndex == 9 or listIndex == 13)) or (ingredientIndex == 2 and (listIndex == 11 or listIndex == 14)) then
 							-- tea
 							Pantry[link] = 7
 						else
@@ -222,11 +192,15 @@ function SousChef:ParseRecipes()
 		end
 	end
 	local function scanRecipeList(index)
-		listIndex = index
-		local count = select(2, GetRecipeListInfo(index))
-		task:For(1, count):Do(scanRecipe)
+		task:Call(
+			function()
+				listIndex = index
+				local count = select(2, GetRecipeListInfo(index))
+				task:For(1, count):Do(scanRecipe)
+			end
+		)
 	end
-	task:For(1, lists):Do(scanRecipeList):Then(ChangeMainChar):Then(
+	task:For(1, GetNumRecipeLists()):Do(scanRecipeList):Then(ChangeMainChar):Then(
 		function()
 			SousChef:RefreshViews()
 		end
@@ -725,13 +699,24 @@ local function SousChef_Loaded(eventCode, addOnName)
 
 	local async = LibAsync
 	task = async:Create("SousChefCookbook")
-	task:Finally(function() SousChef.scanned = true end)
+	task:Finally(
+		function()
+			SousChef.scanned = true
+		end
+	)
 
 	-- parse the recipes this character knows, in a second
-	task:Delay(1000, function(task)
-		task:Call(SousChef.ParseRecipes)
-		task:Then(function() SousChef:HookGetRecipeInfo() end)
-	end)
+	task:Delay(
+		1000,
+		function(task)
+			task:Call(SousChef.ParseRecipes)
+			task:Then(
+				function()
+					SousChef:HookGetRecipeInfo()
+				end
+			)
+		end
+	)
 
 	if SousChef.settings.sortKnownIngredients then
 		SousChef.SetupSort()
