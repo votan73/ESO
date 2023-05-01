@@ -54,6 +54,9 @@ $blackList["LibMsgWin-1.0"] = $true
 $blackList["SetSwap"] = $true
 $blackList["VotansWorldClocks"] = $true
 $blackList["VotansNicerUnboundKeys"] = $true
+$blackList["VotansAssistentFeatures"] = $true
+$blackList["VotansSelectDifficulty"] = $true
+$blackList["VotansWorldChampBuff"] = $true
 
 $baseUrl = "https://api.esoui.com/addons/"
 $listUrl = $baseUrl + "list.json"
@@ -76,7 +79,7 @@ $wc.Headers.Add("x-api-token", $Token)
 # List addons you have access to
 $addonList = $json.Deserialize($wc.DownloadString($listUrl), [System.Collections.ArrayList])
 
-foreach($Path in [System.IO.Directory]::GetDirectories("Z:\release")){
+foreach($Path in [System.IO.Directory]::GetDirectories($Path)){
     if ($Path.Length -eq 0){ continue }
     if ($Path.Length -eq 0){ continue }
     if (![System.IO.Directory]::Exists($Path)) { continue }
@@ -122,11 +125,12 @@ foreach($Path in [System.IO.Directory]::GetDirectories("Z:\release")){
     Remove-Item -Path $targetPath -Recurse -ErrorAction SilentlyContinue
     Remove-Item -Path ($targetPath + "_v$ver.zip") -ErrorAction SilentlyContinue
 
-    svn export $Path $targetPath 1>$null
+    Copy-Item -Recurse $Path $targetPath
 
 	if ($Title -ne "ESO Profiler") {
 	    Remove-Item -Path ([System.IO.Path]::Combine($targetPath, "*")) -Recurse -Include "*.png","*.pdn"
 	}
+    Remove-Item -Path ([System.IO.Path]::Combine($targetPath, "*")) -Recurse -Include "*.db"
 	
     if ($Bundle) {
 	    foreach($file in [System.IO.Directory]::GetFiles($targetPath, "Lib*.txt", "AllDirectories")) {
@@ -186,7 +190,7 @@ foreach($Path in [System.IO.Directory]::GetDirectories("Z:\release")){
     $Filename = ($targetPath + "_v$ver.zip")
     &"C:\Program Files\7-Zip\7z.exe" a -tzip -r $Filename $targetPath 1>$null
 
-    Remove-Item -Path $targetPath -Recurse
+    Remove-Item -Path $targetPath -Recurse -Force
 
 
 
@@ -267,22 +271,26 @@ foreach($Path in [System.IO.Directory]::GetDirectories("Z:\release")){
         $s.Write($trailer, 0, $trailer.Length)
     }
 
-    $log = [xml](svn log -l 1 -g --xml $Path)
+    $log = (git log -n 1 --pretty=format:"%B" "$Path")
 
-	try {
-		$log = $log.log.logentry.msg.Trim() + "`r`n`r`n" + $details.changelog.Trim()
-	}
-	catch {
-		$log = $details.changelog.Trim()
-	}
+    try {
+	    $log = [String]::Join("`r`n", $log).Trim() + "`r`n`r`n" + $details.changelog.Trim()
+    }
+    catch {
+	    $log = $details.changelog.Trim()
+    }
 
     $data = @{}
     $data.id = $details.id
     $data.version = $ver
     $data.title = $details.title
     $list = @()
-	if ($compatible -ccontains "100033") { $list+="6.2.5" }
-    if ($compatible -ccontains "100034") { $list+="6.3.5" }
+    if ($compatible -ccontains "101037") { $list+="8.3.5" }
+    if ($compatible -ccontains "101038") { $list+="9.0.0" }
+    if ($list.Length -lt 2) {
+        Write-Host -ForegroundColor Red "Manifest or script not up-to-date."
+        continue
+    }
     $data.compatible = [String]::Join(",", $list) # comma delimited
 
     #$data.description {"Type":"STR","Required":"No","Description":"Full description of your AddOn."}

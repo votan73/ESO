@@ -83,7 +83,7 @@ if (!$Test) {
 }
 
 $json = New-Object System.Web.Script.Serialization.JavaScriptSerializer
-$json.MaxJsonLength = 31457280
+$json.MaxJsonLength = 41457280
 
 $wc = New-Object system.Net.WebClient
 $wc.Headers.Add("x-api-token", $Token)
@@ -173,9 +173,8 @@ $data.id = $details.id
 $data.version = $ver
 $data.title = $details.title
 $list = @()
-if ($compatible -ccontains "101035") { $list+="8.1.5" }
-if ($compatible -ccontains "101036") { $list+="8.2.5" }
 if ($compatible -ccontains "101037") { $list+="8.3.5" }
+if ($compatible -ccontains "101038") { $list+="9.0.5" }
 if ($list.Count -lt 2) {
     Write-Host "API Version mismatch. Either manifest or script not up-to-date."
     return
