@@ -135,14 +135,14 @@ function addon:ShowTooltip(achievementId)
 			if hasMultipleCriteria then
 				local width = statusBar.progress:GetWidth()
 				statusBar.label:SetDimensionConstraints(width, 0, width, 0)
-				statusBar.label:SetText(zo_strformat(SI_ACHIEVEMENTS_DESCRIPTION, description, gender))
+				statusBar.label:SetText(zo_strformat("<<1>>", description, gender))
 				statusBar.label:SetColor(((numRequired == numCompleted) and selectedColor or disabledColor):UnpackRGB())
 			else
 				statusBar.label:SetText("")
 			end
 		elseif hasMultipleCriteria and (numRequired == 1) then
 			lines = lines or {}
-			lines[#lines + 1] = (numCompleted == 1 and selectedColor or disabledColor):Colorize(zo_strformat(SI_ACHIEVEMENTS_DESCRIPTION, description, gender))
+			lines[#lines + 1] = (numCompleted == 1 and selectedColor or disabledColor):Colorize(zo_strformat("<<1>>", description, gender))
 		end
 	end
 	if lines and #lines > 0 then
@@ -397,7 +397,7 @@ do
 
 		if not nameText[name] then
 			local icon = GetAchievementCategoryKeyboardIcons(categoryIndex)
-			nameText[name] = string.format("|t32:32:%s|t %s", icon, zo_strformat(SI_ACHIEVEMENTS_NAME, name))
+			nameText[name] = string.format("|t32:32:%s|t %s", icon, zo_strformat("<<1>>", name))
 		end
 
 		lines[#lines + 1] = string.format("%s |cfafafa%s|r", nameText[name], GetPercentText(earnedPointsSum, totalPointsSum))
