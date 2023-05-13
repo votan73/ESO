@@ -28,23 +28,45 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.btnStartNA = new System.Windows.Forms.Button();
-            this.btnStartEU = new System.Windows.Forms.Button();
-            this.btnStartPTS = new System.Windows.Forms.Button();
+            this.components = new System.ComponentModel.Container();
+            this.CooldownTimer = new System.Windows.Forms.Timer(this.components);
+            this.btnStartPTS = new ESOLauncher.StartButton();
+            this.btnStartEU = new ESOLauncher.StartButton();
+            this.btnStartNA = new ESOLauncher.StartButton();
             this.SuspendLayout();
             // 
-            // btnStartNA
+            // CooldownTimer
             // 
-            this.btnStartNA.Location = new System.Drawing.Point(12, 12);
-            this.btnStartNA.Name = "btnStartNA";
-            this.btnStartNA.Size = new System.Drawing.Size(128, 128);
-            this.btnStartNA.TabIndex = 0;
-            this.btnStartNA.Text = "NA";
-            this.btnStartNA.UseVisualStyleBackColor = true;
-            this.btnStartNA.Click += new System.EventHandler(this.StartNA_Click);
+            this.CooldownTimer.Enabled = true;
+            this.CooldownTimer.Interval = 500;
+            this.CooldownTimer.Tick += new System.EventHandler(this.CooldownTimer_Tick);
+            // 
+            // btnStartPTS
+            // 
+            // 
+            // 
+            // 
+            this.btnStartPTS.CooldownLabel.Location = new System.Drawing.Point(0, 0);
+            this.btnStartPTS.CooldownLabel.Name = "";
+            this.btnStartPTS.CooldownLabel.TabIndex = 0;
+            this.btnStartPTS.DependingButton = null;
+            this.btnStartPTS.Location = new System.Drawing.Point(281, 12);
+            this.btnStartPTS.Name = "btnStartPTS";
+            this.btnStartPTS.Size = new System.Drawing.Size(128, 128);
+            this.btnStartPTS.TabIndex = 2;
+            this.btnStartPTS.Text = "PTS";
+            this.btnStartPTS.UseVisualStyleBackColor = true;
+            this.btnStartPTS.Click += new System.EventHandler(this.StartPTS_Click);
             // 
             // btnStartEU
             // 
+            // 
+            // 
+            // 
+            this.btnStartEU.CooldownLabel.Location = new System.Drawing.Point(0, 0);
+            this.btnStartEU.CooldownLabel.Name = "";
+            this.btnStartEU.CooldownLabel.TabIndex = 0;
+            this.btnStartEU.DependingButton = this.btnStartNA;
             this.btnStartEU.Location = new System.Drawing.Point(146, 12);
             this.btnStartEU.Name = "btnStartEU";
             this.btnStartEU.Size = new System.Drawing.Size(128, 128);
@@ -53,15 +75,22 @@
             this.btnStartEU.UseVisualStyleBackColor = true;
             this.btnStartEU.Click += new System.EventHandler(this.StartEU_Click);
             // 
-            // btnStartPTS
+            // btnStartNA
             // 
-            this.btnStartPTS.Location = new System.Drawing.Point(281, 12);
-            this.btnStartPTS.Name = "btnStartPTS";
-            this.btnStartPTS.Size = new System.Drawing.Size(128, 128);
-            this.btnStartPTS.TabIndex = 2;
-            this.btnStartPTS.Text = "PTS";
-            this.btnStartPTS.UseVisualStyleBackColor = true;
-            this.btnStartPTS.Click += new System.EventHandler(this.StartPTS_Click);
+            // 
+            // 
+            // 
+            this.btnStartNA.CooldownLabel.Location = new System.Drawing.Point(0, 0);
+            this.btnStartNA.CooldownLabel.Name = "";
+            this.btnStartNA.CooldownLabel.TabIndex = 0;
+            this.btnStartNA.DependingButton = this.btnStartEU;
+            this.btnStartNA.Location = new System.Drawing.Point(12, 12);
+            this.btnStartNA.Name = "btnStartNA";
+            this.btnStartNA.Size = new System.Drawing.Size(128, 128);
+            this.btnStartNA.TabIndex = 0;
+            this.btnStartNA.Text = "NA";
+            this.btnStartNA.UseVisualStyleBackColor = true;
+            this.btnStartNA.Click += new System.EventHandler(this.StartNA_Click);
             // 
             // LauncherForm
             // 
@@ -81,9 +110,10 @@
 
         #endregion
 
-        private System.Windows.Forms.Button btnStartNA;
-        private System.Windows.Forms.Button btnStartEU;
-        private System.Windows.Forms.Button btnStartPTS;
+        private StartButton btnStartNA;
+        private StartButton btnStartEU;
+        private StartButton btnStartPTS;
+        private System.Windows.Forms.Timer CooldownTimer;
     }
 }
 

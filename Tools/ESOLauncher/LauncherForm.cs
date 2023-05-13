@@ -23,6 +23,7 @@ namespace ESOLauncher
 
             font = font ?? new Font(Font.FontFamily, 36);
             btnStartPTS.Font = btnStartEU.Font = btnStartNA.Font = font;
+            btnStartPTS.CooldownLabel.Font = btnStartEU.CooldownLabel.Font = btnStartNA.CooldownLabel.Font = Font;
 
 
             btnStartNA.Enabled = btnStartEU.Enabled = fileLive.Exists;
@@ -64,20 +65,31 @@ namespace ESOLauncher
 
         private void Launch(object sender, System.IO.FileInfo file)
         {
-            var btn = sender as Button;
+            var btn = sender as StartButton;
             btn.Enabled = false;
+            if (btn.DependingButton != null)
+                btn.DependingButton.Enabled = false;
+            btn.Cooldown = DateTime.MinValue;
             Task.Factory.StartNew(() =>
             {
                 var info = new System.Diagnostics.ProcessStartInfo(file.FullName);
                 info.WorkingDirectory = file.Directory.FullName;
                 info.UseShellExecute = false;
+                info.WindowStyle = System.Diagnostics.ProcessWindowStyle.Minimized;
                 var p = System.Diagnostics.Process.Start(info);
                 p.PriorityBoostEnabled = true;
                 p.PriorityClass = System.Diagnostics.ProcessPriorityClass.High;
                 p.WaitForExit();
                 if (IsHandleCreated)
                 {
-                    MethodInvoker exited = () => btn.Enabled = file.Exists;
+                    MethodInvoker exited = () =>
+                    {
+                        btn.Enabled = file.Exists;
+                        if (btn.DependingButton != null)
+                        {
+                            btn.DependingButton.Cooldown = DateTime.Now.AddMinutes(3).AddSeconds(-3);
+                        }
+                    };
                     BeginInvoke(exited);
                 }
             });
@@ -100,5 +112,10 @@ namespace ESOLauncher
             Launch(sender, filePTS);
         }
 
+        private void CooldownTimer_Tick(object sender, EventArgs e)
+        {
+            btnStartNA.UpdateCooldown();
+            btnStartEU.UpdateCooldown();
+        }
     }
 }
