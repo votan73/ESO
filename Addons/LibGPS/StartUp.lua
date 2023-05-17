@@ -1,9 +1,9 @@
--- LibGPS3 & its files Â© sirinsidiator                          --
+-- LibGPS3 & its files © sirinsidiator                          --
 -- Distributed under The Artistic License 2.0 (see LICENSE)     --
 ------------------------------------------------------------------
 
 local LIB_IDENTIFIER = "LibGPS3"
-local VERSION = 4
+local VERSION = 5
 
 assert(not _G[LIB_IDENTIFIER], LIB_IDENTIFIER .. " is already loaded")
 
@@ -19,23 +19,18 @@ lib.internal = {
 }
 
 function lib.internal:InitializeSaveData()
-    local saveData = LibGPS_Data
+    -- local saveData = LibGPS_Data
 
-    if(not saveData or saveData.version ~= VERSION or saveData.apiVersion ~= GetAPIVersion()) then
-        self.logger:Info("Creating new saveData")
-        saveData = {
-            version = VERSION,
-            apiVersion = GetAPIVersion(),
-            sizeIdWorldSize = {}
-        }
-    end
+    -- if(not saveData or saveData.version ~= VERSION or saveData.apiVersion ~= GetAPIVersion()) then
+    --     self.logger:Info("Creating new saveData")
+    --     saveData = {
+    --         version = VERSION,
+    --         apiVersion = GetAPIVersion()
+    --     }
+    -- end
 
-    for id, data in pairs(self.mapAdapter.sizeIdWorldSize) do
-        saveData.sizeIdWorldSize[id] = data:Serialize()
-    end
-
-    LibGPS_Data = saveData
-    self.saveData = saveData
+    -- LibGPS_Data = saveData
+    -- self.saveData = saveData
 end
 
 function lib.internal:Initialize()
@@ -47,9 +42,6 @@ function lib.internal:Initialize()
 
     local mapAdapter = class.MapAdapter:New()
     local meter = class.TamrielOMeter:New(mapAdapter)
-    local waypointManager = class.WaypointManager:New(mapAdapter, meter)
-    mapAdapter:SetWaypointManager(waypointManager)
-    meter:SetWaypointManager(waypointManager)
 
     internal.mapAdapter = mapAdapter
     internal.meter = meter

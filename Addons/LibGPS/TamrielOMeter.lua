@@ -1,4 +1,4 @@
--- LibGPS3 & its files Â© sirinsidiator                          --
+-- LibGPS3 & its files © sirinsidiator                          --
 -- Distributed under The Artistic License 2.0 (see LICENSE)     --
 ------------------------------------------------------------------
 
@@ -37,9 +37,10 @@ function TamrielOMeter:Initialize(adapter)
     self:RegisterRootMap(GetMapIndexByZoneId(347)) -- Coldhabour
     self:RegisterRootMap(GetMapIndexByZoneId(980)) -- Clockwork City
     self:RegisterRootMap(GetMapIndexByZoneId(1027)) -- Artaeum
-    if GetNumMaps() >= 45 then
-        self:RegisterRootMap(GetMapIndexByZoneId(1283)) -- Fargrave
-        self:RegisterRootMap(GetMapIndexByZoneId(1286)) -- Deathlands
+    self:RegisterRootMap(GetMapIndexByZoneId(1283)) -- Fargrave
+    self:RegisterRootMap(GetMapIndexByZoneId(1286)) -- Deathlands
+    if GetNumMaps() >= 50 then
+        self:RegisterRootMap(GetMapIndexByZoneId(1413)) -- Aphocrypha
     end
     -- Any future extra dimensional map here
     self:RegisterRootMap(TAMRIEL_MAP_INDEX) -- Tamriel
@@ -48,10 +49,6 @@ end
 function TamrielOMeter:Reset()
     logger:Info("Removing all measurements")
     ZO_ClearTable(self.measurements)
-end
-
-function TamrielOMeter:SetWaypointManager(waypointManager)
-    self.waypointManager = waypointManager
 end
 
 function TamrielOMeter:RegisterRootMap(mapIndex)
@@ -84,12 +81,6 @@ end
 
 function TamrielOMeter:IsMeasuring()
     return self.measuring
-end
-
-function TamrielOMeter:GetReferencePoints()
-    local x1, y1 = self.adapter:GetPlayerPosition()
-    local x2, y2 = self.waypointManager:GetPlayerWaypoint()
-    return x1, y1, x2, y2
 end
 
 function TamrielOMeter:ClearCurrentMapMeasurement()
@@ -203,7 +194,7 @@ end
 
 local function getMapSizeId(self, mapId)
     local zoneId = self.adapter:GetPlayerZoneId()
-    return mapId + zoneId * 100000, zoneId
+    return string.format("%i:%i:%s:%s", mapId, zoneId, GetPlayerLocationName(), GetPlayerActiveSubzoneName()), zoneId
 end
 local function getCurrentWorldSize(self, notMeasuring)
     local adapter = self.adapter
@@ -219,23 +210,28 @@ local function getCurrentWorldSize(self, notMeasuring)
         -- This can happend, e.g. by porting
         -- no need to take measurements more than once
 
+        -- There are maps, where GetPlayerPosition is "frozen", while GetPlayerRawWorldPosition is still working
+        local _, pwx, pwh, pwy = adapter:GetPlayerWorldPosition()
         -- get the player position on the current map
-        local localX, localY = adapter:GetPlayerPosition()
+        local localX, localY = adapter:GetNormalizedPositionFromWorld(zoneId, pwx, pwh, pwy)
         if (localX == 0 and localY == 0) then
             -- cannot take measurements while player position is not initialized
             return adapter:GetWorldSize(0)
         end
 
-        logger:Debug("Calculate current world size of ", mapId, " for zone ", zoneId)
+        logger:Debug("Calculate current world size of", mapId, "for zone", zoneId, ", Id", mapSizeId)
 
         local worldSizeX, worldSizeY = DEFAULT_TAMRIEL_SIZE, DEFAULT_TAMRIEL_SIZE
 
         local wx1, wy1
-        -- Make sure the waypoint is at a different location
-        if mapId == 1747 then -- but not too far for blackreach
-            wx1, wy1 = localX < 0.5 and (localX + 0.02) or (localX - 0.02), localY < 0.5 and (localY + 0.02) or (localY - 0.02)
+        -- Make sure the ref-point is at a different location, but not too far for blackreach
+        local measurement = self:GetCurrentMapMeasurement()
+        if measurement.scaleX < 0.0025 then
+            -- for small (sub-)zones
+            wx1, wy1 = adapter:GetNormalizedPositionFromWorld(zoneId, pwx + (localX < 0.5 and 2475 or -2475), pwh, pwy + (localY < 0.5 and 2475 or -2475)) -- 3500 world units
         else
-            wx1, wy1 = localX < 0.5 and 0.75 or 0.25, localY < 0.5 and 0.75 or 0.25
+            -- for all other zones
+            wx1, wy1 = adapter:GetNormalizedPositionFromWorld(zoneId, pwx + (localX < 0.5 and 7071 or -7071), pwh, pwy + (localY < 0.5 and 7071 or -7071)) -- 10000 world units
         end
 
         logger:Debug("ref-point (normalized): ", wx1, "x", wy1)
@@ -244,15 +240,17 @@ local function getCurrentWorldSize(self, notMeasuring)
         size:SetZoneId(zoneId)
         adapter:SetWorldSize(mapSizeId, size, true) -- Assume default scale, do not serialize
 
-        local measurement = self:GetCurrentMapMeasurement()
         local wwX, wwZ, wwY = measurement:ToWorld(wx1, wy1)
         logger:Debug("ref-point (calulated world): ", wwX, "x", wwY)
         -- The assumed scale may wrong. Lets see how wrong:
         local wpX1, wpY1 = adapter:GetNormalizedPositionFromWorld(zoneId, wwX, wwZ, wwY)
         logger:Debug("ref-point (normalized real): ", wpX1, "x", wpY1)
         -- correct scale, so that we get the values we want:
-        local correctX, correctY = (wx1 - localX) / (wpX1 - localX), (wy1 - localY) / (wpY1 - localY)
-        worldSizeX, worldSizeY = math.floor(correctX * worldSizeX * 0.01 + 0.25) * 100, math.floor(correctY * worldSizeY * 0.01 + 0.25) * 100
+        local dx, dy = wx1 - localX, wy1 - localY
+        local correctScale = dx * dx + dy * dy
+        dx, dy = wpX1 - localX, wpY1 - localY
+        correctScale = math.sqrt(correctScale / (dx * dx + dy * dy))
+        worldSizeX, worldSizeY = math.floor(correctScale * worldSizeX * 0.01 + 0.25) * 100, math.floor(correctScale * worldSizeY * 0.01 + 0.25) * 100
         logger:Debug("worldSize corrected: ", worldSizeX, "x", worldSizeY)
 
         size:SetSize(worldSizeX, worldSizeY)
@@ -265,8 +263,8 @@ function TamrielOMeter:GetCurrentWorldSize()
     local adapter = self.adapter
     local size
 
+    local mapId = adapter:GetCurrentMapIdentifier()
     if adapter:IsCurrentMapPlayerLocation() then
-        local mapId = adapter:GetCurrentMapIdentifier()
         local mapSizeId = getMapSizeId(self, mapId)
         size = adapter:GetWorldSize(mapSizeId)
         if size:IsValid() then
@@ -274,9 +272,8 @@ function TamrielOMeter:GetCurrentWorldSize()
         end
     end
 
-    self:PushCurrentMap()
     size = getCurrentWorldSize(self)
-    self:PopCurrentMap()
+    SetMapToMapId(mapId)
     return size
 end
 
@@ -308,19 +305,6 @@ function TamrielOMeter:GetWorldGlobalRatio()
         worldSizeX, worldSizeY = size:GetSize()
         worldSizeX, worldSizeY = worldSizeX / DEFAULT_TAMRIEL_SIZE, worldSizeY / DEFAULT_TAMRIEL_SIZE
 
-        if zoneId == 1161 then
-            -- In Blackreach Greymoor the world size is right for SetPlayerWaypointByWorldLocation,
-            -- but wrong for the distance. 7 is just a guess made by movement speed
-            worldSizeX, worldSizeY = worldSizeX * 7, worldSizeY * 7
-        elseif mapId == 1238 then
-            worldSizeX, worldSizeY = worldSizeX * 1.5, worldSizeY * 1.5
-        elseif mapId == 1503 then
-            worldSizeX, worldSizeY = worldSizeX * 6, worldSizeY * 6
-        elseif mapId == 1888 then
-            worldSizeX, worldSizeY = worldSizeX * 4, worldSizeY * 4
-        elseif mapId == 1890 then
-            worldSizeX, worldSizeY = worldSizeX * 8, worldSizeY * 8
-        end
         scaleIdToGlobalRatio[mapSizeId] = { worldSizeX, worldSizeY }
     else
         worldSizeX, worldSizeY = unpack(worldSizeX)

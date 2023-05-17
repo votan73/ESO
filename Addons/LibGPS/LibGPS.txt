@@ -1,12 +1,11 @@
 ## Title: LibGPS
 ## Author: sirinsidiator & votan
 ## Contributors: Shinni
-## Version: 3.2.0
-## AddOnVersion: 68
-## APIVersion: 101033 101034
+## Version: 3.3.0
+## AddOnVersion: 69
+## APIVersion: 101037 101038
 ## IsLibrary: true
 ## DependsOn: LibMapPing>=900 LibDebugLogger>=196 LibChatMessage>=100
-## SavedVariables: LibGPS_Data
 ##
 ## This Add-on is not created by, affiliated with or sponsored by ZeniMax Media Inc. or its affiliates.
 ## The Elder Scrolls® and related logos are registered trademarks or trademarks of ZeniMax Media Inc. in the United States and/or other countries.
@@ -20,6 +19,5 @@ WorldSize.lua
 MapStack.lua
 MapAdapter.lua
 TamrielOMeter.lua
-WaypointManager.lua
 api.lua
 compatibility.lua

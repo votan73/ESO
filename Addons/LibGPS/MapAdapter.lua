@@ -1,4 +1,4 @@
--- LibGPS3 & its files Â© sirinsidiator                          --
+-- LibGPS3 & its files © sirinsidiator                          --
 -- Distributed under The Artistic License 2.0 (see LICENSE)     --
 ------------------------------------------------------------------
 
@@ -34,10 +34,6 @@ function MapAdapter:Initialize()
 
     local TAMRIEL_MAP_ID = 27
     calibrateX, calibrateY = GetUniversallyNormalizedMapInfo(TAMRIEL_MAP_ID)
-end
-
-function MapAdapter:SetWaypointManager(waypointManager)
-    self.waypointManager = waypointManager
 end
 
 function MapAdapter:HookSetMapToFunction(funcName, returnToInitialMap, skipSecondCall)
@@ -109,20 +105,8 @@ function MapAdapter:GetPlayerPosition()
     return GetMapPlayerPosition("player")
 end
 
-local zoneException = {
-    [1027] = true,
-    [1160] = true,
-    [1161] = true,
-    [1207] = true
-}
-
 function MapAdapter:GetPlayerWorldPosition()
     local zoneId, pwx, pwh, pwy = GetUnitRawWorldPosition("player")
-    -- Don't know why, but the result will be wrong, if GetUnitRawWorldPosition is used in these zones
-    -- In all other zones, checked yet, GetUnitRawWorldPosition is right and GetUnitWorldPosition wrong.
-    if zoneException[zoneId] then
-        return GetUnitWorldPosition("player")
-    end
     return zoneId, pwx, pwh, pwy
 end
 
@@ -193,17 +177,10 @@ function MapAdapter:GetWorldSize(sizeId)
     local size = self.sizeIdWorldSize[sizeId]
     if not size then
         size = lib.internal.class.WorldSize:New()
-        local data = lib.internal.saveData and lib.internal.saveData.sizeIdWorldSize[sizeId]
-        if data then
-            size:Deserialize(data)
-        end
     end
     return size
 end
 
 function MapAdapter:SetWorldSize(sizeId, size, notSaving)
     self.sizeIdWorldSize[sizeId] = size
-    if not notSaving and lib.internal.saveData then
-        lib.internal.saveData.sizeIdWorldSize[sizeId] = size:Serialize()
-    end
 end
