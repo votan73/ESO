@@ -6,7 +6,7 @@ WaypointIt = {}
 
 local WaypointIt = WaypointIt
 local ADDON_NAME = "WaypointIt"
-local CODE_VERSION = "1.14.4"
+local CODE_VERSION = "1.14.5"
 -- Holds the requested taskID
 local CURRENT_TASK
 local ROW_TYPE_ID = 1
@@ -45,7 +45,6 @@ wipe out nextWaypoint.
 local nextWaypoint
 local lastWaypointBy, lastZoneId
 local suspendAssistState = true
-local needRestoreAfterMeasure = false
 local lastMarkQuest = 0
 local pingSuspendCount = 0
 
@@ -441,7 +440,7 @@ function WaypointIt:SetupEvents()
 			self:RunWaypointRemoveUpdates(true, lastWaypointBy == "follow")
 			self:RunHeadingUpdates(true)
 			refreshIfVisible()
-		elseif (pingEventType == PING_EVENT_REMOVED) and pingTag == pinId and lastWaypointBy ~= "measuring" then
+		elseif (pingEventType == PING_EVENT_REMOVED) and pingTag == pinId then
 			if (not LMP:IsPingSuppressed(MAP_PIN_TYPE_PLAYER_WAYPOINT, pinId)) then
 				self:RunWaypointRemoveUpdates(false)
 				self:RunHeadingUpdates(false)
@@ -464,25 +463,6 @@ function WaypointIt:SetupEvents()
 			OnMapPing(PING_EVENT_REMOVED, ...)
 		end
 	)
-
-	local setByGPS = {setBy = "measuring"}
-	local function restoreAfterMeasure(measuring)
-		if not measuring then
-			local offsetX, offsetY = GetMapPlayerWaypoint()
-			local hasWaypoint = offsetX ~= 0 or offsetY ~= 0
-			if nextWaypoint == nil and hasWaypoint then
-				nextWaypoint = CURRENT_TASK or setByGPS
-			end
-			if not hasWaypoint or not lastWaypointBy or lastWaypointBy == "measuring" then
-				lastWaypointBy = "autoQuest"
-			end
-			if needRestoreAfterMeasure then
-				needRestoreAfterMeasure = false
-				self:RefreshQuestWaypoint()
-			end
-		end
-	end
-	CALLBACK_MANAGER:RegisterCallback(gps.LIB_EVENT_STATE_CHANGED, restoreAfterMeasure)
 end
 
 do
@@ -586,7 +566,7 @@ function WaypointIt:SetupQuestEvents()
 		end
 
 		if taskId == CURRENT_TASK.taskId then
-			if self:IsWaypointOutsideOfRemovalDistance(xLoc, yLoc) then
+			if self:IsWaypointOutsideOfRemovalDistance(xLoc, yLoc) or self.sv["QUEST_ENABLE_GLOBAL_WAYPOINT"] then
 				-- Changed: See nextWaypoint definition for reason.
 				--[[
 			WAYPOINTIT.sv.currentWaypoint = {
@@ -632,7 +612,6 @@ function WaypointIt:SetupQuestEvents()
 			end
 			if lastWaypointBy == "autoQuest" and HasWaypoint() then
 				ZO_WorldMap_RemovePlayerWaypoint() -- Baertram, 2022-03-03, Fix WorldMap removal of waypoint so that the keybind will allow to add a new one (instead of remove a non existing)
-				--RemovePlayerWaypoint()
 			end
 		-- CURRENT_TASK = nil
 		end
@@ -656,7 +635,6 @@ function WaypointIt:SetupQuestEvents()
 			db("OnQuestComplete: Valid Condition Not Found for quest")
 			if lastWaypointBy == "autoQuest" and HasWaypoint() then
 				ZO_WorldMap_RemovePlayerWaypoint() -- Baertram, 2022-03-03, Fix WorldMap removal of waypoint so that the keybind will allow to add a new one (instead of remove a non existing)
-				--RemovePlayerWaypoint()
 			end
 			return
 		end
@@ -726,18 +704,14 @@ do
 	function WaypointIt:RefreshQuestWaypoint()
 		em:UnregisterForUpdate(identifier)
 
-		if gps:IsMeasuring() then
-			needRestoreAfterMeasure = true
-			return
-		end
 		local hasWaypoint = HasWaypoint()
 		if hasWaypoint then
+			self:RunWaypointRemoveUpdates(true)
+			self:RunHeadingUpdates(true)
 			if lastWaypointBy ~= "autoQuest" then
 				db("keep waypoint %s", lastWaypointBy or "nil")
 				return
 			end
-			self:RunWaypointRemoveUpdates(true)
-			self:RunHeadingUpdates(true)
 		end
 
 		local autoMark = self.sv["QUEST_AUTOMARK_NEXT_WAYPOINT"]
@@ -947,7 +921,6 @@ do
 
 			if HasWaypoint() then
 				ZO_WorldMap_RemovePlayerWaypoint() -- Baertram, 2022-03-03, Fix WorldMap removal of waypoint so that the keybind will allow to add a new one (instead of remove a non existing)
-				--RemovePlayerWaypoint()
 			end
 		end
 		em:UnregisterForUpdate(identifier)
@@ -1345,8 +1318,7 @@ function WaypointIt:TryFollowNextCustomPin()
 	local list = self.followList
 	if #list == 0 then
 		if HasWaypoint() then
-				ZO_WorldMap_RemovePlayerWaypoint() -- Baertram, 2022-03-03, Fix WorldMap removal of waypoint so that the keybind will allow to add a new one (instead of remove a non existing)
-				--RemovePlayerWaypoint()
+			ZO_WorldMap_RemovePlayerWaypoint() -- Baertram, 2022-03-03, Fix WorldMap removal of waypoint so that the keybind will allow to add a new one (instead of remove a non existing)
 		end
 		return false
 	end
@@ -1918,7 +1890,6 @@ function WaypointIt:SetWaypointByRowControl(rowControl)
 		db("Waypoint is within the waypoint removal distance. The waypoint will not be set.")
 		if lastWaypointBy == "autoQuest" then
 			ZO_WorldMap_RemovePlayerWaypoint() -- Baertram, 2022-03-03, Fix WorldMap removal of waypoint so that the keybind will allow to add a new one (instead of remove a non existing)
-			--RemovePlayerWaypoint()
 		end
 	end
 end
@@ -2038,7 +2009,7 @@ do
 end
 
 do
-	local lastWaypointToChatOutput, lastWaypointToChatText -- Baertram, 2023-03-03, Accessibility features
+	local lastWaypointToChatOutput, lastWaypointToChatText  -- Baertram, 2023-03-03, Accessibility features
 
 	local RunHeadingUpdates
 	function WaypointIt:RunHeadingUpdates(_bOn)
@@ -2145,7 +2116,6 @@ function WaypointIt:CheckWaypointLoc()
 		end
 		if lastWaypointBy ~= "follow" or (lastWaypointBy == "follow" and not self:TryFollowNextCustomPin()) then
 			ZO_WorldMap_RemovePlayerWaypoint() -- Baertram, 2022-03-03, Fix WorldMap removal of waypoint so that the keybind will allow to add a new one (instead of remove a non existing)
-			--RemovePlayerWaypoint()
 		end
 	end
 end
@@ -2194,8 +2164,6 @@ function WaypointIt:InitRegisterUpdates()
 	if CURRENT_TASK then
 		lastWaypointBy = CURRENT_TASK.setBy
 	end
-	local hasWaypoint = CURRENT_TASK ~= nil
-	needRestoreAfterMeasure = hasWaypoint
 end
 
 -- *********************************************************************--
