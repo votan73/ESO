@@ -1970,19 +1970,17 @@ function WaypointIt:RunWaypointRemoveUpdates(bOn, forced)
 end
 
 function WaypointIt:CanProcessMap()
-	if gps:IsMeasuring() then
+	if not DoesUnitExist("player") then
 		return false
 	end
 	-- cant get coordinates from the cosmic map
-	--if GetMapType() == MAPTYPE_COSMIC then
 	if ZO_WorldMap_IsWorldMapShowing() then
 		return true
 	end
 	if SetMapToPlayerLocation() == SET_MAP_RESULT_MAP_CHANGED then
 		CALLBACK_MANAGER:FireCallbacks("OnWorldMapChanged")
 	end
-	--end
-	return DoesUnitExist("player")
+	return true
 end
 
 -- ============================================================--
@@ -2014,7 +2012,9 @@ do
 	local RunHeadingUpdates
 	function WaypointIt:RunHeadingUpdates(_bOn)
 		if _bOn and self.sv["WAYPOINT_DIRECTIONAL_ARROW"] then
-			RunHeadingUpdates = RunHeadingUpdates or function()
+			RunHeadingUpdates =
+				RunHeadingUpdates or
+				function()
 					if not self:CanProcessMap() or self.FRAGMENT_DIRECTION_ARROW:IsHidden() then
 						return
 					end
