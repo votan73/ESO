@@ -35,7 +35,7 @@ namespace ESOLauncher
                     CooldownLabel.Visible = false;
                 }
                 if (Cooldown > DateTime.MinValue)
-                    Enabled = true;
+                    Enabled = DependingButton != null ? DependingButton.Enabled : true;
             }
             else
             {

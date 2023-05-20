@@ -63,12 +63,32 @@ namespace ESOLauncher
             System.IO.File.WriteAllLines(settingsFile, lines.ToArray());
         }
 
+        private static string GetLastPlatform()
+        {
+            var settingsFile = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Elder Scrolls Online", "live", "UserSettings.txt");
+            if (!System.IO.File.Exists(settingsFile))
+                return "";
+            var lines = new List<string>(System.IO.File.ReadAllLines(settingsFile));
+            for (int i = 0; i < lines.Count; i++)
+            {
+                var line = lines[i];
+                if (line.StartsWith("SET LastPlatform ", StringComparison.OrdinalIgnoreCase))
+                {
+                    return line.Substring(17).Trim().Trim('\"').ToLower();
+                }
+            }
+            return "";
+        }
+
         private void Launch(object sender, System.IO.FileInfo file)
         {
             var btn = sender as StartButton;
             btn.Enabled = false;
             if (btn.DependingButton != null)
+            {
                 btn.DependingButton.Enabled = false;
+                btn.DependingButton.Cooldown = DateTime.MinValue;
+            }
             btn.Cooldown = DateTime.MinValue;
             Task.Factory.StartNew(() =>
             {
@@ -80,18 +100,29 @@ namespace ESOLauncher
                 p.PriorityBoostEnabled = true;
                 p.PriorityClass = System.Diagnostics.ProcessPriorityClass.High;
                 p.WaitForExit();
-                if (IsHandleCreated)
+
+                if (!IsHandleCreated)
+                    return;
+
+                string lastPlatform = GetLastPlatform();
+
+                var cooldown = DateTime.Now.AddMinutes(3).AddSeconds(-3);
+                MethodInvoker exited = () =>
                 {
-                    MethodInvoker exited = () =>
+                    btn.Enabled = file.Exists;
+                    if (btn.DependingButton != null)
+                        btn.DependingButton.Enabled = true;
+                    switch (lastPlatform)
                     {
-                        btn.Enabled = file.Exists;
-                        if (btn.DependingButton != null)
-                        {
-                            btn.DependingButton.Cooldown = DateTime.Now.AddMinutes(3).AddSeconds(-3);
-                        }
-                    };
-                    BeginInvoke(exited);
-                }
+                        case "live-eu":
+                            btnStartNA.Cooldown = cooldown;
+                            break;
+                        case "live":
+                            btnStartEU.Cooldown = cooldown;
+                            break;
+                    }
+                };
+                BeginInvoke(exited);
             });
         }
 
