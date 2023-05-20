@@ -1,4 +1,4 @@
-﻿param($Path="Z:\live")
+﻿param($Path="Z:\Elder Scrolls Online\live")
 
 if ($Path.Length -eq 0){ return }
 if (![System.IO.Directory]::Exists($Path)) { return }
