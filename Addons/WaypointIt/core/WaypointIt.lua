@@ -96,12 +96,13 @@ function WaypointIt:GetDistanceToLocalCoords(locX, locY, playerOffsetX, playerOf
 		return 0, false
 	end
 
-	local locX, locY = gps:LocalToGlobal(locX, locY)
+	local useLocalDistance = self:IsNormalizedPointInsideMapBounds(locX, locY)
+	locX, locY = gps:LocalToGlobal(locX, locY)
 	if not playerOffsetX then
 		playerOffsetX, playerOffsetY = gps:LocalToGlobal(GetMapPlayerPosition("player"))
 	end
 
-	local gameUnitDistance = gps:GetGlobalDistanceInMeters(locX, locY, playerOffsetX, playerOffsetY)
+	local gameUnitDistance = useLocalDistance and gps:GetGlobalDistanceInMeters(locX, locY, playerOffsetX, playerOffsetY) or math.floor(zo_distance(locX, locY, playerOffsetX, playerOffsetY) * 25000)
 
 	-- 11,000 steps per unit, stride length 3.5 feet per step -- No longer calculated this way
 	-- Strike that, changing calculations to match ability grey out distance/range
