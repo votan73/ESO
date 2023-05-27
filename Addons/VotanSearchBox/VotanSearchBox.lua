@@ -426,6 +426,7 @@ local function SetupControls()
 	SetupCraftingControl(ZO_SmithingTopLevelDeconstructionPanelInventory, SMITHING.deconstructionPanel.inventory)
 	SetupCraftingControl(ZO_SmithingTopLevelImprovementPanelInventory, SMITHING.improvementPanel.inventory)
 	SetupCraftingControl(ZO_RetraitStation_KeyboardTopLevelRetraitPanelInventory, ZO_RETRAIT_KEYBOARD.inventory)
+	SetupCraftingControl(UNIVERSAL_DECONSTRUCTION.deconstructionPanelControl, UNIVERSAL_DECONSTRUCTION.deconstructionPanel.inventory)
 
 	HookShouldAddItemToList(ZO_StoreWindow, STORE_WINDOW)
 	SetupQuickSlot()
@@ -484,7 +485,7 @@ local function InitSettings()
 	if not settings then
 		return
 	end
-	settings.version = "1.8.5"
+	settings.version = "1.8.6"
 	settings.website = "http://www.esoui.com/downloads/info914-VotansSearchBox.html"
 
 	settings:AddSetting {
