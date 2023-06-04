@@ -1,11 +1,11 @@
-﻿------------------------------------------
+------------------------------------------
 --            Potion Maker              --
 --      by facit & Khrill & votan       --
 ------------------------------------------
 
 PotMaker = {
 	name = "PotionMaker",
-	version = "5.8.4",
+	version = "5.9.0",
 	ResultControls = {},
 	PositiveTraitControls = {},
 	NegativeTraitControls = {},
@@ -231,6 +231,7 @@ local function ShowStationOrTopLevel()
 		PotionMakerAllMustNotCheckBoxText:SetText(isChecked and PotMaker.language.uncheck_all or PotMaker.language.check_all)
 	end
 
+	PotionMakerQuestWrits:SetHidden(not PotMaker.atAlchemyStation)
 	PotionMakerAllMustNotCheckBox:SetHidden(poison)
 	PotionMakerAllMustNotCheckBoxText:SetHidden(poison)
 
@@ -1005,212 +1006,40 @@ do
 	end
 end
 
-function PotMaker:ApplyLanguageSpecific()
-	local SI_TOOLTIP_ITEM_NAME = SI_TOOLTIP_ITEM_NAME
-
-	if self.language.name == "de" then
-		function PotMaker.Potion:GetSearchName()
-			if self.searchName ~= "" then
-				return self.searchName
-			end
-			self.searchName = format("<<Cm:1>>", self:GetName(), 2)
-			return self.searchName
-		end
-		function PotMaker.Potion:GetMasterSearchName()
-			if self.searchMasterName then
-				return self.searchMasterName
-			end
-			self.searchMasterName = format("<<C:1>>", self:GetName())
-			return self.searchMasterName
-		end
-	elseif self.language.name == "fr" then
-		function PotMaker.Potion:GetSearchName()
-			if self.searchName ~= "" then
-				return self.searchName
-			end
-			self.searchName = format("<<t:1>>", self:GetName())
-			return self.searchName
-		end
-		function PotMaker.Potion:GetMasterSearchName()
-			return self:GetSearchName()
-		end
-	elseif self.language.name == "ru" then
-		function PotMaker.Potion:GetSearchName()
-			if self.searchName ~= "" then
-				return self.searchName
-			end
-			self.searchName = format("<<c:1>>", self:GetName())
-			return self.searchName
-		end
-		function PotMaker.Potion:GetMasterSearchName()
-			return self:GetSearchName()
-		end
-	elseif self.language.name == "jp" then
-		---- for Japanese Translation ----
-		function PotMaker.Potion:GetSearchName()
-			if self.searchName ~= "" then
-				return self.searchName
-			end
-			-- Remove space
-			self.searchName = format(SI_TOOLTIP_ITEM_NAME, self:GetName():gsub(" ", ""):gsub("-", ""))
-			return self.searchName
-		end
-		function PotMaker.Potion:GetMasterSearchName()
-			return self:GetSearchName()
-		end
-	elseif self.language.name == "zh" then
-		---- for Chinese Translation ----
-		function PotMaker.Potion:GetSearchName()
-			if self.searchName ~= "" then
-				return self.searchName
-			end
-			-- Remove space
-			self.searchName = format(SI_TOOLTIP_ITEM_NAME, self:GetName())
-			return self.searchName
-		end
-		function PotMaker.Potion:GetMasterSearchName()
-			return self:GetSearchName()
-		end
-	elseif self.language.name == "es" then
-		function PotMaker.Potion:GetSearchName()
-			if self.searchName ~= "" then
-				return self.searchName
-			end
-			self.searchName = format("<<c:1>>", self:GetName()):gsub(" de", "")
-			return self.searchName
-		end
-		function PotMaker.Potion:GetMasterSearchName()
-			return self:GetSearchName()
-		end
-	else
-		function PotMaker.Potion:GetSearchName()
-			if self.searchName ~= "" then
-				return self.searchName
-			end
-			self.searchName = format(SI_TOOLTIP_ITEM_NAME, self:GetName()):gsub("-", "%%-")
-			return self.searchName
-		end
-		function PotMaker.Potion:GetMasterSearchName()
-			return self:GetSearchName()
-		end
-	end
-
-	local function matchesJournal(itemLink)
-		local quests = PotMaker.quests
-		for i = 1, #quests do
-			if DoesItemLinkFulfillJournalQuestCondition(itemLink, unpack(quests[i])) then
-				return true
-			end
-		end
+function PotMaker.Potion:MatchesQuest()
+	if #PotMaker.quests == 0 then
 		return false
 	end
 
-	---- for Japanese Translation ----
-	if self.language.name == "jp" or self.language.name == "zh" then
-		function PotMaker.Potion:MatchesQuest()
-			if #PotMaker.masterquests > 0 and self.numTraits >= 3 and self.solvent and self.solvent.level >= 50 then
-				if find(PotMaker.masterquests, self:GetSearchName()) then
-					for traitName in pairs(self.traits) do
-						if not zo_plainstrfind(PotMaker.masterquests, traitName) then
-							return false
+	local quests = PotMaker.quests
+	local itemId, traits = nil
+	for i = 1, #quests do
+		local quest = quests[i]
+		local questIndex = quest.questIndex
+		for _, condition in pairs(quest.conditionData) do
+			if condition.isMasterWrit then
+				for _, pack in pairs(self.solvent.pack) do
+					if IsAlchemySolventForItemAndMaterialId(pack.bagId, pack.slotIndex, condition.itemId, condition.materialItemId) then
+						if not itemId then
+							itemId, traits = self.itemLink:match("^|H[^:]+:item:([^:]+):[^:]+:[^:]+:[^:]+:[^:]+:[^:]+:[^:]+:[^:]+:[^:]+:[^:]+:[^:]+:[^:]+:[^:]+:[^:]+:[^:]+:[^:]+:[^:]+:[^:]+:[^:]+:[^:]+:([^|]+)|h")
+							itemId, traits = tonumber(itemId), tonumber(traits)
+						end
+						if condition.itemId == itemId and condition.encodedAlchemyTraits == traits then
+							return true
 						end
 					end
+				end
+			else
+				if DoesItemLinkFulfillJournalQuestCondition(self.itemLink, questIndex, 1, condition.conditionIndex, true) then
 					return true
 				end
 			end
-			return #PotMaker.quests > 0 and #self.ingredients == 2 and matchesJournal(self.itemLink)
-		end
-	elseif self.language.name == "ru" then
-		function PotMaker.Potion:MatchesQuest()
-			if #PotMaker.masterquests > 0 and self.numTraits >= 3 and self.solvent and self.solvent.level >= 50 then
-				if find(PotMaker.masterquests, self:GetMasterSearchName()) then
-					if find(PotMaker.masterquests, string.format("(%s)", self:GetMasterSearchName())) then
-						for traitName in pairs(self.traits) do
-							if not zo_plainstrfind(PotMaker.masterquests, traitName) then
-								return false
-							end
-						end
-						for traitName in pairs(self.traits) do
-							if not find(PotMaker.masterquests, string.format("%%A%s%%A", traitName)) then
-								return false
-							end
-						end
-						return true
-					end
-				end
-			end
-			return #PotMaker.quests > 0 and #self.ingredients == 2 and matchesJournal(self.itemLink)
-		end
-	else
-		function PotMaker.Potion:MatchesQuest()
-			if #PotMaker.masterquests > 0 and self.numTraits >= 3 and self.solvent and self.solvent.level >= 50 then
-				if find(PotMaker.masterquests, self:GetMasterSearchName()) then
-					if find(PotMaker.masterquests, string.format("%%A%s%%A", self:GetMasterSearchName())) then
-						for traitName in pairs(self.traits) do
-							if not zo_plainstrfind(PotMaker.masterquests, traitName) then
-								return false
-							end
-						end
-						for traitName in pairs(self.traits) do
-							if not find(PotMaker.masterquests, string.format("%%A%s%%A", traitName)) then
-								return false
-							end
-						end
-						return true
-					end
-				end
-			end
-			return #PotMaker.quests > 0 and #self.ingredients == 2 and matchesJournal(self.itemLink)
 		end
 	end
+	return false
+end
 
-	if self.language.name == "fr" then
-		function PotMaker:ParseQuest(quest)
-			-- UTF8 of &nbsp; french has it. It is breaking ANSI string.find
-			quest = quest:gsub("\194\160", " "):gsub("\r", ""):gsub("\n", " ")
-			local article, level, type = quest:match("Fabriquer (un.*)%s(%S+)%sde Dégâts de (.+):")
-			if article then
-				quest = zo_strjoin(nil, quest, " ", zo_strformat(SI_TOOLTIP_ITEM_NAME, quest), " Poison de Ravage de ", zo_strtrim(type), " ")
-			end
-			if zo_plainstrfind(quest, "•") then
-				local parts = {zo_strsplit("•", quest)}
-				for i = 2, #parts do
-					parts[i] = zo_strformat("<<C:1>>", parts[i]:lower())
-				end
-				quest = table.concat(parts)
-			end
-			quest = string.format("%s %s", quest, zo_strformat("<<t:1>>", quest))
-			return quest
-		end
-	elseif self.language.name == "jp" then
-		---- for Japanese Translation ----
-		function PotMaker:ParseQuest(quest)
-			return quest:gsub("\r", ""):gsub("\n", " ")
-		end
-	elseif self.language.name == "zh" then
-		---- for Chinese Translation ----
-		function PotMaker:ParseQuest(quest)
-			quest = quest:gsub("精华", " 的精华")
-			return quest:gsub("\r", ""):gsub("\n", " ")
-		end
-	elseif self.language.name == "de" then
-		function PotMaker:ParseQuest(quest)
-			return quest:gsub("\194\160", " "):gsub("\r", ""):gsub("\n", " "):gsub("Schlückchen ", "Schlückchene "):gsub("Schlücke ", "Schlucke ")
-		end
-	elseif self.language.name == "es" then
-		function PotMaker:ParseQuest(quest)
-			quest = quest:gsub("\194\160", " "):gsub("\r", ""):gsub("\n", " "):gsub(" de", "")
-			return quest
-		end
-	else
-		function PotMaker:ParseQuest(quest)
-			-- UTF8 of &nbsp; french has it. It is breaking ANSI string.find
-			quest = quest:gsub("\194\160", " "):gsub("\r", ""):gsub("\n", " ")
-			quest = string.format("%s %s", quest, zo_strformat(SI_TOOLTIP_ITEM_NAME, quest))
-			return quest
-		end
-	end
-
+function PotMaker:ApplyLanguageSpecific()
 	---- for Japanese Translation ----
 	if self.language.name == "jp" then
 		local fontCommonSettings = "$(CHAT_FONT)|16|soft-shadow-thin"
@@ -2220,7 +2049,7 @@ function PotMaker.findFavorites()
 		PotMaker.favoriteFilter = showFavoriteReagents
 	end
 
-	PotMaker.quests, PotMaker.masterquests = "", ""
+	PotMaker.quests = ""
 
 	PotMaker.restartSearch()
 end
@@ -2230,40 +2059,50 @@ do
 	local poisonWordLower = zo_strformat("<<z:1>>", GetString("SI_ITEMTYPE", ITEMTYPE_POISON), 1)
 	local task = async:Create("POTION_MAKER_FIND_WRITS")
 	local function hasQuestPoisonWord()
-		for questIndex = 1, MAX_JOURNAL_QUESTS do
-			if IsValidQuestIndex(questIndex) and GetJournalQuestType(questIndex) == QUEST_TYPE_CRAFTING then
-				for stepIndex = 1, GetJournalQuestNumSteps(questIndex) do
-					local numConditions = GetJournalQuestNumConditions(questIndex, stepIndex)
-					for conditionIndex = 1, numConditions do
-						local conditionText = GetJournalQuestConditionInfo(questIndex, stepIndex, conditionIndex)
-						if conditionText ~= nil and conditionText ~= "" then
-							if zo_plainstrfind(conditionText, poisonWord) or zo_plainstrfind(conditionText, poisonWordLower) then
-								return true
-							end
+		local quest = CRAFT_ADVISOR_MANAGER.questMasterList[CRAFT_ADVISOR_MANAGER.selectedMasterListIndex]
+		if quest and quest.questType == QUEST_TYPE_CRAFTING then
+			for _, condition in pairs(quest.conditionData) do
+				if condition.craftingType == CRAFTING_TYPE_ALCHEMY then
+					local conditionText = GetJournalQuestConditionInfo(quest.questIndex, 1, condition.conditionIndex)
+					if conditionText ~= nil and conditionText ~= "" then
+						if zo_plainstrfind(conditionText, poisonWord) or zo_plainstrfind(conditionText, poisonWordLower) then
+							return true
 						end
 					end
 				end
 			end
 		end
+		return false
+	end
+	local function hasMasterWrit()
+		if not CRAFT_ADVISOR_MANAGER:HasActiveWrits() then
+			return false
+		end
+		for _, quest in pairs(CRAFT_ADVISOR_MANAGER.questMasterList) do
+			if quest.questType == QUEST_TYPE_CRAFTING then
+				for _, condition in pairs(quest.conditionData) do
+					if condition.craftingType == CRAFTING_TYPE_ALCHEMY and condition.isMasterWrit then
+						return true
+					end
+				end
+			end
+		end
+		return false
 	end
 	function PotMaker.findWrits()
-		local quests, masterquests = PotMaker.GetQuests()
-		PotMaker.onlyReagentFilter = false
-		PotMaker.potion2ReagentFilter = #masterquests < 8
-		PotMaker.questPotionsOnly = true
-		PotMaker.favoritesOnly = false
-
 		task:StopTimer():Cancel():Call(
 			function(task)
+				CRAFT_ADVISOR_MANAGER:RefreshQuestMasterList()
+			end
+		):Then(
+			function(task)
+				local quests = PotMaker.GetQuests()
+				PotMaker.onlyReagentFilter = false
+				PotMaker.potion2ReagentFilter = not hasMasterWrit()
+				PotMaker.questPotionsOnly = true
+				PotMaker.favoritesOnly = false
 				if accountSettings.autoSwitchTab then
-					if #quests == 0 and #masterquests >= 8 then
-						local descriptor = (zo_plainstrfind(masterquests, poisonWord) or zo_plainstrfind(masterquests, poisonWordLower)) and PotMaker.descriptorPoison or PotMaker.descriptorPotion
-						if PotMaker.atAlchemyStation then
-							LAS:SelectTab(descriptor)
-						else
-							ZO_MenuBar_SelectDescriptor(PotMaker.modeBar, descriptor)
-						end
-					elseif #quests > 0 then
+					if #quests > 0 then
 						local descriptor = hasQuestPoisonWord() and PotMaker.descriptorPoison or PotMaker.descriptorPotion
 						if PotMaker.atAlchemyStation then
 							LAS:SelectTab(descriptor)
@@ -2274,20 +2113,19 @@ do
 					task:Delay(
 						100,
 						function()
-							PotMaker:InternalStartSearch(quests, masterquests)
+							PotMaker:InternalStartSearch(quests)
 						end
 					)
 				else
-					PotMaker:InternalStartSearch(quests, masterquests)
+					PotMaker:InternalStartSearch(quests)
 				end
 			end
 		)
 	end
 end
 
-function PotMaker:InternalStartSearch(quests, masterquests)
+function PotMaker:InternalStartSearch(quests)
 	self.quests = #quests > 0 and quests or ""
-	self.masterquests = #masterquests > 8 and masterquests or ""
 
 	self.resultsMaxIndex = 0
 	PotionMakerOutput.title:SetText(self.language.search_results)
@@ -2295,56 +2133,17 @@ function PotMaker:InternalStartSearch(quests, masterquests)
 end
 
 function PotMaker.GetQuests()
-	local numSteps, numConditions, questIndex, _
-	local questType, backgroundText, activeStepText, stepOverrideText, stepIndex, conditionText
-	local GetJournalQuestInfo, GetJournalQuestNumSteps, GetJournalQuestConditionInfo = GetJournalQuestInfo, GetJournalQuestNumSteps, GetJournalQuestConditionInfo
 	local quests = {}
-	local masterquests = {}
-	local function ParseStepsByText(quests, questIndex, numSteps)
-		for stepIndex = 1, numSteps do
-			local numConditions = GetJournalQuestNumConditions(questIndex, stepIndex)
-			if numConditions == 0 then
-				quests[#quests + 1] = PotMaker:ParseQuest(stepOverrideText or "")
-			else
-				for conditionIndex = 1, numConditions do
-					conditionText = GetJournalQuestConditionInfo(questIndex, stepIndex, conditionIndex)
-					if conditionText ~= nil and conditionText ~= "" then
-						quests[#quests + 1] = PotMaker:ParseQuest(conditionText)
-					end
+	for _, quest in pairs(CRAFT_ADVISOR_MANAGER.questMasterList) do
+		if quest.questType == QUEST_TYPE_CRAFTING then
+			for _, condition in pairs(quest.conditionData) do
+				if condition.craftingType == CRAFTING_TYPE_ALCHEMY then
+					quests[#quests + 1] = quest
 				end
 			end
 		end
 	end
-	local function ParseStepsByCondition(quests, questIndex, numSteps)
-		for stepIndex = 1, numSteps do
-			local numConditions = GetJournalQuestNumConditions(questIndex, stepIndex)
-			if numConditions > 0 then
-				for conditionIndex = 1, numConditions do
-					quests[#quests + 1] = {questIndex, stepIndex, conditionIndex, true}
-				end
-			end
-		end
-	end
-
-	-- quest text lines
-	for questIndex = 1, MAX_JOURNAL_QUESTS do
-		if IsValidQuestIndex(questIndex) and GetJournalQuestType(questIndex) == QUEST_TYPE_CRAFTING then
-			numSteps = GetJournalQuestNumSteps(questIndex)
-			if numSteps < 2 then
-				ParseStepsByCondition(quests, questIndex, numSteps)
-			else
-				ParseStepsByText(masterquests, questIndex, numSteps)
-			end
-		end
-	end
-	if #masterquests > 0 then
-		-- Last char in text must be non-letter
-		masterquests[#masterquests + 1] = " "
-	end
-	-- combine them at once
-	masterquests = table.concat(masterquests, " ")
-
-	return quests, masterquests
+	return quests
 end
 
 function PotMaker.startSearch()
@@ -2356,7 +2155,7 @@ function PotMaker.startSearch()
 	if PotMaker.questPotionsOnly then
 		PotMaker:InternalStartSearch(PotMaker.GetQuests())
 	else
-		PotMaker:InternalStartSearch("", "")
+		PotMaker:InternalStartSearch("")
 	end
 end
 
