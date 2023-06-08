@@ -661,12 +661,12 @@ function RFT.ToggleWindow()
 	if ishidden then
 		RFT.RefreshWindow()
 	end
-	if not RFT.account.autoShowHide or not RFT.isAutoRefresh then
-		if WORLD_MAP_SCENE:IsShowing() then
-			RFT.settings.shown_world = ishidden
-		else
-			RFT.settings.shown = ishidden
-		end
+	--if not RFT.account.autoShowHide or not RFT.isAutoRefresh then
+	if WORLD_MAP_SCENE:IsShowing() then
+		RFT.settings.shown_world = ishidden
+	else
+		RFT.settings.shown = ishidden
 	end
+	--end
 	RARE_FISH_TRACKER_FRAGMENT:Refresh(500, 500)
 end
