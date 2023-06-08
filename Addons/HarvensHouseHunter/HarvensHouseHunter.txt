@@ -1,0 +1,15 @@
+; This Add-on is not created by, affiliated with or sponsored by ZeniMax
+; Media Inc. or its affiliates. The Elder Scrolls® and related logos are
+; registered trademarks or trademarks of ZeniMax Media Inc. in the United
+; States and/or other countries. All rights reserved.
+
+;Icon source: http://game-icons.net/lorc/originals/wooden-door.html
+
+## Title: Harven's House Hunter
+## APIVersion: 100030
+## DependsOn: LibHarvensAddonSettings
+## Description: This addon will display door icons on the map of every house/building/hut you have visited.
+## SavedVariables: HarvensHouseHunter_SavedVariables
+
+Lang/$(language).lua
+HarvensHouseHunter.lua
