@@ -4,7 +4,8 @@
 ; States and/or other countries. All rights reserved.
 
 ## Title: Harven' s Thieves Troves Marker
-## APIVersion: 100030
+## Version: 1.1.0
+## APIVersion: 101037 101038
 ## DependsOn: LibHarvensAddonSettings
 ## Description: This addon will mark Thieves Troves you discovered on your map.
 ## SavedVariables: HarvensThievesTrovesMarker_SavedVariables
