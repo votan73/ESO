@@ -76,6 +76,8 @@ SafeAddString(SI_VOTANSMINIMAP_SHOW_CAMERA_HEADING, "Kamera Richtung anzeigen")
 SafeAddString(SI_VOTANSMINIMAP_SHOW_CAMERA_HEADING_TOOLTIP, "Zeigt die Richtung der Kamera auf der Weltkarte und der Mini Map an.")
 SafeAddString(SI_VOTANSMINIMAP_CAMERA_HEADING_ANGLE, "Marker Winkel")
 SafeAddString(SI_VOTANSMINIMAP_CAMERA_HEADING_ANGLE_TOOLTIP, "Der Winkel der Markierungslinie.")
+SafeAddString(SI_VOTANSMINIMAP_SHOW_ON_TOP, "Im Vordergrund anzeigen")
+SafeAddString(SI_VOTANSMINIMAP_SHOW_ON_TOP_TOOLTIP, "Die MiniMap über andere Elemente legen.")
 
 SafeAddString(SI_VOTANSMINIMAP_ZONEALERTMODE_ALWAYS, "Immer")
 SafeAddString(SI_VOTANSMINIMAP_ZONEALERTMODE_MAP_HIDDEN, "Mini Map ausgeblendet")

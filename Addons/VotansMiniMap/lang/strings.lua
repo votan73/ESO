@@ -74,6 +74,8 @@ ZO_CreateStringId("SI_VOTANSMINIMAP_SHOW_CAMERA_HEADING", "Show Camera Heading")
 ZO_CreateStringId("SI_VOTANSMINIMAP_SHOW_CAMERA_HEADING_TOOLTIP", "Show camera heading on world and mini map.")
 ZO_CreateStringId("SI_VOTANSMINIMAP_CAMERA_HEADING_ANGLE", "Marker Angle")
 ZO_CreateStringId("SI_VOTANSMINIMAP_CAMERA_HEADING_ANGLE_TOOLTIP", "The angle of the marker line.")
+ZO_CreateStringId("SI_VOTANSMINIMAP_SHOW_ON_TOP", "Show On Top")
+ZO_CreateStringId("SI_VOTANSMINIMAP_SHOW_ON_TOP_TOOLTIP", "Put MiniMap in front of other elements.")
 
 ZO_CreateStringId("SI_VOTANSMINIMAP_ZONEALERTMODE_ALWAYS", "Always")
 ZO_CreateStringId("SI_VOTANSMINIMAP_ZONEALERTMODE_MAP_HIDDEN", "Mini Map Hidden")

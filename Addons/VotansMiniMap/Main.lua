@@ -52,36 +52,6 @@ function addon:SetCurrentZoom(zoom)
 end
 
 function addon:InitTweaks()
-	local WaitForGPS = function(task)
-	end
-
-	local function GetLibGPS()
-		em:UnregisterForEvent("VOTAN_MINI_MAP_GPS", EVENT_PLAYER_ACTIVATED)
-		local gps = LibGPS3 or LibGPS2
-		if not gps or not gps.IsMeasuring then
-			return
-		end
-		local taskToResumeFromWait = {}
-		-- Come back here as long as measuring
-		local function WaitForLibGPS(measuring)
-			if not measuring then
-				for i = #taskToResumeFromWait, 1, -1 do
-					taskToResumeFromWait[i]:Resume()
-					taskToResumeFromWait[i] = nil
-				end
-			end
-		end
-		CALLBACK_MANAGER:RegisterCallback(gps.LIB_EVENT_STATE_CHANGED, WaitForLibGPS)
-
-		WaitForGPS = function(task)
-			if gps:IsMeasuring() then
-				task:Suspend()
-				taskToResumeFromWait[#taskToResumeFromWait + 1] = task
-			end
-		end
-	end
-	em:RegisterForEvent("VOTAN_MINI_MAP_GPS", EVENT_PLAYER_ACTIVATED, GetLibGPS)
-
 	do
 		local task = async:Create("VOTAN_RefreshAllPOIs")
 
@@ -137,7 +107,7 @@ function addon:InitTweaks()
 		end
 		function ZO_WorldMap_RefreshAllPOIs()
 			createTag = ZO_MapPin.CreatePOIPinTag
-			task:Cancel():StopTimer():Call(WaitForGPS):Then(RemovePins)
+			task:Cancel():StopTimer():Call(RemovePins)
 		end
 	end
 
@@ -187,11 +157,11 @@ function addon:InitTweaks()
 				return
 			end
 			createTag, nodeInfo, g_fastTravelNodeIndex = ZO_MapPin.CreateTravelNetworkPinTag, GetFastTravelNodeInfo, ZO_Map_GetFastTravelNode()
-			task:For(1, GetNumFastTravelNodes()):Do(DrawPin):Call(WaitForGPS)
+			task:For(1, GetNumFastTravelNodes()):Do(DrawPin)
 		end
 		function ZO_WorldMap_RefreshWayshrines()
 			running = true
-			task:Cancel():Call(WaitForGPS):Then(RemovePins):Then(GoPendingWayshrine)
+			task:Cancel():Call(RemovePins):Then(GoPendingWayshrine)
 		end
 		function ZO_WorldMap_PanToWayshrine(nodeIndex)
 			if running then
@@ -234,7 +204,7 @@ function addon:InitTweaks()
 		end
 		function ZO_MapLocationPins_Manager:RefreshLocations()
 			locations = self
-			task:Cancel():Call(WaitForGPS):Then(start)
+			task:Cancel():Call(start)
 		end
 	end
 
@@ -242,7 +212,7 @@ function addon:InitTweaks()
 		local task = async:Create("VOTAN_" .. identifier)
 		local orgMethod = _G[methodName]
 		local function runRefresh(task)
-			task:Call(WaitForGPS):Then(orgMethod)
+			task:Call(orgMethod)
 		end
 		_G[methodName] = function()
 			task:Cancel():Delay(GetScene():IsShowing() and 0 or (delay * 7), runRefresh)
@@ -308,7 +278,7 @@ function addon:InitTweaks()
 					refreshPinType[pinTypeId] = pinData
 				end
 			end
-			task:Cancel():For(pairs(refreshPinType)):Do(removePinType):Then(WaitForGPS):Then(startDrawPins)
+			task:Cancel():For(pairs(refreshPinType)):Do(removePinType):Then(startDrawPins)
 		end
 	end
 
@@ -355,7 +325,7 @@ function addon:InitTweaks()
 					return orgUpdatePinsForMapSizeChange(self)
 				end
 
-				task:Call(WaitForGPS):Then(resizePins):Delay(50)
+				task:Call(resizePins):Delay(50)
 			end
 		end
 	end
@@ -1441,8 +1411,7 @@ do
 				if IsInGamepadPreferredMode() then
 					NoGamepad(ApplyModeStyle)
 				end
-				ZO_WorldMap:SetDrawLayer(DL_BACKGROUND)
-				ZO_WorldMap:SetDrawLevel(0)
+				self:UpdateDrawLevel()
 
 				local style = self:GetStyleByName(self.account.frameStyle)
 				if style and style.data.setup then
@@ -1456,9 +1425,9 @@ do
 				end
 				ApplyModeStyle()
 				ZO_WorldMap:SetMouseEnabled(true)
+				ZO_WorldMap:SetDrawLayer(DL_BACKGROUND)
+				ZO_WorldMap:SetDrawLevel(10000)
 			end
-			ZO_WorldMap:SetDrawLayer(DL_BACKGROUND)
-			ZO_WorldMap:SetDrawLevel(10000)
 			control:SetCenterColor(0, 0, 0, 0)
 			control:SetEdgeColor(0, 0, 0, 0)
 			control:SetCenterTexture("")
@@ -1479,6 +1448,10 @@ do
 			ZO_CompassFrameCenter:SetHidden(hidden)
 			ZO_CompassFrameRight:SetHidden(hidden)
 		end
+	end
+	function addon:UpdateDrawLevel()
+		ZO_WorldMap:SetDrawLayer(self.account.showOnTop and DL_CONTROLS or DL_BACKGROUND)
+		ZO_WorldMap:SetDrawLevel(self.account.showOnTop and 1000 or 0)
 	end
 end
 
@@ -1512,6 +1485,7 @@ function addon:Initialize()
 		debug = false,
 		asyncUpdate = false,
 		enableCompass = self.compassMode.Untouched,
+		showOnTop = false,
 		titleAtTop = true,
 		unitPinScaleLimit = 0.8,
 		showHUD = true,

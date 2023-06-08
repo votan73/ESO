@@ -685,6 +685,21 @@ function addon:InitSettings()
 				end
 			}
 		end
+
+		settings:AddSetting {
+			type = LibHarvensAddonSettings.ST_CHECKBOX,
+			label = GetString(SI_VOTANSMINIMAP_SHOW_ON_TOP),
+			tooltip = GetString(SI_VOTANSMINIMAP_SHOW_ON_TOP_TOOLTIP),
+			default = self.accountDefaults.showOnTop,
+			getFunction = function()
+				return self.account.showOnTop
+			end,
+			setFunction = function(value)
+				self.account.showOnTop = value
+				self:UpdateDrawLevel()
+			end
+		}
+
 		settings:AddSetting {
 			type = LibHarvensAddonSettings.ST_SECTION,
 			label = GetString(SI_VOTANSMINIMAP_FRAMEDROP_DEBUG)
