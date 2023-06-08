@@ -3,7 +3,7 @@
 ; registered trademarks or trademarks of ZeniMax Media Inc. in the United
 ; States and/or other countries. All rights reserved.
 
-## Title: Harven' s Thieves Troves Marker
+## Title: Harven's Thieves Troves Marker
 ## Version: 1.1.0
 ## APIVersion: 101037 101038
 ## DependsOn: LibHarvensAddonSettings
