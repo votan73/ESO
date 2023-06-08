@@ -6,7 +6,8 @@
 ;Icon source: http://game-icons.net/lorc/originals/wooden-door.html
 
 ## Title: Harven's House Hunter
-## APIVersion: 100030
+## Version: 1.12.0
+## APIVersion: 101037 101038
 ## DependsOn: LibHarvensAddonSettings
 ## Description: This addon will display door icons on the map of every house/building/hut you have visited.
 ## SavedVariables: HarvensHouseHunter_SavedVariables

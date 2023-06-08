@@ -222,8 +222,8 @@ function HarvensHouseHunter:Initialize(eventType, addonName)
 	self:SetupMapFilter()
 	self:SetupOptions()
 	
-	self.fishingStartInteraction = FISHING_MANAGER.StartInteraction
-	FISHING_MANAGER.StartInteraction = function(...) --this is called when interacting with things
+	self.fishingStartInteraction = INTERACTIVE_WHEEL_MANAGER.StartInteraction
+	INTERACTIVE_WHEEL_MANAGER.StartInteraction = function(...) --this is called when interacting with things
 		return HarvensHouseHunter:StartInteraction(...)
 	end
 	
