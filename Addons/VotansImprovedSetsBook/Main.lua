@@ -397,7 +397,7 @@ local function initLocations(zoneIdToLocation)
 	-- Beginners areas
 	categoryData = ITEM_SET_COLLECTIONS_DATA_MANAGER:GetItemSetCollectionCategoryData(26)
 	assert(categoryData)
-	location = categoryData:GetName()
+	location = categoryData:GetFormattedName()
 	zoneIdToLocation[281] = location
 	zoneIdToLocation[534] = location
 	zoneIdToLocation[537] = location
@@ -405,8 +405,16 @@ local function initLocations(zoneIdToLocation)
 	-- Battlegrounds
 	categoryData = ITEM_SET_COLLECTIONS_DATA_MANAGER:GetItemSetCollectionCategoryData(85)
 	assert(categoryData)
-	location = categoryData:GetName()
+	location = categoryData:GetFormattedName()
 	-- ToDo: zone ids
+
+	-- Apocrypha
+	categoryData = ITEM_SET_COLLECTIONS_DATA_MANAGER:GetItemSetCollectionCategoryData(107)
+	assert(categoryData)
+	location = categoryData:GetFormattedName()
+	zoneIdToLocation[1413] = location
+	zoneIdToLocation[1414] = location
+
 end
 
 function addon:InitializeKeybindStripDescriptors()
