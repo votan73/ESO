@@ -6,8 +6,9 @@
 
 ## Title: Harven's Potions Alert
 ## Description: Selects quick slot based on the player's current health, magicka and stamina value.
-## Version: 2.0.0
-## APIVersion: 101033 101034
+## Version: 2.1.0
+## Author: Harven & votan
+## APIVersion: 101038 101039
 ## SavedVariables: HarvensPotionsAlert_SavedVariables
 ## Description: This addon will show a reminder to use a potion when one of your attibutes drop below given value.
 ## DependsOn: LibHarvensAddonSettings>=10705

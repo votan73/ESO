@@ -42,30 +42,16 @@ local function CreatePotionTooltip(control, slotId)
 	end
 end
 
-if GetAPIVersion() < 101034 then
-	function HarvensPotionsAlert.SetupSlot(slot)
-		local buttonText
-		if GetSlotType(slot.id) ~= ACTION_TYPE_NOTHING and slot.id ~= 0 then
-			local slotName = GetSlotName(slot.id)
-			local text = zo_strformat(SI_TOOLTIP_ITEM_NAME, slotName)
-			buttonText = text
-		else
-			buttonText = GetString(SI_GAMEPAD_SELECT_OPTION)
-		end
-		return buttonText or ""
+function HarvensPotionsAlert.SetupSlot(slot)
+	local buttonText
+	if GetSlotType(slot.id, HOTBAR_CATEGORY_QUICKSLOT_WHEEL) ~= ACTION_TYPE_NOTHING and slot.id ~= 0 then
+		local slotName = GetSlotName(slot.id, HOTBAR_CATEGORY_QUICKSLOT_WHEEL)
+		local text = zo_strformat(SI_TOOLTIP_ITEM_NAME, slotName)
+		buttonText = text
+	else
+		buttonText = GetString(SI_GAMEPAD_SELECT_OPTION)
 	end
-else
-	function HarvensPotionsAlert.SetupSlot(slot)
-		local buttonText
-		if GetSlotType(slot.id, HOTBAR_CATEGORY_QUICKSLOT_WHEEL) ~= ACTION_TYPE_NOTHING and slot.id ~= 0 then
-			local slotName = GetSlotName(slot.id, HOTBAR_CATEGORY_QUICKSLOT_WHEEL)
-			local text = zo_strformat(SI_TOOLTIP_ITEM_NAME, slotName)
-			buttonText = text
-		else
-			buttonText = GetString(SI_GAMEPAD_SELECT_OPTION)
-		end
-		return buttonText or ""
-	end
+	return buttonText or ""
 end
 
 function HarvensPotionsAlert.SetupTooltip(settingsControl, slot, slotId)
@@ -75,29 +61,59 @@ function HarvensPotionsAlert.SetupTooltip(settingsControl, slot, slotId)
 	end
 end
 
-if GetAPIVersion() < 101034 then
-	function HarvensPotionsAlert.SaveSlot(control, slotId, slot)
-		local slotName = GetSlotName(slotId)
-		local text
-		if #slotName > 0 then
-			text = zo_strformat(SI_TOOLTIP_ITEM_NAME, slotName)
-		else
-			text = GetString(SI_GAMEPAD_SELECT_OPTION)
-		end
-		control:SetText(text)
+function HarvensPotionsAlert.SaveSlot(control, slotId, slot)
+	local slotName = GetSlotName(slotId, HOTBAR_CATEGORY_QUICKSLOT_WHEEL)
+	local text
+	if #slotName > 0 then
+		text = zo_strformat(SI_TOOLTIP_ITEM_NAME, slotName)
+	else
+		text = GetString(SI_GAMEPAD_SELECT_OPTION)
 	end
-else
-	function HarvensPotionsAlert.SaveSlot(control, slotId, slot)
-		local slotName = GetSlotName(slotId, HOTBAR_CATEGORY_QUICKSLOT_WHEEL)
-		local text
-		if #slotName > 0 then
-			text = zo_strformat(SI_TOOLTIP_ITEM_NAME, slotName)
-		else
-			text = GetString(SI_GAMEPAD_SELECT_OPTION)
+	control:SetText(text)
+end
+
+------------------------------------------------------------------------
+local PotionWheel = ZO_AssignableUtilityWheel_Keyboard:Subclass()
+function PotionWheel:RegisterForEvents()
+	ZO_AssignableUtilityWheel_Shared.RegisterForEvents(self)
+end
+
+function PotionWheel:PerformSlotLayout()
+	local width, height = self.control:GetDimensions()
+	local scale = self.control:GetScale()
+	local halfWidth, halfHeight = width * scale * 0.5, height * scale * 0.5
+	local numSlots = self.data.numSlots
+	local actionBarOffset = self.data.startSlotIndex or 0
+	local arcAnglePerSlotRadians, startingOffsetAngleRadians = self:GetArcAnglePerSlotAndStartingOffsetAngle()
+
+	for i = 1, numSlots do
+		local control = self.slots[i + actionBarOffset]
+		local centerAngle = startingOffsetAngleRadians + (i - 1) * arcAnglePerSlotRadians
+		local x = math.sin(centerAngle)
+		local y = math.cos(centerAngle)
+
+		if math.abs(x) < 0.01 then
+			x = 0
 		end
-		control:SetText(text)
+
+		if control.nameLabel then
+			control.nameLabel:ClearAnchors()
+			if x > 0 then
+				control.nameLabel:SetAnchor(LEFT, control.icon, RIGHT, 15, 0)
+			elseif x < 0 then
+				control.nameLabel:SetAnchor(RIGHT, control.icon, LEFT, -15, 0)
+			elseif y > 0 then
+				control.nameLabel:SetAnchor(TOP, control.icon, BOTTOM, 0, 0)
+			else
+				control.nameLabel:SetAnchor(BOTTOM, control.icon, TOP, 0, -5)
+			end
+		end
+
+		control:SetAnchor(CENTER, nil, CENTER, x * halfWidth, y * halfHeight)
+		control:SetHidden(false)
 	end
 end
+------------------------------------------------------------------------
 
 -- Create on demand. Once configured, the dialog is not used frequently.
 function HarvensPotionsAlert:CreatePotionDialog()
@@ -110,18 +126,14 @@ function HarvensPotionsAlert:CreatePotionDialog()
 	self.PotionDialog.Accept = WINDOW_MANAGER:CreateControlFromVirtual("HarvensPotionsAlertRadialButton1", self.PotionDialog, "ZO_DialogButton")
 	self.PotionDialog.Reset = WINDOW_MANAGER:CreateControlFromVirtual("HarvensPotionsAlertRadialButton2", self.PotionDialog, "ZO_DialogButton")
 	self.PotionDialog.Cancel = WINDOW_MANAGER:CreateControlFromVirtual("HarvensPotionsAlertRadialButton3", self.PotionDialog, "ZO_DialogButton")
-	if GetAPIVersion() < 101034 then
-		self.PotionDialog.Radial = ZO_QuickslotRadialManager:New(self.PotionDialog, "ZO_SelectableItemRadialMenuEntryTemplate", nil, "SelectableItemRadialMenuEntryAnimation")
-	else
-		self.PotionDialog.wheel = WINDOW_MANAGER:CreateControlFromVirtual("$(parent)QuickSlotCircle", self.PotionDialog, "ZO_AssignableUtilityWheel_Keyboard_Template")
-		self.PotionDialog.wheel:SetAnchor(CENTER, nil, CENTER)
-		local wheelData = {
-			hotbarCategories = {HOTBAR_CATEGORY_QUICKSLOT_WHEEL},
-			numSlots = ACTION_BAR_UTILITY_BAR_SIZE,
-			showCategoryLabel = false
-		}
-		self.PotionDialog.Radial = ZO_AssignableUtilityWheel_Keyboard:New(self.PotionDialog.wheel, wheelData)
-	end
+	self.PotionDialog.wheel = WINDOW_MANAGER:CreateControlFromVirtual("$(parent)QuickSlotCircle", self.PotionDialog, "ZO_AssignableUtilityWheel_Keyboard_Template")
+	self.PotionDialog.wheel:SetAnchor(CENTER, nil, CENTER)
+	local wheelData = {
+		hotbarCategories = {HOTBAR_CATEGORY_QUICKSLOT_WHEEL},
+		numSlots = ACTION_BAR_UTILITY_BAR_SIZE,
+		showCategoryLabel = false
+	}
+	self.PotionDialog.Radial = PotionWheel:New(self.PotionDialog.wheel, wheelData)
 
 	self.PotionDialog:SetResizeToFitDescendents(false)
 	self.PotionDialog.Accept:SetAnchor(CENTER, self.PotionDialog, CENTER, 0, 40)
@@ -145,91 +157,36 @@ function HarvensPotionsAlert:CreatePotionDialog()
 	)
 
 	local emptyQuickslot = GetString(SI_QUICKSLOTS_EMPTY)
-	if GetAPIVersion() < 101034 then
-		-- self.PotionDialog.Radial.menu:SetOnClearCallback(
-		-- 	function()
-		-- 	end
-		-- )
-		self.PotionDialog:SetHandler(
-			"OnEffectivelyShown",
-			function(control)
-				LockCameraRotation(true)
-				RETICLE:RequestHidden(true)
-				HideMouse(false)
-
-				for i = ACTION_BAR_FIRST_UTILITY_BAR_SLOT + 1, ACTION_BAR_FIRST_UTILITY_BAR_SLOT + ACTION_BAR_UTILITY_BAR_SIZE do
-					local slotType = GetSlotType(i)
-					if slotType ~= ACTION_TYPE_NOTHING then
-						local slotName = zo_strformat(SI_TOOLTIP_ITEM_NAME, GetSlotName(i))
-						local slotTexture = GetSlotTexture(i) or ""
-						local slotItemQuality = GetSlotItemQuality(i)
-						local slotData
-						if slotItemQuality ~= nil then
-							local r, g, b = GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, slotItemQuality)
-							local color = {r = r, g = g, b = b}
-							slotData = {slotName, color}
-						else
-							slotData = slotName
-						end
-
-						self.PotionDialog.Radial.menu:AddEntry(
-							slotData,
-							slotTexture,
-							slotTexture,
-							function()
-								self.PotionDialog.selectedSlot = i
-							end,
-							i
-						)
-					else
-						self.PotionDialog.Radial.menu:AddEntry(
-							"",
-							emptyQuickslot,
-							emptyQuickslot,
-							function()
-								self.PotionDialog.selectedSlot = 0
-							end,
-							i
-						)
+	self.PotionDialog:SetHandler(
+		"OnEffectivelyShown",
+		function(control)
+			for i = 1, ACTION_BAR_UTILITY_BAR_SIZE do
+				local slotType = GetSlotType(i, HOTBAR_CATEGORY_QUICKSLOT_WHEEL)
+				local slot = control.Radial.slots[i]
+				if slotType ~= ACTION_TYPE_NOTHING then
+					local slotName = zo_strformat(SI_TOOLTIP_ITEM_NAME, GetSlotName(i, HOTBAR_CATEGORY_QUICKSLOT_WHEEL))
+					local slotTexture = GetSlotTexture(i, HOTBAR_CATEGORY_QUICKSLOT_WHEEL) or ""
+					ZO_ActionSlot_SetupSlot(slot.icon, slot.button, slotTexture)
+					slot.nameLabel:SetText(slotName)
+					local function select()
+						self.PotionDialog.selectedSlot = i
 					end
-				end
-
-				self.PotionDialog.Radial.menu:Show()
-				self.PotionDialog.Radial.isInteracting = true
-			end
-		)
-	else
-		self.PotionDialog:SetHandler(
-			"OnEffectivelyShown",
-			function(control)
-				for i = 1, ACTION_BAR_UTILITY_BAR_SIZE do
-					local slotType = GetSlotType(i, HOTBAR_CATEGORY_QUICKSLOT_WHEEL)
-					local slot = control.Radial.slots[i]
-					if slotType ~= ACTION_TYPE_NOTHING then
-						local slotName = zo_strformat(SI_TOOLTIP_ITEM_NAME, GetSlotName(i, HOTBAR_CATEGORY_QUICKSLOT_WHEEL))
-						local slotTexture = GetSlotTexture(i, HOTBAR_CATEGORY_QUICKSLOT_WHEEL) or ""
-						ZO_ActionSlot_SetupSlot(slot.icon, slot.button, slotTexture)
-						slot.nameLabel:SetText(slotName)
-						local function select()
-							self.PotionDialog.selectedSlot = i
-						end
-						slot.button:SetHandler("OnMouseEnter", select, "PotionDialog")
-						slot.button:SetHandler("OnClicked", select)
-					else
-						ZO_ActionSlot_SetupSlot(slot.icon, slot.button, ZO_UTILITY_SLOT_EMPTY_TEXTURE)
-						slot.nameLabel:SetText(ZO_UTILITY_SLOT_EMPTY_STRING)
-						local function select()
-							self.PotionDialog.selectedSlot = 0
-						end
-						slot.button:SetHandler("OnMouseEnter", select, "PotionDialog")
-						slot.button:SetHandler("OnClicked", select)
+					slot.button:SetHandler("OnMouseEnter", select, "PotionDialog")
+					slot.button:SetHandler("OnClicked", select)
+				else
+					ZO_ActionSlot_SetupSlot(slot.icon, slot.button, ZO_UTILITY_SLOT_EMPTY_TEXTURE)
+					slot.nameLabel:SetText(ZO_UTILITY_SLOT_EMPTY_STRING)
+					local function select()
+						self.PotionDialog.selectedSlot = 0
 					end
-					slot.button:SetHandler("OnMouseDoubleClick", functio)
+					slot.button:SetHandler("OnMouseEnter", select, "PotionDialog")
+					slot.button:SetHandler("OnClicked", select)
 				end
-				control.Radial:PerformSlotLayout()
+				slot.button:SetHandler("OnMouseDoubleClick", functio)
 			end
-		)
-	end
+			control.Radial:PerformSlotLayout()
+		end
+	)
 
 	self.PotionDialog.ShowDialog = function(dialogTitle, setSlot)
 		self.PotionDialog.info.title.text = dialogTitle
@@ -237,21 +194,11 @@ function HarvensPotionsAlert:CreatePotionDialog()
 		PushActionLayerByName(GetString(SI_KEYBINDINGS_LAYER_DIALOG))
 		ZO_Dialogs_ShowDialog(HarvensPotionsAlert.PotionDialogName)
 	end
-	if GetAPIVersion() < 101034 then
-		self.PotionDialog.Close = function()
-			self.PotionDialog.Radial:StopInteraction()
-			RemoveActionLayerByName(GetString(SI_KEYBINDINGS_LAYER_DIALOG))
-			LockCameraRotation(false)
-			RETICLE:RequestHidden(false)
-			ShowMouse()
-		end
-	else
-		self.PotionDialog.Close = function()
-			RemoveActionLayerByName(GetString(SI_KEYBINDINGS_LAYER_DIALOG))
-			LockCameraRotation(false)
-			RETICLE:RequestHidden(false)
-			ShowMouse()
-		end
+	self.PotionDialog.Close = function()
+		RemoveActionLayerByName(GetString(SI_KEYBINDINGS_LAYER_DIALOG))
+		LockCameraRotation(false)
+		RETICLE:RequestHidden(false)
+		ShowMouse()
 	end
 
 	local info = {
@@ -686,27 +633,15 @@ function HarvensPotionsAlert:Initialize()
 	HarvensPotionsAlert:SetupOptions()
 	EVENT_MANAGER:RegisterForEvent("HarvensPotionsAlertCombatState", EVENT_PLAYER_COMBAT_STATE, HarvensPotionsAlert.CombatState)
 	EVENT_MANAGER:RegisterForEvent("HarvensPotionsAlertPowerUpdate", EVENT_POWER_UPDATE, HarvensPotionsAlert.PowerUpdate)
-	if GetAPIVersion() < 101034 then
-		EVENT_MANAGER:RegisterForEvent(
-			"HarvensPotionsAlertQuickSlotUpdate",
-			EVENT_ACTIVE_QUICKSLOT_CHANGED,
-			function(eventId, slotId)
-				if (slotId > ACTION_BAR_FIRST_UTILITY_BAR_SLOT and slotId <= ACTION_BAR_FIRST_UTILITY_BAR_SLOT + ACTION_BAR_UTILITY_BAR_SIZE) and not HarvensPotionsAlert.isAutoSwitch then
-					HarvensPotionsAlert.sv.slots[1000].id = slotId
-				end
+	EVENT_MANAGER:RegisterForEvent(
+		"HarvensPotionsAlertQuickSlotUpdate",
+		EVENT_ACTIVE_QUICKSLOT_CHANGED,
+		function(eventId, slotId)
+			if (slotId > 0 and slotId <= ACTION_BAR_UTILITY_BAR_SIZE) and not HarvensPotionsAlert.isAutoSwitch then
+				HarvensPotionsAlert.sv.slots[1000].id = slotId
 			end
-		)
-	else
-		EVENT_MANAGER:RegisterForEvent(
-			"HarvensPotionsAlertQuickSlotUpdate",
-			EVENT_ACTIVE_QUICKSLOT_CHANGED,
-			function(eventId, slotId)
-				if (slotId > 0 and slotId <= ACTION_BAR_UTILITY_BAR_SIZE) and not HarvensPotionsAlert.isAutoSwitch then
-					HarvensPotionsAlert.sv.slots[1000].id = slotId
-				end
-			end
-		)
-	end
+		end
+	)
 end
 
 function HarvensPotionsAlert.AddOnLoaded(eventType, addonName)
