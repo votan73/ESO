@@ -326,7 +326,7 @@ function HarvensPotionsAlert:SetupOptions()
 	if not settings then
 		return
 	end
-	settings.version = "2.0.0"
+	settings.version = "2.1.1"
 
 	local attrNames = {[POWERTYPE_HEALTH] = 1, [POWERTYPE_MAGICKA] = 2, [POWERTYPE_STAMINA] = 3}
 	local lastControl
@@ -447,7 +447,7 @@ function HarvensPotionsAlert.Update()
 	for p, k in pairs(HarvensPotionsAlert.priority) do
 		v = HarvensPotionsAlert.sv.slots[k]
 		if v.value < v.threshold and v.threshold > 0 then
-			if (v.id ~= 0 and GetSlotItemCount(v.id) ~= 0) then
+			if (v.id ~= 0 and GetSlotItemCount(v.id, HOTBAR_CATEGORY_QUICKSLOT_WHEEL) ~= 0) then
 				powerType = k
 				break
 			end
@@ -456,12 +456,12 @@ function HarvensPotionsAlert.Update()
 
 	local slot = HarvensPotionsAlert.sv.slots[powerType]
 	local slotId = slot.id
-	if powerType ~= 1000 and GetSlotItemCount(slotId) == 0 then
+	if powerType ~= 1000 and GetSlotItemCount(slotId, HOTBAR_CATEGORY_QUICKSLOT_WHEEL) == 0 then
 		return
 	end
 
 	local minRemain
-	local remain, duration, global = GetSlotCooldownInfo(slotId)
+	local remain, duration = GetSlotCooldownInfo(slotId, HOTBAR_CATEGORY_QUICKSLOT_WHEEL)
 	minRemain = remain
 	if minRemain > 0 then
 		zo_callLater(HarvensPotionsAlert.Update, minRemain + 10)
@@ -472,7 +472,7 @@ function HarvensPotionsAlert.Update()
 	if GetCurrentQuickslot() ~= slotId then
 		HarvensPotionsAlert.isAutoSwitch = true
 		SetCurrentQuickslot(slotId)
-		HarvensPotionsAlertTopLevelIcon:SetTexture(GetSlotTexture(slotId))
+		HarvensPotionsAlertTopLevelIcon:SetTexture(GetSlotTexture(slotId, HOTBAR_CATEGORY_QUICKSLOT_WHEEL))
 	end
 
 	if powerType < 1000 then
@@ -499,7 +499,7 @@ end
 
 function HarvensPotionsAlert.CheckCooldown()
 	local slotId = GetCurrentQuickslot()
-	local remain, duration, global = GetSlotCooldownInfo(slotId)
+	local remain, duration, isGlobal = GetSlotCooldownInfo(slotId, HOTBAR_CATEGORY_QUICKSLOT_WHEEL)
 	if HarvensPotionsAlert.prevRemain > 0 and not HarvensPotionsAlert.prevGlobal and remain == 0 then
 		HarvensPotionsAlertCooldownAlertLabel:SetText("|t" .. HarvensPotionsAlert.sv.cooldownAlertIconSize .. ":" .. HarvensPotionsAlert.sv.cooldownAlertIconSize .. ":" .. GetSlotTexture(slotId) .. "|t is |c00ff00Ready|r!")
 		HarvensPotionsAlertCooldownAlert:SetHidden(false)
@@ -507,7 +507,7 @@ function HarvensPotionsAlert.CheckCooldown()
 		HarvensPotionsAlert.cooldownFadeTimeline:PlayFromStart()
 	end
 	HarvensPotionsAlert.prevRemain = remain
-	HarvensPotionsAlert.prevGlobal = global
+	HarvensPotionsAlert.prevGlobal = isGlobal
 end
 
 function HarvensPotionsAlert.CombatState(eventType, inCombat)
@@ -517,7 +517,7 @@ function HarvensPotionsAlert.CombatState(eventType, inCombat)
 	-- give animation a final kick
 	end
 	if inCombat and HarvensPotionsAlert.sv.cooldownAlert then
-		HarvensPotionsAlert.prevRemain, _, HarvensPotionsAlert.prevGlobal = GetSlotCooldownInfo(GetCurrentQuickslot())
+		HarvensPotionsAlert.prevRemain, _, HarvensPotionsAlert.prevGlobal = GetSlotCooldownInfo(GetCurrentQuickslot(), HOTBAR_CATEGORY_QUICKSLOT_WHEEL)
 		EVENT_MANAGER:RegisterForUpdate("HarvensPotionsAlertCooldown", 100, HarvensPotionsAlert.CheckCooldown)
 	else
 		EVENT_MANAGER:UnregisterForUpdate("HarvensPotionsAlertCooldown")
@@ -525,7 +525,7 @@ function HarvensPotionsAlert.CombatState(eventType, inCombat)
 end
 
 function HarvensPotionsAlert.TestCooldown()
-	HarvensPotionsAlert.prevRemain = GetSlotCooldownInfo(GetCurrentQuickslot())
+	HarvensPotionsAlert.prevRemain = GetSlotCooldownInfo(GetCurrentQuickslot(), HOTBAR_CATEGORY_QUICKSLOT_WHEEL)
 	EVENT_MANAGER:RegisterForUpdate("HarvensPotionsAlertCooldown", 100, HarvensPotionsAlert.CheckCooldown)
 end
 

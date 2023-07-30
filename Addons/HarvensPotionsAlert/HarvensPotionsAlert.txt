@@ -6,7 +6,7 @@
 
 ## Title: Harven's Potions Alert
 ## Description: Selects quick slot based on the player's current health, magicka and stamina value.
-## Version: 2.1.0
+## Version: 2.1.1
 ## Author: Harven & votan
 ## APIVersion: 101038 101039
 ## SavedVariables: HarvensPotionsAlert_SavedVariables
