@@ -8,3 +8,4 @@ SafeAddString(SI_BINDING_NAME_WAYPOINTIT_TOGGLE_SORT, "Sort. umst.")
 SafeAddString(SI_BINDING_NAME_WAYPOINTIT_ADD_FOLLOW, "Folgen")
 
 SafeAddString(SI_WAYPOINTIT_WAYPOINT, "Wegpunkt")
+SafeAddString(WAYPOINTIT_SETTING_CHANGED_TO, "[Waypoint]Einstellung %q geändert zu %s")

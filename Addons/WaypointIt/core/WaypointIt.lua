@@ -6,7 +6,7 @@ WaypointIt = {}
 
 local WaypointIt = WaypointIt
 local ADDON_NAME = "WaypointIt"
-local CODE_VERSION = "1.14.6"
+local CODE_VERSION = "1.14.7"
 -- Holds the requested taskID
 local CURRENT_TASK
 local ROW_TYPE_ID = 1
@@ -79,6 +79,14 @@ local function dw(msg)
 	self:FormatAndAddChatMessage(event, CHAT_CHANNEL_MONSTER_SAY, ADDON_NAME, msg, false, "")
 end
 
+local function isAccessibilitySettingEnabled(settingId)
+	return GetSetting_Bool(SETTING_TYPE_ACCESSIBILITY, settingId)
+end
+
+local function isAccessibilityModeEnabled()
+	return isAccessibilitySettingEnabled(ACCESSIBILITY_SETTING_ACCESSIBILITY_MODE)
+end
+
 local function addChatMessageForScreenReader(soundToPlay, chatText)
 	if chatText ~= nil and chatText ~= "" then
 		if soundToPlay ~= nil then
@@ -88,6 +96,13 @@ local function addChatMessageForScreenReader(soundToPlay, chatText)
 		end
 		d(chatText)
 	end
+end
+
+function WaypointIt:ChatNarrationOutput(textToNarrate, soundToPlay)
+	--Is the Chat narration enabled?
+	if not isAccessibilityModeEnabled() or not isAccessibilitySettingEnabled(ACCESSIBILITY_SETTING_TEXT_CHAT_NARRATION) then return end
+	soundToPlay = soundToPlay or SOUNDS.EDIT_CLICK
+	addChatMessageForScreenReader(soundToPlay, textToNarrate)
 end
 
 function WaypointIt:GetDistanceToLocalCoords(locX, locY, playerOffsetX, playerOffsetY)
@@ -1084,6 +1099,7 @@ function WaypointIt:Initialize()
 	ZO_CreateStringId("SI_BINDING_NAME_WAYPOINTIT_TOGGLE_DEBUGWIN", self.color.darkOrange .. "Toggle Debug Window|r " .. self.color.magenta .. "- Set a hotkey to toggle the debug window.")
 	ZO_CreateStringId("SI_BINDING_NAME_WAYPOINTIT_AUTOMARK_NEAREST_QUEST", self.color.darkOrange .. "Mark Closest Quest|r " .. self.color.magenta .. "- Set a hotkey to set a waypoint for the closest quest.")
 	ZO_CreateStringId("SI_BINDING_NAME_WAYPOINTIT_AUTOMARK_FOLLOW_NEXT", self.color.darkOrange .. "Follow Next Custom Pin|r " .. self.color.magenta .. "- Set a hotkey to set a waypoint for the next custom pin in the follow list.")
+	ZO_CreateStringId("SI_BINDING_NAME_WAYPOINTIT_TOGGLE_SETTING_NEXT_QUEST", self.color.darkOrange .. "Toggle next quest setting|r " .. self.color.magenta .. "- Set a hotkey to toggle the setting \'Automark Next Quest Waypoint\'.")
 	-----------------------------------------------------
 
 	-----------------------------------------------------

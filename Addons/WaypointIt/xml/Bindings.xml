@@ -16,6 +16,11 @@
           if not WAYPOINTIT:TryFollowNextCustomPin() then PlaySound(SOUNDS.NEGATIVE_CLICK) end
         </Down>
       </Action>
+      <Action name="WAYPOINTIT_TOGGLE_SETTING_NEXT_QUEST">
+        <Down>
+          WAYPOINTIT:ToggleSetting("QUEST_AUTOMARK_NEXT_WAYPOINT")
+        </Down>
+      </Action>
     </Category>
   </Layer>
   <Layer name="SI_KEYBINDINGS_CATEGORY_WAYPOINTIT">

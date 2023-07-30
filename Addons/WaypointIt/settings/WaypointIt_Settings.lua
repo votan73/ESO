@@ -5,6 +5,13 @@ local colorYellow = "|cFFFF00" 	-- yellow
 local colorRed = "|cFF0000" 	-- Red
 local colorDrkOrange = "|cFFA500"	-- Dark Orange
 
+local questNextMarkPossibilities =  { "Off", "Current Quest", "Closest Quest" }
+
+local toggleSettingsData = {
+	["QUEST_AUTOMARK_NEXT_WAYPOINT"] = questNextMarkPossibilities,
+}
+
+
 do
 	local style = {
 		["Dot 1"] = "WaypointIt/Textures/ReticleArrow_Dot1.dds",
@@ -20,6 +27,25 @@ do
 		local texture = style[self.sv.ARROW_STYLE] or "WaypointIt/Textures/ReticleArrow_Pointer2.dds"
 		WaypointItReticleTexture:SetTexture(texture)
 	end
+end
+
+function WaypointIt:ToggleSetting(settingId)
+	if settingId == nil then return end
+	local togglePossibilities = toggleSettingsData[settingId]
+	if togglePossibilities == nil or #togglePossibilities == 0 then return end
+
+	local currentSetting = self.sv[settingId]
+	if currentSetting == nil then return end
+
+	local currentSettingIndex = ZO_IndexOfElementInNumericallyIndexedTable(togglePossibilities, currentSetting)
+	if currentSettingIndex == nil then return end
+
+	local nextIndex = ((currentSettingIndex == #togglePossibilities) and 1) or currentSettingIndex + 1
+	nextIndex = zo_clamp(nextIndex, 1, #togglePossibilities)
+	local newSetting = togglePossibilities[nextIndex]
+	self.sv[settingId] = newSetting
+
+	self:ChatNarrationOutput(string.format(GetString(WAYPOINTIT_SETTING_CHANGED_TO), tostring(settingId), tostring(newSetting)))
 end
 
 function WaypointIt:InitSettings()
@@ -414,7 +440,7 @@ function WaypointIt:CreateSettingsMenu()
 					type = "dropdown",
 					name = "Automark Next Quest Waypoint",
 					tooltip = "Each time you complete a quest step a waypoint for another quest step will be automatically set for you.\n" .. self.color.darkOrange .. "Current Quest:|r " .. self.color.yellow .. "Will automark a waypoint for the next step of the same quest you completed a step for.\n" .. self.color.magenta .. "Closest Quest:|r " .. self.color.yellow .. "Will \"attempt\" to automark a waypoint for the closest quest step, regardless of which quest it is for.",
-					choices = { "Off", "Current Quest", "Closest Quest" },
+					choices = questNextMarkPossibilities,
 					default = "Off",
 					getFunc = function() return self.sv["QUEST_AUTOMARK_NEXT_WAYPOINT"] end,
 					setFunc = function(bValue) self.sv["QUEST_AUTOMARK_NEXT_WAYPOINT"] = bValue end,

@@ -3,7 +3,7 @@
 ## DependsOn: LibAddonMenu-2.0>=34 LibWorldMapInfoTab LibMapPing>=1200 LibGPS>=69
 ## OptionalDependsOn: LibDebugLogger Destinations MapPins
 ## SavedVariables: WaypointItSavedVars
-## Version: 1.14.6
+## Version: 1.14.7
 ## Author: Circonian & votan
 ## Description: Circonians WaypointIt
 

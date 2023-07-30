@@ -5,3 +5,5 @@ SafeAddString(SI_WAYPOINTIT_WAYPOINT_REMOVAL_DISTANCE, "Le point de repère se t
 SafeAddString(SI_WAYPOINTIT_NO_NEAREST_QUEST, "Impossible de sélectionner la quête la plus proche depuis cette location.")
 
 SafeAddString(SI_WAYPOINTIT_WAYPOINT, "Waypoint") ----Baertram, 2023-03-03, Accessibility features
+
+SafeAddString(WAYPOINTIT_SETTING_CHANGED_TO, "[Waypoint]Paramètre %q remplacé par %s")

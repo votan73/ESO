@@ -9,3 +9,6 @@ ZO_CreateStringId("SI_BINDING_NAME_WAYPOINTIT_ADD_FOLLOW", "Follow")
 
 ZO_CreateStringId("SI_WAYPOINTIT_WAYPOINT", "Waypoint")
 
+
+ZO_CreateStringId("WAYPOINTIT_SETTING_CHANGED_TO", "[Waypoint]Setting %q changed to %s")
+
