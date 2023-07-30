@@ -6,7 +6,7 @@ WaypointIt = {}
 
 local WaypointIt = WaypointIt
 local ADDON_NAME = "WaypointIt"
-local CODE_VERSION = "1.14.5"
+local CODE_VERSION = "1.14.6"
 -- Holds the requested taskID
 local CURRENT_TASK
 local ROW_TYPE_ID = 1
@@ -670,7 +670,7 @@ function WaypointIt:SetupQuestEvents()
 			self:RefreshQuestWaypoint()
 		end
 		ZO_PreHook(
-			FISHING_MANAGER or INTERACTIVE_WHEEL_MANAGER,
+			INTERACTIVE_WHEEL_MANAGER,
 			"StopInteraction",
 			function()
 				local actionName = GetGameCameraInteractableActionInfo()
@@ -1140,21 +1140,10 @@ function WaypointIt:ToggleCurrentSort()
 		return
 	end
 
-	-- local sortToggle = self.waypointWin:GetNamedChild("SortToggle")
-	-- local enabledState = sortToggle:GetState()
-	-- if enabledState == BSTATE_DISABLED_PRESSED then
-	-- 	return
-	-- end
-
 	local scrollList = self.scrollList
 	local currentCatId = scrollList.currentCategoryId
 	local subFilterId = scrollList.currentCategoryIdSubFilter
 
-	-- -- Disable the button so they can't click it again
-	-- -- until the sort is finished
-	-- sortToggle:SetState(BSTATE_DISABLED_PRESSED)
-
-	-- local dataList 		= ZO_ScrollList_GetDataList(scrollList)
 	if scrollList.currentSortType == "name" then
 		self:SortListByDistance()
 		scrollList.currentSortType = "distance"
@@ -1162,8 +1151,6 @@ function WaypointIt:ToggleCurrentSort()
 		self:SortPinsByName()
 		scrollList.currentSortType = "name"
 	end
-
-	-- sortToggle:SetState(BSTATE_NORMAL)
 end
 
 function WaypointIt:SortListByDistance()
@@ -1257,9 +1244,6 @@ function WaypointIt:CheckSelectedMainBtn()
 		-- No need to check if there is a subBar, this function will check that
 		-- and hide the subBar if there isn't supposed to be one.
 		self:SetSubMenuBar(selectedBtnData)
-	else
-		-- Make sure its highlighted, highlights get wiped out in UpdateButtons()
-		WaypointIt_OnButtonClicked(m_clickedButtonMain.m_button, nil, true)
 	end
 end
 
@@ -1281,9 +1265,6 @@ function WaypointIt:CheckSelectedSubBtn()
 		-- Selected button was changed, update filter info
 		scrollList.currentCategoryId = selectedBtnData.lookupType
 		scrollList.currentCategoryIdSubFilter = selectedBtnData.subType
-	else
-		-- Make sure its highlighted, highlights get wiped out in UpdateButtons()
-		WaypointIt_OnButtonClicked(m_clickedButton.m_button, nil, true)
 	end
 end
 
@@ -1378,7 +1359,7 @@ do
 			registered = false
 			self:UpdateAll()
 		end
-		em:RegisterForUpdate(identifier, 100, DoUpdate)
+		em:RegisterForUpdate(identifier, 150, DoUpdate)
 		registered = true
 	end
 end
@@ -1501,11 +1482,13 @@ do
 		local btnObj = btn.m_object
 
 		if enable then
-			btnObj:SetState(BSTATE_NORMAL)
-			btn:GetNamedChild("Image"):SetColor(1, 1, 1, 1)
+			if btnObj.m_menuBar:GetSelectedDescriptor() == btnObj:GetDescriptor() then
+				btnObj:SetState(BSTATE_PRESSED)
+			else
+				btnObj:SetState(BSTATE_NORMAL)
+			end
 		else
 			btnObj:SetState(BSTATE_DISABLED)
-			btn:GetNamedChild("Image"):SetColor(1, 0, 0, 1)
 		end
 	end
 
@@ -2690,7 +2673,7 @@ function WaypointIt:AddSkyshardMapPins(m_Pin)
 	local keyIndex = pinTag
 	local pinKey = self:GetPinKey(lookupType, majorIndex, keyIndex)
 
-	self.categories[iNumCompleted > 0 and "SkySMapPin_collected" or "SkySMapPin_unknown"].pins[pinKey] = {
+	self.categories[newLookupType[lookupType]].pins[pinKey] = {
 		["m_Pin"] = m_Pin,
 		["name"] = sText,
 		["skyShardIndex"] = iSkyShardIndex,
@@ -3129,13 +3112,9 @@ function WaypointIt:RemovePin(lookupType, majorIndex, keyIndex)
 			lookupTable[keys] = nil
 		end
 	else
-		if newLookupType[lookupType] ~= MPLTYPE_OTHER then
-			ZO_ClearTable(lookupTable)
-		else
-			for key, pinData in pairs(lookupTable) do
-				if pinData.lookupType == lookupType then
-					lookupTable[key] = nil
-				end
+		for key, pinData in pairs(lookupTable) do
+			if pinData.lookupType == lookupType then
+				lookupTable[key] = nil
 			end
 		end
 	end
@@ -3149,8 +3128,8 @@ end
 
 function WaypointIt:HookCreatePins()
 	-- Hook CreatePin so I can add the pin to my own table as well.
-	local OrigCreatePin = ZO_WorldMapPins.CreatePin
-	function ZO_WorldMapPins.CreatePin(...)
+	local OrigCreatePin = ZO_WorldMapPins_Manager.CreatePin
+	function ZO_WorldMapPins_Manager.CreatePin(...)
 		local pin = OrigCreatePin(...)
 		-- It can return nil for AvA pins
 		if not pin then
@@ -3174,12 +3153,12 @@ function WaypointIt:HookCreatePins()
 	end
 
 	-- Hook RemovePins so I can remove the pins from my pin table as well.
-	local OrigRemovePins = ZO_WorldMapPins.RemovePins
-	function ZO_WorldMapPins.RemovePins(pinManager, lookupType, majorIndex, keyIndex)
+	local OrigRemovePins = ZO_WorldMapPins_Manager.RemovePins
+	function ZO_WorldMapPins_Manager.RemovePins(pinManager, lookupType, majorIndex, keyIndex, ...)
 		if self.categories[newLookupType[lookupType]] then
 			self:RemovePin(lookupType, majorIndex, keyIndex)
 		end
-		return OrigRemovePins(pinManager, lookupType, majorIndex, keyIndex)
+		return OrigRemovePins(pinManager, lookupType, majorIndex, keyIndex, ...)
 	end
 
 	self.delayProcessing = true
@@ -3211,11 +3190,7 @@ end
 -- Clears and adds buttons to a menu bar based on the tabFilter data passed in
 -- Used to change the buttons on the menuBar
 function WaypointIt:UpdateButtons(menuBar, tabFilters)
-	for k, btn in pairs(menuBar.m_object.m_buttons) do
-		btn[1]:GetNamedChild("PressedTexture"):SetHidden(true)
-		btn[1]:GetNamedChild("HighlightTexture"):SetHidden(true)
-	end
-
+	local descriptor = ZO_MenuBar_GetSelectedDescriptor(menuBar) or 1
 	ZO_MenuBar_ClearButtons(menuBar)
 
 	for _, filterInfo in ipairs(tabFilters) do
@@ -3226,6 +3201,7 @@ function WaypointIt:UpdateButtons(menuBar, tabFilters)
 			image:SetDimensionConstraints(32, 32, 32, 32)
 		end
 	end
+	ZO_MenuBar_SelectDescriptor(menuBar, descriptor, true, false)
 end
 
 -- Creates the actual waypoint window
@@ -3378,6 +3354,32 @@ function WaypointIt:CreateWaypointsWindow()
 	end
 end
 
+local function SetupButton(button, id, pool)
+	button.m_object.pressedTexture = button:GetNamedChild("PressedTexture")
+	button.m_object.highlightTexture = button:GetNamedChild("HighlightTexture")
+	button.m_object.image = button:GetNamedChild("Image")
+
+	ZO_PreHook(
+		button.m_object,
+		"SetState",
+		function(btnObj, state, locked)
+			if state == BSTATE_DISABLED then
+				btnObj.image:SetColor(1, 0, 0, 1)
+			else
+				btnObj.image:SetColor(1, 1, 1, 1)
+			end
+			if state ~= BSTATE_NORMAL then
+				btnObj.highlightTexture:SetHidden(true)
+			end
+			btnObj.pressedTexture:SetHidden(state ~= BSTATE_PRESSED)
+		end
+	)
+end
+local function SetButtonFactory(menuBar)
+	assert(menuBar.m_object.m_pool, "Button pool renamed")
+	menuBar.m_object.m_pool:SetCustomFactoryBehavior(SetupButton)
+end
+
 -- Creates all of the menu bars & adds a button to the world info ui menu bar
 function WaypointIt:SetupMenuBar()
 	if self.c_MainMenuBar then
@@ -3399,12 +3401,15 @@ function WaypointIt:SetupMenuBar()
 		WORLD_MAP_INFO.modeBar:SetStartingFragment(SI_BINDING_NAME_WAYPOINTIT)
 	end
 
-	-- Setup the starting buttons for the menu bars:
-	self:UpdateButtons(WaypointItWinMainMenuBar, WAYPOINTIT_FILTER_DATA["MAINBAR"])
+	SetButtonFactory(WaypointItWinMainMenuBar)
+	SetButtonFactory(WaypointItWinSubMenuBar)
 
 	-- bind references to the menu bars for later
 	self.c_MainMenuBar = WaypointItWinMainMenuBar
 	self.c_SubMenuBar = WaypointItWinSubMenuBar
+
+	-- Setup the starting buttons for the menu bars:
+	self:UpdateButtons(WaypointItWinMainMenuBar, WAYPOINTIT_FILTER_DATA["MAINBAR"])
 
 	-- Select the first button on each menu bar
 	-- Since the bar & sub bar are main & respawns, I can use direct numbers
@@ -3420,9 +3425,8 @@ function WaypointIt:SelectMainBarBtnDescriptor(descriptor)
 		return
 	end
 	local btn = buttonObject:GetControl()
-	WaypointIt_OnButtonClicked(btn, self, true)
 
-	local btnData = btn.m_object.m_buttonData
+	local btnData = buttonObject.m_buttonData
 	self:SetSubMenuBar(btnData)
 	if btnData.subBar then
 		-- So we only need to call updateScrollList here
@@ -3444,47 +3448,31 @@ function WaypointIt:SelectSubBarBtnDescriptor(descriptor)
 	end
 	local btn = buttonObject:GetControl()
 
-	WaypointIt_OnButtonClicked(btn, self, true)
-
 	subBarObject:SetClickedButton(buttonObject, true)
 
-	local btnData = btn.m_object.m_buttonData
+	local btnData = buttonObject.m_buttonData
 	self:ShowCategoryId(btnData.lookupType, btnData.subType)
-end
-
--- This is for the menu bar buttons on click event. Used to set the pressed texture
-function WaypointIt_OnButtonClicked(_cButton, self, upInside)
-	if _cButton.m_object.m_state == BSTATE_DISABLED or not upInside then
-		return
-	end
-
-	local m_clickedButton = _cButton:GetParent().m_object.m_clickedButton
-
-	if m_clickedButton then
-		m_clickedButton.m_button:GetNamedChild("PressedTexture"):SetHidden(true)
-	end
-	_cButton:GetNamedChild("PressedTexture"):SetHidden(false)
-	_cButton:GetNamedChild("HighlightTexture"):SetHidden(true)
 end
 
 -- Menu bar button highlights on mouse enter
 function WaypointIt_OnMouseEnter(_cButton)
-	if _cButton.m_object.m_state ~= BSTATE_NORMAL then
+	local btnObj = _cButton.m_object
+	if btnObj:GetState() ~= BSTATE_NORMAL then
 		return
 	end
 
-	_cButton:GetNamedChild("HighlightTexture"):SetHidden(false)
+	btnObj.highlightTexture:SetHidden(false)
 end
 
 -- Menu bar button remove highlights on mouse exit
 function WaypointIt_OnMouseExit(_cButton)
+	local btnObj = _cButton.m_object
 	-- changed because: Very quick clicking caused buttons to stay highlighted.
-	-- if _cButton.m_object.m_state ~= BSTATE_NORMAL then return end
-	if _cButton.m_object.m_state == BSTATE_DISABLED then
+	if btnObj:GetState() == BSTATE_DISABLED then
 		return
 	end
 
-	_cButton:GetNamedChild("HighlightTexture"):SetHidden(true)
+	btnObj.highlightTexture:SetHidden(true)
 end
 
 -------------------------------------------------------------------
