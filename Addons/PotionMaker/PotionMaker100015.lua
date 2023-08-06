@@ -5,7 +5,7 @@
 
 PotMaker = {
 	name = "PotionMaker",
-	version = "5.9.0",
+	version = "5.9.1",
 	ResultControls = {},
 	PositiveTraitControls = {},
 	NegativeTraitControls = {},
@@ -2776,19 +2776,23 @@ do
 			control:SetSimpleAnchorParent(xPosSolventFilter + height * (pos % 3), 8 + height * math.floor(pos / 3))
 		end
 
+		local saveSelection = {}
 		-- reinit reagent display
 		for i = 1, PotionMakerReagentBG:GetNumChildren() do
-			PotionMakerReagentBG:GetChild(i):SetHidden(true)
+			local checkBox = PotionMakerReagentBG:GetChild(i)
+			if not checkBox:IsControlHidden() and PotMaker.ToggleButtonIsChecked(checkBox) and checkBox.reagent then
+				saveSelection[checkBox.reagent.name] = true
+			end
+			checkBox:SetHidden(true)
 		end
 
 		-- display reagent from inventory
-		-- order by name first
 		local tempOrder = {}
 		for _, ingredient in pairs(PotMaker.Inventory.reagents) do
 			tempOrder[#tempOrder + 1] = ingredient
 		end
-		-- order by name (or by stack if option)
 		if accountSettings.reagentStackOrder then
+			-- order by stack
 			table.sort(
 				tempOrder,
 				function(a, b)
@@ -2800,6 +2804,7 @@ do
 				end
 			)
 		else
+			-- order by name
 			table.sort(
 				tempOrder,
 				function(a, b)
@@ -2833,6 +2838,8 @@ do
 			iconControl:SetColor((ingredient.protected and STAT_LOWER_COLOR or COLOR_USEABLE):UnpackRGB())
 			numControl = control:GetNamedChild("Number")
 			numControl:SetText(ingredient.stack)
+
+			PotMaker.SetToggleButton(control, saveSelection[ingredient.name] and TRISTATE_CHECK_BUTTON_CHECKED or TRISTATE_CHECK_BUTTON_UNCHECKED)
 		end
 	end
 end
