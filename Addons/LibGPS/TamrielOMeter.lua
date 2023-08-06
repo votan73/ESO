@@ -109,7 +109,7 @@ end
 function TamrielOMeter:GetMapMeasurementByMapId(mapId)
     local measurement = self:GetMeasurement(mapId)
 
-    if (not measurement) then 
+    if (not measurement) then
         -- try to calculate the measurement if it does not yet exist
         self:CalculateMapMeasurement(mapId)
     end
@@ -193,8 +193,9 @@ function TamrielOMeter:PopCurrentMap()
 end
 
 local function getMapSizeId(self, mapId)
-    local zoneId = self.adapter:GetPlayerZoneId()
-    return string.format("%i:%i:%s:%s", mapId, zoneId, GetPlayerLocationName(), GetPlayerActiveSubzoneName()), zoneId
+    local zoneId, pwx1, pwh1, pwy1 = GetUnitRawWorldPosition("player")
+    local _, pwx2, pwh2, pwy2 = GetUnitWorldPosition("player")
+    return string.format("%i:%i:%i:%i", mapId, zoneId, math.floor((pwx1 - pwx2) / 10000 + 0.5), math.floor((pwy1 - pwy2) / 10000 + 0.5)), zoneId
 end
 local function getCurrentWorldSize(self, notMeasuring)
     local adapter = self.adapter
@@ -219,37 +220,49 @@ local function getCurrentWorldSize(self, notMeasuring)
             return adapter:GetWorldSize(0)
         end
 
-        logger:Debug("Calculate current world size of", mapId, "for zone", zoneId, ", Id", mapSizeId)
-
-        local worldSizeX, worldSizeY = DEFAULT_TAMRIEL_SIZE, DEFAULT_TAMRIEL_SIZE
-
-        local wx1, wy1
-        -- Make sure the ref-point is at a different location, but not too far for blackreach
-        local measurement = self:GetCurrentMapMeasurement()
-        if measurement.scaleX < 0.0025 then
-            -- for small (sub-)zones
-            wx1, wy1 = adapter:GetNormalizedPositionFromWorld(zoneId, pwx + (localX < 0.5 and 2475 or -2475), pwh, pwy + (localY < 0.5 and 2475 or -2475)) -- 3500 world units
-        else
-            -- for all other zones
-            wx1, wy1 = adapter:GetNormalizedPositionFromWorld(zoneId, pwx + (localX < 0.5 and 7071 or -7071), pwh, pwy + (localY < 0.5 and 7071 or -7071)) -- 10000 world units
-        end
-
-        logger:Debug("ref-point (normalized): ", wx1, "x", wy1)
-
         size:SetMapId(mapId)
         size:SetZoneId(zoneId)
         adapter:SetWorldSize(mapSizeId, size, true) -- Assume default scale, do not serialize
 
-        local wwX, wwZ, wwY = measurement:ToWorld(wx1, wy1)
-        logger:Debug("ref-point (calulated world): ", wwX, "x", wwY)
-        -- The assumed scale may wrong. Lets see how wrong:
-        local wpX1, wpY1 = adapter:GetNormalizedPositionFromWorld(zoneId, wwX, wwZ, wwY)
-        logger:Debug("ref-point (normalized real): ", wpX1, "x", wpY1)
-        -- correct scale, so that we get the values we want:
-        local dx, dy = wx1 - localX, wy1 - localY
-        local correctScale = dx * dx + dy * dy
-        dx, dy = wpX1 - localX, wpY1 - localY
-        correctScale = math.sqrt(correctScale / (dx * dx + dy * dy))
+        logger:Debug("Calculate current world size of", mapId, "for zone", zoneId, ", Id", mapSizeId)
+
+        local measurement = self:GetCurrentMapMeasurement()
+        local range
+        if measurement.scaleX < 0.002 then
+            -- for small (sub-)zones
+            range = 2475 -- 3500 world units
+            logger:Debug("3500 units")
+        elseif measurement.scaleX < 0.02 then
+            -- for mid-sized (sub-)zones
+            range = 707 -- 1000 world units
+            logger:Debug("1000 units")
+        else
+            -- for all other zones
+            range = 7071 -- 10000 world units
+            logger:Debug("10000 units")
+        end
+
+        local function getScale(rx, ry)
+            -- Make sure the ref-point is at a different location, but not too far for blackreach
+            local wx1, wy1 = adapter:GetNormalizedPositionFromWorld(zoneId, pwx + (localX < 0.5 and range or -range) * rx, pwh, pwy + (localY < 0.5 and range or -range) * ry)
+
+            logger:Debug("ref-point (normalized): ", wx1, "x", wy1)
+
+            local wwX, wwZ, wwY = measurement:ToWorld(wx1, wy1)
+            --logger:Debug("ref-point (calulated world): ", wwX, "x", wwY)
+            -- The assumed scale may wrong. Lets see how wrong:
+            local wpX1, wpY1 = adapter:GetNormalizedPositionFromWorld(zoneId, wwX, wwZ, wwY)
+            logger:Debug("ref-point (normalized real): ", wpX1, "x", wpY1)
+            -- correct scale, so that we get the values we want:
+            local dx, dy = wx1 - localX, wy1 - localY
+            local correctScale = dx * dx + dy * dy
+            dx, dy = wpX1 - localX, wpY1 - localY
+            correctScale = math.sqrt(correctScale / (dx * dx + dy * dy))
+            return correctScale
+        end
+        local correctScale = math.max(getScale(1, 1), getScale(1, -1), getScale(-1, 1), getScale(-1, -1))
+
+        local worldSizeX, worldSizeY = DEFAULT_TAMRIEL_SIZE, DEFAULT_TAMRIEL_SIZE
         worldSizeX, worldSizeY = math.floor(correctScale * worldSizeX * 0.01 + 0.25) * 100, math.floor(correctScale * worldSizeY * 0.01 + 0.25) * 100
         logger:Debug("worldSize corrected: ", worldSizeX, "x", worldSizeY)
 
@@ -282,14 +295,14 @@ function TamrielOMeter:GetLocalDistanceInMeters(lx1, ly1, lx2, ly2)
     lx1, ly1 = lx1 - lx2, ly1 - ly2
     local worldSizeX, worldSizeY = self:GetWorldGlobalRatio()
     local measurement = self:GetCurrentMapMeasurement()
-    return math.sqrt(lx1*lx1 * measurement.scaleX * worldSizeX + ly1*ly1 * measurement.scaleY * worldSizeY) * 0.01 * DEFAULT_TAMRIEL_SIZE
+    return math.sqrt(lx1 * lx1 * measurement.scaleX * worldSizeX + ly1 * ly1 * measurement.scaleY * worldSizeY) * 0.01 * DEFAULT_TAMRIEL_SIZE
 end
 
 function TamrielOMeter:GetGlobalDistanceInMeters(gx1, gy1, gx2, gy2)
     if not (gx1 or gy1 or gx2 or gy2) then return 0 end
     gx1, gy1 = gx1 - gx2, gy1 - gy2
     local worldSize = self:GetWorldGlobalRatio() * DEFAULT_TAMRIEL_SIZE
-    return math.sqrt(gx1*gx1 + gy1*gy1) * 0.01 * worldSize
+    return math.sqrt(gx1 * gx1 + gy1 * gy1) * 0.01 * worldSize
 end
 
 local scaleIdToGlobalRatio = {}
@@ -305,7 +318,7 @@ function TamrielOMeter:GetWorldGlobalRatio()
         worldSizeX, worldSizeY = size:GetSize()
         worldSizeX, worldSizeY = worldSizeX / DEFAULT_TAMRIEL_SIZE, worldSizeY / DEFAULT_TAMRIEL_SIZE
 
-        scaleIdToGlobalRatio[mapSizeId] = { worldSizeX, worldSizeY }
+        scaleIdToGlobalRatio[mapSizeId] = {worldSizeX, worldSizeY}
     else
         worldSizeX, worldSizeY = unpack(worldSizeX)
     end

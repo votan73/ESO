@@ -1,4 +1,4 @@
--- LibGPS3 & its files © sirinsidiator                          --
+-- LibGPS3 & its files Â© sirinsidiator                          --
 -- Distributed under The Artistic License 2.0 (see LICENSE)     --
 ------------------------------------------------------------------
 
@@ -41,7 +41,7 @@ function MapAdapter:HookSetMapToFunction(funcName, returnToInitialMap, skipSecon
     self.original[funcName] = orgFunction
     _G[funcName] = function(...)
         local result = orgFunction(...)
-        if(result ~= SET_MAP_RESULT_MAP_FAILED and not lib:GetCurrentMapMeasurement()) then
+        if(result ~= SET_MAP_RESULT_FAILED and not lib:GetCurrentMapMeasurement()) then
             logger:Debug(funcName)
 
             local success, mapResult = lib:CalculateMapMeasurement(returnToInitialMap)
