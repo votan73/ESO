@@ -1,4 +1,4 @@
--- LibGPS3 & its files © sirinsidiator                          --
+-- LibGPS3 & its files Â© sirinsidiator                          --
 -- Distributed under The Artistic License 2.0 (see LICENSE)     --
 ------------------------------------------------------------------
 
@@ -100,7 +100,7 @@ function TamrielOMeter:GetCurrentMapMeasurement()
 
     if (not measurement) then
         -- try to calculate the measurement if it does not yet exist
-        self:CalculateMapMeasurement()
+        self:CalculateMapMeasurement(mapId)
     end
 
     return self.measurements[mapId]
