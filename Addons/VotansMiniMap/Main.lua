@@ -1585,6 +1585,9 @@ do
 		if add then
 			step = -step
 		end
+		if IsShiftKeyDown() then
+			step = step * 5
+		end
 
 		self.account[self.zoomMode] = math.max(0, math.min(2, self.account[self.zoomMode] + step))
 		UpdateControls()
