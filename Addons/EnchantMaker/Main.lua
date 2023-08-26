@@ -640,7 +640,8 @@ function addon:InitScrollList()
 	end
 
 	local function setIcon(rowControl, rowControlName, itemData)
-		local itemLink = self.byRawName[itemData.rawName].itemLink
+		local data = itemData and self.byRawName[itemData.rawName]
+		local itemLink = data and data.itemLink or ""
 		local icon = GetItemLinkIcon(itemLink)
 		local control = rowControl:GetNamedChild(rowControlName)
 		control:SetTexture(icon)
