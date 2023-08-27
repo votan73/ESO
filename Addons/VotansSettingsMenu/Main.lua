@@ -14,7 +14,7 @@ local sm = SCENE_MANAGER
 local gameMenuScene = "gameMenuInGame"
 
 local function RememberSelectedPanel(panel)
-	if panel ~= nil and panel.data ~= nil and panel.data.type == "panel" and LAM2:GetAddonSettingsFragment():GetState() == SCENE_FRAGMENT_SHOWN then
+	if panel and panel.data and panel.data.type == "panel" then
 		addon.player.LastAddon = panel:GetName()
 	end
 end
@@ -33,8 +33,10 @@ end
 
 local function ShowPanel(skip)
 	local panel = WINDOW_MANAGER:GetControlByName(addon.player.LastAddon)
-	if skip ~= true then
-		LAM2:OpenToPanel(panel)
+
+	LAM2.pendingAddonPanel = nil
+	if not panel and skip ~= true then
+		LAM2:OpenToPanel(nil)
 	end
 	if panel then
 		LAM2:OpenToPanel(panel)
@@ -247,7 +249,7 @@ function addon:InitSettings()
 		name = addonName,
 		displayName = addonName,
 		author = "votan",
-		version = "1.5.8",
+		version = "1.5.9",
 		registerForRefresh = true,
 		registerForDefaults = true
 	}
@@ -334,7 +336,15 @@ local function OnAddonLoaded(event, name)
 
 	addon.account = ZO_SavedVars:NewAccountWide("VotansSettingsMenu_Data", 1, nil, addon.accountDefaults)
 	addon.player = ZO_SavedVars:NewCharacterIdSettings("VotansSettingsMenu_Data", 1, nil, nil)
-	addon:Initialize()
+
+	EVENT_MANAGER:RegisterForEvent(
+		addon.name,
+		EVENT_PLAYER_ACTIVATED,
+		function()
+			EVENT_MANAGER:UnregisterForEvent(addon.name, EVENT_PLAYER_ACTIVATED)
+			addon:Initialize()
+		end
+	)
 end
 
 EVENT_MANAGER:RegisterForEvent(addon.name, EVENT_ADD_ON_LOADED, OnAddonLoaded)
