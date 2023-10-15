@@ -40,8 +40,9 @@ Remove-Item -Path ($targetPath + "_v$ver.zip") -ErrorAction SilentlyContinue
 
 Copy-Item -Recurse $Path $targetPath
 if ($Title -ne "ESO Profiler") {
-    Remove-Item -Path ([System.IO.Path]::Combine($targetPath, "*")) -Recurse -Include "*.png","*.pdn"
+    Remove-Item -Path ([System.IO.Path]::Combine($targetPath, "*")) -Recurse -Include "*.png","*.pdn" -Force
 }
+Remove-Item -Path ([System.IO.Path]::Combine($targetPath, "*")) -Recurse -Include "Thumbs.db" -Force
 
 foreach($file in [System.IO.Directory]::GetFiles($targetPath, "Lib*.txt", "AllDirectories")) {
     if ([System.IO.Path]::GetFileName($file) -eq [System.IO.Path]::GetFileName($manifest)) { continue }
@@ -173,8 +174,8 @@ $data.id = $details.id
 $data.version = $ver
 $data.title = $details.title
 $list = @()
-if ($compatible -ccontains "101037") { $list+="8.3.5" }
-if ($compatible -ccontains "101038") { $list+="9.0.0" }
+if ($compatible -ccontains "101039") { $list+="9.1.0" }
+if ($compatible -ccontains "101040") { $list+="9.2.0" }
 if ($list.Count -lt 2) {
     Write-Host "API Version mismatch. Either manifest or script not up-to-date."
     return
