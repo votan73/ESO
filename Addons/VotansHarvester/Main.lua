@@ -411,6 +411,9 @@ function addon:EnableHeadingUpdates(enabled)
 		end
 
 		local playerX, playerY = GetPlayerPosition()
+		if not playerX then
+			return
+		end
 		local heading = GetPlayerCameraHeading()
 		local dy, dx = playerY - cell.y, cell.x - playerX
 		local rads = math.atan2(dy, dx) - heading - math.pi / 2
