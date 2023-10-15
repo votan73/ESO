@@ -295,7 +295,7 @@ function TamrielOMeter:GetLocalDistanceInMeters(lx1, ly1, lx2, ly2)
     lx1, ly1 = lx1 - lx2, ly1 - ly2
     local worldSizeX, worldSizeY = self:GetWorldGlobalRatio()
     local measurement = self:GetCurrentMapMeasurement()
-    return math.sqrt(lx1 * lx1 * measurement.scaleX * worldSizeX + ly1 * ly1 * measurement.scaleY * worldSizeY) * 0.01 * DEFAULT_TAMRIEL_SIZE
+    return measurement and (math.sqrt(lx1 * lx1 * measurement.scaleX * worldSizeX + ly1 * ly1 * measurement.scaleY * worldSizeY) * 0.01 * DEFAULT_TAMRIEL_SIZE) or 0
 end
 
 function TamrielOMeter:GetGlobalDistanceInMeters(gx1, gy1, gx2, gy2)
