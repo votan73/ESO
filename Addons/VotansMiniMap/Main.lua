@@ -710,7 +710,18 @@ function addon:InitMiniMap()
 			asyncCallbacks:Resume()
 		end
 	end
-	ZO_PreHookHandler(ZO_WorldMapContainer1, "OnTextureLoaded", WaitForTextureLoaded)
+	local id = self.name .. "WaitForTextureLoaded"
+	em:RegisterForUpdate(
+		id,
+		0,
+		function()
+			if not ZO_WorldMapContainer1 then
+				return
+			end
+			ZO_PreHookHandler(ZO_WorldMapContainer1, "OnTextureLoaded", WaitForTextureLoaded)
+			em:UnregisterForUpdate(id)
+		end
+	)
 
 	local callbacks
 	local function Callback(index)
