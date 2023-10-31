@@ -132,7 +132,7 @@ function addon:InitSettings()
 	end
 	addon.settingsControls = settings
 	settings.allowDefaults = true
-	settings.version = "1.2.3"
+	settings.version = "1.2.4"
 	settings.website = "http://www.esoui.com/downloads/info1482-VotansAdvancedSettings.html"
 
 	local function AddCheckBox(option, labelId, tooltipId)
