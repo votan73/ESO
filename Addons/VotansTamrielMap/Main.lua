@@ -382,7 +382,8 @@ function addon:InitSettings()
 		hidePins = true,
 		titleFont = "ANTIQUE_FONT",
 		color = "Alliance",
-		opacity = 50
+		opacity = 50,
+		showCitiesNames = true
 	}
 	self.account = ZO_SavedVars:NewAccountWide("VotansTamrielMap_Data", 1, nil, accountDefaults)
 	local LibHarvensAddonSettings = LibHarvensAddonSettings
@@ -393,7 +394,7 @@ function addon:InitSettings()
 	end
 	addon.settingsControls = settings
 	settings.allowDefaults = true
-	settings.version = "1.1.5"
+	settings.version = "1.2.0"
 	settings.website = "https://www.esoui.com/downloads/info2672-VotansTamrielMap.html"
 
 	settings:AddSetting {
@@ -474,6 +475,19 @@ function addon:InitSettings()
 		setFunction = function(value)
 			self.account.opacity = value
 			self:ApplyOpacity()
+		end
+	}
+
+	settings:AddSetting {
+		type = LibHarvensAddonSettings.ST_CHECKBOX,
+		label = GetString(SI_VOTANS_TAMRIEL_MAP_SHOW_CITIES_NAME),
+		tooltip = "",
+		default = accountDefaults.showCitiesNames,
+		getFunction = function()
+			return self.account.showCitiesNames
+		end,
+		setFunction = function(value)
+			self.account.showCitiesNames = value
 		end
 	}
 end
@@ -585,7 +599,7 @@ function addon:RenderMap(isTamriel)
 					blob.city:SetFont(self.cityFont)
 					blob.city:SetText(ZO_CachedStrFormat("<<!AC:1>>", location.locationName))
 
-					if location.poi then
+					if location.poi and self.account.showCitiesNames then
 						local locationName, locXN, locYN = select(2, GetFastTravelNodeInfo(location.poi))
 						x, y, locXN, locYN = NormalizedBlobDataToUI(x, y, locXN, locYN)
 						local w, h1 = blob.label:GetDimensions()
@@ -599,7 +613,7 @@ function addon:RenderMap(isTamriel)
 						blob.city:ClearAnchors()
 					end
 
-					blob.city:SetHidden(not location.poi)
+					blob.city:SetHidden(not location.poi or not self.account.showCitiesNames)
 				elseif blob then
 					local color = self:GetDefaultColor(location)
 

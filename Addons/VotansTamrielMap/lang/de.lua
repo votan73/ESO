@@ -18,3 +18,5 @@ SafeAddString(SI_VOTANS_TAMRIEL_MAP_FONT_STONE_TABLET, "Steintafel")
 SafeAddString(SI_VOTANS_TAMRIEL_MAP_FONT_ALLIANCE, "Allianz")
 SafeAddString(SI_VOTANS_TAMRIEL_MAP_FONT_BASE_DLC, "Base Game/DLC")
 SafeAddString(SI_VOTANS_TAMRIEL_MAP_FONT_NO_COLOR, "Keine Farben")
+
+SafeAddString(SI_VOTANS_TAMRIEL_MAP_SHOW_CITIES_NAME, "Städtenamen anzeigen")
