@@ -379,6 +379,22 @@ function WaypointIt:SetupEvents()
 			addDestinations("DEST_Compass_Fishing_Show_Water")
 			addDestinations("DEST_Compass_Fishing_Show_FishName")
 		end
+		if SimpleSkyshards then
+			newLookupType["SIMPLE_SKYSHARDS_PIN_TYPE_SHARD_ON_MAP"] = "SkySMapPin_unknown"
+			newLookupType["SIMPLE_SKYSHARDS_PIN_TYPE_SHARD_ON_MAP_NO_TOOLTIP"] = "SkySMapPin_unknown"
+			newLookupType["SIMPLE_SKYSHARDS_PIN_TYPE_SHARD_DELVE_OR_DUNGEON"] = "SkySMapPin_unknown"
+			newLookupType["SIMPLE_SKYSHARDS_PIN_TYPE_SHARD_DELVE_OR_DUNGEON_ACQUIRED"] = "SkySMapPin_collected"
+
+			zo_callLater(
+				function()
+					AddPin(SIMPLE_SKYSHARDS_PIN_TYPE_SHARD_ON_MAP, self.AddSimpleSkyshardPin)
+					AddPin(SIMPLE_SKYSHARDS_PIN_TYPE_SHARD_ON_MAP_NO_TOOLTIP, self.AddSimpleSkyshardPin)
+					AddPin(SIMPLE_SKYSHARDS_PIN_TYPE_SHARD_DELVE_OR_DUNGEON, self.AddSimpleSkyshardDelvePin)
+					AddPin(SIMPLE_SKYSHARDS_PIN_TYPE_SHARD_DELVE_OR_DUNGEON_ACQUIRED, self.AddSimpleSkyshardDelvePin)
+				end,
+				100
+			)
+		end
 
 		OnGroupUpdate()
 		OnPlayerActivatedQuest()
@@ -2679,6 +2695,36 @@ function WaypointIt:AddSkyshardMapPins(m_Pin)
 	}
 end
 
+function WaypointIt:AddSimpleSkyshardPin(m_Pin)
+	local pinType, pinTag = m_Pin:GetPinTypeAndTag()
+	local iSkyShardId = pinTag.skyId
+
+	local sDescription = GetSkyshardHint(iSkyShardId)
+	local sText = zo_strformat("<<C:1>>", sDescription)
+
+	local lookupType = self.pinManager.customPins[pinType].pinTypeString
+	local majorIndex = pinType
+	local keyIndex = pinTag
+	local pinKey = self:GetPinKey(lookupType, majorIndex, keyIndex)
+
+	self.categories[newLookupType[lookupType]].pins[pinKey] = {["m_Pin"] = m_Pin, ["name"] = sText, ["pinKey"] = pinKey, ["lookupType"] = lookupType, ["keyIndex"] = pinTag, ["majorIndex"] = pinType}
+end
+function WaypointIt:AddSimpleSkyshardDelvePin(m_Pin)
+	local pinType, pinTag = m_Pin:GetPinTypeAndTag()
+	local zoneIndex, poiIndex = unpack(pinTag)
+	local iSkyShardId = GetPOISkyshardId(zoneIndex, poiIndex)
+	local sDescription = GetSkyshardHint(iSkyShardId)
+
+	local sText = zo_strformat("<<C:2>>: <<C:1>>", sDescription, GetPOIInfo(zoneIndex, poiIndex))
+
+	local lookupType = self.pinManager.customPins[pinType].pinTypeString
+	local majorIndex = pinType
+	local keyIndex = pinTag
+	local pinKey = self:GetPinKey(lookupType, majorIndex, keyIndex)
+
+	self.categories[newLookupType[lookupType]].pins[pinKey] = {["m_Pin"] = m_Pin, ["name"] = sText, ["pinKey"] = pinKey, ["lookupType"] = lookupType, ["keyIndex"] = pinTag, ["majorIndex"] = pinType}
+end
+
 function WaypointIt:AddHarvensPin(m_Pin)
 	local pinType, pinTag = m_Pin:GetPinTypeAndTag()
 	local pinData = HarvensCustomMapPins:GetPin(pinTag)
@@ -3476,7 +3522,7 @@ end
 local function OnAddOnLoaded(event, addonName)
 	-- These (below) are both done because I have no way of knowing which addon
 	-- will be loaded first, mine or theirs.This way it doesn't matter.
-	if addonName == "SkyShards" then
+	if addonName == "SkyShards" or addonName == "SimpleSkyshards" then
 		WAYPOINTIT:EnableCustomPin("SkySMapPin_collected")
 		WAYPOINTIT:EnableCustomPin("SkySMapPin_unknown")
 	end
