@@ -6,7 +6,7 @@ WaypointIt = {}
 
 local WaypointIt = WaypointIt
 local ADDON_NAME = "WaypointIt"
-local CODE_VERSION = "1.14.8"
+local CODE_VERSION = "1.14.9"
 -- Holds the requested taskID
 local CURRENT_TASK
 local ROW_TYPE_ID = 1
@@ -297,14 +297,16 @@ function WaypointIt:SetupEvents()
 				newLookupType[pinTypeString] = MPLTYPE_QUEST
 				AddPin(_G[pinTypeString], self.AddQuestMapPins)
 			end
+			--for each mit key startswith?
 			addQuestMap(QuestMap.PIN_TYPE_QUEST_UNCOMPLETED)
 			addQuestMap(QuestMap.PIN_TYPE_QUEST_COMPLETED)
 			addQuestMap(QuestMap.PIN_TYPE_QUEST_HIDDEN)
 			addQuestMap(QuestMap.PIN_TYPE_QUEST_STARTED)
 			addQuestMap(QuestMap.PIN_TYPE_QUEST_GUILD)
 			addQuestMap(QuestMap.PIN_TYPE_QUEST_DAILY)
-			addQuestMap(QuestMap.PIN_TYPE_QUEST_WEEKLY)
+			addQuestMap(QuestMap.PIN_TYPE_QUEST_TRIAL)
 			addQuestMap(QuestMap.PIN_TYPE_QUEST_CADWELL)
+			addQuestMap(QuestMap.PIN_TYPE_QUEST_COMPANION)
 			addQuestMap(QuestMap.PIN_TYPE_QUEST_SKILL)
 			addQuestMap(QuestMap.PIN_TYPE_QUEST_DUNGEON)
 			addQuestMap(QuestMap.PIN_TYPE_QUEST_HOLIDAY)
@@ -318,8 +320,9 @@ function WaypointIt:SetupEvents()
 			addQuestMap(QuestMap.PIN_TYPE_QUEST_STARTED_PVP)
 			addQuestMap(QuestMap.PIN_TYPE_QUEST_GUILD_PVP)
 			addQuestMap(QuestMap.PIN_TYPE_QUEST_DAILY_PVP)
-			addQuestMap(QuestMap.PIN_TYPE_QUEST_WEEKLY_PVP)
+			addQuestMap(QuestMap.PIN_TYPE_QUEST_TRIAL_PVP)
 			addQuestMap(QuestMap.PIN_TYPE_QUEST_CADWELL_PVP)
+			addQuestMap(QuestMap.PIN_TYPE_QUEST_COMPANION_PVP)
 			addQuestMap(QuestMap.PIN_TYPE_QUEST_SKILL_PVP)
 			addQuestMap(QuestMap.PIN_TYPE_QUEST_DUNGEON_PVP)
 			addQuestMap(QuestMap.PIN_TYPE_QUEST_HOLIDAY_PVP)
