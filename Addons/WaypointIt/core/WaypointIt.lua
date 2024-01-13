@@ -297,38 +297,12 @@ function WaypointIt:SetupEvents()
 				newLookupType[pinTypeString] = MPLTYPE_QUEST
 				AddPin(_G[pinTypeString], self.AddQuestMapPins)
 			end
-			--for each mit key startswith?
-			addQuestMap(QuestMap.PIN_TYPE_QUEST_UNCOMPLETED)
-			addQuestMap(QuestMap.PIN_TYPE_QUEST_COMPLETED)
-			addQuestMap(QuestMap.PIN_TYPE_QUEST_HIDDEN)
-			addQuestMap(QuestMap.PIN_TYPE_QUEST_STARTED)
-			addQuestMap(QuestMap.PIN_TYPE_QUEST_GUILD)
-			addQuestMap(QuestMap.PIN_TYPE_QUEST_DAILY)
-			addQuestMap(QuestMap.PIN_TYPE_QUEST_TRIAL)
-			addQuestMap(QuestMap.PIN_TYPE_QUEST_CADWELL)
-			addQuestMap(QuestMap.PIN_TYPE_QUEST_COMPANION)
-			addQuestMap(QuestMap.PIN_TYPE_QUEST_SKILL)
-			addQuestMap(QuestMap.PIN_TYPE_QUEST_DUNGEON)
-			addQuestMap(QuestMap.PIN_TYPE_QUEST_HOLIDAY)
-			addQuestMap(QuestMap.PIN_TYPE_QUEST_ZONESTORY)
-			addQuestMap(QuestMap.PIN_TYPE_QUEST_PROLOGUE)
-			addQuestMap(QuestMap.PIN_TYPE_QUEST_PLEDGES)
 
-			addQuestMap(QuestMap.PIN_TYPE_QUEST_UNCOMPLETED_PVP)
-			addQuestMap(QuestMap.PIN_TYPE_QUEST_COMPLETED_PVP)
-			addQuestMap(QuestMap.PIN_TYPE_QUEST_HIDDEN_PVP)
-			addQuestMap(QuestMap.PIN_TYPE_QUEST_STARTED_PVP)
-			addQuestMap(QuestMap.PIN_TYPE_QUEST_GUILD_PVP)
-			addQuestMap(QuestMap.PIN_TYPE_QUEST_DAILY_PVP)
-			addQuestMap(QuestMap.PIN_TYPE_QUEST_TRIAL_PVP)
-			addQuestMap(QuestMap.PIN_TYPE_QUEST_CADWELL_PVP)
-			addQuestMap(QuestMap.PIN_TYPE_QUEST_COMPANION_PVP)
-			addQuestMap(QuestMap.PIN_TYPE_QUEST_SKILL_PVP)
-			addQuestMap(QuestMap.PIN_TYPE_QUEST_DUNGEON_PVP)
-			addQuestMap(QuestMap.PIN_TYPE_QUEST_HOLIDAY_PVP)
-			addQuestMap(QuestMap.PIN_TYPE_QUEST_ZONESTORY_PVP)
-			addQuestMap(QuestMap.PIN_TYPE_QUEST_PROLOGUE_PVP)
-			addQuestMap(QuestMap.PIN_TYPE_QUEST_PLEDGES_PVP)
+			for pinType in pairs(QuestMap) do
+				if string.find(pinType, "^PIN_TYPE_QUEST_") then
+					addQuestMap(pinType)
+				end
+			end
 		end
 		if Destinations then
 			local function addDestinations(pinTypeString)
