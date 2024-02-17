@@ -1,7 +1,7 @@
 ## Title: Votan's UI Fixes
 ## Author: votan
-## APIVersion: 100033 100034
-## Version: 1.0.13
+## APIVersion: 101040 101041
+## Version: 1.0.15
 ## DependsOn: LibAsync
 ## OptionalDependsOn: LibStub LibGPS
 -- ## SavedVariables:
