@@ -2,7 +2,9 @@ local LibHarvensAddonSettings = LibHarvensAddonSettings
 
 local function HookLibHarvensAddonSettings()
 	local lam = LibAddonMenu2
-	if lam == nil then return end
+	if lam == nil then
+		return
+	end
 	local currentSettings
 
 	local AddonSettings = LibHarvensAddonSettings.AddonSettings
@@ -23,7 +25,9 @@ local function HookLibHarvensAddonSettings()
 	-- AddonSettings class - represents addon settings panel
 	-----
 	function AddonSettings:Select()
-		if self.selected then return end
+		if self.selected then
+			return
+		end
 		LibHarvensAddonSettings:DetachContainer()
 		CALLBACK_MANAGER:FireCallbacks("LibHarvensAddonSettings_AddonSelected", self.name, self)
 		LibHarvensAddonSettings:AttachContainerToControl(self.control)
@@ -33,13 +37,16 @@ local function HookLibHarvensAddonSettings()
 	end
 
 	function AddonSettings:InitHandlers()
-		CALLBACK_MANAGER:RegisterCallback("LibHarvensAddonSettings_AddonSelected", function(name)
-			if self.selected then
-				self:CleanUp()
-				self.selected = false
-				self:UpdateHighlight()
+		CALLBACK_MANAGER:RegisterCallback(
+			"LibHarvensAddonSettings_AddonSelected",
+			function(name)
+				if self.selected then
+					self:CleanUp()
+					self.selected = false
+					self:UpdateHighlight()
+				end
 			end
-		end )
+		)
 	end
 
 	function AddonSettings:UpdateHighlight()
@@ -48,7 +55,6 @@ local function HookLibHarvensAddonSettings()
 
 	function AddonSettings:AddToOptionsPanel(panelID)
 	end
-
 
 	-----
 	-- LibHarvensAddonSettings singleton
@@ -75,17 +81,25 @@ local function HookLibHarvensAddonSettings()
 		self.container:SetHidden(true)
 		self.container.currentHeight = 0
 		self.container.endHeight = 0
+		self.container:ClearClips()
 
 		self.openTimeline = ANIMATION_MANAGER:CreateTimelineFromVirtual("ZO_TreeOpenAnimation")
 		local anim = self.openTimeline:GetFirstAnimation()
-		anim:SetUpdateFunction( function(animation, progress) self:SetContainerHeightPercentage(progress) end)
+		anim:SetUpdateFunction(
+			function(animation, progress)
+				self:SetContainerHeightPercentage(progress)
+			end
+		)
 		anim:SetEasingFunction(ZO_EaseOutQuadratic)
 
-		CALLBACK_MANAGER:RegisterCallback("LibHarvensAddonSettings_AddonSelected", function(_, addonSettings)
-			currentSettings = addonSettings
-			addonSettings:CreateControls()
-			self.container.endHeight = addonSettings:GetOverallHeight() + 8
-		end )
+		CALLBACK_MANAGER:RegisterCallback(
+			"LibHarvensAddonSettings_AddonSelected",
+			function(_, addonSettings)
+				currentSettings = addonSettings
+				addonSettings:CreateControls()
+				self.container.endHeight = addonSettings:GetOverallHeight() + 8
+			end
+		)
 	end
 
 	local function RefreshPanel(panel)
@@ -104,8 +118,12 @@ local function HookLibHarvensAddonSettings()
 			local addon = LibHarvensAddonSettings.addons[i]
 			local addonName = addon.name
 			local author, name = addonName:match("^(.+)'s%s(.+)")
-			if name == nil then name = addonName end
-			if addon.author then author = addon.author end
+			if name == nil then
+				name = addonName
+			end
+			if addon.author then
+				author = addon.author
+			end
 			local panelData = {
 				type = "panel",
 				name = name,
@@ -119,7 +137,7 @@ local function HookLibHarvensAddonSettings()
 						addon:ResetToDefaults()
 					end
 				end,
-				website = addon.website,
+				website = addon.website
 			}
 			local control = lam:RegisterAddonPanel(addonName, panelData)
 
@@ -134,7 +152,9 @@ local function HookLibHarvensAddonSettings()
 				CALLBACK_MANAGER:RegisterCallback("LAM-RefreshPanel", RefreshPanel)
 			end
 		end
-		for i = 1, #LibHarvensAddonSettings.addons do CreateSingleAddon(i) end
+		for i = 1, #LibHarvensAddonSettings.addons do
+			CreateSingleAddon(i)
+		end
 		Finalize()
 	end
 end
