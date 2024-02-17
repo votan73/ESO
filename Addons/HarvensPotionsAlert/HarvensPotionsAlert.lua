@@ -252,10 +252,10 @@ function HarvensPotionsAlert:AddSlotOption(settings, powerType, lastControl, att
 	}
 
 	slotSelect.buttonText = function()
-		return HarvensPotionsAlert.SetupSlot(self.sv.slots[powerType])
+		return HarvensPotionsAlert.SetupSlot(self.currentSlots[powerType])
 	end
 	slotSelect.tooltip = function(settingsControl)
-		return HarvensPotionsAlert.SetupTooltip(settingsControl, slotSelect, self.sv.slots[powerType].id)
+		return HarvensPotionsAlert.SetupTooltip(settingsControl, slotSelect, self.currentSlots[powerType].id)
 	end
 
 	slotSelect.clickHandler = function(control)
@@ -263,7 +263,7 @@ function HarvensPotionsAlert:AddSlotOption(settings, powerType, lastControl, att
 
 		local function SetSlot1(slot)
 			HarvensPotionsAlert.SaveSlot(control, slot, slotSelect)
-			self.sv.slots[powerType].id = slot
+			self.currentSlots[powerType].id = slot
 			slotControls[1]:SetupControl(slotSelect)
 		end
 
@@ -279,15 +279,15 @@ function HarvensPotionsAlert:AddSlotOption(settings, powerType, lastControl, att
 		format = "%d",
 		unit = "%",
 		getFunction = function()
-			return self.sv.slots[powerType].threshold
+			return self.currentSlots[powerType].threshold
 		end,
 		setFunction = function(value)
-			self.sv.slots[powerType].threshold = value
+			self.currentSlots[powerType].threshold = value
 		end
 	}
 
 	slotControls = settings:AddSettings({slotSelect, slotThreshold})
-	slotControls[1].settings = self.sv.slots[powerType]
+	slotControls[1].settings = self.currentSlots[powerType]
 end
 
 function HarvensPotionsAlert:AddDefaultSlotOption(settings, powerType, lastControl)
@@ -299,10 +299,10 @@ function HarvensPotionsAlert:AddDefaultSlotOption(settings, powerType, lastContr
 	}
 
 	slotSelect.buttonText = function()
-		return HarvensPotionsAlert.SetupSlot(self.sv.slots[powerType])
+		return HarvensPotionsAlert.SetupSlot(self.currentSlots[powerType])
 	end
 	slotSelect.tooltip = function(settingsControl)
-		return HarvensPotionsAlert.SetupTooltip(settingsControl, slotSelect, self.sv.slots[powerType].id)
+		return HarvensPotionsAlert.SetupTooltip(settingsControl, slotSelect, self.currentSlots[powerType].id)
 	end
 
 	slotSelect.clickHandler = function(control)
@@ -310,7 +310,7 @@ function HarvensPotionsAlert:AddDefaultSlotOption(settings, powerType, lastContr
 
 		local function SetSlotDefault(slot)
 			HarvensPotionsAlert.SaveSlot(control, slot, slotSelect)
-			self.sv.slots[powerType].id = slot
+			self.currentSlots[powerType].id = slot
 			slotControls[1]:SetupControl(slotSelect)
 			HarvensPotionsAlert.Update()
 		end
@@ -318,7 +318,7 @@ function HarvensPotionsAlert:AddDefaultSlotOption(settings, powerType, lastContr
 		self.PotionDialog.ShowDialog(slotSelect.label, SetSlotDefault)
 	end
 	slotControls = settings:AddSettings({slotSelect})
-	slotControls[1].settings = self.sv.slots[powerType]
+	slotControls[1].settings = self.currentSlots[powerType]
 end
 
 function HarvensPotionsAlert:SetupOptions()
@@ -326,7 +326,7 @@ function HarvensPotionsAlert:SetupOptions()
 	if not settings then
 		return
 	end
-	settings.version = "2.1.1"
+	settings.version = "2.2.0"
 
 	local attrNames = {[POWERTYPE_HEALTH] = 1, [POWERTYPE_MAGICKA] = 2, [POWERTYPE_STAMINA] = 3}
 	local lastControl
@@ -375,6 +375,38 @@ function HarvensPotionsAlert:SetupOptions()
 		end
 	}
 
+	local lfgRoleEnabled = {
+		type = LibHarvensAddonSettings.ST_CHECKBOX,
+		label = "Per group role settings",
+		tooltip = "If enabled the slot settings will be saved based on the role selected in group activity finder",
+		getFunction = function()
+			return self.sv.useLFGRole
+		end,
+		setFunction = function(state)
+			if self.sv.useLFGRole ~= state then
+				self.sv.useLFGRole = state
+				self:ChooseCurrentSlots()
+				settings:UpdateControls()
+			end
+		end
+	}
+
+	local syncArmoryEnabled = {
+		type = LibHarvensAddonSettings.ST_CHECKBOX,
+		label = "Use armory station",
+		tooltip = "If enabled the slot settings will be saved/restored if you save/load your build at armory station",
+		getFunction = function()
+			return self.sv.syncWithArmory
+		end,
+		setFunction = function(state)
+			if self.sv.syncWithArmory ~= state then
+				self.sv.syncWithArmory = state
+				self:ChooseCurrentSlots()
+				settings:UpdateControls()
+			end
+		end
+	}
+
 	local cooldownAlertSection = {
 		type = LibHarvensAddonSettings.ST_SECTION,
 		label = "Cooldown Alert"
@@ -420,7 +452,61 @@ function HarvensPotionsAlert:SetupOptions()
 		step = 2
 	}
 
-	settings:AddSettings({scale, cooldownAlertSection, cooldownEnabled, cooldownFont, cooldownIconSize, testButton})
+	settings:AddSettings({scale, lfgRoleEnabled, syncArmoryEnabled, cooldownAlertSection, cooldownEnabled, cooldownFont, cooldownIconSize, testButton})
+
+	local function update()
+		if settings.selected then
+			settings:UpdateControls()
+		end
+	end
+
+	SecurePostHook(
+		ZO_Armory_Manager,
+		"OnBuildRestoreResponseReceived",
+		function(manager, _, result, buildIndex)
+			if result ~= ARMORY_BUILD_RESTORE_RESULT_SUCCESS then
+				return
+			end
+			if not self.sv.syncWithArmory or not self.sv.armory then
+				return
+			end
+			local slot = self.sv.armory[buildIndex]
+			if not slot then
+				return
+			end
+			self.sv.slots = ZO_DeepTableCopy(slot.slots)
+			self.sv.roles = ZO_DeepTableCopy(slot.roles)
+
+			self:ChooseCurrentSlots()
+			update()
+		end
+	)
+	SecurePostHook(
+		ZO_Armory_Manager,
+		"OnBuildSaveResponseReceived",
+		function(manager, _, result, buildIndex)
+			if result ~= ARMORY_BUILD_SAVE_RESULT_SUCCESS then
+				return
+			end
+			if not self.sv.armory then
+				self.sv.armory = {}
+			end
+			local slot = self.sv.armory[buildIndex]
+			if not slot then
+				slot = {}
+				self.sv.armory[buildIndex] = slot
+			end
+			slot.slots = ZO_DeepTableCopy(self.sv.slots)
+			slot.roles = ZO_DeepTableCopy(self.sv.roles)
+		end
+	)
+	PREFERRED_ROLES:RegisterCallback(
+		"LFGRoleChanged",
+		function()
+			self:ChooseCurrentSlots()
+			update()
+		end
+	)
 end
 
 function HarvensPotionsAlert:InitialState()
@@ -430,12 +516,12 @@ function HarvensPotionsAlert:InitialState()
 end
 
 function HarvensPotionsAlert.PowerUpdate(eventType, unitTag, powerIndex, powerType, powerValue, powerMax, powerEffectiveMax)
-	if unitTag ~= "player" or not HarvensPotionsAlert.sv.slots[powerType] then
+	if unitTag ~= "player" or not HarvensPotionsAlert.currentSlots[powerType] then
 		return
 	end
 
 	local val = 100 * powerValue / powerMax
-	HarvensPotionsAlert.sv.slots[powerType].value = val
+	HarvensPotionsAlert.currentSlots[powerType].value = val
 	HarvensPotionsAlert.Update()
 end
 
@@ -445,7 +531,7 @@ function HarvensPotionsAlert.Update()
 	local powerType = 1000
 	-- Assume default slot
 	for p, k in pairs(HarvensPotionsAlert.priority) do
-		v = HarvensPotionsAlert.sv.slots[k]
+		v = HarvensPotionsAlert.currentSlots[k]
 		if v.value < v.threshold and v.threshold > 0 then
 			if (v.id ~= 0 and GetSlotItemCount(v.id, HOTBAR_CATEGORY_QUICKSLOT_WHEEL) ~= 0) then
 				powerType = k
@@ -454,16 +540,14 @@ function HarvensPotionsAlert.Update()
 		end
 	end
 
-	local slot = HarvensPotionsAlert.sv.slots[powerType]
+	local slot = HarvensPotionsAlert.currentSlots[powerType]
 	local slotId = slot.id
-	if powerType ~= 1000 and GetSlotItemCount(slotId, HOTBAR_CATEGORY_QUICKSLOT_WHEEL) == 0 then
+	if powerType ~= 1000 and GetSlotItemCount(slotId, HOTBAR_CATEGORY_QUICKSLOT_WHEEL) <= 0 then
 		return
 	end
 
-	local minRemain
-	local remain, duration = GetSlotCooldownInfo(slotId, HOTBAR_CATEGORY_QUICKSLOT_WHEEL)
-	minRemain = remain
-	if minRemain > 0 then
+	local minRemain, duration = GetSlotCooldownInfo(slotId, HOTBAR_CATEGORY_QUICKSLOT_WHEEL)
+	if minRemain > 100 then
 		zo_callLater(HarvensPotionsAlert.Update, minRemain + 10)
 		return
 	end
@@ -471,8 +555,13 @@ function HarvensPotionsAlert.Update()
 	-- Critical or alert invisible. Update is called on anim end
 	if GetCurrentQuickslot() ~= slotId then
 		HarvensPotionsAlert.isAutoSwitch = true
-		SetCurrentQuickslot(slotId)
-		HarvensPotionsAlertTopLevelIcon:SetTexture(GetSlotTexture(slotId, HOTBAR_CATEGORY_QUICKSLOT_WHEEL))
+		SetCurrentQuickslot(slotId, HOTBAR_CATEGORY_QUICKSLOT_WHEEL)
+	end
+	local texture = GetSlotTexture(slotId, HOTBAR_CATEGORY_QUICKSLOT_WHEEL)
+	HarvensPotionsAlertTopLevelIcon:SetTexture(texture)
+	if not texture or texture == ZO_NO_TEXTURE_FILE then
+		self:InitialState()
+		return
 	end
 
 	if powerType < 1000 then
@@ -529,12 +618,30 @@ function HarvensPotionsAlert.TestCooldown()
 	EVENT_MANAGER:RegisterForUpdate("HarvensPotionsAlertCooldown", 100, HarvensPotionsAlert.CheckCooldown)
 end
 
+function HarvensPotionsAlert:ChooseCurrentSlots()
+	if not self.sv.useLFGRole then
+		self.currentSlots = self.sv.slots
+	else
+		if not self.sv.roles then
+			self.sv.roles = {}
+		end
+		local role = GetSelectedLFGRole()
+		if role == LFG_ROLE_INVALID then
+			role = LFG_ROLE_DPS
+		end
+		if not self.sv.roles[role] then
+			self.sv.roles[role] = ZO_DeepTableCopy(next(self.sv.roles) or self.sv.slots)
+		end
+		self.currentSlots = self.sv.roles[role]
+	end
+end
+
 function HarvensPotionsAlert:Initialize()
-	HarvensPotionsAlert.powerTypes = {[POWERTYPE_HEALTH] = 1, [POWERTYPE_STAMINA] = 3, [POWERTYPE_MAGICKA] = 2, [1000] = 4}
-	HarvensPotionsAlert.priority = {}
-	for k, v in pairs(HarvensPotionsAlert.powerTypes) do
+	self.powerTypes = {[POWERTYPE_HEALTH] = 1, [POWERTYPE_STAMINA] = 3, [POWERTYPE_MAGICKA] = 2, [1000] = 4}
+	self.priority = {}
+	for k, v in pairs(self.powerTypes) do
 		-- reverse lookup for priority
-		HarvensPotionsAlert.priority[v] = k
+		self.priority[v] = k
 	end
 
 	local defaults = {
@@ -544,28 +651,31 @@ function HarvensPotionsAlert:Initialize()
 		pos2 = {point = CENTER, relPoint = CENTER, x = 0, y = 0},
 		cooldownAlert = true,
 		cooldownAlertFont = "$(BOLD_FONT)|36|thick-outline",
-		cooldownAlertIconSize = 48
+		cooldownAlertIconSize = 48,
+		useLFGRole = false,
+		syncWithArmory = false
 	}
 
-	for k, v in pairs(HarvensPotionsAlert.powerTypes) do
+	for k, v in pairs(self.powerTypes) do
 		defaults.slots[k] = {id = 0, threshold = 0, value = 100}
 	end
 
-	HarvensPotionsAlert.sv = ZO_SavedVars:New("HarvensPotionsAlert_SavedVariables", 1, nil, defaults)
-	HarvensPotionsAlert.isAlertHidden = true
-	HarvensPotionsAlert.alertPowerType = POWERTYPE_INVALID
-	HarvensPotionsAlert.isInCombat = IsUnitInCombat("player")
-	HarvensPotionsAlert.isAutoSwitch = false
+	self.sv = ZO_SavedVars:NewCharacterIdSettings("HarvensPotionsAlert_SavedVariables", 1, nil, defaults)
+	self:ChooseCurrentSlots()
+	self.isAlertHidden = true
+	self.alertPowerType = POWERTYPE_INVALID
+	self.isInCombat = IsUnitInCombat("player")
+	self.isAutoSwitch = false
 
-	HarvensPotionsAlert.cooldownFadeTimeline = ANIMATION_MANAGER:CreateTimelineFromVirtual("HarvensPotionsAlertFade", HarvensPotionsAlertCooldownAlert)
-	HarvensPotionsAlertCooldownAlertLabel:SetFont(HarvensPotionsAlert.sv.cooldownAlertFont)
-	HarvensPotionsAlertCooldownAlert:SetAnchor(HarvensPotionsAlert.sv.pos2.point, GuiRoot, HarvensPotionsAlert.sv.pos2.relPoint, HarvensPotionsAlert.sv.pos2.x, HarvensPotionsAlert.sv.pos2.y)
+	self.cooldownFadeTimeline = ANIMATION_MANAGER:CreateTimelineFromVirtual("HarvensPotionsAlertFade", HarvensPotionsAlertCooldownAlert)
+	HarvensPotionsAlertCooldownAlertLabel:SetFont(self.sv.cooldownAlertFont)
+	HarvensPotionsAlertCooldownAlert:SetAnchor(self.sv.pos2.point, GuiRoot, self.sv.pos2.relPoint, self.sv.pos2.x, self.sv.pos2.y)
 	HarvensPotionsAlertCooldownAlert:SetHandler(
 		"OnMoveStop",
 		function()
 			local _, point, _, relPoint, x, y = HarvensPotionsAlertCooldownAlert:GetAnchor(0)
-			HarvensPotionsAlert.sv.pos2 = nil
-			HarvensPotionsAlert.sv.pos2 = {point = point, relPoint = relPoint, x = x, y = y}
+			self.sv.pos2 = nil
+			self.sv.pos2 = {point = point, relPoint = relPoint, x = x, y = y}
 		end
 	)
 
@@ -578,38 +688,37 @@ function HarvensPotionsAlert:Initialize()
 		end
 	)
 
-	HarvensPotionsAlert.alertFadeTimeline = ANIMATION_MANAGER:CreateTimelineFromVirtual("HarvensPotionsAlertFade", HarvensPotionsAlertTopLevel)
-	HarvensPotionsAlert.alertFadeTimeline:SetHandler(
+	self.alertFadeTimeline = ANIMATION_MANAGER:CreateTimelineFromVirtual("HarvensPotionsAlertFade", HarvensPotionsAlertTopLevel)
+	self.alertFadeTimeline:SetHandler(
 		"OnStop",
 		function(...)
-			HarvensPotionsAlert:InitialState()
-			zo_callLater(HarvensPotionsAlert.Update, 20)
+			self:InitialState()
+			zo_callLater(self.Update, 20)
 			-- A last check
 		end
 	)
 
 	HarvensPotionsAlertTopLevel:ClearAnchors()
-	HarvensPotionsAlertTopLevel:SetAnchor(HarvensPotionsAlert.sv.pos.point, GuiRoot, HarvensPotionsAlert.sv.pos.relPoint, HarvensPotionsAlert.sv.pos.x, HarvensPotionsAlert.sv.pos.y)
-	HarvensPotionsAlertTopLevel:SetScale(HarvensPotionsAlert.sv.scale or 1.0)
+	HarvensPotionsAlertTopLevel:SetAnchor(self.sv.pos.point, GuiRoot, self.sv.pos.relPoint, self.sv.pos.x, self.sv.pos.y)
+	HarvensPotionsAlertTopLevel:SetScale(self.sv.scale or 1.0)
 	HarvensPotionsAlertTopLevel:SetHandler(
 		"OnMoveStop",
 		function()
 			local _, point, _, relPoint, x, y = HarvensPotionsAlertTopLevel:GetAnchor(0)
-			HarvensPotionsAlert.sv.pos = nil
-			HarvensPotionsAlert.sv.pos = {point = point, relPoint = relPoint, x = x, y = y}
+			self.sv.pos = {point = point, relPoint = relPoint, x = x, y = y}
 		end
 	)
 
 	HarvensPotionsAlertTopLevel:SetHandler(
 		"OnMouseWheel",
 		function(control, delta, ...)
-			local scale = HarvensPotionsAlert.sv.scale or 1.0
+			local scale = self.sv.scale or 1.0
 			if delta > 0 then
 				scale = math.min(8.0, scale + 0.05)
 			else
 				scale = math.max(0.5, scale - 0.05)
 			end
-			HarvensPotionsAlert.sv.scale = scale
+			self.sv.scale = scale
 			control:SetScale(scale)
 		end
 	)
@@ -618,7 +727,7 @@ function HarvensPotionsAlert:Initialize()
 		"OnClicked",
 		function()
 			HarvensPotionsAlertTopLevelClose:SetHidden(true)
-			HarvensPotionsAlert:InitialState()
+			self:InitialState()
 		end
 	)
 
@@ -630,15 +739,17 @@ function HarvensPotionsAlert:Initialize()
 	bg:SetAnchor(TOPLEFT, keyBind, TOPLEFT, -1, -1)
 	bg:SetAnchor(BOTTOMRIGHT, keyBind, BOTTOMRIGHT, 2, 2)
 
-	HarvensPotionsAlert:SetupOptions()
-	EVENT_MANAGER:RegisterForEvent("HarvensPotionsAlertCombatState", EVENT_PLAYER_COMBAT_STATE, HarvensPotionsAlert.CombatState)
-	EVENT_MANAGER:RegisterForEvent("HarvensPotionsAlertPowerUpdate", EVENT_POWER_UPDATE, HarvensPotionsAlert.PowerUpdate)
+	self:SetupOptions()
+	EVENT_MANAGER:RegisterForEvent("HarvensPotionsAlertCombatState", EVENT_PLAYER_COMBAT_STATE, self.CombatState)
+	EVENT_MANAGER:RegisterForEvent("HarvensPotionsAlertPowerUpdate", EVENT_POWER_UPDATE, self.PowerUpdate)
+	EVENT_MANAGER:AddFilterForEvent("HarvensPotionsAlertPowerUpdate", EVENT_POWER_UPDATE, REGISTER_FILTER_UNIT_TAG, "player")
+
 	EVENT_MANAGER:RegisterForEvent(
 		"HarvensPotionsAlertQuickSlotUpdate",
 		EVENT_ACTIVE_QUICKSLOT_CHANGED,
 		function(eventId, slotId)
-			if (slotId > 0 and slotId <= ACTION_BAR_UTILITY_BAR_SIZE) and not HarvensPotionsAlert.isAutoSwitch then
-				HarvensPotionsAlert.sv.slots[1000].id = slotId
+			if (slotId > 0 and slotId <= ACTION_BAR_UTILITY_BAR_SIZE) and not self.isAutoSwitch then
+				self.currentSlots[1000].id = slotId
 			end
 		end
 	)
