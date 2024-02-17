@@ -1,4 +1,4 @@
-local version = 10900
+local version = 10901
 
 if LibHarvensAddonSettings then return end
 
@@ -891,7 +891,11 @@ function LibHarvensAddonSettings:SelectFirstAddon()
 end
 
 function LibHarvensAddonSettings:CreateAddonSettingsPanel()
-	ZO_OptionsWindow_AddUserPanel("HarvensAddonSettingsPanel", GetString(SI_GAME_MENU_ADDONS), PANEL_TYPE_SETTINGS)
+	local title = GetString(SI_GAME_MENU_ADDONS)
+	if LibAddonMenu2 then
+		title = title .. " 2"
+	end
+	ZO_OptionsWindow_AddUserPanel("HarvensAddonSettingsPanel", title, PANEL_TYPE_SETTINGS)
 	self.panelID = _G["HarvensAddonSettingsPanel"]
 
 	self.container = WINDOW_MANAGER:CreateControl("LibHarvensAddonSettingsContainer", GuiRoot, CT_SCROLL)
@@ -899,6 +903,7 @@ function LibHarvensAddonSettings:CreateAddonSettingsPanel()
 	self.container:SetHidden(true)
 	self.container.currentHeight = 0
 	self.container.endHeight = 0
+	self.container:ClearClips()
 
 	self.openTimeline = ANIMATION_MANAGER:CreateTimelineFromVirtual("ZO_TreeOpenAnimation")
 	local anim = self.openTimeline:GetFirstAnimation()
