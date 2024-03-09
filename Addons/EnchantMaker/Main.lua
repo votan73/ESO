@@ -995,7 +995,7 @@ end
 do
 	local searchBoxWidth = 350
 	local noSearchBoxWidth = 64
-	local glass = "|t40:40:esoui/art/lfg/lfg_tabicon_grouptools_down.dds|t"
+    local glass = " |t40:40:/esoui/art/tutorial/gamepad/gp_inventory_trait_not_researched_icon.dds|t"
 
 	local function VotanSearchBoxMouseDown(bagSearch, button)
 		if not bagSearch:HasFocus() and button == MOUSE_BUTTON_INDEX_RIGHT then
@@ -1007,15 +1007,8 @@ do
 		control.addon:Search()
 	end
 
-	local setDefaultText
-	if GetAPIVersion() <= 101034 then
-		function setDefaultText(control, text)
-			return ZO_EditDefaultText_Initialize(control, text)
-		end
-	else
-		function setDefaultText(control, text)
-			control:SetDefaultText(text)
-		end
+	local function setDefaultText(control, text)
+		control:SetDefaultText(text)
 	end
 
 	local function SetupControl(self, bagSearchBg)
