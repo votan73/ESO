@@ -326,7 +326,7 @@ function HarvensPotionsAlert:SetupOptions()
 	if not settings then
 		return
 	end
-	settings.version = "2.2.0"
+	settings.version = "2.2.1"
 
 	local attrNames = {[POWERTYPE_HEALTH] = 1, [POWERTYPE_MAGICKA] = 2, [POWERTYPE_STAMINA] = 3}
 	local lastControl

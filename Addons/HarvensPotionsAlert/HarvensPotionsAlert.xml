@@ -39,22 +39,22 @@
         <Label name="$(parent)Label" text="|t48:48:EsoUI/Art/Icons/icon_missing.dds|t is |c00ff00Ready|r!" font="$(BOLD_FONT)|36|thick-outline">
           <Anchor point="TOP" />
         </Label>
-        <Button name="$(parent)Close" inherits="ZO_CloseButton" hidden="true">
+        <Button name="$(parent)Close" inherits="ZO_CloseButton" hidden="true" tier="HIGH">
           <Anchor point="TOPRIGHT" offsetX="10" offsetY="-10"/>
         </Button>
       </Controls>
     </TopLevelControl>
 
-    <TopLevelControl name="HarvensPotionsAlertTopLevel" hidden="true" clampedToScreen="true" mouseEnabled="true" movable="true">
-      <Dimensions x="186" y="140"/>
+    <TopLevelControl name="HarvensPotionsAlertTopLevel" hidden="true" clampedToScreen="true" mouseEnabled="true" movable="true" resizeToFitDescendents="true">
+      <DimensionConstraints minX="186" minY="140"/>
 
       <Controls>
-        <Backdrop name="$(parent)Backdrop" inherits="ZO_LargeKeyBackdrop" alpha="0.75">
+        <Backdrop name="$(parent)Backdrop" inherits="ZO_LargeKeyBackdrop" layer="BACKGROUND" alpha="0.75">
           <Anchor point="TOPLEFT" />
           <Anchor point="BOTTOMRIGHT" />
         </Backdrop>
 
-        <Button name="$(parent)Close" inherits="ZO_CloseButton" hidden="true">
+        <Button name="$(parent)Close" inherits="ZO_CloseButton" hidden="true" tier="HIGH">
           <Anchor point="TOPRIGHT" offsetX="-4" offsetY="4"/>
         </Button>
 
@@ -62,7 +62,7 @@
           <Anchor point="TOP" offsetY="8"/>
         </Label>
 
-        <Texture name="$(parent)Icon" textureFile="EsoUI/Art/Icons/icon_missing.dds" level="1">
+        <Texture name="$(parent)Icon" textureFile="EsoUI/Art/Icons/icon_missing.dds">
           <Dimensions x="61" y="61" />
           <Anchor point="CENTER" />
         </Texture>
