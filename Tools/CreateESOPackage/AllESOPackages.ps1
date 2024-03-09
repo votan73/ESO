@@ -22,7 +22,7 @@ $blackList["iChat"] = $true
 $blackList["InfoBar"] = $true
 $blackList["libCommonInventoryFilters"] = $true
 $blackList["LibAddonMenu-2.0"] = $true
-$blackList["LibGPS"] = $true
+#$blackList["LibGPS"] = $true
 $blackList["LibRuneBox"] = $true
 $blackList["LibHarvensAddonSettings"] = $true
 $blackList["LibMapPing"] = $true
@@ -93,9 +93,6 @@ foreach($Path in [System.IO.Directory]::GetDirectories($Path)){
     $manifest = [System.IO.Path]::Combine($Path,$targetName+".txt")
     if (![System.IO.File]::Exists($manifest)) { continue }
 
-    Write-Host "------------"
-    Write-Host $targetName
-
     $lines = Get-Content -Path $manifest
     $ver = ""
     $compatible = ""
@@ -131,17 +128,6 @@ foreach($Path in [System.IO.Directory]::GetDirectories($Path)){
 	    Remove-Item -Path ([System.IO.Path]::Combine($targetPath, "*")) -Recurse -Include "*.png","*.pdn"
 	}
     Remove-Item -Path ([System.IO.Path]::Combine($targetPath, "*")) -Recurse -Include "*.db"
-	
-    if ($Bundle) {
-	    foreach($file in [System.IO.Directory]::GetFiles($targetPath, "Lib*.txt", "AllDirectories")) {
-	        if ([System.IO.Path]::GetFileName($file) -eq [System.IO.Path]::GetFileName($manifest)) { continue }
-	        $lib = [System.IO.Path]::GetFileName([System.IO.Path]::GetDirectoryName($file))
-	        if (($dependency | Where-Object { $_ -eq $lib }).Count -eq 0) {
-	            Write-Host "$lib not in DependsOn. Continue?"
-	            Read-Host
-	        }
-	    }
-    }
 	
 	$libTargetPath = [System.IO.Path]::Combine($targetPath, "libs")
 	if (![System.IO.Directory]::Exists($libTargetPath)) { $libTargetPath = $targetPath }
@@ -211,14 +197,17 @@ foreach($Path in [System.IO.Directory]::GetDirectories($Path)){
         }
     }
     if ($details -eq $null) {
-        Write-Host -ForegroundColor Red "Addon not found"
+        Write-Host -ForegroundColor Red "Addon not found $targetName"
         continue
     }
     if ($details.version -eq $ver) {
-        Write-Host -ForegroundColor Green "Same Version"
+        Write-Host -ForegroundColor Green "Same Version $targetName"
         continue
     }
-    if (!$Upload) { continue }
+    if (!$Upload) {
+        Write-Host -ForegroundColor Cyan "Would upload $targetName"
+        continue
+    }
 
     $boundary = "------------" + [DateTime]::Now.Ticks.ToString("x")
     $enc = [System.Text.Encoding]::UTF8
@@ -285,8 +274,8 @@ foreach($Path in [System.IO.Directory]::GetDirectories($Path)){
     $data.version = $ver
     $data.title = $details.title
     $list = @()
-    if ($compatible -ccontains "101039") { $list+="9.1.0" }
-    if ($compatible -ccontains "101040") { $list+="9.2.0" }
+    if ($compatible -ccontains "101040") { $list+="9.2.5" }
+    if ($compatible -ccontains "101041") { $list+="9.3.0" }
     if ($list.Length -lt 2) {
         Write-Host -ForegroundColor Red "Manifest or script not up-to-date."
         continue

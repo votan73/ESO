@@ -174,9 +174,9 @@ $data.id = $details.id
 $data.version = $ver
 $data.title = $details.title
 $list = @()
-if ($compatible -ccontains "101039") { $list+="9.1.0" }
-if ($compatible -ccontains "101040") { $list+="9.2.0" }
-if ($list.Count -lt 2) {
+if ($compatible -ccontains "101040") { $list+="9.2.5" }
+if ($compatible -ccontains "101041") { $list+="9.3.0" }
+if ($list.Count -lt 1) {
     Write-Host "API Version mismatch. Either manifest or script not up-to-date."
     return
 }
