@@ -69,16 +69,35 @@ local function ResetGamma()
 	SetGamma(addon.account.gammaDaylight)
 end
 
-function addon:Update()
-	local exterior = self.account.zones[self.settings.lastZoneId]
-	if exterior == nil then
-		if not DoesCurrentMapMatchMapForPlayerLocation() then
-			if SetMapToPlayerLocation() == SET_MAP_RESULT_MAP_CHANGED then
-				CALLBACK_MANAGER:FireCallbacks("OnWorldMapChanged")
-			end
+function addon:GetMapIdenfier()
+	if not ZO_WorldMap_IsWorldMapShowing() and not DoesCurrentMapMatchMapForPlayerLocation() then
+		if SetMapToPlayerLocation() == SET_MAP_RESULT_MAP_CHANGED then
+			CALLBACK_MANAGER:FireCallbacks("OnWorldMapChanged")
 		end
-		exterior = GetMapContentType() ~= MAP_CONTENT_DUNGEON
-		self.account.zones[self.settings.lastZoneId] = exterior
+	end
+	local mapId = GetCurrentMapId()
+	local zoneId, pwx1, pwh1, pwy1 = GetUnitRawWorldPosition("player")
+	local _, pwx2, pwh2, pwy2 = GetUnitWorldPosition("player")
+	return string.format("%i:%i:%i:%i", mapId, zoneId, math.floor((pwx1 - pwx2) / 10000 + 0.5), math.floor((pwy1 - pwy2) / 10000 + 0.5))
+end
+
+function addon:Update()
+	local mapShown = ZO_WorldMap_IsWorldMapShowing()
+	local id
+	if mapShown then
+		id = self.settings.lastZoneId
+	else
+		id = self:GetMapIdenfier()
+		self.settings.lastZoneId = id
+	end
+	local exterior = self.account.zones[id]
+	if exterior == nil then
+		if not mapShown then
+			exterior = GetMapContentType() ~= MAP_CONTENT_DUNGEON and string.match(id, ":0:0$") ~= nil
+			self.account.zones[id] = exterior
+		else
+			return
+		end
 	end
 
 	if exterior then
@@ -94,10 +113,10 @@ function addon:Update()
 		c = (gammaMax - gammaMin) * c + gammaMin
 		local gamma = zo_round(LinearToGamma(c) * 10) * 0.1
 
-		-- d(string.format("zone %i: %2f %2f", addon.settings.lastZoneId, x, gamma))
+		-- d(string.format("zone %s: %.2f %.2f", addon.settings.lastZoneId, x, gamma))
 		SetGamma(gamma)
 	else
-		-- d(string.format("full gamma %i: %2f", addon.settings.lastZoneId, addon.account.gammaDaylight))
+		-- d(string.format("full gamma %s: %.2f", addon.settings.lastZoneId, addon.account.gammaDaylight))
 		ResetGamma()
 	end
 end
@@ -106,22 +125,35 @@ local function UpdateGamma()
 	addon:Update()
 end
 
-function addon:OnZoneChanged(zoneName, subZoneName, newSubzone, zoneId, subZoneId)
-	if zoneId > 0 then
-		self.settings.lastZoneId = zoneId
-		self:Update()
+function addon:OnZoneChanged()
+	self.settings.lastZoneId = self:GetMapIdenfier()
+	self:Update()
+end
+
+local function ShowNightMode()
+	local self = addon
+
+	local mapId, zoneId, subZone = self.settings.lastZoneId:match("([^:]+):([^:]+):([^:]+:[^:]+)")
+	mapId, zoneId = tonumber(mapId), tonumber(zoneId)
+	local mapName = GetMapNameById(mapId)
+	local zoneName = GetZoneNameById(zoneId)
+	local name
+	if subZone == "0:0" then
+		if mapName == zoneName then
+			CHAT_ROUTER:AddSystemMessage(zo_strformat(SI_VOTANS_DARKER_NIGHT_MODE, self.account.zones[self.settings.lastZoneId] and 2 or 1, mapName))
+		else
+			CHAT_ROUTER:AddSystemMessage(zo_strformat(SI_VOTANS_DARKER_NIGHT_MODE2, self.account.zones[self.settings.lastZoneId] and 2 or 1, mapName, zoneName))
+		end
+	else
+		CHAT_ROUTER:AddSystemMessage(zo_strformat(SI_VOTANS_DARKER_NIGHT_MODE3, self.account.zones[self.settings.lastZoneId] and 2 or 1, mapName, zoneName, subZone))
 	end
-	-- self.settings.lastSubZoneId = subZoneId or 0
 end
 
 local function ToggleNight()
 	local self = addon
 	self.account.zones[self.settings.lastZoneId] = not self.account.zones[self.settings.lastZoneId]
 	self:Update()
-end
-local function ShowNightMode()
-	local self = addon
-	CHAT_ROUTER:AddSystemMessage(zo_strformat(SI_VOTANS_DARKER_NIGHT_MODE, self.account.zones[self.settings.lastZoneId] and 2 or 1, GetZoneNameByIndex(GetZoneIndex(self.settings.lastZoneId))))
+	ShowNightMode()
 end
 
 function addon:InitSettings()
@@ -133,7 +165,7 @@ function addon:InitSettings()
 	end
 	addon.settingsControls = settings
 	settings.allowDefaults = true
-	settings.version = "1.0.19"
+	settings.version = "1.1.0"
 	settings.website = "http://www.esoui.com/downloads/info1558-VotansDarkerNights.html"
 
 	settings:AddSetting {
@@ -259,21 +291,48 @@ function addon:Init()
 	HookQuit()
 	HookLogout()
 
+	for zoneId, exterior in pairs(self.account.zones) do
+		if tonumber(zoneId) then
+			local mapId = GetMapIdByZoneId(zoneId)
+			self.account.zones[zoneId] = nil
+			if mapId > 0 then
+				local id = string.format("%i:%i:0:0", mapId, zoneId)
+				self.account.zones[id] = exterior
+			end
+		end
+	end
+
 	StartUpdate()
+
 	em:RegisterForEvent(
 		addon.name,
 		EVENT_PLAYER_ACTIVATED,
 		function()
-			addon.settings.lastZoneId = GetZoneId(GetUnitZoneIndex("player"))
-			UpdateGamma()
+			self.settings.lastZoneId = self:GetMapIdenfier()
+			self:Update()
 		end
 	)
 	em:RegisterForEvent(addon.name, EVENT_PLAYER_DEACTIVATED, ResetGamma)
+
 	em:RegisterForEvent(
 		addon.name,
 		EVENT_ZONE_CHANGED,
 		function(event, ...)
 			self:OnZoneChanged(...)
+		end
+	)
+
+	local delayIdentifier = self.name .. "_DelayCheck"
+	local function delayCheck()
+		em:UnregisterForUpdate(delayIdentifier)
+		self:Update()
+	end
+
+	CALLBACK_MANAGER:RegisterCallback(
+		"OnWorldMapChanged",
+		function()
+			em:UnregisterForUpdate(delayIdentifier)
+			em:RegisterForUpdate(delayIdentifier, 50, delayCheck)
 		end
 	)
 

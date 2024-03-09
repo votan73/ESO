@@ -1,7 +1,7 @@
 ## Title: Votan's Darker Nights
 ## Author: votan
-## APIVersion: 101033 101034
-## Version: 1.0.19
+## APIVersion: 101040 101041
+## Version: 1.1.0
 ## DependsOn: LibHarvensAddonSettings
 ## SavedVariables: VotansDarkerNights_Data
 
