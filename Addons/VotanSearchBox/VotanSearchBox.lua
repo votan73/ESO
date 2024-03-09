@@ -1,7 +1,7 @@
 local g_savedVars
 
 local name = "VotanSearchBox"
-local glass = "|t40:40:esoui/art/lfg/lfg_tabicon_grouptools_down.dds|t"
+local glass = " |t40:40:/esoui/art/tutorial/gamepad/gp_inventory_trait_not_researched_icon.dds|t"
 
 local SEARCH_TYPE_INVENTORY = 1
 local CACHE_DATA = true
@@ -122,21 +122,15 @@ local searchContexts = {
 	"tradeTextSearch"
 }
 
-local setDefaultText
-if GetAPIVersion() <= 101034 then
-	function setDefaultText(control, text)
-		return ZO_EditDefaultText_Initialize(control, text)
-	end
-else
-	function setDefaultText(control, text)
-		control:SetDefaultText(text)
-	end
+local function setDefaultText(control, text)
+	control:SetDefaultText(text)
 end
 
 local function SetupSearchBox(bagSearchBg, ...)
 	local bagSearch = bagSearchBg:GetNamedChild("Box")
 	local bagSearchTx = bagSearch:GetNamedChild("Text")
 	local closeButton = wm:CreateControlFromVirtual(nil, bagSearchBg, "ZO_CloseButton")
+	closeButton:SetExcludeFromResizeToFitExtents(true)
 	bagSearch.background = bagSearchBg
 
 	local textWidth = 170
@@ -485,7 +479,7 @@ local function InitSettings()
 	if not settings then
 		return
 	end
-	settings.version = "1.8.6"
+	settings.version = "1.9.0"
 	settings.website = "http://www.esoui.com/downloads/info914-VotansSearchBox.html"
 
 	settings:AddSetting {

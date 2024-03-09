@@ -1,7 +1,7 @@
 local name = "VotanSearchBox"
-local glass = "|t40:40:esoui/art/lfg/lfg_tabicon_grouptools_down.dds|t"
+local glass = " |t40:40:/esoui/art/tutorial/gamepad/gp_inventory_trait_not_researched_icon.dds|t"
 
-local templateName = GetAPIVersion() < 100033 and "ZO_InventorySearch" or "ZO_InventorySearchTemplate"
+local templateName = "ZO_InventorySearchTemplate"
 
 local wm = GetWindowManager()
 local LTF = LibTextFilter
@@ -35,15 +35,8 @@ local function FindMostRightControl(parent)
 	return result
 end
 
-local setDefaultText
-if GetAPIVersion() <= 101034 then
-	function setDefaultText(control, text)
-		return ZO_EditDefaultText_Initialize(control, text)
-	end
-else
-	function setDefaultText(control, text)
-		control:SetDefaultText(text)
-	end
+local function setDefaultText(control, text)
+	control:SetDefaultText(text)
 end
 
 local function SetupSearchBox(bagSearchBg)
@@ -116,7 +109,7 @@ end
 ---- Guild History Window ----
 
 local function AddGuildHistory()
-	local GuildHistoryManager = GUILD_HISTORY
+	local GuildHistoryManager = GUILD_HISTORY_KEYBOARD or GUILD_HISTORY
 
 	local parent = GuildHistoryManager.control
 
@@ -144,23 +137,33 @@ local function AddGuildHistory()
 			local data, lower
 			for i = 1, #orgMasterList do
 				data = orgMasterList[i]
+				-- Bad, but no better idea
+				if GetAPIVersion() >= 101041 then
+					if not data.descriptionLower then
+						local description = data:GetText()
 
-				if not data.description then
-					-- Bad, but no better idea
-					data.description = self:FormatEvent(data.eventType, data.param1, data.param2, data.param3, data.param4, data.param5, data.param6)
-				end
-				if not data.descriptionLower then
-					lower = {}
-					AddLowercase(lower, data.description)
-					AddLowercase(lower, data.param1)
-					AddLowercase(lower, data.param2)
-					AddLowercase(lower, data.param3)
-					AddLowercase(lower, data.param4)
-					AddLowercase(lower, data.param5)
-					AddLowercase(lower, data.param6)
-					AddLowercase(lower, ZO_FormatDurationAgo(data.secsSinceEvent))
+						lower = {}
+						AddLowercase(lower, description)
+						AddLowercase(lower, ZO_FormatDurationAgo(GetTimeStamp32() - data:GetEventTimestampS()))
 
-					data.descriptionLower = table.concat(lower, " ")
+						data.descriptionLower = table.concat(lower, " ")
+					end
+				else
+					if not data.descriptionLower then
+						local description = self:FormatEvent(data.eventType, data.param1, data.param2, data.param3, data.param4, data.param5, data.param6)
+
+						lower = {}
+						AddLowercase(lower, description)
+						AddLowercase(lower, data.param1)
+						AddLowercase(lower, data.param2)
+						AddLowercase(lower, data.param3)
+						AddLowercase(lower, data.param4)
+						AddLowercase(lower, data.param5)
+						AddLowercase(lower, data.param6)
+						AddLowercase(lower, ZO_FormatDurationAgo(data.secsSinceEvent))
+
+						data.descriptionLower = table.concat(lower, " ")
+					end
 				end
 
 				if LTF:Filter(data.descriptionLower, cachedSearchTerm) then
