@@ -99,7 +99,7 @@ function addon:HookNavigationEntry()
 	end
 end
 
-local glass = "|t40:40:esoui/art/lfg/lfg_tabicon_grouptools_down.dds|t"
+local glass = " |t40:40:/esoui/art/tutorial/gamepad/gp_inventory_trait_not_researched_icon.dds|t"
 local lastSearchTerm
 local lastIsMulti
 local lastSplit
