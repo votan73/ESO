@@ -1,8 +1,8 @@
 ## Title: Votan's Lore Library Search
 ## Author: votan
 ## Description: Adds a full-text-search button to Lore Library.
-## Version: 1.1.9
-## APIVersion: 101034 101035
+## Version: 1.1.10
+## APIVersion: 101040 101041
 ## DependsOn: LibHarvensAddonSettings>=10705
 ## SavedVariables: VotansLoreLibrarySearch_Data
 
