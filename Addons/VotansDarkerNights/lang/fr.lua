@@ -11,3 +11,5 @@ SafeAddString(SI_VOTANS_DARKER_NIGHT_DAYLIGHT_TRANSITION, "Facteur de transition
 SafeAddString(SI_VOTANS_DARKER_NIGHT_DAYLIGHT_TRANSITION_TOOLTIP, "Détermine la durée de la transition entre les réglages de luminosité de jour et de nuit. Une valeur élevée utilisera les valeurs de nuits pendant moins longtemps.\nNote : Ceci n'a aucun effet sur la durée du cycle jour/nuit intégré au jeu.")
 
 SafeAddString(SI_VOTANS_DARKER_NIGHT_MODE, "L'extension Darker Nights est <<1[activée/désactivée]>> dans la zone \"<<T:2>>\".")
+SafeAddString(SI_VOTANS_DARKER_NIGHT_MODE2, "L'extension Darker Nights est <<1[activée/désactivée]>> dans la zone \"<<T:2>>\", \"<<T:3>>\".")
+SafeAddString(SI_VOTANS_DARKER_NIGHT_MODE3, "L'extension Darker Nights est <<1[activée/désactivée]>> dans la zone \"<<T:2>>\", \"<<T:3>>\" (<<4>>).")

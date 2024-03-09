@@ -10,4 +10,6 @@ ZO_CreateStringId("SI_VOTANS_DARKER_NIGHT_NEW_MOON_GAMMA_INFO", "Gamma used duri
 ZO_CreateStringId("SI_VOTANS_DARKER_NIGHT_DAYLIGHT_TRANSITION", "Daylight/Night Transition Factor")
 ZO_CreateStringId("SI_VOTANS_DARKER_NIGHT_DAYLIGHT_TRANSITION_TOOLTIP", "As higher as longer daylight and shorter night gamma is used.\nThis has no effect to the game's built-in day cycle.")
 
-ZO_CreateStringId("SI_VOTANS_DARKER_NIGHT_MODE", "Darker Night is turned <<1[off/on]>> for zone \"<<T:2>>\".")
+ZO_CreateStringId("SI_VOTANS_DARKER_NIGHT_MODE", 'Darker Night is turned <<1[off/on]>> for zone "<<T:2>>".')
+ZO_CreateStringId("SI_VOTANS_DARKER_NIGHT_MODE2", 'Darker Night is turned <<1[off/on]>> for zone "<<T:2>>", "<<T:3>>".')
+ZO_CreateStringId("SI_VOTANS_DARKER_NIGHT_MODE3", 'Darker Night is turned <<1[off/on]>> for zone "<<T:2>>", "<<T:3>>" (<<4>>).')

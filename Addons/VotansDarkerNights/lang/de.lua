@@ -11,3 +11,5 @@ SafeAddString(SI_VOTANS_DARKER_NIGHT_DAYLIGHT_TRANSITION, "Tageslicht/Nacht Übe
 SafeAddString(SI_VOTANS_DARKER_NIGHT_DAYLIGHT_TRANSITION_TOOLTIP, "Je größer desto länger wird Tag- und kürzer Nachtgamma verwendet.\nDas hat kein Einfluss auf den im Spiel eingebauten Tagzyklus.")
 
 SafeAddString(SI_VOTANS_DARKER_NIGHT_MODE, "Darker Night ist für die Zone \"<<T:2>>\" <<1[ausgeschaltet/eingeschaltet]>>.")
+SafeAddString(SI_VOTANS_DARKER_NIGHT_MODE2, "Darker Night ist für die Zone \"<<T:2>>\", \"<<T:3>>\" <<1[ausgeschaltet/eingeschaltet]>>.")
+SafeAddString(SI_VOTANS_DARKER_NIGHT_MODE3, "Darker Night ist für die Zone \"<<T:2>>\", \"<<T:3>>\" (<<4>>) <<1[ausgeschaltet/eingeschaltet]>>.")
