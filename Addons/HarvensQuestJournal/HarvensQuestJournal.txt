@@ -4,9 +4,9 @@
 ; States and/or other countries. All rights reserved.
 
 ## Title: Harven's Quest Journal
-## Version: 2.9.1
+## Version: 2.9.2
 ## Author: Harven & votan
-## APIVersion: 101036 101037
+## APIVersion: 101040 101041
 ## DependsOn: LibHarvensAddonSettings>=10900
 ## OptionalDependsOn: LibMainMenu2
 ## SavedVariables: HarvensQuestJournal_SavedVariables

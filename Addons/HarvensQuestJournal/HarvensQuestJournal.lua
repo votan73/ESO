@@ -1002,7 +1002,7 @@ end
 
 function HarvensQuestJournal:SetupOptions()
 	local settings = LibHarvensAddonSettings:AddAddon("Harven's Quest Journal")
-	settings.version = "2.9.1"
+	settings.version = "2.9.2"
 
 	local skin = {
 		type = LibHarvensAddonSettings.ST_DROPDOWN,
