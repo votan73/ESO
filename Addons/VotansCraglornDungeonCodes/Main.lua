@@ -119,7 +119,9 @@ local codes = {
 	["WS2"] = 263, --Dungeon: Wayrest Sewers II
 	["BS"] = 531, --Dungeon: Bal Sunnar
 	["SH"] = 532, --Dungeon: Scrivener's Hall
-	["SE"] = 534 --Trial: Sanity's Edge
+	["SE"] = 534, --Trial: Sanity's Edge
+	["OP"] = 556, --Dungeon: Oathsworn Pit
+	["BV"] = 565 --Dungeon: Bedlam Veil	
 }
 
 local tooltipCodes = {}
@@ -151,7 +153,6 @@ for keyword, name in pairs(codes) do
 	replacement["n" .. alter] = normal
 	replacement["v" .. alter] = vet
 	alter = keyword:upper()
-	replacement[alter] = default
 	replacement["n" .. alter] = normal
 	replacement["v" .. alter] = vet
 	replacement["N" .. alter] = normal
