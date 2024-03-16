@@ -170,7 +170,7 @@ function HarvensImprovedSkillsWindow:Initialize()
 	local function createLabel(ctrl)
 		ctrl:SetHeight(ctrl:GetHeight() + 5)
 		ctrl.label = WINDOW_MANAGER:CreateControlFromVirtual("$(parent)HarvensLabel", ctrl, "HarvensImprovedSkillsWindowLabel")
-		ctrl.label:SetAnchor(CENTER, ctrl, CENTER)
+		ctrl.label:SetAnchor(CENTER, ctrl, CENTER, 0, 3)
 	end
 	local function createMorph(control, ctrl)
 		control.morphLabel = WINDOW_MANAGER:CreateControlFromVirtual("$(parent)HarvensMorphLabel", ctrl, "HarvensImprovedSkillsWindowMorphLabel")
@@ -195,7 +195,7 @@ function HarvensImprovedSkillsWindow:Initialize()
 
 			if hasprog and morph > 0 then
 				control.morphLabel:SetHidden(false)
-				control.morphLabel:SetText(zo_strformat("(<<1>>)", name))
+				control.morphLabel:SetText(zo_strformat("(<<T:1>>)", name))
 			else
 				control.morphLabel:SetHidden(true)
 			end
