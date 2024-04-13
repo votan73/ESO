@@ -337,7 +337,7 @@ function addon:InitTweaks()
 			control[funcName] = function(self)
 				-- w and h jitter in decimals.
 				local w, h = org(self)
-				w, h = zo_round(w + 0.5), zo_round(h + 0.5)
+				w, h = zo_round(w * 2 + 0.5) * 0.5, zo_round(h * 2 + 0.5) * 0.5
 				return w, h
 			end
 		end
@@ -345,7 +345,7 @@ function addon:InitTweaks()
 			local org = control[funcName]
 			control[funcName] = function(self, w, h)
 				-- w and h jitter in decimals.
-				w, h = zo_round(w + 0.5), zo_round(h + 0.5)
+				w, h = zo_round(w * 2 + 0.5) * 0.5, zo_round(h * 2 + 0.5) * 0.5
 				return org(self, w, h)
 			end
 		end
@@ -622,7 +622,7 @@ function addon:InitMiniMap()
 	local function AdjustZoom()
 		local x, y = GetMapPlayerPosition("player")
 		local numTiles = GetMapNumTiles()
-		local tilePixelWidth = ZO_WorldMapContainer1:GetTextureFileDimensions()
+		local tilePixelWidth = ZO_WorldMapContainer1 and ZO_WorldMapContainer1:GetTextureFileDimensions() or 1
 		local totalPixels = numTiles * tilePixelWidth
 		local w, h = ZO_WorldMapScroll:GetDimensions()
 		w, h = zo_round(w), zo_round(h)
@@ -673,6 +673,7 @@ function addon:InitMiniMap()
 	local orgGetMapCustomMaxZoom = GetMapCustomMaxZoom
 	function GetMapCustomMaxZoom(...)
 		if not WORLD_MAP_MANAGER:IsInMode(MAP_MODE_VOTANS_MINIMAP) then
+			lastW, lastH, lastZoom = -1, -1, -1
 			return orgGetMapCustomMaxZoom(...)
 		else
 			if lastZoom < 0 then
@@ -1390,8 +1391,6 @@ do
 							font, scale = self.account.titleFont, 1
 						end
 						ZO_WorldMapTitle:SetFont(string.format("%s|%i|soft-shadow-thick", font, math.floor(self.account.titleFontSize * scale)))
-					else
-						ZO_WorldMapTitle:SetFont("")
 					end
 				end
 				local item = self:GetFontSizeBySizeName(self.account.titleFontSize)
@@ -1412,7 +1411,7 @@ do
 				end
 
 				ZO_WorldMapTitle:SetColor(self.titleColor:UnpackRGB())
-				ZO_WorldMapTitle:SetHidden(false)
+				ZO_WorldMapTitle:SetHidden(not (self.account.titleFont and #self.account.titleFont > 0))
 				local enable = not (self.account.lockWindow or IsInGamepadPreferredMode())
 				ZO_WorldMapButtonsBG:SetMouseEnabled(enable)
 				ZO_WorldMapTitleBar:SetMouseEnabled(enable)
@@ -1430,6 +1429,7 @@ do
 					return
 				end
 			else
+				ZO_WorldMapTitle:SetHidden(false)
 				local style = self:GetStyleByName(self.account.frameStyle)
 				if style and style.data.reset then
 					style.data.reset(self.account, control, ZO_WorldMapMapFrame)
