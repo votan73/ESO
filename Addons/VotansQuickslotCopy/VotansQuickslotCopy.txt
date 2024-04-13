@@ -1,8 +1,8 @@
 ## Title: Votan's Quickslot Copy
 ## Author: votan
 ## Description: Allows you to copy all five quckslot menus from character to character.
-## APIVersion: 101034 101035
-## Version: 1.0.0
+## APIVersion: 101040 101041
+## Version: 1.0.1
 ## DependsOn:
 ## OptionalDependsOn:
 ## SavedVariables: VOTANS_QUICKSLOTCOPY_DATA

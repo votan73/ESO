@@ -129,21 +129,26 @@ function addon:InitializeKeybindStripDescriptor()
 end
 
 function addon:Initialize()
-	local function OnStateChanged(oldState, newState)
-		if newState == SCENE_SHOWN then
+	SecurePostHook(
+		COLLECTIONS_BOOK,
+		"UpdateKeybinds",
+		function()
 			self.wheel = COLLECTIONS_BOOK.wheel
 			self.hotbarCategory = COLLECTIONS_BOOK.hotbarCategory
-			if self.hotbarCategory then
-				self:InitializeKeybindStripDescriptor()
-				KEYBIND_STRIP:AddKeybindButtonGroup(self.keybindStripDescriptor)
-			end
+			KEYBIND_STRIP:UpdateKeybindButtonGroup(self.keybindStripDescriptor)
+		end
+	)
+	local function OnStateChanged(oldState, newState)
+		if newState == SCENE_SHOWN then
+			self:InitializeKeybindStripDescriptor()
+			KEYBIND_STRIP:AddKeybindButtonGroup(self.keybindStripDescriptor)
 		elseif newState == SCENE_HIDING then
 			KEYBIND_STRIP:RemoveKeybindButtonGroup(self.keybindStripDescriptor)
 			self.wheel = nil
 			self.hotbarCategory = nil
 		end
 	end
-	COLLECTIONS_BOOK.scene:RegisterCallback("StateChange", OnStateChanged)
+	COLLECTIONS_BOOK_FRAGMENT:RegisterCallback("StateChange", OnStateChanged)
 
 	local function OnStateChanged(oldState, newState)
 		if newState == SCENE_SHOWN then
