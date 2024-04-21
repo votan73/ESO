@@ -637,7 +637,7 @@ end
 function HarvensCustomMapPins:SetupOptions()
 	local LibHarvensAddonSettings = LibHarvensAddonSettings or LibStub("LibHarvensAddonSettings-1.0")
 	local settings = LibHarvensAddonSettings:AddAddon("Harven's Custom Map Pins")
-	settings.version = "3.2.3"
+	settings.version = "3.2.4"
 
 	local pinSize = {
 		type = LibHarvensAddonSettings.ST_SLIDER,
@@ -854,13 +854,13 @@ function HarvensCustomMapPins:Initialize()
 	-- this creator creates a tooltip
 	local creator = {
 		creator = function(pin)
-			if not pin or not pin.__index or pin.__index ~= ZO_MapPin then
+			if not pin or pin.__index ~= ZO_MapPin then
 				return
 			end
 			local _, pTag = pin:GetPinTypeAndTag()
 			pin = self:GetPin(pTag)
-			if pin then
-				InformationTooltip:AddLine(pin.description)
+			if pin and pin.description or pin.predefined then
+				InformationTooltip:AddLine(pin.description and #pin.description > 0 and pin.description or pin.predefined)
 			end
 		end,
 		tooltip = 1
