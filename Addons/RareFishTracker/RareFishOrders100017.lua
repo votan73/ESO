@@ -429,6 +429,21 @@ function RFT.MakeOrders()
 			RFT.window.column3,
 			RFT.window.column3,
 			RFT.window.column3,
+		},
+		[3948] = {
+			-- Westauen
+			RFT.window.column1,
+			RFT.window.column1,
+			RFT.window.column1,
+			RFT.window.column1,
+			RFT.window.column2,
+			RFT.window.column2,
+			RFT.window.column2,
+			RFT.window.column2,
+			RFT.window.column3,
+			RFT.window.column3,
+			RFT.window.column3,
+			RFT.window.column3,
 		}
 	}
 	RFT.quality = {
@@ -711,6 +726,21 @@ function RFT.MakeOrders()
 			ITEM_QUALITY_MAGIC,
 			ITEM_QUALITY_MAGIC,
 			ITEM_QUALITY_ARCANE,
+		},
+		[3948] = {
+			-- Westauen
+			ITEM_QUALITY_MAGIC,
+			ITEM_QUALITY_MAGIC,
+			ITEM_QUALITY_MAGIC,
+			ITEM_QUALITY_ARCANE,
+			ITEM_QUALITY_MAGIC,
+			ITEM_QUALITY_MAGIC,
+			ITEM_QUALITY_MAGIC,
+			ITEM_QUALITY_ARCANE,
+			ITEM_QUALITY_MAGIC,
+			ITEM_QUALITY_MAGIC,
+			ITEM_QUALITY_MAGIC,
+			ITEM_QUALITY_ARCANE,
 		}
 	}
 	RFT.types = {
@@ -849,6 +879,12 @@ function RFT.MakeOrders()
 			-- Galen
 			SI_RARE_FISH_TRACKER_TYPE_OCEAN,
 			SI_RARE_FISH_TRACKER_TYPE_LAKE,
+			SI_RARE_FISH_TRACKER_TYPE_FOUL
+		},
+		[1443] = {
+			-- Westauen
+			SI_RARE_FISH_TRACKER_TYPE_LAKE,
+			SI_RARE_FISH_TRACKER_TYPE_RIVER,
 			SI_RARE_FISH_TRACKER_TYPE_FOUL
 		}
 	}
