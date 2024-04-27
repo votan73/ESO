@@ -322,6 +322,11 @@
 		{
 			-- "Apocrypha",
 			alliance = 999
+		},
+		-- [51] =
+		{
+			-- "Westauen",
+			alliance = 999
 		}
 	},
 	tresureMap = {},
@@ -1125,7 +1130,7 @@ function addon:InitSettings()
 		type = "panel",
 		name = "Improved Locations",
 		author = "votan",
-		version = "1.22.3",
+		version = "1.22.6",
 		registerForRefresh = false,
 		registerForDefaults = true,
 		website = "http://www.esoui.com/downloads/info1096-VotansImprovedLocations.html"
