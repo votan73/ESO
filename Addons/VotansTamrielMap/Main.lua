@@ -331,6 +331,13 @@
 			-- "Apocrypha",
 			alliance = 999,
 			cosmic = true
+		},
+		-- [51] =
+		{
+			-- "Westauen",
+			alliance = 999,
+			poi = 558,
+			cosmic = false
 		}
 	},
 	color = {
@@ -394,7 +401,7 @@ function addon:InitSettings()
 	end
 	addon.settingsControls = settings
 	settings.allowDefaults = true
-	settings.version = "1.2.0"
+	settings.version = "1.2.1"
 	settings.website = "https://www.esoui.com/downloads/info2672-VotansTamrielMap.html"
 
 	settings:AddSetting {
