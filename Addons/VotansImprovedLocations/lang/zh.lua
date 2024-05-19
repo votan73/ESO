@@ -1,0 +1,12 @@
+﻿-- Translation by @LoongKeiZ
+SafeAddString(SI_VOTANSIMPROVEDLOCATIONS_SHOW_LEVELS, "显示主线故事顺序 (Show Mainstory Order)")
+SafeAddString(SI_VOTANSIMPROVEDLOCATIONS_SORT_ASC, "主线故事升序")
+SafeAddString(SI_VOTANSIMPROVEDLOCATIONS_SORT_DSC, "主线故事降序")
+SafeAddString(SI_VOTANSIMPROVEDLOCATIONS_SORT, "排序 (Sort By)")
+SafeAddString(SI_VOTANSIMPROVEDLOCATIONS_SORT_NAME, "名称")
+SafeAddString(SI_VOTANSIMPROVEDLOCATIONS_SHOW_ALL_ALLIANCE_ON_TOP, "置顶显示\"全部联盟\" (Show \"All Alliances\" On Top)")
+SafeAddString(SI_KEYBINDINGS_LAYER_VOTANS_IMPROVED_LOCATIONS, "Improved Locations")
+SafeAddString(SI_BINDING_NAME_VOTANS_TOGGLE_LOCATION_FAVORITE, "切换收藏夹 (Toggle Favorite)")
+SafeAddString(SI_VOTANSIMPROVEDLOCATIONS_SHOW_TOGGLE_FAVORITE, "显示收藏夹按钮 (Show Favorite Button)")
+SafeAddString(SI_VOTANSIMPROVEDLOCATIONS_SHOW_RECENT_LIST, "显示最近去过的列表 (Show Recent List)")
+SafeAddString(SI_VOTANSIMPROVEDLOCATIONS_ASSIGN_TO_ALLIANCE, "替换联盟任务 (Alternative Alliance Assignment)")

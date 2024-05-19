@@ -1,8 +1,8 @@
 ## Title: Votan's Improved Quests
 ## Author: votan
 ## Description: Adds additional information to quests tab in world map.
-## Version: 1.3.1
-## APIVersion: 101033 101034
+## Version: 1.3.2
+## APIVersion: 101041 101042
 ## DependsOn: LibAddonMenu-2.0>=31
 ## SavedVariables: VotansImprovedQuests_Data
 
