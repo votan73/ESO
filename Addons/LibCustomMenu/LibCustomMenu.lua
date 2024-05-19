@@ -9,11 +9,12 @@ local wm = WINDOW_MANAGER
 ----- Common -----
 MENU_ADD_OPTION_HEADER = 100
 
+local function Noop(self)
+end
+
 local function SetupDivider(pool, control)
 	local function GetTextDimensions(self)
 		return 32, 7
-	end
-	local function Noop(self)
 	end
 
 	local label = wm:CreateControlFromVirtual("$(parent)Name", control, "ZO_BaseTooltipDivider")
@@ -43,6 +44,7 @@ lib.headerFont = "ZoFontWinH3"
 local function SetupHeader(pool, control)
 	local label = control:GetNamedChild("Text")
 	local divider = control:GetNamedChild("Divider")
+	local checkbox = control:GetNamedChild("Checkbox")
 	local orgGetTextDimensions = label.GetTextDimensions
 	function label:GetTextDimensions()
 		local w, h = orgGetTextDimensions(self)
@@ -61,6 +63,11 @@ local function SetupHeader(pool, control)
 	control.isHeader = true
 	control.item = control
 	control:SetMouseEnabled(false)
+
+	if checkbox then
+		checkbox:SetHidden(true)
+		checkbox:SetMouseEnabled(false)
+	end
 
 	if divider then
 		divider:ClearAnchors()
@@ -91,24 +98,37 @@ local function runTooltip(control, inside)
 	end
 end
 
-local function cleanupDivider(items)
+--Calculate shown headers, divider, checkboxes and remove their special height from
+--the total menu height
+local function cleanupEntryHeights(items)
 	local wasDivider = true
 	local height = 0
 	for i = #items, 1, -1 do
 		local menuEntry = items[i]
+		local item = menuEntry.item
 		local isDivider = menuEntry.isDivider
+		local isHeader = menuEntry.isHeader
+		local isCheckbox = menuEntry.checkbox
 		if isDivider then
 			if wasDivider or i == 1 then
-				height = height + menuEntry.item.storedHeight
+				height = height + item.storedHeight
 				menuEntry.item.storedHeight = 0
-				menuEntry.item:SetHidden(true)
+				item:SetHidden(true)
 			else
-				menuEntry.item:SetHidden(false)
+				item:SetHidden(false)
 			end
 			wasDivider = isDivider
 			isDivider = true
 		else
 			wasDivider = false
+			if isCheckbox then
+				local storedHeightOfItem = item.storedHeight
+				local heightOfItem = item:GetHeight()
+				local heightToCompare = ((storedHeightOfItem ~= heightOfItem) and storedHeightOfItem) or heightOfItem
+				local heightOfCheckbox = menuEntry.checkbox:GetHeight()
+				local checkboxHeightDiff = zo_clamp(heightToCompare - heightOfCheckbox, 0, heightToCompare)
+				height = height + checkboxHeightDiff
+			end
 		end
 	end
 	return height
@@ -301,7 +321,6 @@ function Submenu:Initialize(name)
 		control:SetHandler("OnMouseExit", CheckBoxMouseExit)
 
 		ZO_CheckButton_SetToggleFunction(control, CheckBoxMouseUp)
-
 		return control
 	end
 
@@ -700,9 +719,28 @@ local function HookContextMenu()
 	PreHook(ZO_InventorySlotActions, "GetPrimaryActionName", AppendToMenu)
 end
 
+----- Hook points for LibScrollableMenu -----
+function lib.AddMenuItem(mytext, myfunction, itemType, myFont, normalColor, highlightColor, itemYPad, horizontalAlignment, isHighlighted, onEnter, onExit, enabled)
+	local isDivider = itemType ~= MENU_ADD_OPTION_HEADER and mytext == lib.DIVIDER
+	local index = AddMenuItem(mytext, myfunction, itemType, myFont, normalColor, highlightColor, itemYPad, horizontalAlignment, isHighlighted, onEnter, onExit, enabled)
+
+	local lastAdded = ZO_Menu.items[index]
+	if itemType == MENU_ADD_OPTION_CHECKBOX then
+		lastAdded.item:SetAnchor(TOPLEFT, lastAdded.checkbox, TOPLEFT, 0, -4)
+	end
+	lastAdded.isDivider = isDivider
+
+	return index
+end
+
+function lib.AddSubMenuItem(mytext, myfunction, itemType, myFont, normalColor, highlightColor, itemYPad, entries, isDivider)
+	mytext = string.format("%s |u16:0::|u", mytext)
+	return AddMenuItem(mytext, myfunction, itemType, myFont, normalColor, highlightColor, itemYPad)
+end
+
 ----- Public API -----
 
-function AddCustomMenuItem(mytext, myfunction, itemType, myFont, normalColor, highlightColor, itemYPad, horizontalAlignment)
+function AddCustomMenuItem(mytext, myfunction, itemType, myFont, normalColor, highlightColor, itemYPad, horizontalAlignment, isHighlighted, onEnter, onExit, enabled)
 	local orgItemPool = ZO_Menu.itemPool
 	local orgCheckboxItemPool = ZO_Menu.checkBoxPool
 
@@ -720,13 +758,7 @@ function AddCustomMenuItem(mytext, myfunction, itemType, myFont, normalColor, hi
 		itemType = MENU_ADD_OPTION_LABEL
 	end
 
-	local index = AddMenuItem(mytext, myfunction or function() end, itemType, myFont, normalColor, highlightColor, itemYPad, horizontalAlignment)
-
-	local lastAdded = ZO_Menu.items[index]
-	if itemType == MENU_ADD_OPTION_CHECKBOX then
-		lastAdded.item:SetAnchor(TOPLEFT, lastAdded.checkbox, TOPLEFT, 0, -2)
-	end
-	lastAdded.isDivider = isDivider
+	local index = lib.AddMenuItem(mytext, myfunction or Noop, itemType, myFont, normalColor, highlightColor, itemYPad, horizontalAlignment, isHighlighted, onEnter, onExit, enabled)
 
 	ZO_Menu.itemPool = orgItemPool
 	ZO_Menu.checkBoxPool = orgCheckboxItemPool
@@ -766,8 +798,7 @@ function AddCustomSubMenuItem(mytext, entries, myfont, normalColor, highlightCol
 	ZO_Menu.itemPool = lib.submenuPool
 	ZO_Menu.checkBoxPool = lib.checkBoxPool
 
-	mytext = string.format("%s |u16:0::|u", mytext)
-	local index = AddMenuItem(mytext, CreateSubMenu, MENU_ADD_OPTION_LABEL, myfont, normalColor, highlightColor, itemYPad)
+	local index = lib.AddSubMenuItem(mytext, CreateSubMenu, MENU_ADD_OPTION_LABEL, myfont, normalColor, highlightColor, itemYPad, entries)
 
 	ZO_Menu.itemPool = orgItemPool
 	ZO_Menu.checkBoxPool = orgCheckboxItemPool
@@ -792,7 +823,7 @@ end
 local function HookShowMenu()
 	local orgShowMenu = ShowMenu
 	function ShowMenu(...)
-		ZO_Menu.height = ZO_Menu.height - cleanupDivider(ZO_Menu.items)
+		ZO_Menu.height = ZO_Menu.height - cleanupEntryHeights(ZO_Menu.items)
 		return orgShowMenu(...)
 	end
 end
