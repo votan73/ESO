@@ -326,7 +326,7 @@ function HarvensPotionsAlert:SetupOptions()
 	if not settings then
 		return
 	end
-	settings.version = "2.2.1"
+	settings.version = "2.2.2"
 
 	local attrNames = {[POWERTYPE_HEALTH] = 1, [POWERTYPE_MAGICKA] = 2, [POWERTYPE_STAMINA] = 3}
 	local lastControl
@@ -496,8 +496,8 @@ function HarvensPotionsAlert:SetupOptions()
 				slot = {}
 				self.sv.armory[buildIndex] = slot
 			end
-			slot.slots = ZO_DeepTableCopy(self.sv.slots)
-			slot.roles = ZO_DeepTableCopy(self.sv.roles)
+			slot.slots = ZO_DeepTableCopy(self.sv.slots or {})
+			slot.roles = ZO_DeepTableCopy(self.sv.roles or {})
 		end
 	)
 	PREFERRED_ROLES:RegisterCallback(
