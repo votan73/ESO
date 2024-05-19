@@ -479,7 +479,7 @@ local function InitSettings()
 	if not settings then
 		return
 	end
-	settings.version = "1.9.0"
+	settings.version = "1.9.1"
 	settings.website = "http://www.esoui.com/downloads/info914-VotansSearchBox.html"
 
 	settings:AddSetting {

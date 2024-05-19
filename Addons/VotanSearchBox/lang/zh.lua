@@ -1,0 +1,11 @@
+﻿-- Translation by @LoongKeiZ
+SafeAddString(SI_VOTAN_SEARCHBOX_SHOW, "显示搜索框 (Show Search Box)")
+SafeAddString(SI_VOTAN_SEARCHBOX_SHOW_TOOLTIP, "在库存中显示放大镜符号，按名称筛选物品\n(Shows a magnifier symbol in your inventory to filter items by name)")
+SafeAddString(SI_VOTAN_SEARCHBOX_STICKY, "保留搜索文本 (Keep Search Text)")
+SafeAddString(SI_VOTAN_SEARCHBOX_STICKY_TOOLTIP, "即使关闭库存或切换选项卡，也会保留搜索文本。右键单击文本或单击 X 清空搜索框。\n(Keep the search text, even after closing the inventory or switch tabs. Right-click or click the X to clear the edit box.)")
+SafeAddString(SI_VOTAN_SEARCHBOX_ALL_SAME_TEXT, "统一文本搜索 (Unify Text Search)")
+SafeAddString(SI_VOTAN_SEARCHBOX_ALL_SAME_TEXT_TOOLTIP, "在所有选项卡上使用搜索文本。\n(Use search text at all tabs.)")
+SafeAddString(SI_VOTAN_SEARCHBOX_SEARCH_SETNAME, "包括套装名称 (Include Set Names)")
+SafeAddString(SI_VOTAN_SEARCHBOX_SEARCH_SETNAME_TOOLTIP, "在套装名称中进行额外搜索。\n(Additional search in the set name of the items.)")
+SafeAddString(SI_VOTAN_SEARCHBOX_SEARCH_MASTERWRIT, "包含大师委托 (Include Master Writs)")
+SafeAddString(SI_VOTAN_SEARCHBOX_SEARCH_MASTERWRIT_TOOLTIP, "在大师委托描述中进行额外搜索。\n(Additional search in the master writ description.)")
