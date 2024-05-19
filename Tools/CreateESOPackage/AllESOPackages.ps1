@@ -274,8 +274,8 @@ foreach($Path in [System.IO.Directory]::GetDirectories($Path)){
     $data.version = $ver
     $data.title = $details.title
     $list = @()
-    if ($compatible -ccontains "101040") { $list+="9.2.5" }
     if ($compatible -ccontains "101041") { $list+="9.3.0" }
+    if ($compatible -ccontains "101042") { $list+="10.0.0" }
     if ($list.Length -lt 2) {
         Write-Host -ForegroundColor Red "Manifest or script not up-to-date."
         continue
