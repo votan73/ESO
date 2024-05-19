@@ -16,26 +16,28 @@ namespace ESOLauncher
         System.IO.FileInfo fileLive;
         System.IO.FileInfo filePTS;
 
+        protected override void CreateHandle()
+        {
+            font = font ?? new Font(Font.FontFamily, 36);
+            btnStartPTS.Font = btnStartEU.Font = btnStartNA.Font = font;
+
+            Icon = Program.Icon;
+
+            base.CreateHandle();
+        }
         protected override void OnLoad(EventArgs e)
         {
             fileLive = new System.IO.FileInfo(@"..\The Elder Scrolls Online\game\client\eso64.exe");
             filePTS = new System.IO.FileInfo(@"..\The Elder Scrolls Online PTS\game\client\eso64.exe");
 
-            font = font ?? new Font(Font.FontFamily, 36);
-            btnStartPTS.Font = btnStartEU.Font = btnStartNA.Font = font;
-            btnStartPTS.CooldownLabel.Font = btnStartEU.CooldownLabel.Font = btnStartNA.CooldownLabel.Font = Font;
-
-
+            base.OnLoad(e);
+        }
+        protected override void OnShown(EventArgs e)
+        {
             btnStartNA.Enabled = btnStartEU.Enabled = fileLive.Exists;
             btnStartPTS.Enabled = filePTS.Exists;
 
-            Icon = Program.Icon;
-            //try
-            //{
-            //    Icon = new Icon("ESO.ico");
-            //}
-            //catch (System.IO.FileNotFoundException) { }
-            base.OnLoad(e);
+            base.OnShown(e);
         }
         private static void UpdateSettings(bool isPTS, bool isEU)
         {
@@ -84,12 +86,6 @@ namespace ESOLauncher
         {
             var btn = sender as StartButton;
             btn.Enabled = false;
-            if (btn.DependingButton != null)
-            {
-                btn.DependingButton.Enabled = false;
-                btn.DependingButton.Cooldown = DateTime.MinValue;
-            }
-            btn.Cooldown = DateTime.MinValue;
             Task.Factory.StartNew(() =>
             {
                 var info = new System.Diagnostics.ProcessStartInfo(file.FullName);
@@ -106,21 +102,9 @@ namespace ESOLauncher
 
                 string lastPlatform = GetLastPlatform();
 
-                var cooldown = DateTime.Now.AddMinutes(3).AddSeconds(-3);
                 MethodInvoker exited = () =>
                 {
                     btn.Enabled = file.Exists;
-                    if (btn.DependingButton != null)
-                        btn.DependingButton.Enabled = true;
-                    switch (lastPlatform)
-                    {
-                        case "live-eu":
-                            btnStartNA.Cooldown = cooldown;
-                            break;
-                        case "live":
-                            btnStartEU.Cooldown = cooldown;
-                            break;
-                    }
                 };
                 BeginInvoke(exited);
             });
@@ -141,12 +125,6 @@ namespace ESOLauncher
         {
             UpdateSettings(true, false);
             Launch(sender, filePTS);
-        }
-
-        private void CooldownTimer_Tick(object sender, EventArgs e)
-        {
-            btnStartNA.UpdateCooldown();
-            btnStartEU.UpdateCooldown();
         }
     }
 }
