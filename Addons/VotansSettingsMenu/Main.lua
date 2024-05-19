@@ -249,7 +249,7 @@ function addon:InitSettings()
 		name = addonName,
 		displayName = addonName,
 		author = "votan",
-		version = "1.5.9",
+		version = "1.6.0",
 		registerForRefresh = true,
 		registerForDefaults = true
 	}
