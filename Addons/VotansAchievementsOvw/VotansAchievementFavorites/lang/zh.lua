@@ -1,0 +1,4 @@
+﻿-- Translation by @LoongKeiZ
+SafeAddString(SI_VOTANS_ACHIEVEMENT_FAVORITES, "收藏夹")
+SafeAddString(SI_VOTANS_ACHIEVEMENT_FAVORITE_ADD, "添加至收藏夹")
+SafeAddString(SI_VOTANS_ACHIEVEMENT_FAVORITE_REMOVE, "从收藏夹中移除")

@@ -1130,7 +1130,7 @@ function addon:InitSettings()
 		type = "panel",
 		name = "Improved Locations",
 		author = "votan",
-		version = "1.22.6",
+		version = "1.22.4",
 		registerForRefresh = false,
 		registerForDefaults = true,
 		website = "http://www.esoui.com/downloads/info1096-VotansImprovedLocations.html"
