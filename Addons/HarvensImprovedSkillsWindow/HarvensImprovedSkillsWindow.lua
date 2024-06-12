@@ -117,7 +117,7 @@ function HarvensImprovedSkillsWindow:Initialize()
 		checkbox:SetAnchor(unpack(anchor))
 		ZO_CheckButton_SetLabelText(checkbox, label)
 		checkbox:GetNamedChild("Label"):ClearAnchors()
-		checkbox:GetNamedChild("Label"):SetAnchor(RIGHT, checkbox, LEFT, -4)
+		checkbox:GetNamedChild("Label"):SetAnchor(RIGHT, checkbox, LEFT, -4, 0, ANCHOR_CONSTRAINS_XY)
 		ZO_CheckButton_SetCheckState(checkbox, self.sv[setting])
 		ZO_CheckButton_SetToggleFunction(checkbox, function()
 			self.sv[setting] = ZO_CheckButton_IsChecked(checkbox)
@@ -127,7 +127,11 @@ function HarvensImprovedSkillsWindow:Initialize()
 		return checkbox
 	end
 
-	createCheckbox("HarvensShowDetails", { BOTTOMRIGHT, SKILLS_WINDOW.control, TOPRIGHT, -8, -8 }, "Show detailed skills progression", "showDetails")
+    if PP then
+		createCheckbox("HarvensShowDetails", { BOTTOMRIGHT, SKILLS_WINDOW.control, TOPRIGHT, -8, -30, ANCHOR_CONSTRAINS_XY }, "Show detailed skills progression", "showDetails")
+    else
+        createCheckbox("HarvensShowDetails", { BOTTOMRIGHT, SKILLS_WINDOW.control, TOPRIGHT, -8, -70, ANCHOR_CONSTRAINS_XY }, "Show detailed skills progression", "showDetails")
+	end
 	createCheckbox("HarvensShowTotal", { BOTTOMRIGHT, SKILLS_WINDOW.control:GetNamedChild("HarvensShowDetails"), TOPRIGHT, 0, -8 }, "Show total skill line progression", "showTotal")
 
 	SecurePostHook(_G, "ZO_Skills_AbilitySlot_OnMouseEnter", function(control)
