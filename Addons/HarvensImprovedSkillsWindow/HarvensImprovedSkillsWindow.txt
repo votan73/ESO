@@ -5,8 +5,8 @@
 
 ## Title: Harven's Improved Skills Window
 ## Author: Harven & votan
-## Version: 2.0.7
-## APIVersion: 101040 101041
+## Version: 2.0.8
+## APIVersion: 101041 101042
 ## OptionalDependsOn: SpentSkillPoints LuiExtended
 ## Description: This addon will improve your skills window.
 ## SavedVariables: HarvensImprovedSkillsWindow_SavedVariables

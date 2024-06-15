@@ -9,11 +9,19 @@ local function GetMorphAndRank(progressionIndex)
 	return morph, rank
 end
 
+local rankLess = {
+	SKILL_TYPE_ARMOR = true,
+	SKILL_TYPE_CLASS = true,
+	SKILL_TYPE_RACIAL = true,
+	SKILL_TYPE_TRADESKILL = true,
+	SKILL_TYPE_WEAPON = true
+}
+local maxRanks = {20, 12, 10, 6}
+
 local function FindLineMaxRank(skillType, skillIndex)
-	if skillType == SKILL_TYPE_ARMOR or skillType == SKILL_TYPE_CLASS or skillType == SKILL_TYPE_RACIAL or skillType == SKILL_TYPE_TRADESKILL or skillType == SKILL_TYPE_WEAPON then
+	if rankLess[skillType] then
 		return 50, GetSkillLineRankXPExtents(skillType, skillIndex, 49)
 	else
-		local maxRanks = { 20, 12, 10, 6 }
 		for i = 1, #maxRanks do
 			local startXP, nextStartXP = GetSkillLineRankXPExtents(skillType, skillIndex, maxRanks[i] - 1)
 			if startXP ~= nil and nextStartXP ~= nil then
@@ -109,7 +117,7 @@ end
 
 -- Initialization
 function HarvensImprovedSkillsWindow:Initialize()
-	local defaults = { showDetails = true, showTotal = false }
+	local defaults = {showDetails = true, showTotal = false}
 	self.sv = ZO_SavedVars:New("HarvensImprovedSkillsWindow_SavedVariables", 1, nil, defaults)
 
 	local function createCheckbox(name, anchor, label, setting)
@@ -119,78 +127,89 @@ function HarvensImprovedSkillsWindow:Initialize()
 		checkbox:GetNamedChild("Label"):ClearAnchors()
 		checkbox:GetNamedChild("Label"):SetAnchor(RIGHT, checkbox, LEFT, -4, 0, ANCHOR_CONSTRAINS_XY)
 		ZO_CheckButton_SetCheckState(checkbox, self.sv[setting])
-		ZO_CheckButton_SetToggleFunction(checkbox, function()
-			self.sv[setting] = ZO_CheckButton_IsChecked(checkbox)
-			SKILLS_WINDOW:RefreshSkillLineInfo()
-			SKILLS_WINDOW:RebuildSkillList()
-		end)
+		ZO_CheckButton_SetToggleFunction(
+			checkbox,
+			function()
+				self.sv[setting] = ZO_CheckButton_IsChecked(checkbox)
+				SKILLS_WINDOW:RefreshSkillLineInfo()
+				SKILLS_WINDOW:RebuildSkillList()
+			end
+		)
 		return checkbox
 	end
 
 	if PP then
-		createCheckbox("HarvensShowDetails", { BOTTOMRIGHT, SKILLS_WINDOW.control, TOPRIGHT, -8, -30, ANCHOR_CONSTRAINS_XY }, "Show detailed skills progression", "showDetails")
+		createCheckbox("HarvensShowDetails", {BOTTOMRIGHT, SKILLS_WINDOW.control, TOPRIGHT, -8, -30, ANCHOR_CONSTRAINS_XY}, "Show detailed skills progression", "showDetails")
 	else
-		createCheckbox("HarvensShowDetails", { BOTTOMRIGHT, SKILLS_WINDOW.control, TOPRIGHT, -8, -70, ANCHOR_CONSTRAINS_XY }, "Show detailed skills progression", "showDetails")
+		createCheckbox("HarvensShowDetails", {BOTTOMRIGHT, SKILLS_WINDOW.control, TOPRIGHT, -8, -70, ANCHOR_CONSTRAINS_XY}, "Show detailed skills progression", "showDetails")
 	end
-	createCheckbox("HarvensShowTotal", { BOTTOMRIGHT, SKILLS_WINDOW.control:GetNamedChild("HarvensShowDetails"), TOPRIGHT, 0, -8 }, "Show total skill line progression", "showTotal")
+	createCheckbox("HarvensShowTotal", {BOTTOMRIGHT, SKILLS_WINDOW.control:GetNamedChild("HarvensShowDetails"), TOPRIGHT, 0, -8}, "Show total skill line progression", "showTotal")
 
-	SecurePostHook(_G, "ZO_Skills_AbilitySlot_OnMouseEnter", function(control)
-		local skillProgressionData = control.skillProgressionData
-		local skillData = skillProgressionData:GetSkillData()
-		if not skillData:IsPlayerSkill() then
-			return
-		end
+	SecurePostHook(
+		_G,
+		"ZO_Skills_AbilitySlot_OnMouseEnter",
+		function(control)
+			local skillProgressionData = control.skillProgressionData
+			local skillData = skillProgressionData:GetSkillData()
+			if not skillData:IsPlayerSkill() then
+				return
+			end
 
-		local skillType, skillLineIndex, skillIndex = skillProgressionData:GetIndices()
-		if not skillData:IsCraftedAbility() then
-			if not skillData:IsPassive() then
-				local progressionIndex = GetProgressionSkillProgressionIndex(skillType, skillLineIndex, skillIndex)
-				if progressionIndex and progressionIndex > 0 then
-					local morph, rank = GetMorphAndRank(progressionIndex)
-					if morph > 0 and rank >= 4 then
-						InitializeTooltip(HarvensSkillTooltipMorph1, control, TOPRIGHT, -5, -5, TOPLEFT)
-						morph = (morph == 2 and 1 or 2)
-						HarvensSkillTooltipMorph1:SetProgressionAbility(progressionIndex, morph, rank)
-						return
-					end
-					rank = 4
-					InitializeTooltip(HarvensSkillTooltipMorph2, control, TOPRIGHT, -5, -5, TOPLEFT)
-					HarvensSkillTooltipMorph2:SetProgressionAbility(progressionIndex, 2, rank)
-					InitializeTooltip(HarvensSkillTooltipMorph1, HarvensSkillTooltipMorph2, TOPRIGHT, -5, 0, TOPLEFT)
-					HarvensSkillTooltipMorph1:SetProgressionAbility(progressionIndex, 1, rank)
-					return
-				else
-					local curLvl, maxLvl = GetSkillAbilityUpgradeInfo(skillType, skillLineIndex, skillIndex)
-					if curLvl and maxLvl and curLvl < maxLvl then
-						InitializeTooltip(HarvensSkillTooltipMorph1, control, TOPRIGHT, -5, -5, TOPLEFT)
-						HarvensSkillTooltipMorph1:SetSkillUpgradeAbility(skillType, skillLineIndex, skillIndex)
-					else
+			local skillType, skillLineIndex, skillIndex = skillProgressionData:GetIndices()
+			if not skillData:IsCraftedAbility() then
+				if not skillData:IsPassive() then
+					local progressionIndex = GetProgressionSkillProgressionIndex(skillType, skillLineIndex, skillIndex)
+					if progressionIndex and progressionIndex > 0 then
+						local morph, rank = GetMorphAndRank(progressionIndex)
+						if morph > 0 and rank >= 4 then
+							InitializeTooltip(HarvensSkillTooltipMorph1, control, TOPRIGHT, -5, -5, TOPLEFT)
+							morph = (morph == 2 and 1 or 2)
+							HarvensSkillTooltipMorph1:SetProgressionAbility(progressionIndex, morph, rank)
+							return
+						end
+						rank = 4
 						InitializeTooltip(HarvensSkillTooltipMorph2, control, TOPRIGHT, -5, -5, TOPLEFT)
-						HarvensSkillTooltipMorph2:SetSkillLineAbilityId(skillData:GetProgressionData(2):GetAbilityId(), skillType, skillLineIndex, skillIndex)
+						HarvensSkillTooltipMorph2:SetProgressionAbility(progressionIndex, 2, rank)
 						InitializeTooltip(HarvensSkillTooltipMorph1, HarvensSkillTooltipMorph2, TOPRIGHT, -5, 0, TOPLEFT)
-						HarvensSkillTooltipMorph1:SetSkillLineAbilityId(skillData:GetProgressionData(1):GetAbilityId(), skillType, skillLineIndex, skillIndex)
+						HarvensSkillTooltipMorph1:SetProgressionAbility(progressionIndex, 1, rank)
+						return
+					else
+						local curLvl, maxLvl = GetSkillAbilityUpgradeInfo(skillType, skillLineIndex, skillIndex)
+						if curLvl and maxLvl and curLvl < maxLvl then
+							InitializeTooltip(HarvensSkillTooltipMorph1, control, TOPRIGHT, -5, -5, TOPLEFT)
+							HarvensSkillTooltipMorph1:SetSkillUpgradeAbility(skillType, skillLineIndex, skillIndex)
+						else
+							InitializeTooltip(HarvensSkillTooltipMorph2, control, TOPRIGHT, -5, -5, TOPLEFT)
+							HarvensSkillTooltipMorph2:SetSkillLineAbilityId(skillData:GetProgressionData(2):GetAbilityId(), skillType, skillLineIndex, skillIndex)
+							InitializeTooltip(HarvensSkillTooltipMorph1, HarvensSkillTooltipMorph2, TOPRIGHT, -5, 0, TOPLEFT)
+							HarvensSkillTooltipMorph1:SetSkillLineAbilityId(skillData:GetProgressionData(1):GetAbilityId(), skillType, skillLineIndex, skillIndex)
+						end
 					end
-				end
-			else
-				local maxRank = skillData:GetNumRanks()
-				local rank = skillData:IsPurchased() and skillData:GetCurrentRank() or 0
-				rank = rank + 1
-				if rank <= maxRank then
-					InitializeTooltip(HarvensSkillTooltipMorph2, control, TOPRIGHT, -5, -5, TOPLEFT)
-					HarvensSkillTooltipMorph2:SetAbilityId(skillData:GetProgressionData(rank):GetAbilityId())
-					if rank < maxRank then
-						InitializeTooltip(HarvensSkillTooltipMorph1, HarvensSkillTooltipMorph2, TOPRIGHT, -5, 0, LEFT)
-						HarvensSkillTooltipMorph1:SetAbilityId(skillData:GetProgressionData(maxRank):GetAbilityId())
+				else
+					local maxRank = skillData:GetNumRanks()
+					local rank = skillData:IsPurchased() and skillData:GetCurrentRank() or 0
+					rank = rank + 1
+					if rank <= maxRank then
+						InitializeTooltip(HarvensSkillTooltipMorph2, control, TOPRIGHT, -5, -5, TOPLEFT)
+						HarvensSkillTooltipMorph2:SetAbilityId(skillData:GetProgressionData(rank):GetAbilityId())
+						if rank < maxRank then
+							InitializeTooltip(HarvensSkillTooltipMorph1, HarvensSkillTooltipMorph2, TOPRIGHT, -5, 0, LEFT)
+							HarvensSkillTooltipMorph1:SetAbilityId(skillData:GetProgressionData(maxRank):GetAbilityId())
+						end
 					end
 				end
 			end
 		end
-	end)
+	)
 
-	SecurePostHook(_G, "ZO_Skills_AbilitySlot_OnMouseExit", function()
-		ClearTooltip(HarvensSkillTooltipMorph1)
-		ClearTooltip(HarvensSkillTooltipMorph2)
-	end)
+	SecurePostHook(
+		_G,
+		"ZO_Skills_AbilitySlot_OnMouseExit",
+		function()
+			ClearTooltip(HarvensSkillTooltipMorph1)
+			ClearTooltip(HarvensSkillTooltipMorph2)
+		end
+	)
 
 	local function createLabel(ctrl)
 		ctrl:SetHeight(ctrl:GetHeight() + 5)
