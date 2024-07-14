@@ -97,8 +97,9 @@ local function EnhanceTextSearch()
 			return search(currentContext, IsItemInSearchTextResultsCollectible, ...)
 		end
 	end
-	local orgProcessor = TEXT_SEARCH_MANAGER.IsItemInSearchTextResults
-	TEXT_SEARCH_MANAGER.IsItemInSearchTextResults = function(...)
+	local orgProcessor = TEXT_SEARCH_MANAGER.IsDataInSearchTextResults
+	assert(orgProcessor, "addon out-of-date")
+	TEXT_SEARCH_MANAGER.IsDataInSearchTextResults = function(...)
 		return orgProcessor(...) or IsItemInSearchTextResults(...)
 	end
 end
@@ -376,18 +377,26 @@ local function HookPostedItems()
 end
 
 local function SetupQuickSlot()
-	local quickSlot = GetAPIVersion() < 101034 and QUICKSLOT_WINDOW or QUICKSLOT_KEYBOARD
-	local baseClass = GetAPIVersion() < 101034 and ZO_QuickSlot or ZO_QuickSlot_Keyboard
+	local quickSlot = QUICKSLOT_KEYBOARD
+	local baseClass = ZO_QuickSlot_Keyboard
 	if not quickSlot then
 		return
 	end
-	local searchBox = quickSlot.searchBox
-	local bagSearch = searchBox:GetParent()
-	local parent = bagSearch:GetParent()
-	parent:SetResizeToFitDescendents(false)
-	bagSearch:SetParent(parent:GetParent())
-	HookShouldAddItemToListSearchBox(bagSearch, baseClass, quickSlot)
-	AddQuickSlotFilter(searchBox)
+
+	local function initQuickSlot()
+		local searchBox = quickSlot.searchBox
+		local bagSearch = searchBox:GetParent()
+		local parent = bagSearch:GetParent()
+		parent:SetResizeToFitDescendents(false)
+		bagSearch:SetParent(parent:GetParent())
+		HookShouldAddItemToListSearchBox(bagSearch, baseClass, quickSlot)
+		AddQuickSlotFilter(searchBox)
+	end
+	if quickSlot.searchBox then
+		initQuickSlot()
+	else
+		SecurePostHook(quickSlot, "OnDeferredInitialize", initQuickSlot)
+	end
 end
 
 ---- Keep search text sticky ----
@@ -479,7 +488,7 @@ local function InitSettings()
 	if not settings then
 		return
 	end
-	settings.version = "1.9.1"
+	settings.version = "1.9.2"
 	settings.website = "http://www.esoui.com/downloads/info914-VotansSearchBox.html"
 
 	settings:AddSetting {
