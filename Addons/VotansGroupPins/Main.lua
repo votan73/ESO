@@ -24,6 +24,9 @@ local addon = {
 		healthDead = "CCCCCC",
 		showLeaderCrown = true,
 		showFriendMarker = true,
+		roleTank = "0000CC",
+		roleHeal = "C000C0",
+		roleDps = "C0C000",
 	},
 	compassPinType = "VOTANS_GROUP_COMPASS_PIN",
 }
@@ -111,6 +114,9 @@ addon.healthGood = ZO_ColorDef:New(0, 0.8, 0, 1)
 addon.healthWarn = ZO_ColorDef:New(0.75, 0.75, 0, 1)
 addon.healthBad = ZO_ColorDef:New(0.80, 0, 0, 1)
 addon.healthDead = ZO_ColorDef:New(0.75, 0.75, .75, 1)
+addon.roleTank = ZO_ColorDef:New(0, 0.8, 0, 1)
+addon.roleHeal = ZO_ColorDef:New(0.75, 0.75, 0, 1)
+addon.roleDps = ZO_ColorDef:New(0.80, 0, 0, 1)
 
 function addon.tintFromHealth(pin)
 	local unitTag = GetUnitTag(pin)
@@ -128,6 +134,21 @@ function addon.tintFromHealth(pin)
 		return addon.healthBad
 	else
 		return addon.healthWarn
+	end
+end
+
+function addon.tintFromRole(pin)
+	if not pin then return "" end
+	local unitTag = GetUnitTag(pin)
+	if not unitTag then return "" end
+
+	local role = GetGroupMemberSelectedRole(unitTag)
+	if role == LFG_ROLE_TANK then
+		return addon.roleTank
+	elseif role == LFG_ROLE_HEAL then
+		return addon.roleHeal
+	else
+		return addon.roleDps
 	end
 end
 
@@ -208,6 +229,9 @@ function addon:ApplySettings()
 		elseif settings.avaColor == const.Health then
 			leader.tint = addon.tintFromHealth
 			group.tint = addon.tintFromHealth
+		elseif settings.avaColor == const.Role then
+			leader.tint = addon.tintFromRole
+			group.tint = addon.tintFromRole
 		end
 	else
 		if settings.pveIcon == const.Simple then
@@ -230,6 +254,9 @@ function addon:ApplySettings()
 		elseif settings.pveColor == const.Health then
 			leader.tint = addon.tintFromHealth
 			group.tint = addon.tintFromHealth
+		elseif settings.pveColor == const.Role then
+			leader.tint = addon.tintFromRole
+			group.tint = addon.tintFromRole
 		end
 	end
 
@@ -350,6 +377,9 @@ function addon:Initialize()
 	self.healthDead = GetColor(self.account.healthDead)
 	self.simplePlayerColor = GetColor(self.account.simplePlayerColor)
 	self.simpleFriendColor = GetColor(self.account.simpleFriendColor)
+	self.roleTank = GetColor(self.account.roleTank)
+	self.roleHeal = GetColor(self.account.roleHeal)
+	self.roleDps = GetColor(self.account.roleDps)
 
 	-- HookGroupManager()
 
@@ -368,7 +398,7 @@ function addon:InitSettings()
 	local settings = LibHarvensAddonSettings:AddAddon("Votan's Group Pins")
 	if not settings then return end
 	addon.settingsControls = settings
-	settings.version = "1.2.17"
+	settings.version = "1.2.18"
 	settings.website = "http://www.esoui.com/downloads/info1619-VotansGroupPins.html"
 
 	local SI_TOOLTIP_ITEM_NAME = GetString(SI_TOOLTIP_ITEM_NAME)
@@ -396,6 +426,7 @@ function addon:InitSettings()
 	local colorItems = {
 		{ name = simple, data = const.Simple },
 		{ name = health, data = const.Health },
+		{ name = role, data = const.Role },
 	}
 
 	settings:AddSetting {
@@ -430,6 +461,14 @@ function addon:InitSettings()
 		default = addon.accountDefaults.showFriendMarker,
 		getFunction = function() return addon.account.showFriendMarker end,
 		setFunction = function(value) addon.account.showFriendMarker = value end,
+	}
+	settings:AddSetting {
+		type = LibHarvensAddonSettings.ST_CHECKBOX,
+		label = GetString(SI_VOTANS_GROUPPINS_SHOW_CROWN),
+		tooltip = GetString(SI_VOTANS_GROUPPINS_SHOW_CROWN_TOOLTIP),
+		default = addon.accountDefaults.showLeaderCrown,
+		getFunction = function() return addon.account.showLeaderCrown end,
+		setFunction = function(value) addon.account.showLeaderCrown = value end,
 	}
 
 	settings:AddSetting {
@@ -564,12 +603,44 @@ function addon:InitSettings()
 		end,
 	}
 	settings:AddSetting {
-		type = LibHarvensAddonSettings.ST_CHECKBOX,
-		label = GetString(SI_VOTANS_GROUPPINS_SHOW_CROWN),
-		tooltip = GetString(SI_VOTANS_GROUPPINS_SHOW_CROWN_TOOLTIP),
-		default = addon.accountDefaults.showLeaderCrown,
-		getFunction = function() return addon.account.showLeaderCrown end,
-		setFunction = function(value) addon.account.showLeaderCrown = value end,
+		type = LibHarvensAddonSettings.ST_SECTION,
+		label = GetString(SI_VOTANS_GROUPPINS_MODE_ROLE),
+	}
+	settings:AddSetting {
+		type = LibHarvensAddonSettings.ST_COLOR,
+		label = GetString(SI_VOTANS_GROUPPINS_MODE_TANK),
+		getFunction = function()
+			return addon.roleTank:UnpackRGB()
+		end,
+		setFunction = function(newR, newG, newB, newA)
+			addon.roleTank = ZO_ColorDef:New(newR, newG, newB, 1)
+			addon.account.roleTank = addon.roleTank:ToHex()
+			self:InitDelayedUpdate()
+		end,
+	}
+	settings:AddSetting {
+		type = LibHarvensAddonSettings.ST_COLOR,
+		label = GetString(SI_VOTANS_GROUPPINS_MODE_HEAL),
+		getFunction = function()
+			return addon.roleHeal:UnpackRGB()
+		end,
+		setFunction = function(newR, newG, newB, newA)
+			addon.roleHeal = ZO_ColorDef:New(newR, newG, newB, 1)
+			addon.account.roleHeal = addon.roleHeal:ToHex()
+			self:InitDelayedUpdate()
+		end,
+	}
+	settings:AddSetting {
+		type = LibHarvensAddonSettings.ST_COLOR,
+		label = GetString(SI_VOTANS_GROUPPINS_MODE_DAMAGE),
+		getFunction = function()
+			return addon.roleDps:UnpackRGB()
+		end,
+		setFunction = function(newR, newG, newB, newA)
+			addon.roleDps = ZO_ColorDef:New(newR, newG, newB, 1)
+			addon.account.roleDps = addon.roleDps:ToHex()
+			self:InitDelayedUpdate()
+		end,
 	}
 end
 

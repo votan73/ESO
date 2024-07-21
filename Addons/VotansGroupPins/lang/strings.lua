@@ -14,3 +14,8 @@ ZO_CreateStringId("SI_VOTANS_GROUPPINS_SHOW_CROWN", "Show Leader Crown")
 ZO_CreateStringId("SI_VOTANS_GROUPPINS_SHOW_CROWN_TOOLTIP", "Shows the leader crown as an overlay with the color from simple mode.")
 ZO_CreateStringId("SI_VOTANS_GROUPPINS_SHOW_FRIENDS", "Show Friends Marker")
 ZO_CreateStringId("SI_VOTANS_GROUPPINS_SHOW_FRIENDS_TOOLTIP", "Shows a marker as an overlay for your friends in the group.")
+
+ZO_CreateStringId("SI_VOTANS_GROUPPINS_MODE_ROLE", "Mode - Role")
+ZO_CreateStringId("SI_VOTANS_GROUPPINS_MODE_TANK", "Tank Color")
+ZO_CreateStringId("SI_VOTANS_GROUPPINS_MODE_HEAL", "Healer Color")
+ZO_CreateStringId("SI_VOTANS_GROUPPINS_MODE_DAMAGE", "Damage Dealer Color")

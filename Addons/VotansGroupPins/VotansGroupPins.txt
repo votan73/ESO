@@ -1,7 +1,7 @@
 ## Title: Votan's Group Pins
 ## Author: votan
-## APIVersion: 101033 101034
-## Version: 1.2.17
+## APIVersion: 101042 101043
+## Version: 1.2.18
 ## DependsOn: LibHarvensAddonSettings>=10705
 ## SavedVariables: VotansGroupPins_Data
 
