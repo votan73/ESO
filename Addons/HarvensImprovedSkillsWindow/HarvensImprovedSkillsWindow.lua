@@ -16,7 +16,7 @@ local rankLess = {
 	SKILL_TYPE_TRADESKILL = true,
 	SKILL_TYPE_WEAPON = true
 }
-local maxRanks = {20, 12, 10, 6}
+local maxRanks = {50, 20, 12, 10, 6}
 
 local function FindLineMaxRank(skillType, skillIndex)
 	if rankLess[skillType] then
