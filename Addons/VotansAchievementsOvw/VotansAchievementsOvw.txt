@@ -1,8 +1,8 @@
 ## Title: Votan's Achievements Overview
 ## Author: votan
 ## Description: Built-in achievements overview replacement.
-## Version: 1.6.4
-## APIVersion: 101037 101038
+## Version: 1.6.5
+## APIVersion: 101042 101043
 ## DependsOn: LibCustomMenu>=692
 ## SavedVariables: VotansAchievementsOvw_Data
 

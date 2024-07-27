@@ -26,10 +26,14 @@ function addon:CreateFavorites()
 		local normalIcon, pressedIcon, mouseoverIcon = unpack(SUMMARY_ICONS)
 
 		local parentNode = self:AddCategory(lookup, tree, "ZO_IconChildlessHeader", nil, VotansFavorites, GetString(SI_VOTANS_ACHIEVEMENT_FAVORITES), hidesUnearned, normalIcon, pressedIcon, mouseoverIcon, true, true)
+		local row = parentNode:GetData()
+		row.isFavorits = true
 
 		return result
 	end
-	ACHIEVEMENTS.refreshGroups:RefreshAll("FullUpdate")
+	if ACHIEVEMENTS.refreshGroups then
+		ACHIEVEMENTS.refreshGroups:RefreshAll("FullUpdate")
+	end
 
 	local orgOnCategorySelected = Achievements.OnCategorySelected
 	function Achievements.OnCategorySelected(...)

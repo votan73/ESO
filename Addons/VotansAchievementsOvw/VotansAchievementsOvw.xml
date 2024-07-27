@@ -21,10 +21,10 @@
           </Controls>
         </Texture>
 
-        <Label name="$(parent)Recent" font="ZoFontWindowSubtitle" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_NORMAL" wrapMode="ELLIPSIS" verticalAlignment="BOTTOM" horizontalAlignment="CENTER">
+        <Label name="$(parent)Recent" font="ZoFontWindowSubtitle" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_NORMAL" wrapMode="TRUNCATE" verticalAlignment="CENTER" horizontalAlignment="CENTER">
           <Dimensions x="84"/>
-          <Anchor point="TOPRIGHT" relativeTo="$(parent)" relativePoint="TOPRIGHT" offsetX="0" offsetY="8"/>
-          <Anchor point="BOTTOMRIGHT" relativeTo="$(parent)" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="-8"/>
+          <Anchor point="TOPRIGHT" relativeTo="$(parent)" relativePoint="TOPRIGHT" offsetX="0" offsetY="4"/>
+          <Anchor point="BOTTOMRIGHT" relativeTo="$(parent)" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="-4"/>
         </Label>
         <Label name="$(parent)Name" font="ZoFontWinH4" wrapMode="ELLIPSIS" verticalAlignment="TOP" horizontalAlignment="LEFT">
           <Anchor point="TOPLEFT" relativeTo="$(parent)Texture" relativePoint="TOPRIGHT" offsetX="5" offsetY="0"/>

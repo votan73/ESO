@@ -442,6 +442,10 @@ end
 function addon:HookCategoriesRow()
 	local function MouseEnter(category)
 		local row = category.node:GetData()
+		if row.isFavorits then
+			return
+		end
+
 		InitializeTooltip(AchievementTooltip, category, TOPRIGHT, 0, -104, TOPLEFT)
 		AchievementTooltip:AddVerticalPadding(8)
 		if row.summary then
@@ -455,11 +459,21 @@ function addon:HookCategoriesRow()
 	end
 
 	local rootNode = ACHIEVEMENTS.categoryTree.rootNode
-	for _, category in pairs(rootNode:GetChildren()) do
-		local control = category:GetControl()
-		ZO_PreHook(control, "OnMouseEnter", MouseEnter)
-		ZO_PreHook(control, "OnMouseExit", MouseExit)
-		control:SetMouseEnabled(true)
+	if rootNode and rootNode:GetChildren() then
+		for _, category in pairs(rootNode:GetChildren()) do
+			local control = category:GetControl()
+			ZO_PreHook(control, "OnMouseEnter", MouseEnter)
+			ZO_PreHook(control, "OnMouseExit", MouseExit)
+			control:SetMouseEnabled(true)
+		end
+	else
+		local function initControl(node, control, data, open)
+			ZO_PreHook(control, "OnMouseEnter", MouseEnter)
+			ZO_PreHook(control, "OnMouseExit", MouseExit)
+		end
+		SecurePostHook(ACHIEVEMENTS.categoryTree.templateInfo["ZO_IconHeader"], "setupFunction", initControl)
+		SecurePostHook(ACHIEVEMENTS.categoryTree.templateInfo["ZO_IconChildlessHeader"], "setupFunction", initControl)
+		SecurePostHook(ACHIEVEMENTS.categoryTree.templateInfo["ZO_TreeLabelSubCategory"], "setupFunction", initControl)
 	end
 end
 
@@ -552,10 +566,19 @@ end
 
 function addon:Initialize()
 	self:SetupControls()
-	self:HookAchievementRow()
-	self:HookCategoriesRow()
 	self:InitSettings()
-	self:InitializeCategoryFilter()
+	if ACHIEVEMENTS.categoryTree then
+		self:HookAchievementRow()
+		self:HookCategoriesRow()
+		self:InitializeCategoryFilter()
+	else
+		local function initializeCategories()
+			self:HookAchievementRow()
+			self:HookCategoriesRow()
+			self:InitializeCategoryFilter()
+		end
+		SecurePostHook(ACHIEVEMENTS, "InitializeCategories", initializeCategories)
+	end
 	self:RegisterAchievementEvents()
 end
 
