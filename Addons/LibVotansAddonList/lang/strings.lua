@@ -7,4 +7,4 @@ ZO_CreateStringId("SI_VOTANS_ADDONLIST_DISABLE_ALL_ADDONS", "Disable all add-ons
 ZO_CreateStringId("SI_VOTANS_ADDONLIST_DISABLE_ALL_LIBS", "Disable all libraries")
 ZO_CreateStringId("SI_VOTANS_ADDONLIST_OPTIONAL_LIB", "Optional library")
 ZO_CreateStringId("SI_VOTANS_ADDONLIST_USED_BY", "Used by:")
-ZO_CreateStringId("SI_VOTANS_ADDONLIST_SUSPICIOUS_PATH", "Suspicious path. Expected:\n%s")
+ZO_CreateStringId("SI_VOTANS_ADDONLIST_SUSPICIOUS_PATH", "Suspicious path. If images are missing, this could be the reason why. Expected:\n%s")

@@ -37,7 +37,7 @@ function addon:DisableAllAddons()
 		return
 	end
 
-	local masterList, libKeepEnabledList = ADD_ON_MANAGER.masterList, self.libKeepEnabledList
+	local masterList, libKeepEnabledList = self.masterList, self.libKeepEnabledList
 	local data
 	for i = 1, #masterList do
 		data = masterList[i]
@@ -56,7 +56,7 @@ function addon:DisableAllLibraries()
 		return
 	end
 
-	local masterList, libKeepEnabledList = ADD_ON_MANAGER.masterList, addon.libKeepEnabledList
+	local masterList, libKeepEnabledList = self.masterList, addon.libKeepEnabledList
 	local data
 	for i = 1, #masterList do
 		data = masterList[i]
@@ -149,15 +149,15 @@ do
 	end
 	local IS_LIBRARY = true
 	local IS_ADDON = false
-	local orgBuildMasterList = ZO_AddOnManager.BuildMasterList
+	local orgBuildMasterList = ADD_ON_MANAGER.BuildMasterList
 	local function StripText(text)
 		return text:gsub("|[Rr]", "")
 	end
-	function ZO_AddOnManager:BuildMasterList()
+	function ADD_ON_MANAGER:BuildMasterList()
 		orgBuildMasterList(self)
 
-		self.masterList = self.masterList or {}
-		local masterList = self.masterList
+		addon.masterList = addon.masterList or {}
+		local masterList = addon.masterList
 		ZO_ClearNumericallyIndexedTable(masterList)
 
 		local nameToLib = {}
@@ -226,10 +226,13 @@ do
 				end
 			end
 		end
-		addToLookup(self.addonTypes[IS_ADDON])
-		addToLookup(self.addonTypes[IS_LIBRARY])
-		checkDependency(self.addonTypes[IS_ADDON])
-		checkDependency(self.addonTypes[IS_LIBRARY])
+		-- AddonCategory adds more types => iterate all
+		for _, list in pairs(self.addonTypes) do
+			addToLookup(list)
+		end
+		for _, list in pairs(self.addonTypes) do
+			checkDependency(list)
+		end
 
 		self.sortCallback = sortBySortable
 	end
@@ -387,6 +390,10 @@ do
 	end
 
 	local function modify(control, data)
+		if not data then
+			return
+		end
+
 		local areAllAddonsCurrentlyEnabled = areAddonsCurrentlyEnabled()
 
 		local indent = data.isPatch and 12 or 0

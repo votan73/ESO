@@ -6,4 +6,4 @@ SafeAddString(SI_VOTANS_ADDONLIST_DISABLE_ALL_ADDONS, "Alle Addons deaktivieren"
 SafeAddString(SI_VOTANS_ADDONLIST_DISABLE_ALL_LIBS, "Alle Bibliotheken deaktivieren")
 SafeAddString(SI_VOTANS_ADDONLIST_OPTIONAL_LIB, "Optionale Bibliothek")
 SafeAddString(SI_VOTANS_ADDONLIST_USED_BY, "Benötigt von:")
-SafeAddString(SI_VOTANS_ADDONLIST_SUSPICIOUS_PATH, "Merkwürdiger Pfad. Erwartet:\n%s")
+SafeAddString(SI_VOTANS_ADDONLIST_SUSPICIOUS_PATH, "Merkwürdiger Pfad. Wenn Images fehlen, könnte das der Grund sein. Erwartet:\n%s")
