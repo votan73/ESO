@@ -16,11 +16,10 @@ local function nextSlot(state, index)
 		return
 	end
 
-	local bar = CHAMPION_PERKS:GetChampionBar()
 	local slot
 	repeat
 		index = index + 1
-		slot = bar:GetSlot(index):GetSavedChampionSkillData()
+		slot = GetSlotType(index, HOTBAR_CATEGORY_CHAMPION) == ACTION_TYPE_CHAMPION_SKILL
 	until index >= 4 or slot
 	if slot then
 		return index + effectStart
@@ -66,8 +65,8 @@ local now = GetGameTimeSeconds() - 31
 local orgGetArtificialEffectInfo = GetArtificialEffectInfo
 function GetArtificialEffectInfo(artificialEffectId)
 	if artificialEffectId > effectStart and artificialEffectId <= effectEnd then
-		local slot = CHAMPION_PERKS:GetChampionBar():GetSlot(artificialEffectId - effectStart)
-		slot = slot and slot:GetSavedChampionSkillData()
+		local championSkillId = GetSlotBoundId(artificialEffectId - effectStart, HOTBAR_CATEGORY_CHAMPION)
+		local slot = CHAMPION_DATA_MANAGER:GetChampionSkillData(championSkillId)
 		if slot then
 			--df("%s %i", slot:GetFormattedName(), slot:GetId())
 			local timeEnd = GetGameTimeSeconds() - now <= 30 and (now + 30) or (now - 0.01)
@@ -81,8 +80,8 @@ end
 local orgGetArtificialEffectTooltipText = GetArtificialEffectTooltipText
 function GetArtificialEffectTooltipText(artificialEffectId)
 	if artificialEffectId > effectStart and artificialEffectId <= effectEnd then
-		local slot = CHAMPION_PERKS:GetChampionBar():GetSlot(artificialEffectId - effectStart)
-		slot = slot and slot:GetSavedChampionSkillData()
+		local championSkillId = GetSlotBoundId(artificialEffectId - effectStart, HOTBAR_CATEGORY_CHAMPION)
+		local slot = CHAMPION_DATA_MANAGER:GetChampionSkillData(championSkillId)
 		return slot and slot:GetCurrentBonusText() or ""
 	end
 	return orgGetArtificialEffectTooltipText(artificialEffectId)

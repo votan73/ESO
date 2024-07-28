@@ -1,10 +1,11 @@
 ## Title: Votan's World Champion Buff
 ## Author: votan
 ## Description: Shows the four slotted world champion stars as buffs.
-## APIVersion: 100034
-## Version: 0.5
+## APIVersion: 101041 101042
+## Version: 0.5.3
 ## OptionalDependsOn: JackOfAllTrades
 
 ## This Add-On is not created by, affiliated with or sponsored by ZeniMax Media Inc. or its affiliates. The Elder Scrolls® and related logos are registered trademarks or trademarks of ZeniMax Media Inc. in the United States and/or other countries. All rights reserved.
 
 Main.lua
+MainEndless.lua
