@@ -414,7 +414,6 @@ local function initLocations(zoneIdToLocation)
 	location = categoryData:GetFormattedName()
 	zoneIdToLocation[1413] = location
 	zoneIdToLocation[1414] = location
-
 end
 
 function addon:InitializeKeybindStripDescriptors()
@@ -596,9 +595,16 @@ local function OnAddonLoaded(event, name)
 	VotansImprovedSetsBook_Data = VotansImprovedSetsBook_Data or {}
 	addon.settings = VotansImprovedSetsBook_Data
 	addon.settings.favorites = addon.settings.favorites or {}
-	addon:ApplyFavorites()
 	addon:InitLinkHandler()
-	addon:InitializeKeybindStripDescriptors()
+	local function initSetsBook()
+		addon:ApplyFavorites()
+		addon:InitializeKeybindStripDescriptors()
+	end
+	if ITEM_SET_COLLECTIONS_BOOK_KEYBOARD.categoryTree then
+		initSetsBook()
+	else
+		SecurePostHook(ITEM_SET_COLLECTIONS_BOOK_KEYBOARD, "InitializeCategories", initSetsBook)
+	end
 	em:RegisterForEvent(
 		addon.name,
 		EVENT_PLAYER_ACTIVATED,
