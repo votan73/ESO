@@ -1511,7 +1511,7 @@ function addon:InitializeFashion()
 	if ZO_RESTYLE_STATION_KEYBOARD.categoryTree then
 		initFashion()
 	else
-		SecurePostHook(ZO_DYEING_KEYBOARD, "InitializeHeaderPool", initFashion)
+		SecurePostHook(ZO_RESTYLE_STATION_KEYBOARD, "InitializeKeybindStripDescriptors", initFashion)
 	end
 
 	ZO_COLLECTIBLE_DATA_MANAGER:RegisterCallback("OnCollectibleUpdated", restart)
