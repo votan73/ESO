@@ -575,18 +575,11 @@ function addon:InitFashionFilter()
 	local filteredCollections = COLLECTIONS_BOOK_SINGLETON
 	local baseGetSearchResults = filteredCollections.GetSearchResults
 	function filteredCollections:GetSearchResults()
-		if not atOutfitStation or not addon.selectedFashion then
+		if not atOutfitStation or not addon.selectedFashion or zo_strlen(self.searchString) > 1 then
 			return baseGetSearchResults(self)
-		end
-		local result = baseGetSearchResults(self)
-		if result then
-			return result
 		end
 
 		local selectedFashion = addon.selectedFashion
-		if not selectedFashion then
-			return result
-		end
 
 		local ZO_COLLECTIBLE_DATA_MANAGER = ZO_COLLECTIBLE_DATA_MANAGER
 
