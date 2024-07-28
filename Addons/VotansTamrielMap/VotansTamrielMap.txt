@@ -1,8 +1,8 @@
 ## Title: Votan's Tamriel Map
 ## Author: votan
 ## Description: New Tamriel map style for role play.
-## Version: 1.2.1
-## APIVersion: 101041 101042
+## Version: 1.2.2
+## APIVersion: 101042 101043
 ## DependsOn: LibHarvensAddonSettings>=10705 LibMapPing>=900 LibGPS>=65
 ## OptionalDependsOn: NoThankYou WorldMapWayshrinesController GuildShrines
 ## SavedVariables: VotansTamrielMap_Data

@@ -338,6 +338,15 @@
 			alliance = 999,
 			poi = 558,
 			cosmic = false
+		},
+		-- [52] =
+		{
+			-- "Augvea",
+			alliance = 999,
+			poi = 215,
+			cosmic = true,
+			blobX = 0.1367,
+			blobY = 0.5579
 		}
 	},
 	color = {
@@ -401,7 +410,7 @@ function addon:InitSettings()
 	end
 	addon.settingsControls = settings
 	settings.allowDefaults = true
-	settings.version = "1.2.1"
+	settings.version = "1.2.2"
 	settings.website = "https://www.esoui.com/downloads/info2672-VotansTamrielMap.html"
 
 	settings:AddSetting {
@@ -591,7 +600,7 @@ function addon:RenderMap(isTamriel)
 		if x > 0 and x < 1 and y > 0 and y < 1 then
 			local location = self.locations[i]
 			if location and (not location.cosmic) == isTamriel then
-				local blob = bm:Update(x, y)
+				local blob = bm:Update(location.blobX or x, location.blobY or y)
 				if location and blob then
 					local color = self:GetColor(location)
 					local r, g, b, a = color:UnpackRGBA()
