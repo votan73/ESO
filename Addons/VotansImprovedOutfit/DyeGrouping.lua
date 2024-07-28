@@ -8,7 +8,6 @@ VOTAN_DYEING_MATERIAL_UNCLASSIFIED = 4
 
 local VOTAN_DYEING_MATERIAL_MATT, VOTAN_DYEING_MATERIAL_POLISHED, VOTAN_DYEING_MATERIAL_METALLIC = VOTAN_DYEING_MATERIAL_MATT, VOTAN_DYEING_MATERIAL_POLISHED, VOTAN_DYEING_MATERIAL_METALLIC
 
-
 local VOTAN_DYEING_SORT_STYLE_MATERIAL = VOTAN_DYEING_SORT_STYLE_MATERIAL
 -- ZO_DYEING_MANAGER
 
@@ -104,7 +103,6 @@ local dyeIdToMateral = {
 	[502] = VOTAN_DYEING_MATERIAL_MATT,
 	[525] = VOTAN_DYEING_MATERIAL_MATT,
 	[526] = VOTAN_DYEING_MATERIAL_MATT,
-
 	[13] = VOTAN_DYEING_MATERIAL_POLISHED,
 	[19] = VOTAN_DYEING_MATERIAL_POLISHED,
 	[23] = VOTAN_DYEING_MATERIAL_POLISHED,
@@ -155,7 +153,6 @@ local dyeIdToMateral = {
 	[591] = VOTAN_DYEING_MATERIAL_POLISHED,
 	[592] = VOTAN_DYEING_MATERIAL_POLISHED,
 	[593] = VOTAN_DYEING_MATERIAL_POLISHED,
-
 	[25] = VOTAN_DYEING_MATERIAL_METALLIC,
 	[28] = VOTAN_DYEING_MATERIAL_METALLIC,
 	[35] = VOTAN_DYEING_MATERIAL_METALLIC,
@@ -199,8 +196,7 @@ local dyeIdToMateral = {
 	[539] = VOTAN_DYEING_MATERIAL_METALLIC,
 	[574] = VOTAN_DYEING_MATERIAL_METALLIC,
 	[578] = VOTAN_DYEING_MATERIAL_METALLIC,
-	[594] = VOTAN_DYEING_MATERIAL_METALLIC,
-
+	[594] = VOTAN_DYEING_MATERIAL_METALLIC
 }
 
 local dyeIsDirty = true
@@ -213,8 +209,7 @@ local function UpdateDyeData()
 	end
 	local function AddDyeInfo(dyeIndex)
 		local dyeName, known, rarity, hueCategory, achievementId, r, g, b, sortKey, dyeId = GetDyeInfo(dyeIndex)
-		local dyeInfo =
-		{
+		local dyeInfo = {
 			dyeId = dyeId,
 			dyeName = dyeName,
 			known = known,
@@ -225,13 +220,15 @@ local function UpdateDyeData()
 			r = r,
 			g = g,
 			b = b,
-			dyeIndex = dyeIndex,
+			dyeIndex = dyeIndex
 		}
 		local materialCategory = dyeIdToMateral[dyeId] or VOTAN_DYEING_MATERIAL_UNCLASSIFIED
 		table.insert(dyesByMaterialCategory[materialCategory], dyeInfo)
 	end
 
-	for dyeIndex = 1, GetNumDyes() do AddDyeInfo(dyeIndex) end
+	for dyeIndex = 1, GetNumDyes() do
+		AddDyeInfo(dyeIndex)
+	end
 	dyeIsDirty = false
 end
 
@@ -280,7 +277,7 @@ local function HookDyeingManager()
 				local data = swatchObject.dataSource
 				if data then
 					InformationTooltip:AddLine(string.format("DyeId: %i", swatchObject.dataSource.dyeId), "", ZO_NORMAL_TEXT:UnpackRGB())
-					-- SLASH_COMMANDS["/zgoo"](swatchObject)
+				-- SLASH_COMMANDS["/zgoo"](swatchObject)
 				end
 			end
 		end
@@ -295,17 +292,23 @@ local function SetSortStyle(_, _, entry)
 	ZO_DYEING_MANAGER:SetSortStyle(entry.sortStyleType)
 end
 
-
-
 function addon:InitializeDyeGrouping()
-	self.dyesByMaterialCategory = { }
+	self.dyesByMaterialCategory = {}
 	for material = VOTAN_DYEING_MATERIAL_MATT, VOTAN_DYEING_MATERIAL_UNCLASSIFIED do
-		self.dyesByMaterialCategory[material] = { }
+		self.dyesByMaterialCategory[material] = {}
 	end
 
 	self.sortByMaterialEntry = ZO_ComboBox:CreateItemEntry(GetString(SI_VOTANS_IMPROVED_OUTFIT_SORT_BY_MATERIAL), SetSortStyle)
 	self.sortByMaterialEntry.sortStyleType = VOTAN_DYEING_SORT_STYLE_MATERIAL
-	ZO_DYEING_KEYBOARD.sortDropDown:AddItem(self.sortByMaterialEntry, ZO_COMBOBOX_SUPRESS_UPDATE)
+
+	local function addEntry()
+		ZO_DYEING_KEYBOARD.sortDropDown:AddItem(self.sortByMaterialEntry, ZO_COMBOBOX_SUPRESS_UPDATE)
+	end
+	if ZO_DYEING_KEYBOARD.sortDropDown then
+		addEntry()
+	else
+		SecurePostHook(ZO_DYEING_KEYBOARD, "InitializeSortsAndFilters", addEntry)
+	end
 
 	local orgUpdateOptionControls = ZO_Dyeing_Keyboard.UpdateOptionControls
 	function ZO_Dyeing_Keyboard.UpdateOptionControls(...)
@@ -318,6 +321,5 @@ function addon:InitializeDyeGrouping()
 	end
 
 	HookDyeingManager()
-
 end
 addon:InitializeDyeGrouping()

@@ -94,11 +94,19 @@ function addon:InitializeRandomize()
             return not currentSlotOnly or (GetHoveredSlot() ~= nil)
         end
     end
-    local descriptor = ZO_RESTYLE_STATION_KEYBOARD.keybindStripDescriptor
-    for i = 1, #descriptor do
-        if descriptor[i].keybind == "UI_SHORTCUT_TERTIARY" then
-            descriptor[i].enabled = enabled
-            break
+
+    local function initRandomize()
+        local descriptor = ZO_RESTYLE_STATION_KEYBOARD.keybindStripDescriptor
+        for i = 1, #descriptor do
+            if descriptor[i].keybind == "UI_SHORTCUT_TERTIARY" then
+                descriptor[i].enabled = enabled
+                break
+            end
         end
+    end
+    if ZO_RESTYLE_STATION_KEYBOARD.keybindStripDescriptor then
+        initRandomize()
+    else
+        SecurePostHook(ZO_RESTYLE_STATION_KEYBOARD, "InitializeKeybindStripDescriptors", initRandomize)
     end
 end

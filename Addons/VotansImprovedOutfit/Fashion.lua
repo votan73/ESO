@@ -262,8 +262,7 @@ local function CreateFashionFilter(result, name, filter)
 		if name then
 			result[#result + 1] = name
 		elseif IsCollectibleMode(restyleMode) then
-			local collectibleData =
-				ZO_COLLECTIBLE_DATA_MANAGER:GetCollectibleDataById(GetActiveCollectibleByType(COLLECTIBLE_CATEGORY_TYPE_COSTUME)) or ZO_COLLECTIBLE_DATA_MANAGER:GetCollectibleDataById(GetActiveCollectibleByType(COLLECTIBLE_CATEGORY_TYPE_HAT))
+			local collectibleData = ZO_COLLECTIBLE_DATA_MANAGER:GetCollectibleDataById(GetActiveCollectibleByType(COLLECTIBLE_CATEGORY_TYPE_COSTUME)) or ZO_COLLECTIBLE_DATA_MANAGER:GetCollectibleDataById(GetActiveCollectibleByType(COLLECTIBLE_CATEGORY_TYPE_HAT))
 			if collectibleData then
 				result[#result + 1] = collectibleData:GetFormattedName()
 			end
@@ -1501,11 +1500,19 @@ function addon:InitializeFashion()
 	self.fragment = ZO_FadeSceneFragment:New(self.control, true, 150)
 	VOTANS_IMPROVED_OUTFIT_FRAGMENT = self.fragment
 
-	self:HookCategoryTree()
-	self:SetupFashionList()
-	self:AddFashionKeybind()
-	self:RegisterRenameFashionDialog()
-	self:InitFashionFilter()
-	self:InitClipboardDialog()
+	local function initFashion()
+		self:HookCategoryTree()
+		self:SetupFashionList()
+		self:AddFashionKeybind()
+		self:RegisterRenameFashionDialog()
+		self:InitFashionFilter()
+		self:InitClipboardDialog()
+	end
+	if ZO_RESTYLE_STATION_KEYBOARD.categoryTree then
+		initFashion()
+	else
+		SecurePostHook(ZO_DYEING_KEYBOARD, "InitializeHeaderPool", initFashion)
+	end
+
 	ZO_COLLECTIBLE_DATA_MANAGER:RegisterCallback("OnCollectibleUpdated", restart)
 end
