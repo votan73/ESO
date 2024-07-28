@@ -11,6 +11,7 @@ $blackList["CDGBankStack"] = $true
 $blackList["CustomMapPinsImagePack"] = $true
 $blackList["DeconstructionFilter"] = $true
 $blackList["emotes"] = $true
+$blackList["DungeonQueue4Stickerbook"] = $true
 #$blackList["EnchantMaker"] = $true
 $blackList["EnchantedQuality"] = $true
 $blackList["ESOProfiler"] = $true
@@ -274,10 +275,10 @@ foreach($Path in [System.IO.Directory]::GetDirectories($Path)){
     $data.version = $ver
     $data.title = $details.title
     $list = @()
-    if ($compatible -ccontains "101041") { $list+="9.3.0" }
     if ($compatible -ccontains "101042") { $list+="10.0.0" }
+    if ($compatible -ccontains "101043") { $list+="10.1.0" }
     if ($list.Length -lt 2) {
-        Write-Host -ForegroundColor Red "Manifest or script not up-to-date."
+        Write-Host -ForegroundColor Red "Manifest or script not up-to-date. " + $data.title
         continue
     }
     $data.compatible = [String]::Join(",", $list) # comma delimited
