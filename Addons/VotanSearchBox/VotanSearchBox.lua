@@ -42,6 +42,7 @@ local function ProcessInventoryItem(_, data, searchTerm)
 		return false
 	end
 	local equipType = data.equipType
+	local itemType = data.itemType
 	if equipType and equipType > 0 then
 		if g_savedVars.searchSetName then
 			local hasSet, setName = GetItemLinkSetInfo(GetItemLink(data.bagId, data.slotIndex))
@@ -56,8 +57,20 @@ local function ProcessInventoryItem(_, data, searchTerm)
 				end
 			end
 		end
+		if g_savedVars.searchTraits and (itemType == ITEMTYPE_ARMOR or itemType == ITEMTYPE_WEAPON) then
+			local itemTrait = GetItemTrait(data.bagId, data.slotIndex)
+			--SLASH_COMMANDS["/zgoo"](data)
+			itemTrait = GetString("SI_ITEMTRAITTYPE", itemTrait)
+			local description = lowercase[itemTrait]
+			if not description then
+				description = itemTrait:lower()
+				lowercase[itemTrait] = description
+			end
+			if LTF:Filter(description, searchTerm) then
+				return true
+			end
+		end
 	elseif g_savedVars.searchMasterWrit then
-		local itemType = GetItemType(data.bagId, data.slotIndex)
 		if itemType == ITEMTYPE_MASTER_WRIT then
 			local itemLink = GetItemLink(data.bagId, data.slotIndex)
 			local description = lowercase[itemLink]
@@ -183,7 +196,7 @@ local function SetupSearchBox(bagSearchBg, ...)
 
 		if g_savedVars.allSameText then
 			for i = 1, #searchContexts do
-				if not TEXT_SEARCH_MANAGER:IsActiveTextSearch(searchContexts[i]) then
+				if control ~= bagSearch and not TEXT_SEARCH_MANAGER:IsActiveTextSearch(searchContexts[i]) then
 					TEXT_SEARCH_MANAGER:SetSearchText(searchContexts[i], text)
 				end
 			end
@@ -488,7 +501,7 @@ local function InitSettings()
 	if not settings then
 		return
 	end
-	settings.version = "1.9.2"
+	settings.version = "1.9.3"
 	settings.website = "http://www.esoui.com/downloads/info914-VotansSearchBox.html"
 
 	settings:AddSetting {
@@ -561,6 +574,19 @@ local function InitSettings()
 			settings:UpdateControls()
 		end
 	}
+	settings:AddSetting {
+		type = LibHarvensAddonSettings.ST_CHECKBOX,
+		label = GetString(SI_VOTAN_SEARCHBOX_SEARCH_TRAITS),
+		tooltip = GetString(SI_VOTAN_SEARCHBOX_SEARCH_TRAITS_TOOLTIP),
+		getFunction = function()
+			return g_savedVars.searchTraits
+		end,
+		setFunction = function(value)
+			g_savedVars.searchTraits = value
+			ResetSearchboxes()
+			settings:UpdateControls()
+		end
+	}
 end
 
 local function FixSearchProcess()
@@ -588,7 +614,7 @@ local function Initialize(eventType, addonName)
 		return
 	end
 
-	local defaults = {hideSearchBox = false, keepSticky = false, allSameText = false, searchSetName = true, searchMasterWrit = true}
+	local defaults = {hideSearchBox = false, keepSticky = false, allSameText = false, searchSetName = true, searchMasterWrit = true, searchTraits = true}
 	g_savedVars = ZO_SavedVars:NewAccountWide("VotanSearchBox_SavedVariables", 1, nil, defaults)
 
 	InitSettings()
