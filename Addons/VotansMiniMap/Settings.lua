@@ -99,7 +99,7 @@ function addon:InitSettings()
 	end
 	self.settingsControls = settings
 	settings.allowDefaults = true
-	settings.version = "2.0.7"
+	settings.version = "2.0.8"
 	settings.website = "http://www.esoui.com/downloads/info1399-VotansMiniMap.html"
 
 	settings:AddSetting {
@@ -510,19 +510,6 @@ function addon:InitSettings()
 			setFunction = function(value)
 				self.account.showFullTitle = value
 				ZO_WorldMapTitle:SetText(ZO_WorldMap_GetMapTitle(GetPlayerLocationName(), GetPlayerActiveSubzoneName()))
-			end
-		}
-		settings:AddSetting {
-			type = LibHarvensAddonSettings.ST_CHECKBOX,
-			label = GetString(SI_VOTANSMINIMAP_ALLOW_FLOOR_NAVIGATION),
-			tooltip = GetString(SI_VOTANSMINIMAP_ALLOW_FLOOR_NAVIGATION_TOOLTIP),
-			default = self.accountDefaults.allowFloorNavigation,
-			getFunction = function()
-				return self.account.allowFloorNavigation
-			end,
-			setFunction = function(value)
-				self.account.allowFloorNavigation = value
-				self:UpdateBorder()
 			end
 		}
 		settings:AddSetting {

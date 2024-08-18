@@ -1,7 +1,7 @@
 ## Title: Votan's Minimap
 ## Author: votan
-## APIVersion: 101040 101041
-## Version: 2.0.7
+## APIVersion: 101042 101043
+## Version: 2.0.8
 ## DependsOn: LibHarvensAddonSettings>=10705 LibAsync>=20302
 ## OptionalDependsOn: LibGPS>=69 TweakIt TrueExploration LibDebugLogger
 ## SavedVariables: VotansMiniMap_Data

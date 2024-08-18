@@ -1098,6 +1098,8 @@ function addon:InitMiniMap()
 			else
 				SetMapTitleCurrentLocation()
 			end
+			WORLD_MAP_MANAGER:UpdateFloorAndLevelNavigation()
+
 			self:StartFollowPlayer()
 		end
 	end
@@ -1130,6 +1132,7 @@ function addon:InitMiniMap()
 			end
 		end
 		self:UpdateBorder()
+		WORLD_MAP_MANAGER:UpdateFloorAndLevelNavigation()
 	end
 
 	do
@@ -1370,14 +1373,19 @@ do
 			ApplyTemplateToControl(ZO_WorldMapMapFrame, ZO_GetPlatformTemplate("ZO_WorldMapFrame"))
 		end
 
+		ZO_PreHook(
+			WORLD_MAP_MANAGER,
+			"UpdateFloorAndLevelNavigation",
+			function()
+				if WORLD_MAP_MANAGER:IsInMode(MAP_MODE_VOTANS_MINIMAP) then
+					ZO_WorldMapButtonsFloors_Keyboard:SetHidden(true)
+					ZO_WorldMapButtonsFloors_Gamepad:SetHidden(true)
+					ZO_WorldMapButtonsLevels_Gamepad:SetHidden(true)
+					return true
+				end
+			end
+		)
 		function addon:UpdateBorder()
-			local _, numFloors = GetMapFloorInfo()
-			local hidden = numFloors == 0 or (WORLD_MAP_MANAGER:IsInMode(MAP_MODE_VOTANS_MINIMAP) and not self.account.allowFloorNavigation)
-			local isGamepad = IsInGamepadPreferredMode()
-			ZO_WorldMapButtonsFloors_Keyboard:SetHidden(hidden or isGamepad)
-			ZO_WorldMapButtonsFloors_Gamepad:SetHidden(hidden or not isGamepad)
-			ZO_WorldMapButtonsLevels_Gamepad:SetHidden(hidden or not isGamepad)
-
 			local control = self.background
 			local inMiniMap = not GetScene():IsShowing()
 			if inMiniMap then
@@ -1487,7 +1495,6 @@ function addon:Initialize()
 		showRealTimeClock = true,
 		showInGameClock = true,
 		lockWindow = false,
-		allowFloorNavigation = true,
 		showFullTitle = false,
 		showCameraAngle = false,
 		cameraAngle = 45,

@@ -58,8 +58,6 @@ ZO_CreateStringId("SI_VOTANSMINIMAP_SHOW_FULL_TITLE_TOOLTIP", "Показыва�
 SafeAddString(SI_VOTANSMINIMAP_SHOW_CLOCK, "Часы")
 SafeAddString(SI_VOTANSMINIMAP_SHOW_CLOCK_TOOLTIP, "Показывать часы на мини-карте.")
 SafeAddString(SI_VOTANSMINIMAP_TIME_FORMAT, "Формат времени")
-SafeAddString(SI_VOTANSMINIMAP_ALLOW_FLOOR_NAVIGATION, "Навигация по этажам")
-SafeAddString(SI_VOTANSMINIMAP_ALLOW_FLOOR_NAVIGATION_TOOLTIP, "Показывать кнопки навигации по этажам, если они имеются на карте.")
 SafeAddString(SI_VOTANSMINIMAP_ZONE_CHANGE_ALERT, "Предупреждение о смене зоны")
 SafeAddString(SI_VOTANSMINIMAP_SHOW_COMPASS, "Скрыть/показать компас")
 SafeAddString(SI_VOTANSMINIMAP_SHOW_COMPASS_TOOLTIP, "Скрывает или показывает компас, если отображается мини-карта, или оставить его нетронутым, чтобы другие аддоны могли изменять его видимость.")
