@@ -1,0 +1,32 @@
+<GuiXml>
+  <Controls>
+    <TopLevelControl name="Votans_ImprovedHouseTours_TopLevel" inherits="ZO_GroupMenuKeyboard_ContentAnchors" hidden="true">
+      <OnInitialized>
+        VOTANS_IMPROVED_HOUSE_TOURS:OnControlInitialized(self)
+      </OnInitialized>
+
+      <Controls>
+        <Control name="$(parent)Container">
+          <AnchorFill />
+          <Controls>
+            <Label name="$(parent)EmptyText" font="ZoFontWinH4" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_NORMAL" horizontalAlignment="CENTER" hidden="true">
+              <Anchor point="TOPLEFT" offsetY="60"/>
+              <Anchor point="TOPRIGHT" offsetX="-30" offsetY="60"/>
+            </Label>
+
+            <Control name="$(parent)LoadingIcon" inherits="ZO_Loading">
+              <Anchor point="TOP" relativeTo="$(parent)EmptyText" relativePoint="BOTTOM" />
+              <OnInitialized>
+                ZO_Loading_Initialize(self)
+              </OnInitialized>
+            </Control>
+            <Control name="$(parent)House" inherits="ZO_HouseToursSearchResultsTile_Keyboard_Control" hidden="true">
+              <Anchor point="TOP" />
+              <Dimensions x="453" y="300" />
+            </Control>
+          </Controls>
+        </Control>
+      </Controls>
+    </TopLevelControl>
+  </Controls>
+</GuiXml>
