@@ -139,7 +139,7 @@ function HarvensImprovedSkillsWindow:Initialize()
 	end
 
 	if PP then
-		createCheckbox("HarvensShowDetails", {BOTTOMRIGHT, SKILLS_WINDOW.control, TOPRIGHT, -8, -30, ANCHOR_CONSTRAINS_XY}, "Show detailed skills progression", "showDetails")
+		createCheckbox("HarvensShowDetails", {BOTTOMRIGHT, SKILLS_WINDOW.control, TOPRIGHT, -8, -65, ANCHOR_CONSTRAINS_XY}, "Show detailed skills progression", "showDetails")
 	else
 		createCheckbox("HarvensShowDetails", {BOTTOMRIGHT, SKILLS_WINDOW.control, TOPRIGHT, -8, -70, ANCHOR_CONSTRAINS_XY}, "Show detailed skills progression", "showDetails")
 	end
