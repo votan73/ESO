@@ -109,7 +109,7 @@ end
 ---- Guild History Window ----
 
 local function AddGuildHistory()
-	local GuildHistoryManager = GUILD_HISTORY_KEYBOARD or GUILD_HISTORY
+	local GuildHistoryManager = GUILD_HISTORY_KEYBOARD
 
 	local parent = GuildHistoryManager.control
 
@@ -131,49 +131,26 @@ local function AddGuildHistory()
 	local orgFilterScrollList = GuildHistoryManager.FilterScrollList
 	function GuildHistoryManager:FilterScrollList(...)
 		if #cachedSearchTerm > 0 then
-			local orgMasterList = self.masterList
-			local newMasterList = {}
-
+			orgFilterScrollList(self, ...)
+			local orgMasterList = ZO_ScrollList_GetDataList(self.list)
 			local data, lower
-			for i = 1, #orgMasterList do
+			for i = #orgMasterList, 1, -1 do
 				data = orgMasterList[i]
 				-- Bad, but no better idea
-				if GetAPIVersion() >= 101041 then
-					if not data.descriptionLower then
-						local description = data:GetText()
+				if not data.descriptionLower then
+					local description = data:GetNarrationText()
 
-						lower = {}
-						AddLowercase(lower, description)
-						AddLowercase(lower, ZO_FormatDurationAgo(GetTimeStamp32() - data:GetEventTimestampS()))
+					lower = {}
+					AddLowercase(lower, description)
+					AddLowercase(lower, ZO_FormatDurationAgo(GetTimeStamp32() - data:GetEventTimestampS()))
 
-						data.descriptionLower = table.concat(lower, " ")
-					end
-				else
-					if not data.descriptionLower then
-						local description = self:FormatEvent(data.eventType, data.param1, data.param2, data.param3, data.param4, data.param5, data.param6)
-
-						lower = {}
-						AddLowercase(lower, description)
-						AddLowercase(lower, data.param1)
-						AddLowercase(lower, data.param2)
-						AddLowercase(lower, data.param3)
-						AddLowercase(lower, data.param4)
-						AddLowercase(lower, data.param5)
-						AddLowercase(lower, data.param6)
-						AddLowercase(lower, ZO_FormatDurationAgo(data.secsSinceEvent))
-
-						data.descriptionLower = table.concat(lower, " ")
-					end
+					data.descriptionLower = table.concat(lower, " ")
 				end
 
-				if LTF:Filter(data.descriptionLower, cachedSearchTerm) then
-					newMasterList[#newMasterList + 1] = data
+				if not LTF:Filter(data.descriptionLower, cachedSearchTerm) then
+					table.remove(orgMasterList, i)
 				end
 			end
-
-			self.masterList = newMasterList
-			orgFilterScrollList(self, ...)
-			self.masterList = orgMasterList
 		else
 			return orgFilterScrollList(self, ...)
 		end
@@ -235,8 +212,14 @@ local function Initialize(eventType, addonName)
 		return
 	end
 
-	AddGuildHistory()
-	AddGuildBrowser()
+	SecurePostHook(
+		GUILD_HISTORY_KEYBOARD,
+		"OnDeferredInitialize",
+		function()
+			AddGuildHistory()
+			AddGuildBrowser()
+		end
+	)
 	EVENT_MANAGER:UnregisterForEvent(identifier, EVENT_ADD_ON_LOADED)
 end
 
