@@ -419,7 +419,6 @@ end
 function addon:InitializeKeybindStripDescriptors()
 	local categoryTree = ITEM_SET_COLLECTIONS_BOOK_KEYBOARD.categoryTree
 	local zoneIdToLocation = {}
-	initLocations(zoneIdToLocation)
 	local function getLocation(zoneId, format)
 		local location = zo_strformat(format, GetZoneNameById(zoneId):gsub("\194\160", " "))
 		-- Remove roman numbers at the end
@@ -475,7 +474,11 @@ function addon:InitializeKeybindStripDescriptors()
 		}
 	}
 	local function stateChange(oldState, newState)
-		if newState == SCENE_SHOWN then
+		if newState == SCENE_SHOWING then
+			if not next(zoneIdToLocation) then
+				initLocations(zoneIdToLocation)
+			end
+		elseif newState == SCENE_SHOWN then
 			PushActionLayerByName(GetString(SI_VOTANS_SETSBOOK_LAYER))
 			KEYBIND_STRIP:AddKeybindButtonGroup(self.keybindStripDescriptor)
 		elseif newState == SCENE_HIDING then
