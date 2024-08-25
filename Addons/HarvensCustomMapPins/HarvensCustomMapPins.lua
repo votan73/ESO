@@ -540,8 +540,12 @@ end
 function HarvensCustomMapPins:UpdateLegend()
 	GAMEPAD_WORLD_MAP_KEY.dirty = true
 	WORLD_MAP_KEY.dirty = true
-	GAMEPAD_WORLD_MAP_KEY:RefreshKey()
-	WORLD_MAP_KEY:RefreshKey()
+	if GAMEPAD_WORLD_MAP_KEY_FRAGMENT:IsShowing() then
+		GAMEPAD_WORLD_MAP_KEY:RefreshKey()
+	end
+	if WORLD_MAP_KEY_FRAGMENT:IsShowing() then
+		WORLD_MAP_KEY:RefreshKey()
+	end
 end
 
 function HarvensCustomMapPins:InitLegend()
@@ -637,7 +641,7 @@ end
 function HarvensCustomMapPins:SetupOptions()
 	local LibHarvensAddonSettings = LibHarvensAddonSettings or LibStub("LibHarvensAddonSettings-1.0")
 	local settings = LibHarvensAddonSettings:AddAddon("Harven's Custom Map Pins")
-	settings.version = "3.2.4"
+	settings.version = "3.2.5"
 
 	local pinSize = {
 		type = LibHarvensAddonSettings.ST_SLIDER,
@@ -1061,16 +1065,38 @@ do
 			end
 		end
 
-		local self = WORLD_MAP_FILTERS
-		AddCheckBox(self.pvePanel, "pve")
-		AddCheckBox(self.pvpPanel, "pvp")
-		AddCheckBox(self.imperialPvPPanel, "imperialPvP")
-		AddCheckBox(self.battlegroundPanel, "battleground")
-		local self = GAMEPAD_WORLD_MAP_FILTERS
-		AddCheckBox(self.pvePanel, "pve")
-		AddCheckBox(self.pvpPanel, "pvp")
-		AddCheckBox(self.imperialPvPPanel, "imperialPvP")
-		AddCheckBox(self.battlegroundPanel, "battleground")
+		local initKeyboard = false
+		WORLD_MAP_SCENE:RegisterCallback(
+			"StateChange",
+			function(oldState, newState)
+				if initKeyboard or newState ~= SCENE_SHOWING then
+					return
+				end
+				initKeyboard = true
+
+				local self = WORLD_MAP_FILTERS
+				AddCheckBox(self.pvePanel, "pve")
+				AddCheckBox(self.pvpPanel, "pvp")
+				AddCheckBox(self.imperialPvPPanel, "imperialPvP")
+				AddCheckBox(self.battlegroundPanel, "battleground")
+			end
+		)
+
+		local initGamePad = false
+		GAMEPAD_WORLD_MAP_SCENE:RegisterCallback(
+			"StateChange",
+			function(oldState, newState)
+				if initGamePad or newState ~= SCENE_SHOWING then
+					return
+				end
+				initGamePad = true
+				local self = GAMEPAD_WORLD_MAP_FILTERS
+				AddCheckBox(self.pvePanel, "pve")
+				AddCheckBox(self.pvpPanel, "pvp")
+				AddCheckBox(self.imperialPvPPanel, "imperialPvP")
+				AddCheckBox(self.battlegroundPanel, "battleground")
+			end
+		)
 	end
 end
 
