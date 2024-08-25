@@ -332,6 +332,34 @@ function addon:AddKeyBind()
 	)
 end
 
+function addon:SetupProvisioner()
+	SHARED_INVENTORY:RegisterCallback(
+		"SingleSlotInventoryUpdate",
+		function(bagId, slotIndex, previousSlotData)
+			if not ZO_FishFillet_IsSceneShowing() then
+				return
+			end
+			local bagCache = SHARED_INVENTORY:GetOrCreateBagCache(bagId)
+			local slotData = bagCache[slotIndex]
+			if not slotData then
+				return
+			end
+			if ITEMTYPE_INGREDIENT == slotData.itemType then
+				local oldCount = previousSlotData and previousSlotData.stackCount or 0
+				local newCount = slotData.stackCount or 0
+				if newCount > oldCount then
+					local itemId = GetItemId(slotData.bagId, slotData.slotIndex)
+					if itemId == 64222 then
+						stats.perfectRoe = stats.perfectRoe + (newCount - oldCount)
+					elseif itemId == 33753 then
+						stats.fishes = stats.fishes + (newCount - oldCount)
+					end
+				end
+			end
+		end
+	)
+end
+
 ------------ End Filleting a fish ----------------
 
 ---------------- tooltip stats -------------------
@@ -407,7 +435,7 @@ function addon:SetupSettings()
 		name = addon.title,
 		displayName = addon.title,
 		author = "votan",
-		version = "1.6.4",
+		version = "1.6.5",
 		-- slashCommand = "",
 		-- registerForRefresh = true,
 		registerForDefaults = true,
@@ -486,6 +514,7 @@ local function OnAddonLoaded(event, name)
 
 	addon:SlashCommand()
 	addon:AddKeyBind()
+	addon:SetupProvisioner()
 	addon:SetupSettings()
 end
 

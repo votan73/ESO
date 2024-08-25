@@ -1,8 +1,8 @@
 ## Title: Votan's Fish Fillet
 ## Author: votan
 ## Description: Fillets all fishes of a stack
-## Version: 1.6.4
-## APIVersion: 101033 101034
+## Version: 1.6.5
+## APIVersion: 101042 101043
 ## DependsOn: LibAddonMenu-2.0>=30 LibCustomMenu>=692
 ## SavedVariables: VotanFishFillet_Data
 
