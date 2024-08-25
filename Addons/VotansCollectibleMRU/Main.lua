@@ -79,13 +79,20 @@ function addon:Init()
 
 	ZO_COLLECTIBLE_DATA_MANAGER:RegisterCallback("OnCollectibleUpdated", addon.OnCollectibleUpdated)
 
-	local orgAddEntry = COLLECTIONS_BOOK.gridListPanelList.AddEntry
-	function COLLECTIONS_BOOK.gridListPanelList.AddEntry(...)
-		local collectibleData = select(2, ...)
-		if collectibleData.votanRecentIndex then
-			collectibleData.gridHeaderName = GetString(SI_VOTANS_COLLECTIBLE_MRU_RECENT)
+	local function initCollections()
+		local orgAddEntry = COLLECTIONS_BOOK.gridListPanelList.AddEntry
+		function COLLECTIONS_BOOK.gridListPanelList.AddEntry(...)
+			local collectibleData = select(2, ...)
+			if collectibleData.votanRecentIndex then
+				collectibleData.gridHeaderName = GetString(SI_VOTANS_COLLECTIBLE_MRU_RECENT)
+			end
+			return orgAddEntry(...)
 		end
-		return orgAddEntry(...)
+	end
+	if COLLECTIONS_BOOK.gridListPanelList then
+		initCollections()
+	else
+		SecurePostHook(COLLECTIONS_BOOK, "InitializeGridListPanel", initCollections)
 	end
 
 	local function AfterUse(collectibleData)
