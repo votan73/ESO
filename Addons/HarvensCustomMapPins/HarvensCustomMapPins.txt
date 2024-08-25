@@ -7,7 +7,7 @@
 ; Door icon source: http://game-icons.net/lorc/originals/wooden-door.html
 
 ## Title: Harven's Custom Map Pins
-## APIVersion: 101041 101042
+## APIVersion: 101042 101043
 ## SavedVariables: HarvensCustomMapPins_SavedVariables HarvensCustomMapPins_Data
 ## Author: Harven & votan
 ## Version: 3.2.5
