@@ -465,7 +465,13 @@ function addon:InitializeNavigation()
 	self:InitNavigationKeybind()
 	self:HookGridEntryMouseHandler()
 	self:HookOutfitStylesGrid()
-	self:InitSearchBoxFilter()
+	SecurePostHook(
+		ZO_RESTYLE_STATION_KEYBOARD,
+		"OnDeferredInitialize",
+		function()
+			self:InitSearchBoxFilter()
+		end
+	)
 	self:HookDyeSampleTool()
 	self:InitStyleList()
 end
