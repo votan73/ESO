@@ -24,6 +24,9 @@
               <Anchor point="TOP" />
               <Dimensions x="453" y="300" />
             </Control>
+            <Label name="$(parent)TotalHouses" font="ZoFontWinH4" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_NORMAL" horizontalAlignment="CENTER" hidden="true">
+              <Anchor point="BOTTOMRIGHT"  relativePoint="BOTTOMRIGHT"/>
+            </Label>
           </Controls>
         </Control>
       </Controls>

@@ -11,6 +11,19 @@ function addon:IsShowing()
     return self.fragment and self.fragment:IsShowing()
 end
 
+function addon:ShowLoading()
+    self.loadingIcon:Show()
+    self.emptyText:SetText(GetString(SI_HOUSE_TOURS_SEARCH_RESULTS_REFRESHING_RESULTS))
+    self.emptyText:SetHidden(false)
+    self.houseControl:SetHidden(true)
+    self.totalHouses:SetHidden(true)
+end
+
+function addon:HideLoading()
+    self.loadingIcon:Hide()
+    self.emptyText:SetHidden(true)
+end
+
 function addon:CurrentHouseIdentifier()
     local houseId = GetCurrentZoneHouseId()
     local owner = GetCurrentHouseOwner()
@@ -22,8 +35,7 @@ function addon:RegisterForEvents()
         "OnSearchStateChanged",
         function(newState, listingType)
             if listingType == HOUSE_TOURS_LISTING_TYPE_BROWSE then
-                self.loadingIcon:Hide()
-                self.emptyText:SetHidden(true)
+                self:HideLoading()
                 if self:IsShowing() then
                     self:RefreshHouse()
                 else
@@ -61,7 +73,6 @@ function addon:RefreshHouse()
     self.dirty = false
 
     local currentIndex = (math.floor(GetTimeStamp() / 899) % #searchResults) + 1 -- Not exactly 15min for a slight drift over days
-    df("%i/%i", currentIndex, #searchResults)
     local houseListingData = searchResults[currentIndex]
     if not houseListingData then
         self.emptyText:SetText(GetString(SI_HOUSE_TOURS_SEARCH_RESULTS_EMPTY_TEXT))
@@ -69,10 +80,11 @@ function addon:RefreshHouse()
         self.houseControl:SetHidden(true)
         return
     end
-    self.emptyText:SetHidden(true)
+    self:HideLoading()
     self.houseControl:SetHidden(false)
     self.house:Layout(houseListingData)
-    --SLASH_COMMANDS["/zgoo"](self.house)
+    self.totalHouses:SetText(zo_strformat(SI_VOTANS_IMPROVED_HOUSE_TOURS_TOTAL_HOUSES, #searchResults))
+    self.totalHouses:SetHidden(false)
 end
 
 function addon:LayoutTooltip(tile)
@@ -92,7 +104,15 @@ end
 function addon:OnStateChange(oldState, newState)
     if newState == SCENE_FRAGMENT_SHOWN then
         if self.dirty then
-            self:RefreshHouse()
+            local currentSearchState = HOUSE_TOURS_SEARCH_MANAGER:GetSearchState(HOUSE_TOURS_LISTING_TYPE_BROWSE)
+            if currentSearchState ~= ZO_HOUSE_TOURS_SEARCH_STATES.COMPLETE then
+                self:ShowLoading()
+                if currentSearchState ~= ZO_HOUSE_TOURS_SEARCH_STATES.WAITING and currentSearchState ~= ZO_HOUSE_TOURS_SEARCH_STATES.QUEUED then
+                    HOUSE_TOURS_SEARCH_MANAGER:ExecuteSearch(HOUSE_TOURS_LISTING_TYPE_BROWSE)
+                end
+            else
+                self:RefreshHouse()
+            end
         end
     end
 end
@@ -112,27 +132,18 @@ function addon:OnControlInitialized(control)
     self.loadingIcon = container:GetNamedChild("LoadingIcon")
     self.houseControl = container:GetNamedChild("House")
     self.house = self.houseControl.object
+    self.totalHouses = container:GetNamedChild("TotalHouses")
 
     local houseToursCategoryData = {
         priority = ZO_ACTIVITY_FINDER_SORT_PRIORITY.HOUSE_TOURS,
         name = GetString(SI_VOTANS_IMPROVED_HOUSE_TOURS_TITLE),
         onTreeEntrySelected = function()
-            local currentSearchState = HOUSE_TOURS_SEARCH_MANAGER:GetSearchState(HOUSE_TOURS_LISTING_TYPE_BROWSE)
-            if currentSearchState ~= ZO_HOUSE_TOURS_SEARCH_STATES.COMPLETE then
-                self.loadingIcon:Show()
-                self.emptyText:SetText(GetString(SI_HOUSE_TOURS_SEARCH_RESULTS_REFRESHING_RESULTS))
-                self.emptyText:SetHidden(false)
-                if currentSearchState ~= ZO_HOUSE_TOURS_SEARCH_STATES.WAITING and currentSearchState ~= ZO_HOUSE_TOURS_SEARCH_STATES.QUEUED then
-                    HOUSE_TOURS_SEARCH_MANAGER:ExecuteSearch(HOUSE_TOURS_LISTING_TYPE_BROWSE)
-                end
-            else
-                self:RefreshHouse()
-            end
+            self.dirty = true
         end,
-        normalIcon = "EsoUI/Art/LFG/LFG_indexIcon_houseTours_up.dds",
-        pressedIcon = "EsoUI/Art/LFG/LFG_indexIcon_houseTours_down.dds",
-        mouseoverIcon = "EsoUI/Art/LFG/LFG_indexIcon_houseTours_over.dds",
-        disabledIcon = "EsoUI/Art/LFG/LFG_indexIcon_houseTours_disabled.dds",
+        normalIcon = "/esoui/art/guild/tabicon_home_up.dds",
+        pressedIcon = "/esoui/art/guild/tabicon_home_down.dds",
+        mouseoverIcon = "/esoui/art/guild/tabicon_home_over.dds",
+        disabledIcon = "/esoui/art/guild/tabicon_home_disabled.dds",
         isHouseTours = true,
         categoryFragment = self.fragment
     }
@@ -154,6 +165,30 @@ function addon:OnControlInitialized(control)
             self:LayoutTooltip(tile)
         end
     )
+    local orgShowContextMenu = ZO_HouseToursSearchResultsTile_Keyboard.ShowContextMenu
+    function ZO_HouseToursSearchResultsTile_Keyboard.ShowContextMenu(...)
+        local tile = ...
+        if not tile.listingData then
+            return orgShowContextMenu(...)
+        end
+
+        local orgShowMenu = ShowMenu
+        function ShowMenu(...)
+            ShowMenu = orgShowMenu
+            local listingData = tile.listingData
+            AddCustomMenuItem(
+                "Spieler besuchen",
+                function()
+                    if listingData then
+                        local FROM_HOUSE_TOURS = nil
+                        HOUSING_SOCIAL_MANAGER:VisitHouse(listingData:GetHouseId(), listingData:GetOwnerDisplayName(), FROM_HOUSE_TOURS)
+                    end
+                end
+            )
+            return ShowMenu(...)
+        end
+        return orgShowContextMenu(...)
+    end
 end
 
 function addon:InitSavedVar()
@@ -166,6 +201,16 @@ function addon:InitSavedVar()
         settings[currentServer] = {}
     end
     self.visitedHouses = settings[currentServer]
+
+    -- keep data clean
+    local expireDate = GetTimeStamp() - 7776000 -- 90 days
+    for world, houses in pairs(VotansImprovedHouseTours_Data) do
+        for identifier, time in pairs(houses) do
+            if time < expireDate then
+                self.visitedHouses[identifier] = nil
+            end
+        end
+    end
 end
 
 VOTANS_IMPROVED_HOUSE_TOURS = addon:New()
