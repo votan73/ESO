@@ -72,8 +72,26 @@ function addon:RefreshHouse()
 
     self.dirty = false
 
-    local currentIndex = (math.floor(GetTimeStamp() / 899) % #searchResults) + 1 -- Not exactly 15min for a slight drift over days
-    local houseListingData = searchResults[currentIndex]
+    local timeSlot = math.floor(GetTimeStamp() / 899) -- Not exactly 15min for a slight drift over day time
+    local houseListingData
+    if self.lastTimeSlot ~= timeSlot or not self.lastHouse then
+        if not self.lastHouse then
+            local currentIndex = (timeSlot % #searchResults) + 1 -- take timeSlot as a random start index
+            houseListingData = searchResults[currentIndex]
+        else
+            houseListingData = searchResults[self.lastIndex + 1] or searchResults[1]
+        end
+        local count = #searchResults
+        while houseListingData and count > 0 and not houseListingData:IsListed() or houseListingData:GetListingType() == HOUSE_TOURS_LISTING_TYPE_RECOMMENDED do
+            houseListingData = searchResults[houseListingData:GetListingIndex() + 1] or searchResults[1]
+            count = count - 1
+        end
+        self.lastIndex = houseListingData and houseListingData:GetListingIndex() or 0
+        self.lastTimeSlot = timeSlot
+        self.lastHouse = houseListingData
+    else
+        houseListingData = self.lastHouse
+    end
     if not houseListingData then
         self.emptyText:SetText(GetString(SI_HOUSE_TOURS_SEARCH_RESULTS_EMPTY_TEXT))
         self.emptyText:SetHidden(false)
@@ -165,30 +183,6 @@ function addon:OnControlInitialized(control)
             self:LayoutTooltip(tile)
         end
     )
-    local orgShowContextMenu = ZO_HouseToursSearchResultsTile_Keyboard.ShowContextMenu
-    function ZO_HouseToursSearchResultsTile_Keyboard.ShowContextMenu(...)
-        local tile = ...
-        if not tile.listingData then
-            return orgShowContextMenu(...)
-        end
-
-        local orgShowMenu = ShowMenu
-        function ShowMenu(...)
-            ShowMenu = orgShowMenu
-            local listingData = tile.listingData
-            AddCustomMenuItem(
-                "Spieler besuchen",
-                function()
-                    if listingData then
-                        local FROM_HOUSE_TOURS = nil
-                        HOUSING_SOCIAL_MANAGER:VisitHouse(listingData:GetHouseId(), listingData:GetOwnerDisplayName(), FROM_HOUSE_TOURS)
-                    end
-                end
-            )
-            return ShowMenu(...)
-        end
-        return orgShowContextMenu(...)
-    end
 end
 
 function addon:InitSavedVar()
@@ -207,7 +201,7 @@ function addon:InitSavedVar()
     for world, houses in pairs(VotansImprovedHouseTours_Data) do
         for identifier, time in pairs(houses) do
             if time < expireDate then
-                self.visitedHouses[identifier] = nil
+                houses[identifier] = nil
             end
         end
     end
