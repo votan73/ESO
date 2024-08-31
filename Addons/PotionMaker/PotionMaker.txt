@@ -1,8 +1,8 @@
 ## Title: Potion Maker (for Alchemy Crafting)
 ## Author: Facit & |cFF6A00Khrill|r & votan
 ## Description: Gives feedback for what potions you can make with alchemy using the ingredients you have.
-## Version: 5.9.1
-## APIVersion: 101038 101039
+## Version: 5.9.2
+## APIVersion: 101042 101043
 ## DependsOn: LibAddonMenu-2.0>=30 LibAlchemyStation>=343 LibAsync>=20100 LibCustomMenu>=692 LibMainMenu-2.0>=432
 ## OptionalDependsOn: MultiCraft
 ## SavedVariables: PotionMaker_Data

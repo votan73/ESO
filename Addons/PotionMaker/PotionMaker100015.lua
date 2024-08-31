@@ -5,7 +5,7 @@
 
 PotMaker = {
 	name = "PotionMaker",
-	version = "5.9.1",
+	version = "5.9.2",
 	ResultControls = {},
 	PositiveTraitControls = {},
 	NegativeTraitControls = {},
@@ -1768,6 +1768,16 @@ local function UpdateKeyStrip(descriptor)
 	end
 end
 
+function PotMaker:Init()
+	if not PotMaker.initialized then
+		PotMaker.initialized = true
+		PotMaker.initWindows()
+		PotMaker.initFavorites()
+		PotMaker.initTraitLearned()
+		PotMaker:InitializeKeybindStripDescriptors()
+	end
+end
+
 do
 	local skillXPs = 0
 	local identifier = "POTIONMAKER_UPDATESKILL"
@@ -1785,37 +1795,41 @@ do
 	end
 
 	function PotMaker.interactWithAlchemyStation(eventCode, craftSkill)
-		if craftSkill == CRAFTING_TYPE_ALCHEMY then
-			-- check xp gain
-			if accountSettings.XPMode then
-				EVENT_MANAGER:RegisterForEvent(PotMaker.name, EVENT_SKILL_XP_UPDATE, UpdateSkill)
-			end
-
-			PotMaker.atAlchemyStation = true
-
-			if CRAFTING_RESULTS.craftingProcessCompleted == false then
-				CRAFTING_RESULTS.craftingProcessCompleted = true
-			end
-
-			ShowStationOrTopLevel()
-			ShowFilterPage()
-			PotMaker.addStuffToInventory()
-			PotMaker.updateControls()
-
-			if not PotMaker.atAlchemyStation or accountSettings.showAsDefault then
-				if PotMaker.atAlchemyStation then
-					LAS:SelectTab(playerSettings.lastUsedTab or PotMaker.descriptorPotion)
-				end
-			end
-
-			local selected = LAS:GetSelectedTab()
-			PotionMaker:SetHidden((selected ~= PotMaker.descriptorPotion and selected ~= PotMaker.descriptorPoison) and not IsInGamepadPreferredMode())
-
-			EVENT_MANAGER:RegisterForEvent(PotMaker.name, EVENT_CRAFT_COMPLETED, PotMaker.craftCompleted)
-			EVENT_MANAGER:RegisterForEvent(PotMaker.name, EVENT_END_CRAFTING_STATION_INTERACT, PotMaker.endInteractionWithAlchemyStation)
-
-			UpdateKeyStrip(selected)
+		if craftSkill ~= CRAFTING_TYPE_ALCHEMY then
+			return
 		end
+
+		PotMaker:Init()
+
+		-- check xp gain
+		if accountSettings.XPMode then
+			EVENT_MANAGER:RegisterForEvent(PotMaker.name, EVENT_SKILL_XP_UPDATE, UpdateSkill)
+		end
+
+		PotMaker.atAlchemyStation = true
+
+		if CRAFTING_RESULTS.craftingProcessCompleted == false then
+			CRAFTING_RESULTS.craftingProcessCompleted = true
+		end
+
+		ShowStationOrTopLevel()
+		ShowFilterPage()
+		PotMaker.addStuffToInventory()
+		PotMaker.updateControls()
+
+		if not PotMaker.atAlchemyStation or accountSettings.showAsDefault then
+			if PotMaker.atAlchemyStation then
+				LAS:SelectTab(playerSettings.lastUsedTab or PotMaker.descriptorPotion)
+			end
+		end
+
+		local selected = LAS:GetSelectedTab()
+		PotionMaker:SetHidden((selected ~= PotMaker.descriptorPotion and selected ~= PotMaker.descriptorPoison) and not IsInGamepadPreferredMode())
+
+		EVENT_MANAGER:RegisterForEvent(PotMaker.name, EVENT_CRAFT_COMPLETED, PotMaker.craftCompleted)
+		EVENT_MANAGER:RegisterForEvent(PotMaker.name, EVENT_END_CRAFTING_STATION_INTERACT, PotMaker.endInteractionWithAlchemyStation)
+
+		UpdateKeyStrip(selected)
 	end
 end
 
@@ -2968,6 +2982,8 @@ function PotMaker.initMainMenu()
 		"StateChange",
 		function(oldState, newState)
 			if newState == SCENE_FRAGMENT_SHOWING then
+				PotMaker:Init()
+
 				EVENT_MANAGER:RegisterForEvent(PotMaker.name, EVENT_INVENTORY_SINGLE_SLOT_UPDATE, PotMaker.slotUpdated)
 				ShowStationOrTopLevel()
 				local mode = playerSettings.lastUsedTab
@@ -3562,11 +3578,7 @@ local function AddonLoaded(eventCode, addOnName)
 
 	PotMaker.initVar(language)
 	PotMaker.initSettingsMenu()
-	PotMaker.initWindows()
 	PotMaker.initMainMenu()
-	PotMaker.initFavorites()
-	PotMaker.initTraitLearned()
-	PotMaker:InitializeKeybindStripDescriptors()
 
 	EVENT_MANAGER:RegisterForEvent(PotMaker.name, EVENT_CRAFTING_STATION_INTERACT, PotMaker.interactWithAlchemyStation)
 
