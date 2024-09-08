@@ -108,6 +108,41 @@ end
 
 ---- Guild History Window ----
 
+do
+	local lowercaseParams = {}
+	local lower = {}
+	SecurePostHook(
+		ZO_GuildHistoryEventData_Base,
+		"InternalRefreshText",
+		function(self, isGamepad, enumPrefix, ...)
+			local eventInfo = self:GetEventInfo()
+			if eventInfo.isRedacted then
+				eventInfo.votanSearchText = ""
+				return
+			end
+
+			local formatString = GetString(enumPrefix, eventInfo.eventType)
+
+			ZO_ClearNumericallyIndexedTable(lower)
+			local numArgs = select("#", ...)
+			if numArgs > 0 then
+				ZO_ClearNumericallyIndexedTable(lowercaseParams)
+				for i = 1, numArgs do
+					local param = select(i, ...)
+					AddLowercase(lowercaseParams, param)
+				end
+				AddLowercase(lower, zo_strformat(formatString, unpack(lowercaseParams)))
+			else
+				AddLowercase(lower, formatString)
+			end
+
+			AddLowercase(lower, ZO_FormatDurationAgo(GetTimeStamp32() - self:GetEventTimestampS()))
+
+			eventInfo.votanSearchText = table.concat(lower, " ")
+		end
+	)
+end
+
 local function AddGuildHistory()
 	local GuildHistoryManager = GUILD_HISTORY_KEYBOARD
 
@@ -128,33 +163,20 @@ local function AddGuildHistory()
 	bagSearch:ClearAnchors()
 	bagSearch:SetAnchor(LEFT, FindMostRightControl(ZO_GuildSharedInfo), RIGHT, 5, 0)
 
-	local orgFilterScrollList = GuildHistoryManager.FilterScrollList
-	function GuildHistoryManager:FilterScrollList(...)
-		if #cachedSearchTerm > 0 then
-			orgFilterScrollList(self, ...)
-			local orgMasterList = ZO_ScrollList_GetDataList(self.list)
-			local data, lower
-			for i = #orgMasterList, 1, -1 do
-				data = orgMasterList[i]
-				-- Bad, but no better idea
-				if not data.descriptionLower then
-					local description = data:GetNarrationText()
+	ZO_PreHook(
+		ZO_GuildHistoryEventData_Base,
+		"GetUISubcategoryIndex",
+		function(self)
+			if #cachedSearchTerm > 0 then
+				local eventInfo = self:GetEventInfo()
 
-					lower = {}
-					AddLowercase(lower, description)
-					AddLowercase(lower, ZO_FormatDurationAgo(GetTimeStamp32() - data:GetEventTimestampS()))
-
-					data.descriptionLower = table.concat(lower, " ")
+				if not eventInfo.votanSearchText then
+					self:GetText(false) -- Force creating text. Normally done for visible rows only.
 				end
-
-				if not LTF:Filter(data.descriptionLower, cachedSearchTerm) then
-					table.remove(orgMasterList, i)
-				end
+				return not LTF:Filter(eventInfo.votanSearchText, cachedSearchTerm)
 			end
-		else
-			return orgFilterScrollList(self, ...)
 		end
-	end
+	)
 end
 
 ---- Guild Browser ----
