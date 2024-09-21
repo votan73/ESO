@@ -235,7 +235,7 @@ local function Initialize(eventType, addonName)
 	end
 
 	SecurePostHook(
-		GUILD_HISTORY_KEYBOARD,
+		ZO_GuildHistory_Keyboard,
 		"OnDeferredInitialize",
 		function()
 			AddGuildHistory()

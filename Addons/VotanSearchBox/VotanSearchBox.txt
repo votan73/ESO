@@ -1,10 +1,10 @@
 ## Title: Votan's Search Box
 ## Author: votan
 ## Description: Shows a magnifier symbol in your inventory to filter items by name, equip type, style and set name.
-## Version: 1.9.5
-## APIVersion: 101042 101043
+## Version: 1.9.6
+## APIVersion: 101043 101044
 ## DependsOn: LibHarvensAddonSettings>=10705 LibTextFilter>=10
-## OptionalDependsOn: AdvancedFilters FilterIt AwesomeGuildStore CraftBagExtended LibDebugLogger
+## OptionalDependsOn: AdvancedFilters FilterIt AwesomeGuildStore CraftBagExtended LibDebugLogger LibHistoire
 ## SavedVariables: VotanSearchBox_SavedVariables
 
 ## This Add-On is not created by, affiliated with or sponsored by ZeniMax Media Inc. or its affiliates. The Elder Scrolls® and related logos are registered trademarks or trademarks of ZeniMax Media Inc. in the United States and/or other countries. All rights reserved.
