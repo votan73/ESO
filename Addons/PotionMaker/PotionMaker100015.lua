@@ -5,7 +5,7 @@
 
 PotMaker = {
 	name = "PotionMaker",
-	version = "5.9.2",
+	version = "5.10.0",
 	ResultControls = {},
 	PositiveTraitControls = {},
 	NegativeTraitControls = {},
@@ -345,6 +345,7 @@ function PotMaker.initVar()
 			itemId = 30152
 		},
 		[30162] = {
+			-- Dragonthorn
 			traits = {
 				[traitNames["Increase Weapon Power"]] = false,
 				[traitNames["Restore Stamina"]] = false,
@@ -435,6 +436,7 @@ function PotMaker.initVar()
 			itemId = 30159
 		},
 		[30163] = {
+			-- Mountain Flower
 			traits = {
 				[traitNames["Increase Armor"]] = false,
 				[traitNames["Restore Health"]] = false,
@@ -639,7 +641,7 @@ function PotMaker.initVar()
 	-- generate PotMaker.allReagents from API by item id
 	PotMaker.allReagents = {}
 	local allReagents = PotMaker.allReagents
-	local itemId, reagent, known, traitName, name
+	local itemId, reagent, known, traitName
 	local format, createLink = ZO_CachedStrFormat, string.format
 	local getTraitInfo = GetItemLinkReagentTraitInfo
 	local getItemLinkName = GetItemLinkName
@@ -653,8 +655,7 @@ function PotMaker.initVar()
 				reagent.traits[traitName] = known
 			end
 		end
-		name = format(SI_TOOLTIP_ITEM_NAME, getItemLinkName(reagent.itemLink))
-		allReagents[name] = reagent
+		allReagents[itemId] = reagent
 	end
 
 	PotMaker.badTraitMatches = {
@@ -711,19 +712,19 @@ function PotMaker.initVar()
 	}
 	-- scan matching reagents once
 	local reagents = {}
-	for name in pairs(allReagents) do
-		reagents[#reagents + 1] = name
+	for itemId in pairs(allReagents) do
+		reagents[#reagents + 1] = itemId
 	end
 	local count = #reagents
 	for i = 1, count do
 		local others = {}
-		local name = reagents[i]
+		local itemId = reagents[i]
 		for t = 1, count do
 			if i ~= t then
-				local otherName = reagents[t]
+				local otherItemId = reagents[t]
 				local found = false
-				local other = allReagents[otherName]
-				for trait in pairs(allReagents[name].traits) do
+				local other = allReagents[otherItemId]
+				for trait in pairs(allReagents[itemId].traits) do
 					-- Either true or false, but not nil
 					if other.traits[trait] ~= nil then
 						found = true
@@ -731,11 +732,11 @@ function PotMaker.initVar()
 					end
 				end
 				if found then
-					others[#others + 1] = otherName
+					others[#others + 1] = otherItemId
 				end
 			end
 		end
-		allReagents[name].matching = others
+		allReagents[itemId].matching = others
 	end
 
 	PotMaker.traitColor = {
@@ -777,6 +778,7 @@ end
 ----- Ingredient -----
 PotMaker.Ingredient = {
 	name = "",
+	itemId = 0,
 	level = 0,
 	icon = TEXTURE_REAGENTUNKNOWN
 }
@@ -866,6 +868,9 @@ function PotMaker.Ingredient:new(o)
 	setmetatable(o, self)
 	self.__index = self
 	o.stack = 0
+	if o.itemLink then
+		o.name = GetItemLinkName(o.itemLink)
+	end
 	return o
 end
 
@@ -1138,7 +1143,7 @@ do
 		local allReagents, index = PotMaker.allReagents, 1
 		ingredients[3] = nil
 		for _, ingredient in pairs(self.ingredients) do
-			ingredients[index] = allReagents[ingredient.name].itemId
+			ingredients[index] = ingredient.itemId
 			index = index + 1
 		end
 		table.sort(ingredients)
@@ -1323,8 +1328,6 @@ function PotMaker.toggleBank(button)
 end
 
 function PotMaker.addAllStuffToInventory()
-	local SI_TOOLTIP_ITEM_NAME = type(SI_TOOLTIP_ITEM_NAME) == "number" and GetString(SI_TOOLTIP_ITEM_NAME) or SI_TOOLTIP_ITEM_NAME
-	local zo_strformat = LocalizeString
 	local GetItemLinkReagentTraitInfo = GetItemLinkReagentTraitInfo
 	local addTraits = playerSettings.useUnknown and function(newTraits)
 			local traits = {}
@@ -1344,10 +1347,18 @@ function PotMaker.addAllStuffToInventory()
 			return traits
 		end
 
-	for reagent, newTraits in pairs(PotMaker.allReagents) do
-		local item = PotMaker.Ingredient:new {name = zo_strformat(SI_TOOLTIP_ITEM_NAME, reagent), icon = TEXTURE_REAGENTUNKNOWN, traits = addTraits(newTraits), iconTraits = {}, pack = {}}
+	for itemId, newTraits in pairs(PotMaker.allReagents) do
+		local item =
+			PotMaker.Ingredient:new {
+			itemId = itemId,
+			itemLink = newTraits.itemLink,
+			icon = TEXTURE_REAGENTUNKNOWN,
+			traits = addTraits(newTraits),
+			iconTraits = {},
+			pack = {}
+		}
 		item.qualityColor = GetItemQualityColor(ITEM_QUALITY_MAGIC)
-		PotMaker.Inventory.reagents[item.name] = item
+		PotMaker.Inventory.reagents[itemId] = item
 	end
 end
 
@@ -1356,15 +1367,11 @@ local function append(toTable, item)
 end
 
 function PotMaker.addStuffToInventoryForBag(bagId)
-	local GetItemType = GetItemType
-	local GetItemInfo = GetItemInfo
 	local GetAlchemyItemTraits = GetAlchemyItemTraits
 	local LocalizeString = LocalizeString
-	local GetItemName = GetItemName
 	local GetItemLevel = GetItemLevel
 	local IsAlchemySolvent = IsAlchemySolvent
 	local itemType
-	local SI_TOOLTIP_ITEM_NAME = type(SI_TOOLTIP_ITEM_NAME) == "number" and GetString(SI_TOOLTIP_ITEM_NAME) or SI_TOOLTIP_ITEM_NAME
 
 	local function AddToKnownTrait(iconTraits, trait, icon, traits)
 		if trait then
@@ -1375,11 +1382,10 @@ function PotMaker.addStuffToInventoryForBag(bagId)
 		return trait
 	end
 
-	local function AddReagent(itemType, slotIndex)
-		local icon, stack, _, meetsUsageRequirement, _, _, _, quality = GetItemInfo(bagId, slotIndex)
-		local name = GetItemName(bagId, slotIndex)
-		-- stripTrailingJunk, correct uppercase
-		name = LocalizeString(SI_TOOLTIP_ITEM_NAME, name)
+	local function AddReagent(slot)
+		local itemType, slotIndex = slot.itemType, slot.slotIndex
+		local icon, stack, meetsUsageRequirement, quality = slot.iconFile, slot.stackCount, slot.meetsUsageRequirement, slot.quality
+		local itemId = GetItemId(bagId, slotIndex)
 		local level = GetItemLevel(bagId, slotIndex)
 		if not IsAlchemySolvent(itemType) then
 			-- Reagents
@@ -1391,7 +1397,7 @@ function PotMaker.addStuffToInventoryForBag(bagId)
 			AddToKnownTrait(iconTraits, trait3, icon3, traits)
 			AddToKnownTrait(iconTraits, trait4, icon4, traits)
 			if playerSettings.useUnknown then
-				local newTraits = PotMaker.allReagents[name]
+				local newTraits = PotMaker.allReagents[itemId]
 				if newTraits then
 					for trait in pairs(newTraits.traits) do
 						if not traits[trait] then
@@ -1401,8 +1407,17 @@ function PotMaker.addStuffToInventoryForBag(bagId)
 				end
 			end
 
-			local itemAlreadyInInventory = PotMaker.Inventory.reagents[name]
-			local item = PotMaker.Ingredient:new {name = name, icon = icon, level = level, traits = traits, iconTraits = iconTraits, pack = {}, protected = true}
+			local itemAlreadyInInventory = PotMaker.Inventory.reagents[itemId]
+			local item =
+				PotMaker.Ingredient:new {
+				itemId = itemId,
+				icon = icon,
+				level = level,
+				traits = traits,
+				iconTraits = iconTraits,
+				pack = {},
+				protected = true
+			}
 			if itemAlreadyInInventory ~= nil then
 				-- replace missing reagent placeholder
 				itemAlreadyInInventory.icon = icon
@@ -1416,32 +1431,38 @@ function PotMaker.addStuffToInventoryForBag(bagId)
 				append(item.pack, {bagId = bagId, slotIndex = slotIndex})
 				item.stack = stack
 				item.protected = PotMaker.IsProtected(bagId, slotIndex)
-				PotMaker.Inventory.reagents[name] = item
+				PotMaker.Inventory.reagents[itemId] = item
 			end
 		elseif meetsUsageRequirement and itemType == PotMaker.solventMode then
 			-- Solvents
-			local itemAlreadyInInventory = PotMaker.Inventory.solvents[name]
+			local itemAlreadyInInventory = PotMaker.Inventory.solvents[itemId]
 			if itemAlreadyInInventory ~= nil then
 				itemAlreadyInInventory.stack = itemAlreadyInInventory.stack + stack
 				itemAlreadyInInventory.protected = itemAlreadyInInventory.protected and PotMaker.IsProtected(bagId, slotIndex)
 				append(itemAlreadyInInventory.pack, {bagId = bagId, slotIndex = slotIndex})
 			else
-				local item = PotMaker.Ingredient:solvent {name = name, icon = icon, level = level, pack = {{bagId = bagId, slotIndex = slotIndex}}}
+				local item =
+					PotMaker.Ingredient:solvent {
+					name = slot.name,
+					itemId = itemId,
+					icon = icon,
+					level = level,
+					pack = {{bagId = bagId, slotIndex = slotIndex}}
+				}
 				item.stack = stack
 				item.protected = PotMaker.IsProtected(bagId, slotIndex)
-				PotMaker.Inventory.solvents[name] = item
+				PotMaker.Inventory.solvents[itemId] = item
 			end
 		end
 	end
 
-	local ZO_GetNextBagSlotIndex, ZO_Alchemy_IsAlchemyItem = ZO_GetNextBagSlotIndex, ZO_Alchemy_IsAlchemyItem
-	local slotIndex = ZO_GetNextBagSlotIndex(bagId, nil)
-	while slotIndex do
-		itemType = GetItemType(bagId, slotIndex)
+	local ZO_Alchemy_IsAlchemyItem = ZO_Alchemy_IsAlchemyItem
+	local bagCache = SHARED_INVENTORY:GetOrCreateBagCache(bagId)
+	for slotIndex, slot in pairs(bagCache) do
+		local itemType = slot.itemType
 		if itemType ~= ITEMTYPE_POTION and itemType ~= ITEMTYPE_POISON and ZO_Alchemy_IsAlchemyItem(bagId, slotIndex) then
-			AddReagent(itemType, slotIndex)
+			AddReagent(slot)
 		end
-		slotIndex = ZO_GetNextBagSlotIndex(bagId, slotIndex)
 	end
 end
 
@@ -1626,7 +1647,7 @@ do
 			-- any match
 			reagentFilter = function(reagentList)
 				for i = 1, #reagentList do
-					if searchReagent[reagentList[i].name] ~= nil then
+					if searchReagent[reagentList[i].itemId] ~= nil then
 						return true
 					end
 				end
@@ -1636,7 +1657,7 @@ do
 			-- all match
 			reagentFilter = function(reagentList)
 				for i = 1, #reagentList do
-					if searchReagent[reagentList[i].name] == nil then
+					if searchReagent[reagentList[i].itemId] == nil then
 						return false
 					end
 				end
@@ -1664,8 +1685,8 @@ do
 		end
 
 		local solvents = {}
-		for name in pairs(searchSolvent) do
-			local solvent = PotMaker.Inventory.solvents[name]
+		for itemId in pairs(searchSolvent) do
+			local solvent = PotMaker.Inventory.solvents[itemId]
 			if solvent == nil then
 				-- dummy solvent
 				solvent = PotMaker.Ingredient:solvent {name = ""}
@@ -1722,12 +1743,12 @@ do
 				-- long life the Lua enclosure
 				task:Call(
 					function()
-						FindTripleSlot(combinationIngredient, ingredient1, ingredient2, amount1, amount2, allReagents[ingredient1.name].matching)
+						FindTripleSlot(combinationIngredient, ingredient1, ingredient2, amount1, amount2, allReagents[ingredient1.itemId].matching)
 					end
 				)
 				task:Then(
 					function()
-						FindTripleSlot(combinationIngredient, ingredient1, ingredient2, amount1, amount2, allReagents[ingredient2.name].matching)
+						FindTripleSlot(combinationIngredient, ingredient1, ingredient2, amount1, amount2, allReagents[ingredient2.itemId].matching)
 					end
 				)
 			end
@@ -1735,11 +1756,11 @@ do
 		task:Call(StartJobs)
 		for _, ingredient1 in pairs(reagents) do
 			local amount1 = ingredient1.stack
-			local matching1 = allReagents[ingredient1.name].matching
+			local matching1 = allReagents[ingredient1.itemId].matching
 			for k = 1, #matching1 do
 				local ingredient2 = reagents[matching1[k]]
 
-				if ingredient2 and allReagents[ingredient1.name].itemId < allReagents[ingredient2.name].itemId then
+				if ingredient2 and ingredient1.itemId < ingredient2.itemId then
 					-- long life the Lua enclosure
 					task:Then(
 						function()
@@ -1958,7 +1979,7 @@ function PotMaker.showReagentTip(sender, state)
 			else
 				InitializeTooltip(ItemTooltip, sender, TOPLEFT, 10, -96, TOPRIGHT)
 			end
-			ItemTooltip:SetLink(PotMaker.allReagents[sender.reagent.name].itemLink)
+			ItemTooltip:SetLink(PotMaker.allReagents[sender.reagent.itemId].itemLink)
 		else
 			if IsScreenRightHalf(sender) then
 				InitializeTooltip(PotionMakerTooltip, sender, TOPRIGHT, -10, -96, TOPLEFT)
@@ -2200,7 +2221,7 @@ function PotMaker.restartSearch()
 	if not PotMaker.questPotionsOnly and (not PotMaker.favoritesOnly or accountSettings.filterFavoriteBySolvents) then
 		for _, checkBox in pairs(PotMaker.SolventFilterControls) do
 			if not checkBox:IsControlHidden() and PotMaker.ToggleButtonIsChecked(checkBox) then
-				filterSolvents[checkBox.solvent.name] = true
+				filterSolvents[checkBox.solvent.itemId] = true
 				count = count + 1
 			end
 		end
@@ -2209,7 +2230,7 @@ function PotMaker.restartSearch()
 			if not checkBox:IsControlHidden() then
 				local pack = checkBox.solvent.pack[1]
 				if pack then
-					filterSolvents[checkBox.solvent.name] = true
+					filterSolvents[checkBox.solvent.itemId] = true
 					count = count + 1
 				end
 			end
@@ -2218,7 +2239,7 @@ function PotMaker.restartSearch()
 	if count == 0 then
 		for _, checkBox in pairs(PotMaker.SolventFilterControls) do
 			if not checkBox:IsControlHidden() then
-				filterSolvents[checkBox.solvent.name] = true
+				filterSolvents[checkBox.solvent.itemId] = true
 				count = count + 1
 			end
 		end
@@ -2231,7 +2252,7 @@ function PotMaker.restartSearch()
 	if not PotMaker.questPotionsOnly and (not PotMaker.favoritesOnly or accountSettings.filterFavoriteByReagents) then
 		for _, checkBox in pairs(PotMaker.ReagentFilterControls) do
 			if not checkBox:IsControlHidden() and PotMaker.ToggleButtonIsChecked(checkBox) then
-				filterReagent[checkBox.reagent.name] = true
+				filterReagent[checkBox.reagent.itemId] = true
 				count = count + 1
 			end
 		end
@@ -2239,7 +2260,7 @@ function PotMaker.restartSearch()
 	if count == 0 and (not PotMaker.onlyReagentFilter or (PotMaker.favoritesOnly and not accountSettings.filterFavoriteByReagents)) then
 		for _, checkBox in pairs(PotMaker.ReagentFilterControls) do
 			if not checkBox:IsControlHidden() then
-				filterReagent[checkBox.reagent.name] = true
+				filterReagent[checkBox.reagent.itemId] = true
 				count = count + 1
 			end
 		end
@@ -2351,8 +2372,8 @@ function PotMaker.RenderPage()
 					traitTexture = nil
 					local known = false
 					for _, ingredient in pairs(v.ingredients) do
-						if allReagents[ingredient.name] ~= nil and allReagents[ingredient.name].traits[traitName] ~= nil then
-							if ingredient.iconTraits[traitName] == nil and not allReagents[ingredient.name].traits[traitName] then
+						if allReagents[ingredient.itemId] ~= nil and allReagents[ingredient.itemId].traits[traitName] ~= nil then
+							if ingredient.iconTraits[traitName] == nil and not allReagents[ingredient.itemId].traits[traitName] then
 								traitTexture = TEXTURE_TRAITUNKNOWN
 							else
 								known = true
@@ -2439,7 +2460,7 @@ function PotMaker.refreshTraits()
 					for _, ingredient in pairs(v.ingredients) do
 						-- update traits (if discover new one)
 						for _, k1 in pairs(PotMaker.Inventory.reagents) do
-							if k1.name == ingredient.name then
+							if k1.itemId == ingredient.itemId then
 								ingredient.traits = k1.traits
 								ingredient.iconTraits = k1.iconTraits
 								break
@@ -2447,8 +2468,8 @@ function PotMaker.refreshTraits()
 						end
 
 						-- check unknown traits (icon==nil)
-						if PotMaker.allReagents[ingredient.name] ~= nil and PotMaker.allReagents[ingredient.name].traits[traitName] ~= nil then
-							if ingredient.iconTraits[traitName] == nil and not PotMaker.allReagents[ingredient.name].traits[traitName] then
+						if PotMaker.allReagents[ingredient.itemId] ~= nil and PotMaker.allReagents[ingredient.itemId].traits[traitName] ~= nil then
+							if ingredient.iconTraits[traitName] == nil and not PotMaker.allReagents[ingredient.itemId].traits[traitName] then
 								traitTexture = TEXTURE_TRAITUNKNOWN
 							else
 								if traitTexture == nil then
@@ -2503,7 +2524,7 @@ do
 			AddCustomMenuItem(
 				GetString(SI_ITEM_ACTION_LINK_TO_CHAT),
 				function()
-					ZO_LinkHandler_InsertLink(ZO_LinkHandler_CreateChatLink(ReturnItemLink, PotMaker.allReagents[sender.reagent.name].itemLink))
+					ZO_LinkHandler_InsertLink(ZO_LinkHandler_CreateChatLink(ReturnItemLink, PotMaker.allReagents[sender.reagent.itemId].itemLink))
 				end
 			)
 			ShowMenu(sender)
@@ -2753,7 +2774,7 @@ do
 			tempOrder,
 			function(a, b)
 				if a.level == b.level then
-					return a.name < b.name
+					return a.itemId < b.itemId
 				else
 					return a.level < b.level
 				end
@@ -2795,7 +2816,7 @@ do
 		for i = 1, PotionMakerReagentBG:GetNumChildren() do
 			local checkBox = PotionMakerReagentBG:GetChild(i)
 			if not checkBox:IsControlHidden() and PotMaker.ToggleButtonIsChecked(checkBox) and checkBox.reagent then
-				saveSelection[checkBox.reagent.name] = true
+				saveSelection[checkBox.reagent.itemId] = true
 			end
 			checkBox:SetHidden(true)
 		end
@@ -2853,7 +2874,7 @@ do
 			numControl = control:GetNamedChild("Number")
 			numControl:SetText(ingredient.stack)
 
-			PotMaker.SetToggleButton(control, saveSelection[ingredient.name] and TRISTATE_CHECK_BUTTON_CHECKED or TRISTATE_CHECK_BUTTON_UNCHECKED)
+			PotMaker.SetToggleButton(control, saveSelection[ingredient.itemId] and TRISTATE_CHECK_BUTTON_CHECKED or TRISTATE_CHECK_BUTTON_UNCHECKED)
 		end
 	end
 end

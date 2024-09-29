@@ -63,7 +63,7 @@ PotMaker:LoadLanguage {
 		["Restore Stamina"] = "Ausdauer wiederherstellen",
 		["Ravage Stamina"] = "Ausdauerverwüstung",
 		["Increase Weapon Power"] = "Erhöht Waffenkraft",
-		["Lower Weapon Power"] = "Verkrüppeln",
+		["Lower Weapon Power"] = "Versehren",
 		["Increase Spell Power"] = "Erhöht Magiekraft",
 		["Lower Spell Power"] = "Feigheit",
 		["Weapon Crit"] = "Kritische Waffentreffer",
