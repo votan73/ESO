@@ -234,14 +234,8 @@ local function Initialize(eventType, addonName)
 		return
 	end
 
-	SecurePostHook(
-		ZO_GuildHistory_Keyboard,
-		"OnDeferredInitialize",
-		function()
-			AddGuildHistory()
-			AddGuildBrowser()
-		end
-	)
+	SecurePostHook(ZO_GuildHistory_Keyboard, "OnDeferredInitialize", AddGuildHistory)
+	AddGuildBrowser()
 	EVENT_MANAGER:UnregisterForEvent(identifier, EVENT_ADD_ON_LOADED)
 end
 
