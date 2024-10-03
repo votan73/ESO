@@ -5,7 +5,7 @@
 
 PotMaker = {
 	name = "PotionMaker",
-	version = "5.10.0",
+	version = "5.10.1",
 	ResultControls = {},
 	PositiveTraitControls = {},
 	NegativeTraitControls = {},
@@ -868,6 +868,10 @@ function PotMaker.Ingredient:new(o)
 	setmetatable(o, self)
 	self.__index = self
 	o.stack = 0
+	if o.itemId > 0 then
+		local ref = PotMaker.allReagents[o.itemId]
+		o.itemLink = ref and ref.itemLink
+	end
 	if o.itemLink then
 		o.name = GetItemLinkName(o.itemLink)
 	end
@@ -1351,7 +1355,6 @@ function PotMaker.addAllStuffToInventory()
 		local item =
 			PotMaker.Ingredient:new {
 			itemId = itemId,
-			itemLink = newTraits.itemLink,
 			icon = TEXTURE_REAGENTUNKNOWN,
 			traits = addTraits(newTraits),
 			iconTraits = {},
@@ -1892,7 +1895,7 @@ function PotMaker.craftCompleted(craftSkill)
 	EVENT_MANAGER:RegisterForUpdate(identifier, 200, refreshResultList)
 end
 
-function PotMaker.slotUpdated(eventCode, bagId, slotIndex, ...)
+function PotMaker.slotUpdated(eventCode, bagId, slotIndex)
 	local craftingType, subItemType = GetItemCraftingInfo(bagId, slotIndex)
 	if craftingType == CRAFTING_TYPE_ALCHEMY then
 		PotMaker.updateInventory()
