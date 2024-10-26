@@ -2,6 +2,7 @@
 local addon = VOTANS_IMPROVED_LOCATIONS
 addon.treasureMap = {}
 addon.survey = {}
+addon.lead = {}
 
 local em = GetEventManager()
 
@@ -22,15 +23,14 @@ local craftingTypeIcons = {
 
 addon.nameToType = {}
 do
-	local list =
-		{
-			["|H1:item:57783:4:1:0:0:0:0:0:0:0:0:0:0:0:1:0:0:1:0:0:0|h|h"] = CRAFTING_TYPE_ALCHEMY, -- Alchemiematerial-Fundbericht: Kalthafen I^m:N",
-			["|H1:item:57796:4:1:0:0:0:0:0:0:0:0:0:0:0:1:0:0:1:0:0:0|h|h"] = CRAFTING_TYPE_BLACKSMITHING, -- Schmiedematerial-Fundbericht: Kalthafen I^m:N",
-			["|H1:item:57766:4:1:0:0:0:0:0:0:0:0:0:0:0:1:0:0:1:0:0:0|h|h"] = CRAFTING_TYPE_CLOTHIER, -- Schneidermaterial-Fundbericht: Kalthafen I^m:N",
-			["|H1:item:57828:4:1:0:0:0:0:0:0:0:0:0:0:0:1:0:0:1:0:0:0|h|h"] = CRAFTING_TYPE_WOODWORKING, -- Schreinermaterial-Fundbericht: Kalthafen I^m:N",
-			["|H1:item:57811:4:1:0:0:0:0:0:0:0:0:0:0:0:1:0:0:1:0:0:0|h|h"] = CRAFTING_TYPE_ENCHANTING, -- Verzauberungsmaterial-Fundbericht: Kalthafen I^m:N",
-			["|H1:item:139435:4:1:0:0:0:0:0:0:0:0:0:0:0:1:0:0:1:0:0:0|h|h"] = CRAFTING_TYPE_JEWELRYCRAFTING -- Schmuckmaterial-Fundbericht: Kalthafen I^m:N"
-		}
+	local list = {
+		["|H1:item:57783:4:1:0:0:0:0:0:0:0:0:0:0:0:1:0:0:1:0:0:0|h|h"] = CRAFTING_TYPE_ALCHEMY, -- Alchemiematerial-Fundbericht: Kalthafen I^m:N",
+		["|H1:item:57796:4:1:0:0:0:0:0:0:0:0:0:0:0:1:0:0:1:0:0:0|h|h"] = CRAFTING_TYPE_BLACKSMITHING, -- Schmiedematerial-Fundbericht: Kalthafen I^m:N",
+		["|H1:item:57766:4:1:0:0:0:0:0:0:0:0:0:0:0:1:0:0:1:0:0:0|h|h"] = CRAFTING_TYPE_CLOTHIER, -- Schneidermaterial-Fundbericht: Kalthafen I^m:N",
+		["|H1:item:57828:4:1:0:0:0:0:0:0:0:0:0:0:0:1:0:0:1:0:0:0|h|h"] = CRAFTING_TYPE_WOODWORKING, -- Schreinermaterial-Fundbericht: Kalthafen I^m:N",
+		["|H1:item:57811:4:1:0:0:0:0:0:0:0:0:0:0:0:1:0:0:1:0:0:0|h|h"] = CRAFTING_TYPE_ENCHANTING, -- Verzauberungsmaterial-Fundbericht: Kalthafen I^m:N",
+		["|H1:item:139435:4:1:0:0:0:0:0:0:0:0:0:0:0:1:0:0:1:0:0:0|h|h"] = CRAFTING_TYPE_JEWELRYCRAFTING -- Schmuckmaterial-Fundbericht: Kalthafen I^m:N"
+	}
 	local nameToType = addon.nameToType
 	local function add(itemLink, craftingType)
 		local name = zo_strformat("<<Z:1>>", GetItemLinkName(itemLink)):gsub("\194\160", " "):match("(.*)%s*:")
@@ -69,10 +69,10 @@ do
 	function addon:SetupLocationName(rowData)
 		local locationName = orgSetupLocationName(self, rowData)
 		local mapIndex = rowData.index
-		local hasTreasure, hasSurvey = findIn(self.treasureMap, mapIndex), findIn(self.survey, mapIndex)
-		if hasTreasure or hasSurvey then
+		local hasTreasure, hasSurvey, hasLead = findIn(self.treasureMap, mapIndex), findIn(self.survey, mapIndex), findIn(self.lead, mapIndex)
+		if hasTreasure or hasSurvey or hasLead then
 			local types = hasSurvey and getTypes(self.survey, mapIndex) or ""
-			locationName = string.format("%s %s%s", locationName, hasTreasure and "|t100%:100%:/esoui/art/tradinghouse/tradinghouse_trophy_treasure_map_up.dds:inheritcolor|t" or "", types)
+			locationName = string.format("%s %s%s%s", locationName, hasTreasure and "|t100%:100%:/esoui/art/tradinghouse/tradinghouse_trophy_treasure_map_up.dds:inheritcolor|t" or "", types, hasLead and "|t75%:75%:/esoui/art/icons/mapkey/mapkey_antiquities.dds:inheritcolor|t" or "")
 		end
 		return locationName
 	end
@@ -89,7 +89,7 @@ do
 	local function getLocationsUpper()
 		local list = {}
 		locationsUpper = list
-                local blacklist = { [24] = true, [40] = true }
+		local blacklist = {[24] = true, [40] = true}
 		local GetMapInfo, zo_strformat = GetMapInfoByIndex or GetMapInfo, LocalizeString
 		for i = 2, GetNumMaps() do
 			if not blacklist[i] then
@@ -162,6 +162,39 @@ function addon:OnSlotRemoved(slot)
 	end
 end
 
+do
+	local infoFromId = {}
+	local function CreateLeadInfo(antiquityData)
+		local id = antiquityData:GetId()
+		local mapIndex, zoneId
+		zoneId = antiquityData:GetZoneId()
+		for i = 1, 4 do
+			mapIndex = GetMapIndexByZoneId(zoneId)
+			if mapIndex and mapIndex > 0 then
+				break
+			end
+			zoneId = GetParentZoneId(zoneId)
+		end
+		local info = {mapIndex}
+		infoFromId[id] = info
+		return info
+	end
+	function addon:OnLeadAdded(antiquityData)
+		local map = self.lead
+		local id = antiquityData:GetId()
+		map[id] = infoFromId[id] or CreateLeadInfo(antiquityData)
+		return true
+	end
+end
+
+function addon:OnLeadRemoved(antiquityData)
+	local map = self.lead
+	local id = antiquityData:GetId()
+	local result = map[id] ~= nil
+	map[id] = nil
+	return result
+end
+
 local orgPreInitList = addon.PreInitList
 function addon:PreInitList()
 	-- local list = {}
@@ -205,4 +238,27 @@ function addon:PreInitList()
 		end
 	)
 	return orgPreInitList(self)
+end
+
+local orgPostInitList = addon.PostInitList
+function addon:PostInitList()
+	local function updateAntiquity(antiquityData)
+		--antiquityData is ZO_Antiquity
+		if antiquityData:HasLead() then
+			self:OnLeadAdded(antiquityData)
+		else
+			self:OnLeadRemoved(antiquityData)
+		end
+	end
+	ANTIQUITY_DATA_MANAGER:RegisterCallback("SingleAntiquityUpdated", updateAntiquity)
+
+	local function checkAllAntiquities()
+		for _, antiquityData in ANTIQUITY_DATA_MANAGER:AntiquityIterator() do
+			updateAntiquity(antiquityData)
+		end
+	end
+	ANTIQUITY_DATA_MANAGER:RegisterCallback("AntiquitiesUpdated", checkAllAntiquities)
+	checkAllAntiquities()
+
+	return orgPostInitList(self)
 end

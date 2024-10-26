@@ -828,6 +828,7 @@ function addon:BuildLocationList()
 			end
 		end
 	)
+	SortFavs(self.account.favorites)
 
 	return self.mapData
 end
@@ -1066,12 +1067,10 @@ end
 local function RebuildList()
 	if GAMEPAD_WORLD_MAP_LOCATIONS.votanListIsDirty and GAMEPAD_WORLD_MAP_LOCATIONS_FRAGMENT:IsShowing() then
 		GAMEPAD_WORLD_MAP_LOCATIONS:BuildLocationList()
-		SortFavs(addon.account.favorites)
 		GAMEPAD_WORLD_MAP_LOCATIONS.votanListIsDirty = false
 	end
 	if WORLD_MAP_LOCATIONS.votanListIsDirty and WORLD_MAP_LOCATIONS_FRAGMENT:IsShowing() then
 		WORLD_MAP_LOCATIONS:BuildLocationList()
-		SortFavs(addon.account.favorites)
 		WORLD_MAP_LOCATIONS.votanListIsDirty = false
 	end
 end
@@ -1135,7 +1134,7 @@ function addon:InitSettings()
 		type = "panel",
 		name = "Improved Locations",
 		author = "votan",
-		version = "1.22.5",
+		version = "1.23.0",
 		registerForRefresh = false,
 		registerForDefaults = true,
 		website = "http://www.esoui.com/downloads/info1096-VotansImprovedLocations.html"
