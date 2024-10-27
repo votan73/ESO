@@ -61,73 +61,85 @@
 		{
 			-- "Glenumbra",
 			alliance = ALLIANCE_DAGGERFALL_COVENANT,
-			zoneOrder = 2
+			zoneOrder = 2,
+			zoneSortOrder = 2
 		},
 		-- [3] =
 		{
 			-- "Kluftspitze",
 			alliance = ALLIANCE_DAGGERFALL_COVENANT,
-			zoneOrder = 4
+			zoneOrder = 4,
+			zoneSortOrder = 4
 		},
 		-- [4] =
 		{
 			-- "Sturmhafen",
 			alliance = ALLIANCE_DAGGERFALL_COVENANT,
-			zoneOrder = 3
+			zoneOrder = 3,
+			zoneSortOrder = 3
 		},
 		-- [5] =
 		{
 			-- "Alik'r-Wüste",
 			alliance = ALLIANCE_DAGGERFALL_COVENANT,
-			zoneOrder = 5
+			zoneOrder = 5,
+			zoneSortOrder = 5
 		},
 		-- [6] =
 		{
 			-- "Bangkorai",
 			alliance = ALLIANCE_DAGGERFALL_COVENANT,
-			zoneOrder = 6
+			zoneOrder = 6,
+			zoneSortOrder = 6
 		},
 		-- [7] =
 		{
 			-- "Grahtwald",
 			alliance = ALLIANCE_ALDMERI_DOMINION,
-			zoneOrder = 3
+			zoneOrder = 3,
+			zoneSortOrder = 3
 		},
 		-- [8] =
 		{
 			-- "Malabal Tor",
 			alliance = ALLIANCE_ALDMERI_DOMINION,
-			zoneOrder = 5
+			zoneOrder = 5,
+			zoneSortOrder = 5
 		},
 		-- [9] =
 		{
 			-- "Schattenfenn",
 			alliance = ALLIANCE_EBONHEART_PACT,
-			zoneOrder = 4
+			zoneOrder = 4,
+			zoneSortOrder = 4
 		},
 		-- [10] =
 		{
 			-- "Deshaan",
 			alliance = ALLIANCE_EBONHEART_PACT,
-			zoneOrder = 3
+			zoneOrder = 3,
+			zoneSortOrder = 3
 		},
 		-- [11] =
 		{
 			-- "Steinfälle",
 			alliance = ALLIANCE_EBONHEART_PACT,
-			zoneOrder = 2
+			zoneOrder = 2,
+			zoneSortOrder = 2
 		},
 		-- [12] =
 		{
 			-- "Rift",
 			alliance = ALLIANCE_EBONHEART_PACT,
-			zoneOrder = 6
+			zoneOrder = 6,
+			zoneSortOrder = 6
 		},
 		-- [13] =
 		{
 			-- "Ostmarsch",
 			alliance = ALLIANCE_EBONHEART_PACT,
-			zoneOrder = 5
+			zoneOrder = 5,
+			zoneSortOrder = 5
 		},
 		-- [14] =
 		{
@@ -144,43 +156,50 @@
 		{
 			-- "Grünschatten",
 			alliance = ALLIANCE_ALDMERI_DOMINION,
-			zoneOrder = 4
+			zoneOrder = 4,
+			zoneSortOrder = 4
 		},
 		-- [17] =
 		{
 			-- "Schnittermark",
 			alliance = ALLIANCE_ALDMERI_DOMINION,
-			zoneOrder = 6
+			zoneOrder = 6,
+			zoneSortOrder = 6
 		},
 		-- [18] =
 		{
 			-- "Bal Foyen",
 			alliance = ALLIANCE_EBONHEART_PACT,
-			zoneOrder = 1
+			zoneOrder = 1,
+			zoneSortOrder = 1
 		},
 		-- [19] =
 		{
 			-- "Stros M'Kai",
 			alliance = ALLIANCE_DAGGERFALL_COVENANT,
-			zoneOrder = 1
+			zoneOrder = 1,
+			zoneSortOrder = 1.1
 		},
 		-- [20] =
 		{
 			-- "Betnikh",
 			alliance = ALLIANCE_DAGGERFALL_COVENANT,
-			zoneOrder = 1
+			zoneOrder = 1,
+			zoneSortOrder = 1
 		},
 		-- [21] =
 		{
 			-- "Khenarthis Rast",
 			alliance = ALLIANCE_ALDMERI_DOMINION,
-			zoneOrder = 1
+			zoneOrder = 1,
+			zoneSortOrder = 1
 		},
 		-- [22] =
 		{
 			-- "Ödfels",
 			alliance = ALLIANCE_EBONHEART_PACT,
-			zoneOrder = 1
+			zoneOrder = 1,
+			zoneSortOrder = 1.1
 		},
 		-- [23] =
 		{
@@ -729,6 +748,7 @@ function addon:BuildLocationList()
 
 				location.dlcOrder = 0
 				location.zoneOrder = location.zoneOrder or 0
+				location.zoneSortOrder = location.zoneSortOrder or 999
 				location.allianceOrder = getAllianceOrder(location)
 				location.locationName = LocalizeString(SI_WORLD_MAP_LOCATION_NAME, mapName)
 				location.rawName = mapName
@@ -790,8 +810,8 @@ function addon:BuildLocationList()
 		end
 	elseif self.account.sortBy == SORT_LOCATION_LEVEL_ASC then
 		sortLoc = function(a, b)
-			if a.zoneOrder ~= b.zoneOrder then
-				return a.zoneOrder < b.zoneOrder
+			if a.zoneSortOrder ~= b.zoneSortOrder then
+				return a.zoneSortOrder < b.zoneSortOrder
 			elseif a.dlcOrder ~= b.dlcOrder then
 				return a.dlcOrder < b.dlcOrder
 			else
@@ -800,8 +820,8 @@ function addon:BuildLocationList()
 		end
 	else
 		sortLoc = function(a, b)
-			if a.zoneOrder ~= b.zoneOrder then
-				return a.zoneOrder > b.zoneOrder
+			if a.zoneSortOrder ~= b.zoneSortOrder then
+				return a.zoneSortOrder > b.zoneSortOrder
 			elseif a.dlcOrder ~= b.dlcOrder then
 				return a.dlcOrder > b.dlcOrder
 			else

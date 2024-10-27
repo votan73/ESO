@@ -72,7 +72,7 @@ do
 		local hasTreasure, hasSurvey, hasLead = findIn(self.treasureMap, mapIndex), findIn(self.survey, mapIndex), findIn(self.lead, mapIndex)
 		if hasTreasure or hasSurvey or hasLead then
 			local types = hasSurvey and getTypes(self.survey, mapIndex) or ""
-			locationName = string.format("%s %s%s%s", locationName, hasTreasure and "|t100%:100%:/esoui/art/tradinghouse/tradinghouse_trophy_treasure_map_up.dds:inheritcolor|t" or "", types, hasLead and "|t75%:75%:/esoui/art/icons/mapkey/mapkey_antiquities.dds:inheritcolor|t" or "")
+			locationName = string.format("%s %s%s%s", locationName, hasTreasure and "|t100%:100%:/esoui/art/tradinghouse/tradinghouse_trophy_treasure_map_up.dds:inheritcolor|t" or "", types, hasLead and "|t90%:90%:/esoui/art/journal/journal_tabicon_antiquities_up.dds:inheritcolor|t" or "")
 		end
 		return locationName
 	end
