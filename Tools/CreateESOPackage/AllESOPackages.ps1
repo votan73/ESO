@@ -15,7 +15,7 @@ $blackList["DungeonQueue4Stickerbook"] = $true
 #$blackList["EnchantMaker"] = $true
 $blackList["EnchantedQuality"] = $true
 $blackList["ESOProfiler"] = $true
-$blackList["HarvensCustomMapPins"] = $true
+#$blackList["HarvensCustomMapPins"] = $true
 $blackList["HarvensPotionsAlert"] = $true
 $blackList["HarvensTraitAndStyle"] = $true
 $blackList["HomesteadOCD"] = $true
@@ -275,8 +275,8 @@ foreach($Path in [System.IO.Directory]::GetDirectories($Path)){
     $data.version = $ver
     $data.title = $details.title
     $list = @()
-    if ($compatible -ccontains "101042") { $list+="10.0.0" }
     if ($compatible -ccontains "101043") { $list+="10.1.0" }
+    if ($compatible -ccontains "101044") { $list+="10.2.0" }
     if ($list.Length -lt 2) {
         Write-Host -ForegroundColor Red "Manifest or script not up-to-date. " + $data.title
         continue
