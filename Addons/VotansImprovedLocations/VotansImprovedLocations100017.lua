@@ -1135,8 +1135,6 @@ function addon:InitializeKeybindDescriptors()
 end
 
 function addon:InitSettings()
-	local LAM2 = LibAddonMenu2 or LibStub("LibAddonMenu-2.0")
-
 	self.player = ZO_SavedVars:NewCharacterIdSettings("VotansImprovedLocations_Data", 1, nil, {recent = {}})
 
 	local defaults = {
@@ -1149,17 +1147,6 @@ function addon:InitSettings()
 		assignToAlliance = false
 	}
 	self.account = ZO_SavedVars:NewAccountWide("VotansImprovedLocations_Data", 1, nil, defaults)
-
-	local panelData = {
-		type = "panel",
-		name = "Improved Locations",
-		author = "votan",
-		version = "1.23.0",
-		registerForRefresh = false,
-		registerForDefaults = true,
-		website = "http://www.esoui.com/downloads/info1096-VotansImprovedLocations.html"
-	}
-	LAM2:RegisterAddonPanel(addon.name, panelData)
 
 	local optionsTable = {
 		{
@@ -1289,6 +1276,21 @@ function addon:InitSettings()
 		}
 	}
 
+	self:PostInitSettings(optionsTable)
+end
+
+function addon:PostInitSettings(optionsTable)
+	local LAM2 = LibAddonMenu2 or LibStub("LibAddonMenu-2.0")
+	local panelData = {
+		type = "panel",
+		name = "Improved Locations",
+		author = "votan",
+		version = "1.23.1",
+		registerForRefresh = false,
+		registerForDefaults = true,
+		website = "http://www.esoui.com/downloads/info1096-VotansImprovedLocations.html"
+	}
+	LAM2:RegisterAddonPanel(addon.name, panelData)
 	LAM2:RegisterOptionControls(addon.name, optionsTable)
 end
 

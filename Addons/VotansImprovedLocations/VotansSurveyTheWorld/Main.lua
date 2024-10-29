@@ -66,13 +66,16 @@ end
 
 do
 	local orgSetupLocationName = addon.SetupLocationName
+	local tresureMapIcon = "|t100%:100%:/esoui/art/tradinghouse/tradinghouse_trophy_treasure_map_up.dds:inheritcolor|t"
+	local leadIcon = "|t90%:90%:/esoui/art/journal/journal_tabicon_antiquities_up.dds:inheritcolor|t"
 	function addon:SetupLocationName(rowData)
 		local locationName = orgSetupLocationName(self, rowData)
 		local mapIndex = rowData.index
-		local hasTreasure, hasSurvey, hasLead = findIn(self.treasureMap, mapIndex), findIn(self.survey, mapIndex), findIn(self.lead, mapIndex)
+		local hasTreasure = not self.account.hideTreasureMap and findIn(self.treasureMap, mapIndex)
+		local hasSurvey = not self.account.hideSurveys and findIn(self.survey, mapIndex)
+		local hasLead = not self.account.hideLeads and findIn(self.lead, mapIndex)
 		if hasTreasure or hasSurvey or hasLead then
-			local types = hasSurvey and getTypes(self.survey, mapIndex) or ""
-			locationName = string.format("%s %s%s%s", locationName, hasTreasure and "|t100%:100%:/esoui/art/tradinghouse/tradinghouse_trophy_treasure_map_up.dds:inheritcolor|t" or "", types, hasLead and "|t90%:90%:/esoui/art/journal/journal_tabicon_antiquities_up.dds:inheritcolor|t" or "")
+			locationName = string.format("%s %s%s%s", locationName, hasTreasure and tresureMapIcon or "", hasSurvey and getTypes(self.survey, mapIndex) or "", hasLead and leadIcon or "")
 		end
 		return locationName
 	end
@@ -261,4 +264,51 @@ function addon:PostInitList()
 	checkAllAntiquities()
 
 	return orgPostInitList(self)
+end
+
+local orgPostInitSettings = addon.PostInitSettings
+function addon:PostInitSettings(optionsTable)
+	optionsTable[#optionsTable + 1] = {
+		type = "header",
+		name = GetString(SI_VOTANSIMPROVEDLOCATIONS_SURVEY_THE_WORLD),
+		width = "full"
+	}
+	optionsTable[#optionsTable + 1] = {
+		type = "checkbox",
+		name = GetString(SI_VOTANSIMPROVEDLOCATIONS_SHOW_TREASUREMAPS),
+		getFunc = function()
+			return not self.account.hideTreasureMap
+		end,
+		setFunc = function(value)
+			self.account.hideTreasureMap = not value
+		end,
+		width = "full",
+		default = true
+	}
+	optionsTable[#optionsTable + 1] = {
+		type = "checkbox",
+		name = GetString(SI_VOTANSIMPROVEDLOCATIONS_SHOW_SURVEYS),
+		getFunc = function()
+			return not self.account.hideSurveys
+		end,
+		setFunc = function(value)
+			self.account.hideSurveys = not value
+		end,
+		width = "full",
+		default = true
+	}
+	optionsTable[#optionsTable + 1] = {
+		type = "checkbox",
+		name = GetString(SI_VOTANSIMPROVEDLOCATIONS_SHOW_LEADS),
+		getFunc = function()
+			return not self.account.hideLeads
+		end,
+		setFunc = function(value)
+			self.account.hideLeads = not value
+		end,
+		width = "full",
+		default = true
+	}
+
+	return orgPostInitSettings(self, optionsTable)
 end
