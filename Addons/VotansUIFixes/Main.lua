@@ -392,50 +392,6 @@ em:RegisterForEvent("VotansUIAugvea", EVENT_ADD_ON_LOADED, OnAddonLoaded)
 
 local async = LibAsync
 do
-	local task = async:Create("ZO_SharedFurnitureManager")
-
-	function ZO_SharedFurnitureManager:CreateOrUpdateCollectibleCache()
-		local collectibleCache = self.placeableFurniture[ZO_PLACEABLE_TYPE_COLLECTIBLE]
-		task:Call(
-			function()
-				ZO_ClearTable(collectibleCache)
-			end
-		):Then(
-			function(task)
-				local SORTED = true
-				local filteredDataTable = ZO_COLLECTIBLE_DATA_MANAGER:GetAllCollectibleDataObjects({ZO_CollectibleCategoryData.IsStandardCategory}, {ZO_CollectibleData.IsPlaceableFurniture, ZO_CollectibleData.IsUnlocked}, SORTED)
-				task:Then(
-					function(task)
-						task:For(pairs(filteredDataTable)):Do(
-							function(_, collectibleData)
-								self:CreateOrUpdateCollectibleDataEntry(collectibleData:GetId())
-							end
-						)
-					end
-				)
-			end
-		):Then(
-			function()
-				self.refreshGroups:RefreshAll("UpdatePlacementFurniture")
-			end
-		):Then(
-			function()
-				self:RequestApplyPlaceableTextFilterToData()
-			end
-		)
-	end
-
-	function ZO_CollectibleDataManager:GetAllCollectibleDataObjects(categoryFilterFunctions, collectibleFilterFunctions, sorted)
-		local foundCollectibleDataObjects = {}
-		task:For(self:CategoryIterator(categoryFilterFunctions)):Do(
-			function(_, categoryData)
-				categoryData:AppendAllCollectibleDataObjects(foundCollectibleDataObjects, collectibleFilterFunctions, sorted)
-			end
-		)
-		return foundCollectibleDataObjects
-	end
-end
-do
 	local task = async:Create("ZO_WorldMapQuestBreadcrumbs")
 	function ZO_WorldMapQuestBreadcrumbs:RefreshAllQuests()
 		task:Cancel()
@@ -581,6 +537,51 @@ function ZO_COMPANION_GAMEPAD.RefreshList()
 end
 
 EVENT_MANAGER:UnregisterForUpdate("DirectionalInput")
+
+do
+	ZO_PreHook(
+		ZO_DefaultSortedCollectibles,
+		"RefreshSort",
+		function(self)
+			if self.dirty then
+				local collectibleNameLookupTable = self.collectibleNameLookupTable
+				-- Precompute attributes to avoid repeated method calls inside the sort
+				local precomputed = {}
+				for _, collectible in ipairs(self.sortedCollectibles) do
+					local id = collectible:GetId()
+					precomputed[id] = {
+						isFavorite = collectible:IsFavorite(),
+						isUnlocked = collectible:IsUnlocked(),
+						sortOrder = collectible:GetSortOrder(),
+						isValidForPlayer = collectible:IsValidForPlayer(),
+						name = collectibleNameLookupTable[id]
+					}
+				end
+
+				table.sort(
+					self.sortedCollectibles,
+					function(left, right)
+						local leftData = precomputed[left:GetId()]
+						local rightData = precomputed[right:GetId()]
+
+						if leftData.isFavorite ~= rightData.isFavorite then
+							return leftData.isFavorite
+						elseif leftData.isUnlocked ~= rightData.isUnlocked then
+							return leftData.isUnlocked
+						elseif leftData.sortOrder ~= rightData.sortOrder then
+							return leftData.sortOrder < rightData.sortOrder
+						elseif leftData.isValidForPlayer ~= rightData.isValidForPlayer then
+							return leftData.isValidForPlayer
+						else
+							return leftData.name < rightData.name
+						end
+					end
+				)
+			end
+			self.dirty = false
+		end
+	)
+end
 
 do
 	ZO_CreateStringId("SI_BINDING_NAME_NOTIFYLIGHTATTACK", "Light Attack")
@@ -736,6 +737,7 @@ do
 				end
 			end
 		)
+		g_activeWeaponSwapInProgress = false
 	end
 	local function IsAutoAttack()
 		return (GetGameTimeMilliseconds() - lastAutoAttack) <= 1000
@@ -793,9 +795,19 @@ do
 		return true
 	end
 
+	local function CheckCraftedAbility(actionId)
+		if actionId < 1000 then
+			actionId = SCRIBING_DATA_MANAGER:GetCraftedAbilityData(actionId)
+			actionId = actionId and actionId:GetAbilityId() or 0
+		end
+		return actionId
+	end
+
 	local function checkAction(actionButton, hotbarCategory)
 		if AllowInterupt() then
 			local actionId = GetSlotBoundId(actionButton, hotbarCategory)
+			actionId = CheckCraftedAbility(actionId)
+			--df("button %i, action: %i", actionButton, actionId)
 			return checkAbility(actionId) and showAction(actionId)
 		else
 			return false
@@ -806,7 +818,7 @@ do
 	local recast = {}
 	function CooldownRunning(abilityId, milliseconds)
 		local lastTime = cooldown[abilityId] or -100000
-		return (GetGameTimeMilliseconds() - milliseconds + 50) < lastTime
+		return (GetGameTimeMilliseconds() - milliseconds + GetLatency() / 2) < lastTime
 	end
 	local function StartCooldown(abilityId)
 		-- if not doNotStartCooldown then
@@ -815,7 +827,7 @@ do
 		return true
 	end
 	local function ClearCooldown(abilityId)
-		cooldown[abilityId] = 0
+		cooldown[abilityId] = nil
 		return true
 	end
 	local function RegisterRecast(abilityId, milliseconds)
@@ -842,28 +854,44 @@ do
 			[ACTION_RESULT_FAILED_REQUIREMENTS] = true,
 			[ACTION_RESULT_BAD_TARGET] = true
 		}
+		local playerName = GetRawUnitName("player")
 		em:RegisterForEvent(
 			id,
 			EVENT_COMBAT_EVENT,
 			function(eventCode, result, isError, abilityName, abilityGraphic, abilityActionSlotType, sourceName, sourceType, targetName, targetType, hitValue, powerType, damageType, log, sourceUnitId, targetUnitId, abilityId, overflow)
+				if playerName ~= sourceName then
+					return
+				end
 				if abilityActionSlotType == ACTION_SLOT_TYPE_LIGHT_ATTACK then
 					if result == ACTION_RESULT_DAMAGE or result == ACTION_RESULT_CRITICAL_DAMAGE or result == ACTION_RESULT_HEAL or result == ACTION_RESULT_CRITICAL_HEAL or result == ACTION_RESULT_EFFECT_GAINED then
-						df("%s %i=%s", lastAllowedAction ~= 0 and "lightattack hit: good" or "lightattack hit: bad", lastAllowedAction, GetAbilityName(lastAllowedAction))
+						if lastAllowedAction ~= 0 then
+							df("%s %i=%s", "lightattack hit: good", lastAllowedAction, GetAbilityName(lastAllowedAction))
+						else
+							d("lightattack hit: bad")
+						end
 					elseif isInCombat then
 						d(result == ACTION_RESULT_QUEUED and "queued lightattack hit" or "no lightattack hit")
 					end
-				else
-					--df("event %s %i %i", abilityName, result, abilityActionSlotType)
+				elseif result ~= ACTION_RESULT_QUEUED then
+					abilityId = CheckCraftedAbility(abilityId)
+					--df("event %s %i %i %i", abilityName, result, abilityActionSlotType, abilityId)
 					--if abilityId == lastAllowedAction then
 					--	df("action done %i", result)
 					--end
-					if abilityId and abilityId > 0 and clearCooldownResults[result] then
+					if abilityId == 55146 or abilityId == 31813 then -- Wucht -> interrupt
+						ClearCooldown(186366)
+						ClearCooldown(193398)
+						ClearCooldown(63046)
+					elseif abilityId and abilityId > 0 and clearCooldownResults[result] then
 						cooldown[abilityId] = nil
 						recast[abilityId] = GetGameTimeMilliseconds()
 						if lastAllowedAction == abilityId then
 							lastAllowedAction = 0
 						end
 					end
+				end
+				if lastAllowedAction == 0 and result == ACTION_RESULT_QUEUED and not isOneBar then
+					lastAllowedAction = 16165
 				end
 			end
 		)
@@ -873,22 +901,25 @@ do
 			id,
 			EVENT_EFFECT_CHANGED,
 			function(eventCode, changeType, effectSlot, effectName, unitTag, beginTime, endTime, stackCount, iconName, buffType, effectType, abilityType, statusEffectType, unitName, unitId, abilityId, sourceType)
-				if abilityId and abilityId > 0 and stackCount <= 0 and sourceType == COMBAT_UNIT_TYPE_PLAYER and cooldown[abilityId] and (changeType == EFFECT_RESULT_FADED or changeType == EFFECT_RESULT_TRANSFER) then
-					if lastAllowedAction ~= abilityId then
-						cooldown[abilityId] = nil
-						--d("---", changeType, effectSlot, effectName, unitTag, beginTime, endTime, iconName, buffType, effectType, abilityType, statusEffectType, unitId)
-						df("ClearCooldown %i %s (%s)", abilityId, GetAbilityName(abilityId), unitName or "?")
-						if lastAllowedAction == abilityId then
-							lastAllowedAction = 0
+				abilityId = CheckCraftedAbility(abilityId)
+				if abilityId and abilityId > 0 and stackCount <= 0 and sourceType == COMBAT_UNIT_TYPE_PLAYER and (changeType == EFFECT_RESULT_FADED or changeType == EFFECT_RESULT_TRANSFER) then
+					if changeType == EFFECT_RESULT_FADED then
+						if cooldown[abilityId] and (GetGameTimeMilliseconds() - cooldown[abilityId]) > 1000 then
+							cooldown[abilityId] = nil
+							df("Clear Cooldown %i %s (%s)", abilityId, GetAbilityName(abilityId), unitName or "?")
 						end
-					else
+					end
+					if lastAllowedAction ~= abilityId then
 						--d("---", changeType, effectSlot, effectName, unitTag, beginTime, endTime, iconName, buffType, effectType, abilityType, statusEffectType, unitId)
-						df("Skip %i %s (%s)", abilityId, GetAbilityName(abilityId), unitName or "?")
+					else
+						--lastAllowedAction = 0
+						--d("---", changeType, effectSlot, effectName, unitTag, beginTime, endTime, iconName, buffType, effectType, abilityType, statusEffectType, unitId)
+						--df("Skip %i %s (%s)", abilityId, GetAbilityName(abilityId), unitName or "?")
 					end
 				end
 			end
 		)
-		em:AddFilterForEvent(id, EVENT_EFFECT_CHANGED, REGISTER_FILTER_SOURCE_COMBAT_UNIT_TYPE, COMBAT_UNIT_TYPE_PLAYER)
+		em:AddFilterForEvent(id, EVENT_EFFECT_CHANGED, REGISTER_FILTER_SOURCE_COMBAT_UNIT_TYPE, COMBAT_UNIT_TYPE_PLAYER, REGISTER_FILTER_UNIT_TAG, "player")
 	end
 	local GetCruxCount
 	do
@@ -937,6 +968,7 @@ do
 		-- 	return TargetHealthPercent() <= 0.25
 		-- end,
 		[21729] = function()
+			d("343432")
 			--Fluch des Vampirs
 			return HasTarget() and PlayerMagicka() >= 2970 and not CooldownRunning(21729, 24000) and StartCooldown(21729)
 		end,
@@ -955,7 +987,11 @@ do
 		end,
 		[22253] = function()
 			--Ehrung der Toten
-			return (not IsAutoAttack() and not IsMounted()) or PlayerHealthPercent() <= 0.5
+			if IsAutoAttack() then
+				return PlayerHealthPercent() <= 0.5
+			else
+				return not IsMounted() or PlayerHealthPercent() <= 0.5
+			end
 		end,
 		[22256] = function()
 			--Hauch des Lebens
@@ -1055,6 +1091,10 @@ do
 		[40382] = function()
 			--Stachelfalle
 			return HasTarget() and TargetHealth() > 100000 and not CooldownRunning(40382, 20000) and StartCooldown(40382)
+		end,
+		[40181] = function()
+			--Böses verbannen
+			return isInCombat and not CooldownRunning(40181, 20000) and StartCooldown(40181) and RegisterRecast(40181, 20000)
 		end,
 		[35737] = function()
 			--Zirkel des Schutzes
@@ -1632,24 +1672,24 @@ do
 		end,
 		[186366] = function()
 			--pragmatischer Schicksalsschnitzer
-			return not IsAutoAttack() or (isInCombat and not IsBlockActive() and GetCruxCount() >= 3 and not CooldownRunning(186366, 4500) and StartCooldown(186366))
+			return not IsAutoAttack() or (isInCombat and not IsBlockActive() and TargetMaxHealth() > 8000 and GetCruxCount() >= 3 and not CooldownRunning(186366, 4500) and StartCooldown(186366))
 		end,
 		[193398] = function()
 			--pragmatischer Schicksalsschnitzer
-			return not IsAutoAttack() or (isInCombat and not IsBlockActive() and TargetHealth() > 8000 and GetCruxCount() >= 3 and not CooldownRunning(193398, 4500) and StartCooldown(193398))
+			return not IsAutoAttack() or (isInCombat and not IsBlockActive() and TargetMaxHealth() > 8000 and GetCruxCount() >= 3 and not CooldownRunning(193398, 4500) and StartCooldown(193398))
 		end,
 		[189791] = function()
 			--ewig starrendes Auge
-			return not IsAutoAttack() or PlayerUltimate() >= 175 and TargetHealth() > 300000
+			return (not IsAutoAttack() or PlayerUltimate() >= 175) and TargetHealth() > 300000
 		end,
 		[189837] = function()
 			--Blick des Gezeitenkönigs
-			return not IsAutoAttack() or PlayerUltimate() >= 175 and TargetHealth() > 300000
+			return (not IsAutoAttack() or PlayerUltimate() >= 175) and TargetHealth() > 300000
 		end,
 		[185817] = function()
 			--abgründiger Einschlag
 			if HasTarget() then
-				return not IsBlockActive() and TargetHealth() > 4000 and not CooldownRunning(185817, 6000) and StartCooldown(185817)
+				return not IsBlockActive() and TargetMaxHealth() > 4000 and GetCruxCount() < 3
 			else
 				return isInCombat and not IsBlockActive() and not CooldownRunning(185817, 6000) and StartCooldown(185817)
 			end
@@ -1668,7 +1708,8 @@ do
 		end,
 		[183006] = function()
 			--Flegel des Kephaliarchen
-			return isInCombat and not IsBlockActive() and HasTarget() and GetCruxCount() < 3
+			return isInCombat and not IsBlockActive() and GetCruxCount() < 3
+			-- and HasTarget()
 		end,
 		[201286] = function()
 			--unvollkommener Ring
@@ -1726,6 +1767,22 @@ do
 		[22057] = function()
 			--Sonneneruption
 			return isInCombat and RegisterRecast(22057, 5000) and not IsBlockActive() and HasTarget() and not CooldownRunning(22057, 5000) and StartCooldown(22057)
+		end,
+		[215731] = function()
+			--Magische Seele
+			return isInCombat and not IsBlockActive() and HasTarget() and not CooldownRunning(215731, 10000) and StartCooldown(215731)
+		end,
+		[217178] = function()
+			--blutiges Zerschmettern
+			return isInCombat and not IsBlockActive() and RegisterRecast(217178, 20000) and HasTarget() and not CooldownRunning(217178, 20000) and StartCooldown(217178)
+		end,
+		[222678] = function()
+			--magischer Ausweichplan
+			return isInCombat and not IsBlockActive() and not CooldownRunning(222678, 20000) and RegisterRecast(222678, 10000) and StartCooldown(222678)
+		end,
+		[217228] = function()
+			--eisige Explosion
+			return isInCombat and not IsBlockActive() and not CooldownRunning(217228, 6000) and RegisterRecast(217228, 10000) and StartCooldown(217228)
 		end
 	}
 	local function doNotKillMaelstromHealer()
@@ -1743,10 +1800,11 @@ do
 		if actionButton == 9 then -- 9 is the quickslot button. Will be translated to the current quickslot
 			local hotbarCategory = HOTBAR_CATEGORY_QUICKSLOT_WHEEL
 			actionButton = GetCurrentQuickslot()
-			local latency = math.min(GetLatency() / 2, 200)
+			--local latency = math.min(GetLatency() / 2, 200)
 			local allow = not ActionSlotHasCostFailure(actionButton, hotbarCategory) and not ActionSlotHasNonCostStateFailure(actionButton, hotbarCategory)
 			if allow and IsAutoAttack() then
-				allow = allow and GetSlotCooldownInfo(actionButton, hotbarCategory) <= latency and checkAction(actionButton, hotbarCategory)
+				allow = checkAction(actionButton, hotbarCategory)
+			--allow = allow and GetSlotCooldownInfo(actionButton, hotbarCategory) <= latency and checkAction(actionButton, hotbarCategory)
 			end
 			if allow then
 				return orgZO_ActionBar_CanUseActionSlots(...)
@@ -1761,12 +1819,13 @@ do
 				local isAutoAttack = IsAutoAttack()
 				local allow
 				local skipTimeFrame
-				if lastAllowedAction == 0 and isAutoAttack then
-					if isOneBar then
-						allow = lastAction >= latency
-					else
-						allow = lastAction >= latency and lastAction < (latency * 4)
-					end
+				if lastAllowedAction == 0 then
+					--if isOneBar then
+					--	allow = lastAction >= latency
+					--else
+					--	allow = lastAction >= latency and lastAction < (latency * 4)
+					--end
+					allow = true
 					skipTimeFrame = not allow
 					--if not allow and delay < 200 then
 					--	df("button %i keydown %s auto %s %i<%i<%ims", actionButton, tostring(isKeyDown), "Not in time frame", latency, delay, latency * 4)
@@ -1784,17 +1843,18 @@ do
 				end
 				wasAllowed[actionButton] = allow
 				if allow then
-					df("button %i keydown %s auto %s %ims", actionButton, tostring(isKeyDown), tostring(IsAutoAttack()), delay)
+					--df("button %s keydown %s auto %s %ims", GetAbilityName(lastAllowedAction), tostring(isKeyDown), tostring(IsAutoAttack()), delay)
 					return orgZO_ActionBar_CanUseActionSlots(...)
 				else
 					-- ZO_ActionBar_CanUseActionSlots will be called twice for actionButton 1-8, only.
-					if actionButton == 4 and lastAllowedAction == 0 and not skipTimeFrame and isAutoAttack and not g_activeWeaponSwapInProgress then
+					if actionButton == 4 and lastAllowedAction == 0 and not skipTimeFrame and isAutoAttack then
 						if not HasTarget() then
 							PlaySound(SOUNDS.NEW_NOTIFICATION)
-						--BATTLEGROUND_MATCH_LOST
 						end
-						d("Go Front Bar!")
 						needBarSwap = currentBar == ACTIVE_WEAPON_PAIR_MAIN and ACTIVE_WEAPON_PAIR_BACKUP or ACTIVE_WEAPON_PAIR_MAIN
+						if needBarSwap then
+						--df("Swap Bar! %i -> %i", currentBar, needBarSwap)
+						end
 					end
 				end
 			elseif wasAllowed[actionButton] then
@@ -1837,7 +1897,7 @@ do
 		elseif not g_activeWeaponSwapInProgress then
 			for ability, bar in pairs(abilityBar) do
 				if currentBar ~= bar and NeedRecast(ability) then
-					df("NeedRecast %i", ability)
+					--df("NeedRecast %i", ability)
 					needBarSwap = bar
 					if recast[abilityId] then
 						recast[abilityId] = recast[abilityId] + 6000
@@ -1847,9 +1907,10 @@ do
 			end
 		end
 		if not g_activeWeaponSwapInProgress and GetActiveWeaponPairInfo() ~= needBarSwap then
-			df("-----------\nDo bar swap: %ims", GetGameTimeMilliseconds() - lastAutoAttack)
+			--df("-----------\nDo bar swap: %ims", GetGameTimeMilliseconds() - lastAutoAttack)
 			return orgCanCycleHotbars(...)
 		else
+			--df("no bar swap %s %s", tostring(not g_activeWeaponSwapInProgress), tostring(GetActiveWeaponPairInfo() ~= needBarSwap))
 			return false
 		end
 	end
@@ -1914,7 +1975,7 @@ do
 		else
 			selfHealBar = currentBar == ACTIVE_WEAPON_PAIR_MAIN and ACTIVE_WEAPON_PAIR_BACKUP or ACTIVE_WEAPON_PAIR_MAIN
 		end
-		df("SelfHealBar %i", selfHealBar)
+		--df("SelfHealBar %i", selfHealBar)
 		em:UnregisterForEvent("VOTANS_COMBAT_HELPER_FIND_SELFHEAL", EVENT_PLAYER_ACTIVATED)
 	end
 	em:RegisterForEvent("VOTANS_COMBAT_HELPER_FIND_SELFHEAL", EVENT_PLAYER_ACTIVATED, FindSelfHealHotbar)
@@ -1935,12 +1996,34 @@ do
 		EVENT_ACTION_SLOT_ABILITY_USED,
 		function(_, actionButton)
 			local actionId = GetSlotBoundId(actionButton)
+			actionId = CheckCraftedAbility(actionId)
 			cooldown[actionId] = GetGameTimeMilliseconds()
-			df("start cooldown %i", actionId)
+			df("start cooldown %i=%s", actionId, GetAbilityName(actionId))
 		end
 	)
 end
+do
+	local org = CENTER_SCREEN_ANNOUNCE.OnCenterScreenEvent
+	local function center(self, eventId, ...)
+		if eventId == EVENT_DISPLAY_ANNOUNCEMENT then
+			local soundId = select(4, ...)
+			if soundId == SOUNDS.DUEL_INVITE_RECEIVED then
+				SetCurrentQuickslot(6)
+			end
+		end
+		--d(eventId, ...)
+		return org(self, eventId, ...)
+	end
+	CENTER_SCREEN_ANNOUNCE.OnCenterScreenEvent = center
 
+	-- 131491 = EVENT_DISPLAY_ANNOUNCEMENT
+	-- Marodeur Ulmor nähert sich
+	--
+	--
+	-- nach icon DUEL_INVITERECEIVED
+	-- 3000
+	-- 2
+end
 -- do
 -- 	local DeathType = DEATH.types["Death"]
 -- 	local orgGetButtonByKeybind = DeathType.GetButtonByKeybind
@@ -2140,27 +2223,27 @@ EVENT_MANAGER:RegisterForEvent(
 	end
 )
 
-local orgRequestGroupFinderSearch = RequestGroupFinderSearch
-function RequestGroupFinderSearch(...)
-	if searching then
-		d("still searching.")
-	end
-	searching = true
-	d("GetGroupFinderStatusReason", GetGroupFinderStatusReason())
-	d("GetGroupFinderGroupFilterSearchString", GetGroupFinderGroupFilterSearchString())
-	d("GetGroupFinderFilterCategory", GetGroupFinderFilterCategory())
-	d("GetGroupFinderFilterNumPrimaryOptions", GetGroupFinderFilterNumPrimaryOptions())
-	d("GetGroupFinderFilterNumSecondaryOptions", GetGroupFinderFilterNumSecondaryOptions())
-	d("GetGroupFinderFilterGroupSizes", GetGroupFinderFilterGroupSizes())
-	d("GetGroupFinderFilterPlaystyles", GetGroupFinderFilterPlaystyles())
-	d("DoesGroupFinderFilterRequireChampion", DoesGroupFinderFilterRequireChampion())
-	d("DoesGroupFinderFilterRequireVOIP", DoesGroupFinderFilterRequireVOIP())
-	d("DoesGroupFinderFilterRequireInviteCode", DoesGroupFinderFilterRequireInviteCode())
-	d("DoesGroupFinderFilterRequireEnforceRoles", DoesGroupFinderFilterRequireEnforceRoles())
-	d("GetGroupFinderFilterChampionPoints", GetGroupFinderFilterChampionPoints())
-	d("IsGroupFinderFilterDefault", IsGroupFinderFilterDefault())
-	d("GetGroupFinderSearchNumListings", GetGroupFinderSearchNumListings())
-	d("IsGroupFinderSearchOnCooldown", IsGroupFinderSearchOnCooldown())
-	d("GetCurrentGroupFinderUserType", GetCurrentGroupFinderUserType())
-	return orgRequestGroupFinderSearch(...)
-end
+-- local orgRequestGroupFinderSearch = RequestGroupFinderSearch
+-- function RequestGroupFinderSearch(...)
+-- 	if searching then
+-- 		d("still searching.")
+-- 	end
+-- 	searching = true
+-- 	d("GetGroupFinderStatusReason", GetGroupFinderStatusReason())
+-- 	d("GetGroupFinderGroupFilterSearchString", GetGroupFinderGroupFilterSearchString())
+-- 	d("GetGroupFinderFilterCategory", GetGroupFinderFilterCategory())
+-- 	d("GetGroupFinderFilterNumPrimaryOptions", GetGroupFinderFilterNumPrimaryOptions())
+-- 	d("GetGroupFinderFilterNumSecondaryOptions", GetGroupFinderFilterNumSecondaryOptions())
+-- 	d("GetGroupFinderFilterGroupSizes", GetGroupFinderFilterGroupSizes())
+-- 	d("GetGroupFinderFilterPlaystyles", GetGroupFinderFilterPlaystyles())
+-- 	d("DoesGroupFinderFilterRequireChampion", DoesGroupFinderFilterRequireChampion())
+-- 	d("DoesGroupFinderFilterRequireVOIP", DoesGroupFinderFilterRequireVOIP())
+-- 	d("DoesGroupFinderFilterRequireInviteCode", DoesGroupFinderFilterRequireInviteCode())
+-- 	d("DoesGroupFinderFilterRequireEnforceRoles", DoesGroupFinderFilterRequireEnforceRoles())
+-- 	d("GetGroupFinderFilterChampionPoints", GetGroupFinderFilterChampionPoints())
+-- 	d("IsGroupFinderFilterDefault", IsGroupFinderFilterDefault())
+-- 	d("GetGroupFinderSearchNumListings", GetGroupFinderSearchNumListings())
+-- 	d("IsGroupFinderSearchOnCooldown", IsGroupFinderSearchOnCooldown())
+-- 	d("GetCurrentGroupFinderUserType", GetCurrentGroupFinderUserType())
+-- 	return orgRequestGroupFinderSearch(...)
+-- end
