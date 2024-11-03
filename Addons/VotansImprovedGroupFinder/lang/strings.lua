@@ -1,0 +1,1 @@
+ZO_CreateStringId("SI_VOTANS_IMPROVED_GROUP_FINDER_RECENT", "Use recent")
