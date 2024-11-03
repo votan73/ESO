@@ -120,8 +120,10 @@ local codes = {
 	["BS"] = 531, --Dungeon: Bal Sunnar
 	["SH"] = 532, --Dungeon: Scrivener's Hall
 	["SE"] = 534, --Trial: Sanity's Edge
+	["IA"] = 550, --Infinite Archive
 	["OP"] = 556, --Dungeon: Oathsworn Pit
-	["BV"] = 565 --Dungeon: Bedlam Veil	
+	["BV"] = 565, --Dungeon: Bedlam Veil
+	["LC"] = 568 --Trial: Lucent Citadel
 }
 
 local tooltipCodes = {}
@@ -209,7 +211,7 @@ do
 end
 
 -- SLASH_COMMANDS["/bingo"] = function()
--- 	for nodeIndex = 533, 700 do
+-- 	for nodeIndex = 569, 800 do
 -- 		local name, _, _, texture = select(2, GetFastTravelNodeInfo(nodeIndex))
 -- 		if texture:find("instance_") or texture:find("raiddungeon_") or texture:find("arena_") then
 -- 			df("%i, --%s", nodeIndex, name)
