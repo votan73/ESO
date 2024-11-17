@@ -139,20 +139,22 @@ function RFT.ProcessUpdate(event, achieveId)
 end
 
 do
-	local GetParentZoneId = GetZoneStoryZoneIdForZoneId or GetParentZoneId
 	local function getPlayerZoneId()
 		return GetZoneId(GetUnitZoneIndex("player"))
 	end
-	local function findZone(zone)
+	local function findZoneSub(zone, searchFunc)
 		local count = 4
 		while not RFT.zoneToAchievement[zone] do
 			if count == 0 or zone == 0 then
-				break
+				return
 			end
-			zone = GetParentZoneId(zone)
+			zone = searchFunc(zone)
 			count = count - 1
 		end
 		return zone
+	end
+	local function findZone(zone)
+		return findZoneSub(zone, GetParentZoneId) or findZoneSub(zone, GetZoneStoryZoneIdForZoneId)
 	end
 
 	function RFT.RefreshWindow()

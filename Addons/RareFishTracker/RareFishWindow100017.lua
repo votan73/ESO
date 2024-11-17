@@ -366,12 +366,12 @@ function RFT.MakeWindow()
 	RARE_FISH_TRACKER_FRAGMENT:SetConditional(
 		function()
 			if WORLD_MAP_SCENE:IsShowing() then
-				if RFT.isAutoRefresh and RFT.numFishes == 0 then
+				if RFT.numFishes == nil or RFT.isAutoRefresh and RFT.numFishes == 0 then
 					return false
 				end
 				return RFT.settings.shown_world
 			else
-				if IsUnitInCombat("player") then
+				if RFT.numFishes == nil or IsUnitInCombat("player") then
 					return false
 				end
 				if RFT.isFishing then
