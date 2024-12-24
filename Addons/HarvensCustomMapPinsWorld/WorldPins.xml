@@ -1,0 +1,16 @@
+<GuiXml>
+	<Controls>
+		<Control name ="HarvensCustomMapPinsWorldPin" virtual="true">
+			<Dimensions x="32" y="32" />
+			<Controls>
+				<Texture name="$(parent)Texture">
+					<Dimensions x="32" y="32" />
+					<Anchor point="TOPLEFT" relativePoint="TOPLEFT" />
+				</Texture>
+			</Controls>
+		</Control>
+		<TopLevelControl name="HarvensCustomMapPinsWorld" layer="DL_BACKGROUND" level="0">
+			<AnchorFill />
+		</TopLevelControl>
+	</Controls>
+</GuiXml>
