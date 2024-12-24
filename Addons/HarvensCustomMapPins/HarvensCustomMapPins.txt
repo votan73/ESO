@@ -7,10 +7,10 @@
 ; Door icon source: http://game-icons.net/lorc/originals/wooden-door.html
 
 ## Title: Harven's Custom Map Pins
-## APIVersion: 101042 101043
+## APIVersion: 101043 101044
 ## SavedVariables: HarvensCustomMapPins_SavedVariables HarvensCustomMapPins_Data
 ## Author: Harven & votan
-## Version: 3.2.5
+## Version: 3.2.6
 ## Description: This addon allows you to place custom pins on the map. To place a pin at your position type |c00ff00/custompin|r in the chat window. To place a pin when the world map window is open, press |c00ff00'x'|r key (default).
 ## DependsOn: LibAsync>=20100 LibCustomMenu>=692 LibHarvensAddonSettings>=10705 LibChatMessage>=105 LibMapPins-1.0>=10038
 

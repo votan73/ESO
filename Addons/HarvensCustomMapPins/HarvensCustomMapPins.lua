@@ -207,7 +207,7 @@ function HarvensCustomMapPins:DeletePin(pTag)
 		pinManager will destroy all custom pins
 		and recreate them by calling LayoutPins
 	--]]
-	self.pinManager:RefreshCustomPins(self.pinTypeId)
+	self:RefreshPins()
 end
 
 function HarvensCustomMapPins:EditPin(pin, pType, pTag)
@@ -215,7 +215,7 @@ function HarvensCustomMapPins:EditPin(pin, pType, pTag)
 end
 
 function HarvensCustomMapPins:RefreshPins()
-	ZO_WorldMap_RefreshCustomPinsOfType(self.pinTypeId)
+	self.pinManager:RefreshCustomPins(self.pinTypeId)
 end
 
 function HarvensCustomMapPins:SetColor(pin, pTag)
@@ -234,7 +234,7 @@ function HarvensCustomMapPins:SetColor(pin, pTag)
 			end
 			pins[key].color = {newR, newG, newB, newA}
 			self.sv.lastUsedColor = {newR, newG, newB, newA}
-			self.pinManager:RefreshCustomPins(self.pinTypeId)
+			self:RefreshPins()
 		end,
 		unpack(pins[key].color)
 	)
@@ -924,7 +924,7 @@ function HarvensCustomMapPins:Initialize()
 	}
 
 	-- define our custom pins
-	ZO_WorldMap_AddCustomPin(self.pinTypeString, LayoutPins, nil, layout, creator)
+	self.pinManager:AddCustomPin(self.pinTypeString, LayoutPins, nil, layout, creator)
 	self.pinTypeId = _G[self.pinTypeString]
 
 	ZO_CreateStringId("SI_MAPFILTER" .. self.pinTypeId, "Harven's Custom Map Pin")
