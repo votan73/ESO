@@ -191,7 +191,7 @@ local function Hook(HarvensCustomMapPins)
 	end
 	local function ApplySize(pin, size)
 		pin.icon:Set3DLocalDimensions(size, size)
-		pin.icon:Set3DRenderSpaceOrigin(0, size * 0.5, 0)
+		pin.icon:Set3DRenderSpaceOrigin(0, size * 0.5 + 1, 0)
 	end
 	function HarvensCustomMapPins:GetNewWorldPin(cpin)
 		local pin, pinKey = self.worldPinPool:AcquireObject()
