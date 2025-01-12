@@ -1,12 +1,12 @@
 ## Title: LibAsync
 ## Author: votan
-## APIVersion: 100034 100035
-## AddOnVersion: 20304
-## Version: 2.3.4
+## APIVersion: 101043 101044
+## AddOnVersion: 20305
+## Version: 2.3.5
 ## IsLibrary: true
 ## Description: A share scheduler for deferred actions
 ## OptionalDependsOn: LibDebugLogger
 
-## This Add-On is not created by, affiliated with or sponsored by ZeniMax Media Inc. or its affiliates. The Elder Scrolls® and related logos are registered trademarks or trademarks of ZeniMax Media Inc. in the United States and/or other countries. All rights reserved.
+## This Add-On is not created by, affiliated with or sponsored by ZeniMax Media Inc. or its affiliates. The Elder ScrollsÂ® and related logos are registered trademarks or trademarks of ZeniMax Media Inc. in the United States and/or other countries. All rights reserved.
 
 LibAsync.lua
