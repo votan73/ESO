@@ -325,8 +325,8 @@ local async = LibAsync
 
 local task = async:Create("HARVENS_CUSTOMPINS_LAYOUT")
 do
-	local orgRemovePins = ZO_WorldMapPins.RemovePins
-	function ZO_WorldMapPins:RemovePins(lookupType, majorIndex, keyIndex)
+	local orgRemovePins = ZO_WorldMapPins_Manager.RemovePins
+	function ZO_WorldMapPins_Manager:RemovePins(lookupType, majorIndex, keyIndex)
 		if lookupType == HarvensCustomMapPins.pinTypeString then
 			task:Cancel()
 		end
@@ -361,8 +361,8 @@ end
 
 -- This function is called by wordmap when changing map or after calling RefreshCustomPins
 local function LayoutPins(pinManager)
-	if not pinManager.__index == ZO_WorldMapPins then
-		-- In ZO_WorldMapPins pinManager I trust
+	if not pinManager.__index == ZO_WorldMapPins_Manager then
+		-- In ZO_WorldMapPins_Manager pinManager I trust
 		return
 	end
 	task:Cancel()
@@ -538,13 +538,17 @@ function HarvensCustomMapPins:OnLinkClicked(link, button, description, color, li
 end
 
 function HarvensCustomMapPins:UpdateLegend()
-	GAMEPAD_WORLD_MAP_KEY.dirty = true
-	WORLD_MAP_KEY.dirty = true
-	if GAMEPAD_WORLD_MAP_KEY_FRAGMENT:IsShowing() then
-		GAMEPAD_WORLD_MAP_KEY:RefreshKey()
+	if GAMEPAD_WORLD_MAP_KEY then
+		GAMEPAD_WORLD_MAP_KEY.dirty = true
+		if GAMEPAD_WORLD_MAP_KEY_FRAGMENT:IsShowing() then
+			GAMEPAD_WORLD_MAP_KEY:RefreshKey()
+		end
 	end
-	if WORLD_MAP_KEY_FRAGMENT:IsShowing() then
-		WORLD_MAP_KEY:RefreshKey()
+	if WORLD_MAP_KEY then
+		WORLD_MAP_KEY.dirty = true
+		if WORLD_MAP_KEY_FRAGMENT:IsShowing() then
+			WORLD_MAP_KEY:RefreshKey()
+		end
 	end
 end
 
@@ -556,6 +560,10 @@ function HarvensCustomMapPins:InitLegend()
 		return a[1] < b[1]
 	end
 	local function hook(orginal, refresh)
+		if not orginal then
+			return
+		end
+
 		local orgRefreshKey = orginal.RefreshKey
 		function orginal.RefreshKey(legend, ...)
 			local dirty = legend.fragment:IsShowing() and legend.dirty
@@ -929,7 +937,7 @@ function HarvensCustomMapPins:Initialize()
 
 	ZO_CreateStringId("SI_MAPFILTER" .. self.pinTypeId, "Harven's Custom Map Pin")
 
-	ZO_WorldMap_SetCustomPinEnabled(self.pinTypeId, self.sv.showPins)
+	self.pinManager:SetCustomPinEnabled(self.pinTypeId, self.sv.showPins)
 	ZO_MapPin.PIN_CLICK_HANDLERS[MOUSE_BUTTON_INDEX_LEFT][self.pinTypeId] = {
 		{
 			name = function(pin)
