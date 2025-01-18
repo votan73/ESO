@@ -72,28 +72,43 @@ local function DoJob(job)
 	current, call = nil, nil
 end
 
--- time we can spend until the next frame must be shown
-local frameTimeTarget = GetCVar("VSYNC") == "1" and 0.014 or (math.max(0.0125, tonumber(GetCVar("MinFrameTime.2"))))
-
--- we allow a function to use 25% of the frame time before it gets critical
-local spendTimeDef = frameTimeTarget * 0.75
-local spendTimeDefNoHUD = 0.015
-local spendTime = spendTimeDef
-
 local debug = false
-
 local running
 local GetFrameTimeSeconds, GetGameTimeSeconds = GetFrameTimeSeconds, GetGameTimeSeconds
 
-local function GetThreshold()
-	return (HUD_SCENE:IsShowing() or HUD_UI_SCENE:IsShowing()) and spendTimeDef or spendTimeDefNoHUD
+-- VSYNC Value (based on a 60Hz monitor refresh rate)
+local vsyncValue = GetCVar("VSYNC") == "1" and 0.01667 or nil
+
+-- MinFrameTime.2 Setting
+local minFrameTimeValue = tonumber(GetCVar("MinFrameTime.2"))
+minFrameTimeValue = (minFrameTimeValue and minFrameTimeValue > 0) and minFrameTimeValue or nil
+
+-- Background FPS Limit Settings
+local useBackgroundFpsLimit = GetCVar("USE_BACKGROUND_FPS_LIMIT") == "1"
+local backgroundFpsLimitSetting = tonumber(GetCVar("BACKGROUND_FPS_LIMIT"))
+local backgroundFpsLimitValue = (useBackgroundFpsLimit and backgroundFpsLimitSetting and backgroundFpsLimitSetting > 0) and (1 / backgroundFpsLimitSetting) or nil
+
+-- Final frameTimeTarget Calculation
+local frameTimeTarget = vsyncValue or minFrameTimeValue or backgroundFpsLimitValue or 0.01667
+
+local upperSpendTimeDef = frameTimeTarget * 0.70574  -- 0.01176 (85.03 FPS)
+local upperSpendTimeDefNoHUD = upperSpendTimeDef * 1.21429  -- 0.01428 (70.03 FPS)
+local lowerSpendTimeDef = frameTimeTarget * 2.9994  -- 0.05000 (20.00 FPS)
+local lowerSpendTimeDefNoHUD = lowerSpendTimeDef * 0.8  -- 0.04000 (25.00 FPS)
+
+local function GetUpperThreshold()
+    return (HUD_SCENE:IsShowing() or HUD_UI_SCENE:IsShowing()) and upperSpendTimeDef or upperSpendTimeDefNoHUD
 end
 
+local function GetLowerThreshold()
+    return (HUD_SCENE:IsShowing() or HUD_UI_SCENE:IsShowing()) and lowerSpendTimeDef or lowerSpendTimeDefNoHUD
+end
+local spendTime = GetUpperThreshold()
 local job = nil
 local cpuLoad = 0
 function async.Scheduler()
 	if not running then
-		spendTime = max(GetThreshold(), spendTime - spendTime * 0.005)
+        spendTime = max(GetUpperThreshold(), spendTime - spendTime * 0.01)
 		return
 	end
 
@@ -104,7 +119,7 @@ function async.Scheduler()
 	async.frameTimeSeconds = start
 	runTime, cpuLoad = start, now - start
 	if cpuLoad > spendTime then
-		spendTime = min(0.030, spendTime + spendTime * 0.02)
+        spendTime = min(GetLowerThreshold(), spendTime + spendTime * 0.02)
 		if debug then
 			dbg("initial gap: %ims. skip. new threshold: %ims", (GetGameTimeSeconds() - start) * 1000, spendTime * 1000)
 		end
@@ -121,7 +136,7 @@ function async.Scheduler()
 			break
 		end
 	end
-	spendTime = max(GetThreshold(), spendTime * 0.5)
+    spendTime = max(GetUpperThreshold(), spendTime * 0.5)
 	if (now - start) <= spendTime then
 		-- loops
 		local allOnlyOnce = true
@@ -145,7 +160,7 @@ function async.Scheduler()
 				running = next(jobs) ~= nil
 				--if not running then
 				--	-- Finished
-				--	spendTime = GetThreshold()
+                --	spendTime = GetUpperThreshold()
 				--end
 				return
 			end
@@ -489,7 +504,11 @@ async.BREAK = true
 
 local function stateChange(oldState, newState)
 	if newState == SCENE_SHOWN or newState == SCENE_HIDING then
-		spendTime = GetThreshold()
+        if cpuLoad > spendTime then
+            spendTime = GetLowerThreshold()
+        else
+            spendTime = GetUpperThreshold()
+        end
 	end
 end
 
