@@ -91,24 +91,24 @@ local backgroundFpsLimitValue = (useBackgroundFpsLimit and backgroundFpsLimitSet
 -- Final frameTimeTarget Calculation
 local frameTimeTarget = vsyncValue or minFrameTimeValue or backgroundFpsLimitValue or 0.01667
 
-local upperSpendTimeDef = frameTimeTarget * 0.70574  -- 0.01176 (85.03 FPS)
-local upperSpendTimeDefNoHUD = upperSpendTimeDef * 1.21429  -- 0.01428 (70.03 FPS)
-local lowerSpendTimeDef = frameTimeTarget * 2.9994  -- 0.05000 (20.00 FPS)
-local lowerSpendTimeDefNoHUD = lowerSpendTimeDef * 0.8  -- 0.04000 (25.00 FPS)
+local upperSpendTimeDef = frameTimeTarget * 0.70574 -- 0.01176 (85.03 FPS)
+local upperSpendTimeDefNoHUD = upperSpendTimeDef * 1.21429 -- 0.01428 (70.03 FPS)
+local lowerSpendTimeDef = frameTimeTarget * 2.9994 -- 0.05000 (20.00 FPS)
+local lowerSpendTimeDefNoHUD = lowerSpendTimeDef * 0.8 -- 0.04000 (25.00 FPS)
 
 local function GetUpperThreshold()
-    return (HUD_SCENE:IsShowing() or HUD_UI_SCENE:IsShowing()) and upperSpendTimeDef or upperSpendTimeDefNoHUD
+	return (HUD_SCENE:IsShowing() or HUD_UI_SCENE:IsShowing()) and upperSpendTimeDef or upperSpendTimeDefNoHUD
 end
 
 local function GetLowerThreshold()
-    return (HUD_SCENE:IsShowing() or HUD_UI_SCENE:IsShowing()) and lowerSpendTimeDef or lowerSpendTimeDefNoHUD
+	return (HUD_SCENE:IsShowing() or HUD_UI_SCENE:IsShowing()) and lowerSpendTimeDef or lowerSpendTimeDefNoHUD
 end
 local spendTime = GetUpperThreshold()
 local job = nil
 local cpuLoad = 0
 function async.Scheduler()
 	if not running then
-        spendTime = max(GetUpperThreshold(), spendTime - spendTime * 0.01)
+		spendTime = max(GetUpperThreshold(), spendTime - spendTime * 0.01)
 		return
 	end
 
@@ -119,7 +119,7 @@ function async.Scheduler()
 	async.frameTimeSeconds = start
 	runTime, cpuLoad = start, now - start
 	if cpuLoad > spendTime then
-        spendTime = min(GetLowerThreshold(), spendTime + spendTime * 0.02)
+		spendTime = min(GetLowerThreshold(), spendTime + spendTime * 0.02)
 		if debug then
 			dbg("initial gap: %ims. skip. new threshold: %ims", (GetGameTimeSeconds() - start) * 1000, spendTime * 1000)
 		end
@@ -136,7 +136,7 @@ function async.Scheduler()
 			break
 		end
 	end
-    spendTime = max(GetUpperThreshold(), spendTime * 0.5)
+	spendTime = max(GetUpperThreshold(), spendTime * 0.5)
 	if (now - start) <= spendTime then
 		-- loops
 		local allOnlyOnce = true
@@ -160,7 +160,7 @@ function async.Scheduler()
 				running = next(jobs) ~= nil
 				--if not running then
 				--	-- Finished
-                --	spendTime = GetUpperThreshold()
+				--	spendTime = GetUpperThreshold()
 				--end
 				return
 			end
@@ -504,11 +504,11 @@ async.BREAK = true
 
 local function stateChange(oldState, newState)
 	if newState == SCENE_SHOWN or newState == SCENE_HIDING then
-        if cpuLoad > spendTime then
-            spendTime = GetLowerThreshold()
-        else
-            spendTime = GetUpperThreshold()
-        end
+		if cpuLoad > spendTime then
+			spendTime = GetLowerThreshold()
+		else
+			spendTime = GetUpperThreshold()
+		end
 	end
 end
 
