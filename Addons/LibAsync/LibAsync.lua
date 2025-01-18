@@ -1,18 +1,66 @@
+local async = {}
+-- async.registered = {}
 local MAJOR = "LibAsync"
-local log = LibDebugLogger and LibDebugLogger(MAJOR)
-local dbg = log and function(...)
-		log:Debug(...)
-	end or df
-local warn = log and function(...)
-		log:Warn(...)
+
+async.log = LibDebugLogger and LibDebugLogger(MAJOR)
+
+async.Debug = async.log and function(...)
+		async.log:Debug(...)
 	end or df
 
-local async = {}
---async.registered = {}
+async.Warn = async.log and function(...)
+		async.log:Warn(...)
+	end or df
+
+local Debug = async.Debug
+local Warn = async.Warn
+
+local log_to_chat = false
+
+-- Main Constants
+local MIN_FRAME_TIME_MS = 0.0125
+local VSYNC_FRAME_TIME_MS = 0.01667
+local CPU_LOAD_THRESHOLD = 0.75 -- 75% of frame time before critical
+local MIN_DELAY_FOR_ASYNC = 10 -- minimum ms before using async delay
+local INIT_DELAY_MS = 50 -- delay for initialization
+local MAX_CPU_THRESHOLD_MS = 0.030
+local DEFAULT_HUD_FRAME_TIME_MS = 0.015
+local CPU_DECREASE_RATE = 0.005 -- 0.5% decrease per frame when not running
+local CPU_INCREASE_RATE = 0.02 -- 2% increase per frame when overloaded
+
+-- Scheduler Operation Constants
+local SCHEDULER_THROTTLE_RATE = 0.5 -- Rate to throttle scheduler when time threshold reached
+local DEBUG_FREEZE_THRESHOLD_MS = 0.016 -- Threshold in ms before considering a frame freeze
+local DEBUG_TIME_MULTIPLIER = 1000 -- Multiplier to convert time to milliseconds for debug output
+
+-- Scene State Constants
+local SCENE_SHOWN = ZO_STATE.SHOWN
+local SCENE_HIDING = ZO_STATE.HIDING
+
+-- Constants for CPU measurement
+local RAW_CLOCK_TO_MS = 0.001 -- Convert raw clock units to milliseconds
 
 local em = GetEventManager()
-local remove, min, max, pcall = table.remove, math.min, math.max, pcall
+local remove = table.remove
+local format = string.format
+local min = zo_min
+local max = zo_max
+local next = next
+local pcall = pcall
+local error = error
+local tonumber = tonumber
+local floor = zo_floor
+local GetCVar = GetCVar
+local GetFrameTimeSeconds = GetFrameTimeSeconds
+local GetGameTimeSeconds = GetGameTimeSeconds
+local zo_callLater = zo_callLater
+local zo_removeCallLater = zo_removeCallLater
 
+-- ESO specific function. Returns an approximation of the amount in milliseconds of CPU time used by the program.
+local rawclock = os.rawclock
+
+--- @param job any
+--- @param callstackIndex number
 local function RemoveCall(job, callstackIndex)
 	remove(job.callstack, callstackIndex)
 	job.lastCallIndex = min(job.lastCallIndex, #job.callstack)
@@ -20,10 +68,13 @@ end
 
 local current, call
 local currentStackIndex = 0
+--- @return any
 local function safeCall()
 	return call(current)
 end
 
+--- @param job any
+--- @param callstackIndex number
 local function DoCallback(job, callstackIndex)
 	currentStackIndex = callstackIndex
 	local success, shouldContinue = pcall(safeCall)
@@ -42,7 +93,7 @@ local function DoCallback(job, callstackIndex)
 			local msg
 			success, msg = pcall(safeCall)
 			if not success then
-				warn(msg)
+				Warn(msg)
 			end
 		else
 			job:Suspend()
@@ -54,9 +105,10 @@ end
 local jobs = async.jobs or {}
 async.jobs = jobs
 
+--- @param job any
 local function DoJob(job)
 	current = job
-	--assert(job.lastCallIndex >= 0, "lastCallIndex gets negative.")
+	-- assert(job.lastCallIndex >= 0, "lastCallIndex gets negative.")
 	local index = #job.callstack
 	call = job.callstack[index]
 	if call then
@@ -74,10 +126,8 @@ end
 
 local debug = false
 local running
-local GetFrameTimeSeconds, GetGameTimeSeconds = GetFrameTimeSeconds, GetGameTimeSeconds
-
 -- VSYNC Value (based on a 60Hz monitor refresh rate)
-local vsyncValue = GetCVar("VSYNC") == "1" and 0.01667 or nil
+local vsyncValue = GetCVar("VSYNC") == "1" and VSYNC_FRAME_TIME_MS or nil
 
 -- MinFrameTime.2 Setting
 local minFrameTimeValue = tonumber(GetCVar("MinFrameTime.2"))
@@ -89,17 +139,20 @@ local backgroundFpsLimitSetting = tonumber(GetCVar("BACKGROUND_FPS_LIMIT"))
 local backgroundFpsLimitValue = (useBackgroundFpsLimit and backgroundFpsLimitSetting and backgroundFpsLimitSetting > 0) and (1 / backgroundFpsLimitSetting) or nil
 
 -- Final frameTimeTarget Calculation
-local frameTimeTarget = vsyncValue or minFrameTimeValue or backgroundFpsLimitValue or 0.01667
+local frameTimeTarget = vsyncValue or minFrameTimeValue or backgroundFpsLimitValue or VSYNC_FRAME_TIME_MS
 
+-- we allow a function to use CPU_LOAD_THRESHOLD of the frame time before it gets critical
 local upperSpendTimeDef = frameTimeTarget * 0.70574 -- 0.01176 (85.03 FPS)
 local upperSpendTimeDefNoHUD = upperSpendTimeDef * 1.21429 -- 0.01428 (70.03 FPS)
 local lowerSpendTimeDef = frameTimeTarget * 2.9994 -- 0.05000 (20.00 FPS)
 local lowerSpendTimeDefNoHUD = lowerSpendTimeDef * 0.8 -- 0.04000 (25.00 FPS)
 
+--- @return number
 local function GetUpperThreshold()
 	return (HUD_SCENE:IsShowing() or HUD_UI_SCENE:IsShowing()) and upperSpendTimeDef or upperSpendTimeDefNoHUD
 end
 
+--- @return number
 local function GetLowerThreshold()
 	return (HUD_SCENE:IsShowing() or HUD_UI_SCENE:IsShowing()) and lowerSpendTimeDef or lowerSpendTimeDefNoHUD
 end
@@ -108,20 +161,26 @@ local job = nil
 local cpuLoad = 0
 function async.Scheduler()
 	if not running then
-		spendTime = max(GetUpperThreshold(), spendTime - spendTime * 0.01)
+		spendTime = max(GetUpperThreshold(), spendTime - spendTime * CPU_DECREASE_RATE)
 		return
 	end
 
 	job = nil
-	local name, runTime = nil, nil
-	local GetGameTimeSeconds = GetGameTimeSeconds
-	local start, now = GetFrameTimeSeconds(), GetGameTimeSeconds()
+	local name = nil
+	local runTime
+	local start = GetFrameTimeSeconds()
+	local startCPU = rawclock() * RAW_CLOCK_TO_MS
 	async.frameTimeSeconds = start
-	runTime, cpuLoad = start, now - start
+
+	local now = GetGameTimeSeconds()
+	local currentCPU = rawclock() * RAW_CLOCK_TO_MS
+	runTime = start
+	cpuLoad = currentCPU - startCPU
+
 	if cpuLoad > spendTime then
-		spendTime = min(GetLowerThreshold(), spendTime + spendTime * 0.02)
+		spendTime = min(GetLowerThreshold(), spendTime + spendTime * CPU_INCREASE_RATE)
 		if debug then
-			dbg("initial gap: %ims. skip. new threshold: %ims", (GetGameTimeSeconds() - start) * 1000, spendTime * 1000)
+			Debug(format("initial gap: %.3fms CPU time. skip. new threshold: %.3fms", cpuLoad * DEBUG_TIME_MULTIPLIER, spendTime * DEBUG_TIME_MULTIPLIER))
 		end
 		return
 	end
@@ -136,7 +195,7 @@ function async.Scheduler()
 			break
 		end
 	end
-	spendTime = max(GetUpperThreshold(), spendTime * 0.5)
+	spendTime = max(GetUpperThreshold(), spendTime * SCHEDULER_THROTTLE_RATE)
 	if (now - start) <= spendTime then
 		-- loops
 		local allOnlyOnce = true
@@ -158,42 +217,61 @@ function async.Scheduler()
 				end
 			else
 				running = next(jobs) ~= nil
-				--if not running then
-				--	-- Finished
-				--	spendTime = GetUpperThreshold()
-				--end
+				if not running then
+					-- Finished
+					spendTime = GetUpperThreshold()
+				end
 				return
 			end
 		end
 	end
 	if debug and job then
 		local freezeTime = now - start
-		if freezeTime >= 0.016 then
-			warn("%s freeze. allowed: %.3fms, used %.3fms starting at %.3fms, resulting fps %i.", job.name, spendTime * 1000, (now - runTime) * 1000, (runTime - start) * 1000, 1 / freezeTime)
+		if freezeTime >= DEBUG_FREEZE_THRESHOLD_MS then
+			-- Add debug output to verify values
+			local msg = format("%s freeze. allowed: %.3fms, used %.3fms starting at %.3fms, resulting fps %i.", job.name, spendTime * DEBUG_TIME_MULTIPLIER, (now - runTime) * DEBUG_TIME_MULTIPLIER, (runTime - start) * DEBUG_TIME_MULTIPLIER, 1 / freezeTime)
+			Warn(msg) -- Use pre-formatted string
 		end
 	end
 end
 
+--- @return boolean
 function async:GetDebug()
 	return debug
 end
 
+--- @param enabled boolean
 function async:SetDebug(enabled)
 	debug = enabled
 end
 
+--- @return number
 function async:GetCpuLoad()
 	return cpuLoad / frameTimeTarget
 end
 
+--- Enable or disable logging to chat
+--- @param enabled boolean Whether to enable chat logging
+function async:SetLogToChat(enabled)
+	log_to_chat = enabled
+end
+
+--- Get whether logging to chat is enabled
+--- @return boolean enabled Whether chat logging is enabled
+function async:GetLogToChat()
+	return log_to_chat
+end
+
 -- Class task
 
-local task = async.task or ZO_Object:Subclass()
+local task = async.task or ZO_InitializingCallbackObject:Subclass()
 async.task = task
 
 -- Called from async:Create()
+--- @param name string
+--- @return any
 function task:New(name)
-	local instance = ZO_Object.New(self)
+	local instance = ZO_InitializingCallbackObject.New(self)
 	instance.name = name or tostring(instance)
 	instance:Initialize()
 	return instance
@@ -202,19 +280,21 @@ end
 function task:Initialize()
 	self.callstack = {}
 	self.lastCallIndex = 0
-	--async.registered[#async.registered + 1] = self
+	-- async.registered[#async.registered + 1] = self
 end
 
 -- Resume the execution context.
 function task:Resume()
 	running = true
 	jobs[self.name] = self
+	-- Debug("Task %s resumed", self.name)
 	return self
 end
 
 -- Suspend the execution context and allow to resume anytime later.
 function task:Suspend()
 	jobs[self.name] = nil
+	-- Debug("Task %s suspended", self.name)
 	return self
 end
 
@@ -225,6 +305,7 @@ function task:Cancel()
 	if jobs[self.name] then
 		if not self.finally then
 			jobs[self.name] = nil
+		-- Debug("Task %s cancelled", self.name)
 		-- else run job with empty callstack to run finalizer
 		end
 	end
@@ -349,25 +430,25 @@ end
 -- Suspend the execution of your task context for the given delay in milliseconds and then call the given FuncOfTask to continue.
 function task:Delay(delay, funcOfTask)
 	self:StopTimer()
-	if delay < 10 then
+	if delay < MIN_DELAY_FOR_ASYNC then
 		return self:Call(funcOfTask)
 	end
 	self:Suspend()
-	em:RegisterForUpdate(
-		self.name,
-		delay,
+	self.currentCallLaterId =
+		zo_callLater(
 		function()
-			em:UnregisterForUpdate(self.name)
+			self.currentCallLaterId = nil
 			self:Call(funcOfTask)
-		end
+		end,
+		delay
 	)
 	return self
 end
 
 function task:ThenDelay(delay, funcOfTask)
 	self:Then(
-		function(self)
-			self:Delay(delay, funcOfTask)
+		function(innerTask)
+			innerTask:Delay(delay, funcOfTask)
 		end
 	)
 	return self
@@ -375,9 +456,9 @@ end
 
 function task:WaitUntil(funcOfTask)
 	self:Then(
-		function(self)
-			self.oncePerFrame = not funcOfTask(self)
-			return self.oncePerFrame
+		function(innerTask)
+			innerTask.oncePerFrame = not funcOfTask(innerTask)
+			return innerTask.oncePerFrame
 		end
 	)
 	return self:Resume()
@@ -385,7 +466,10 @@ end
 
 -- Stop the delay created by task:Delay or task:Interval.
 function task:StopTimer()
-	em:UnregisterForUpdate(self.name)
+	if self.currentCallLaterId then
+		zo_removeCallLater(self.currentCallLaterId)
+		self.currentCallLaterId = nil
+	end
 	return self
 end
 
@@ -402,53 +486,86 @@ function task:OnError(funcOfTask)
 end
 
 do
-	-- Thanks to: https://de.wikipedia.org/wiki/Quicksort
+	--- @see https://www.lua.org/source/5.1/ltablib.c.html
 
 	local function simpleCompare(a, b)
 		return a < b
 	end
-	local function sort(task, array, compare)
+
+	-- Helper function to swap elements
+	local function swap(array, i, j)
+		array[i], array[j] = array[j], array[i]
+	end
+
+	local function sort(innerTask, array, compare)
 		local function quicksort(left, right)
-			if left >= right then
+			if right - left <= 1 then -- Handle small arrays directly
+				if right > left and not compare(array[left], array[right]) then
+					swap(array, left, right)
+				end
 				return
 			end
 
-			-- partition
-			local i, j, pivot = left, right - 1, array[right]
+			-- Select pivot using median-of-three
+			local mid = floor((left + right) / 2)
+			if compare(array[right], array[left]) then
+				swap(array, left, right)
+			end
+			if compare(array[mid], array[left]) then
+				swap(array, left, mid)
+			end
+			if compare(array[right], array[mid]) then
+				swap(array, mid, right)
+			end
 
-			task:Call(
+			local pivot = array[mid]
+			swap(array, mid, right - 1) -- Hide pivot
+
+			-- Partition phase
+			local i, j = left, right - 1
+			innerTask:Call(
 				function()
-					while i < right and compare(array[i], pivot) do
+					while true do
+						-- Scan from left
+						while i < right - 1 and compare(array[i], pivot) do
+							i = i + 1
+						end
+						-- Scan from right
+						while j > left and compare(pivot, array[j]) do
+							j = j - 1
+						end
+
+						if i >= j then
+							break
+						end
+						swap(array, i, j)
 						i = i + 1
-					end
-					while j > left and not compare(array[j], pivot) do
 						j = j - 1
-					end
-					if i < j then
-						array[i], array[j] = array[j], array[i]
-						-- repeatly call this function until i >= j
-						return true
+						return true -- Continue this phase
 					end
 				end
 			)
-			task:Then(
+
+			innerTask:Then(
 				function()
-					if compare(pivot, array[i]) then
-						array[i], array[right] = array[right], array[i]
-					end
-					quicksort(left, i - 1)
-					quicksort(i + 1, right)
+					-- Restore pivot
+					swap(array, i, right - 1)
+
+					-- Recursively sort partitions
+					quicksort(left, i - 1) -- Sort left partition
+					quicksort(i + 1, right) -- Sort right partition
 				end
 			)
 		end
+
 		quicksort(1, #array)
 	end
 
 	-- This sort function works like table.sort(). The compare function is optional.
 	function task:Sort(array, compare)
 		return self:Then(
-			function(task)
-				sort(task, array, compare or simpleCompare)
+			function(innerTask)
+				sort(innerTask, array, compare or simpleCompare)
 			end
 		)
 	end
@@ -468,11 +585,14 @@ end
 
 do
 	local Default = task:New("*Default Task*")
-	function Default:Cancel()
-		error("Not allowed on default task. Use your_lib_var:Create(optional_name) for an interruptible task context.")
+
+	local function DEFAULT_TASK_SENTINEL()
+		error("Not allowed on default task. Use your_lib_var:Create(optional_name) for an interruptible task context.", 2)
 	end
-	Default.Finally = Default.Cancel
-	Default.OnError = Default.Cancel
+
+	Default.Cancel = DEFAULT_TASK_SENTINEL
+	Default.Finally = DEFAULT_TASK_SENTINEL
+	Default.OnError = DEFAULT_TASK_SENTINEL
 
 	-- Start a non-interruptible task or start a nested call in the current context.
 	function async:Call(funcOfTask)
@@ -502,7 +622,53 @@ end
 -- To break a for-loop, return async.BREAK
 async.BREAK = true
 
-local function stateChange(oldState, newState)
+-- Scheduler Management
+local SchedulerManager = {
+	schedulerId = nil,
+	initId = nil,
+	isRunning = false
+}
+
+function SchedulerManager:stopScheduler()
+	if self.schedulerId then
+		zo_removeCallLater(self.schedulerId)
+		self.schedulerId = nil
+	end
+end
+
+function SchedulerManager:startScheduler()
+	self:stopScheduler()
+	self.schedulerId =
+		zo_callLater(
+		function()
+			async.Scheduler()
+			self:startScheduler() -- Schedule next frame
+		end,
+		0
+	)
+end
+
+function SchedulerManager:initialize(delay)
+	if self.initId then
+		zo_removeCallLater(self.initId)
+	end
+
+	self.initId =
+		zo_callLater(
+		function()
+			self.initId = nil
+			self:startScheduler()
+		end,
+		delay or INIT_DELAY_MS
+	)
+end
+
+-- Scene Management
+local SceneManager = {
+	scenes = {HUD_SCENE, HUD_UI_SCENE}
+}
+
+function SceneManager:handleStateChange(_, newState)
 	if newState == SCENE_SHOWN or newState == SCENE_HIDING then
 		if cpuLoad > spendTime then
 			spendTime = GetLowerThreshold()
@@ -512,41 +678,31 @@ local function stateChange(oldState, newState)
 	end
 end
 
-local identifier = "ASYNCTASKS_JOBS"
-
-HUD_SCENE:RegisterCallback("StateChange", stateChange)
-HUD_UI_SCENE:RegisterCallback("StateChange", stateChange)
-
-do
-	--Use another id, so that the slot for identifier is not re-used.
-	local id2 = identifier .. "2"
-
-	function async:Unload()
-		HUD_SCENE:UnregisterCallback("StateChange", stateChange)
-		HUD_UI_SCENE:UnregisterCallback("StateChange", stateChange)
-		em:UnregisterForUpdate(id2)
-		em:UnregisterForUpdate(identifier)
+function SceneManager:initialize()
+	local stateCallback = function(...)
+		self:handleStateChange(...)
 	end
 
-	local function register2()
-		em:UnregisterForUpdate(id2)
-		em:RegisterForUpdate(identifier, 0, async.Scheduler)
+	for _, scene in ipairs(self.scenes) do
+		scene:RegisterCallback("StateChange", stateCallback)
 	end
-	-- Another delay to increase chance to be one of the last.
-	local function register()
-		em:UnregisterForUpdate(id2)
-		em:RegisterForUpdate(id2, 50, register2)
-	end
-
-	em:RegisterForEvent(
-		id2,
-		EVENT_PLAYER_ACTIVATED,
-		function()
-			em:UnregisterForEvent(id2, EVENT_PLAYER_ACTIVATED)
-			return register()
-		end
-	)
-	em:RegisterForUpdate(id2, 0, async.Scheduler)
 end
 
-LibAsync = async
+do
+	local identifier = "ASYNCTASKS_JOBS"
+
+	em:RegisterForEvent(
+		identifier,
+		EVENT_PLAYER_ACTIVATED,
+		function()
+			em:UnregisterForEvent(identifier, EVENT_PLAYER_ACTIVATED)
+			SchedulerManager:initialize()
+		end
+	)
+
+	SceneManager:initialize()
+
+	SchedulerManager:startScheduler()
+end
+
+rawset(_G, "LibAsync", async)
