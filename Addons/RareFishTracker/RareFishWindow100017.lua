@@ -454,10 +454,10 @@ function RFT.MakeWindow()
 		colors[#colors + 1] = ZO_ColorDef:New(r * 0.5625, g * 0.5625, b * 0.5625)
 		colors[#colors + 1] = ZO_ColorDef:New(r * 1.05, g * 1.05, b * 1.05)
 	end
-	MakeColors(ITEM_QUALITY_MAGIC)
-	MakeColors(ITEM_QUALITY_ARCANE)
-	MakeColors(ITEM_QUALITY_ARTIFACT)
-	-- MakeColors(ITEM_QUALITY_LEGENDARY)
+	MakeColors(ITEM_FUNCTIONAL_QUALITY_MAGIC)
+	MakeColors(ITEM_FUNCTIONAL_QUALITY_ARCANE)
+	MakeColors(ITEM_FUNCTIONAL_QUALITY_ARTIFACT)
+	-- MakeColors(ITEM_FUNCTIONAL_QUALITY_LEGENDARY)
 	colors[7] = RFT.KatKat42Colors[7]
 	colors[8] = RFT.KatKat42Colors[8]
 	RFT.ESOColors = colors
@@ -493,7 +493,7 @@ function RFT.PopulateWindowForAchievement(achievement)
 
 			alpha = alpha / 100
 
-			local colorType = (fishquality[index] - ITEM_QUALITY_MAGIC) * 2 + 1
+			local colorType = (fishquality[index] - ITEM_FUNCTIONAL_QUALITY_MAGIC) * 2 + 1
 			local color = normal and RFT.Colors[colorType] or RFT.Colors[colorType + 1]
 			local r, g, b = color:UnpackRGB()
 
@@ -531,17 +531,17 @@ function RFT.PopulateWindowForAchievement(achievement)
 		end
 		local fishes, icons = RFT.fishnames[achievement], RFT.fishIcons[achievement]
 		for index, fishName in ipairs(fishes) do
-			if (fishquality[index] == ITEM_QUALITY_ARCANE) then
+			if (fishquality[index] == ITEM_FUNCTIONAL_QUALITY_ARCANE) then
 				AddColumn(index, fishName, icons[index])
 			end
 		end
 		for index, fishName in ipairs(fishes) do
-			if (fishquality[index] == ITEM_QUALITY_MAGIC) then
+			if (fishquality[index] == ITEM_FUNCTIONAL_QUALITY_MAGIC) then
 				AddColumn(index, fishName, icons[index])
 			end
 		end
 		for index, fishName in ipairs(fishes) do
-			if (fishquality[index] == ITEM_QUALITY_ARTIFACT) then
+			if (fishquality[index] == ITEM_FUNCTIONAL_QUALITY_ARTIFACT) then
 				AddColumn(index, fishName, icons[index])
 			end
 		end

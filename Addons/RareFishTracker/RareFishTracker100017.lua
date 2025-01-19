@@ -154,7 +154,7 @@ do
 		return zone
 	end
 	local function findZone(zone)
-		return findZoneSub(zone, GetParentZoneId) or findZoneSub(zone, GetZoneStoryZoneIdForZoneId)
+		return findZoneSub(zone, GetParentZoneId) or findZoneSub(zone, GetZoneStoryZoneIdForZoneId) or 0
 	end
 
 	function RFT.RefreshWindow()
@@ -163,7 +163,7 @@ do
 
 	function RFT.GetAchievementsByZoneId(zone)
 		zone = findZone(zone)
-		return zone, RFT.zoneToAchievement[zone] or 0
+		return zone, RFT.zoneToAchievement[zone] or {}
 	end
 	function RFT.RefreshWindowZoneChanged()
 		local zone = findZone(getPlayerZoneId())

@@ -29,6 +29,8 @@ RFT.zoneToAchievement = {
 	[537] = {492},
 	-- Bleakrock
 	[280] = {493},
+	-- Bal Foyen
+	[281] = {493},
 	-- Coldhabour
 	[347] = {490},
 	-- Auridon
@@ -39,6 +41,8 @@ RFT.zoneToAchievement = {
 	[383] = {484},
 	-- Stros M'Kai
 	[534] = {491},
+	-- Betnikh
+	[535] = {491},
 	-- Carglorn
 	[888] = {916},
 	-- Imperial City
