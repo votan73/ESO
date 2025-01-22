@@ -38,16 +38,10 @@ local RAW_CLOCK_TO_MS = 0.001 -- Convert raw clock units to milliseconds
 
 local em = GetEventManager()
 local insert = table.insert
-local concat = table.concat
 local remove = table.remove
 local format = string.format
 local min = zo_min
 local max = zo_max
-local zo_random = zo_random
-local zo_randomseed = zo_randomseed
-local BitAnd = BitAnd
-local BitRShift = BitRShift
-local BitXor = BitXor
 local next = next
 local pcall = pcall
 local error = error
@@ -55,103 +49,12 @@ local tonumber = tonumber
 local floor = zo_floor
 local GetCVar = GetCVar
 local ZO_ClearNumericallyIndexedTable = ZO_ClearNumericallyIndexedTable
-local GetTimeStamp = GetTimeStamp
 local GetFrameTimeSeconds = GetFrameTimeSeconds
 local GetGameTimeSeconds = GetGameTimeSeconds
 
 local os = os
 -- ESO specific function. Returns an approximation of the amount in milliseconds of CPU time used by the program.
 local rawclock = os.rawclock
-
-local function seedRandom()
-    local time = GetTimeStamp()
-    local timeLow = BitAnd(time, 0xFFFF)
-    local timeHigh = BitRShift(time, 16)
-
-    -- Create a more complex seed by combining parts of the current time
-    local seed = BitXor(timeLow, timeHigh)
-
-    -- Seed the Lua random number generator
-    zo_randomseed(seed)
-end
-
-local bytetoB64 = {
-    [0] = "a",
-    "b",
-    "c",
-    "d",
-    "e",
-    "f",
-    "g",
-    "h",
-    "i",
-    "j",
-    "k",
-    "l",
-    "m",
-    "n",
-    "o",
-    "p",
-    "q",
-    "r",
-    "s",
-    "t",
-    "u",
-    "v",
-    "w",
-    "x",
-    "y",
-    "z",
-    "A",
-    "B",
-    "C",
-    "D",
-    "E",
-    "F",
-    "G",
-    "H",
-    "I",
-    "J",
-    "K",
-    "L",
-    "M",
-    "N",
-    "O",
-    "P",
-    "Q",
-    "R",
-    "S",
-    "T",
-    "U",
-    "V",
-    "W",
-    "X",
-    "Y",
-    "Z",
-    "0",
-    "1",
-    "2",
-    "3",
-    "4",
-    "5",
-    "6",
-    "7",
-    "8",
-    "9",
-    "(",
-    ")"
-}
-
-local function getUniqueId(length)
-    -- Seed the random number generator
-    seedRandom()
-
-    local s = {}
-    for i = 1, length do
-        insert(s, bytetoB64[zo_random(0, 63)])
-    end
-    return concat(s)
-end
 
 --- @param job any
 --- @param callstackIndex number
@@ -785,7 +688,7 @@ function SceneManager:initialize()
 end
 
 do
-	local identifier = "ASYNCTASKS_JOBS" .. getUniqueId(2)
+	local identifier = "ASYNCTASKS_JOBS"
 
 	em:RegisterForEvent(
 		identifier,
