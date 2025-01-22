@@ -18,13 +18,9 @@ local Warn = async.Warn
 local log_to_chat = false
 
 -- Main Constants
-local MIN_FRAME_TIME_MS = 0.0125
 local VSYNC_FRAME_TIME_MS = 0.01667
-local CPU_LOAD_THRESHOLD = 0.75 -- 75% of frame time before critical
 local MIN_DELAY_FOR_ASYNC = 10 -- minimum ms before using async delay
 local INIT_DELAY_MS = 50 -- delay for initialization
-local MAX_CPU_THRESHOLD_MS = 0.030
-local DEFAULT_HUD_FRAME_TIME_MS = 0.015
 local CPU_DECREASE_RATE = 0.005 -- 0.5% decrease per frame when not running
 local CPU_INCREASE_RATE = 0.02 -- 2% increase per frame when overloaded
 
@@ -41,23 +37,121 @@ local SCENE_HIDING = ZO_STATE.HIDING
 local RAW_CLOCK_TO_MS = 0.001 -- Convert raw clock units to milliseconds
 
 local em = GetEventManager()
+local insert = table.insert
+local concat = table.concat
 local remove = table.remove
 local format = string.format
 local min = zo_min
 local max = zo_max
+local zo_random = zo_random
+local zo_randomseed = zo_randomseed
+local BitAnd = BitAnd
+local BitRShift = BitRShift
+local BitXor = BitXor
 local next = next
 local pcall = pcall
 local error = error
 local tonumber = tonumber
 local floor = zo_floor
 local GetCVar = GetCVar
+local ZO_ClearNumericallyIndexedTable = ZO_ClearNumericallyIndexedTable
+local GetTimeStamp = GetTimeStamp
 local GetFrameTimeSeconds = GetFrameTimeSeconds
 local GetGameTimeSeconds = GetGameTimeSeconds
-local zo_callLater = zo_callLater
-local zo_removeCallLater = zo_removeCallLater
 
+local os = os
 -- ESO specific function. Returns an approximation of the amount in milliseconds of CPU time used by the program.
 local rawclock = os.rawclock
+
+local function seedRandom()
+    local time = GetTimeStamp()
+    local timeLow = BitAnd(time, 0xFFFF)
+    local timeHigh = BitRShift(time, 16)
+
+    -- Create a more complex seed by combining parts of the current time
+    local seed = BitXor(timeLow, timeHigh)
+
+    -- Seed the Lua random number generator
+    zo_randomseed(seed)
+end
+
+local bytetoB64 = {
+    [0] = "a",
+    "b",
+    "c",
+    "d",
+    "e",
+    "f",
+    "g",
+    "h",
+    "i",
+    "j",
+    "k",
+    "l",
+    "m",
+    "n",
+    "o",
+    "p",
+    "q",
+    "r",
+    "s",
+    "t",
+    "u",
+    "v",
+    "w",
+    "x",
+    "y",
+    "z",
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "F",
+    "G",
+    "H",
+    "I",
+    "J",
+    "K",
+    "L",
+    "M",
+    "N",
+    "O",
+    "P",
+    "Q",
+    "R",
+    "S",
+    "T",
+    "U",
+    "V",
+    "W",
+    "X",
+    "Y",
+    "Z",
+    "0",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "(",
+    ")"
+}
+
+local function getUniqueId(length)
+    -- Seed the random number generator
+    seedRandom()
+
+    local s = {}
+    for i = 1, length do
+        insert(s, bytetoB64[zo_random(0, 63)])
+    end
+    return concat(s)
+end
 
 --- @param job any
 --- @param callstackIndex number
@@ -313,7 +407,6 @@ function task:Cancel()
 end
 
 do
-	local insert = table.insert
 	-- Run the given FuncOfTask in your task context execution.
 	function task:Call(funcOfTask)
 		self.lastCallIndex = self.lastCallIndex + 1
@@ -429,20 +522,25 @@ end
 
 -- Suspend the execution of your task context for the given delay in milliseconds and then call the given FuncOfTask to continue.
 function task:Delay(delay, funcOfTask)
-	self:StopTimer()
-	if delay < MIN_DELAY_FOR_ASYNC then
-		return self:Call(funcOfTask)
-	end
-	self:Suspend()
-	self.currentCallLaterId =
-		zo_callLater(
-		function()
-			self.currentCallLaterId = nil
-			self:Call(funcOfTask)
-		end,
-		delay
-	)
-	return self
+    self:StopTimer()
+    if delay < MIN_DELAY_FOR_ASYNC then
+        return self:Call(funcOfTask)
+    end
+    self:Suspend()
+
+    -- Generate unique identifier for this delay
+    self.currentCallLaterId = "AsyncDelay" .. tostring(self)
+
+    em:RegisterForUpdate(
+        self.currentCallLaterId,
+        delay,
+        function()
+            em:UnregisterForUpdate(self.currentCallLaterId)
+            self.currentCallLaterId = nil
+            self:Call(funcOfTask)
+        end
+    )
+    return self
 end
 
 function task:ThenDelay(delay, funcOfTask)
@@ -466,11 +564,11 @@ end
 
 -- Stop the delay created by task:Delay or task:Interval.
 function task:StopTimer()
-	if self.currentCallLaterId then
-		zo_removeCallLater(self.currentCallLaterId)
-		self.currentCallLaterId = nil
-	end
-	return self
+    if self.currentCallLaterId then
+        em:UnregisterForUpdate(self.currentCallLaterId)
+        self.currentCallLaterId = nil
+    end
+    return self
 end
 
 -- Set a FuncOfTask as a final handler. If you call Called if something went wrong in your context.
@@ -624,43 +722,41 @@ async.BREAK = true
 
 -- Scheduler Management
 local SchedulerManager = {
-	schedulerId = nil,
-	initId = nil,
-	isRunning = false
+    schedulerId = nil,
+    initId = nil,
+    isRunning = false
 }
 
 function SchedulerManager:stopScheduler()
-	if self.schedulerId then
-		zo_removeCallLater(self.schedulerId)
-		self.schedulerId = nil
-	end
+    if self.schedulerId then
+        em:UnregisterForUpdate(self.schedulerId)
+        self.schedulerId = nil
+    end
 end
 
 function SchedulerManager:startScheduler()
-	self:stopScheduler()
-	self.schedulerId =
-		zo_callLater(
-		function()
-			async.Scheduler()
-			self:startScheduler() -- Schedule next frame
-		end,
-		0
-	)
+    self:stopScheduler()
+    self.schedulerId = "AsyncScheduler"
+    em:RegisterForUpdate(self.schedulerId, 0, function()
+        async.Scheduler()
+    end)
 end
 
 function SchedulerManager:initialize(delay)
-	if self.initId then
-		zo_removeCallLater(self.initId)
-	end
+    if self.initId then
+        em:UnregisterForUpdate(self.initId)
+    end
 
-	self.initId =
-		zo_callLater(
-		function()
-			self.initId = nil
-			self:startScheduler()
-		end,
-		delay or INIT_DELAY_MS
-	)
+    self.initId = "AsyncInit"
+    em:RegisterForUpdate(
+        self.initId,
+        delay or INIT_DELAY_MS,
+        function()
+            em:UnregisterForUpdate(self.initId)
+            self.initId = nil
+            self:startScheduler()
+        end
+    )
 end
 
 -- Scene Management
@@ -689,7 +785,7 @@ function SceneManager:initialize()
 end
 
 do
-	local identifier = "ASYNCTASKS_JOBS"
+	local identifier = "ASYNCTASKS_JOBS" .. getUniqueId(2)
 
 	em:RegisterForEvent(
 		identifier,
