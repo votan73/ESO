@@ -127,8 +127,8 @@ minFrameTimeValue = (minFrameTimeValue and minFrameTimeValue > 0.0001) and minFr
 local frameTimeTarget = vsyncValue or minFrameTimeValue or VSYNC_FRAME_TIME_MS
 
 local upperSpendTimeDef = frameTimeTarget * 0.995 --A bit higher than target framerate
-local upperSpendTimeDefNoHUD = upperSpendTimeDef * 1.21429
-local lowerSpendTimeDef = frameTimeTarget * 2 -- Half of target framerate
+local upperSpendTimeDefNoHUD = upperSpendTimeDef
+local lowerSpendTimeDef = upperSpendTimeDef * 2 -- Half of target framerate
 local lowerSpendTimeDefNoHUD = lowerSpendTimeDef * 1.21429
 
 --- @return number
@@ -143,20 +143,26 @@ end
 local spendTime = GetUpperThreshold()
 local job = nil
 local cpuLoad = 0
-local lowpass1 = lowerSpendTimeDef
+local lowpass1 = frameTimeTarget
 local function returnToTargetFramerate()
   local upperLimit = GetUpperThreshold()
   spendTime = max(upperLimit, spendTime - spendTime * CPU_DECREASE_RATE)
-  --Learn capability of lower end machines
-  lowpass1 = lowpass1 * 0.92 + 0.08 / GetFramerate()
-  lowerSpendTimeDef = max(upperLimit * 2, lowpass1 * 1.5)
+
+  local currentFrameTime = 1.0 / GetFramerate()
+  --Learn capability of the machine by getting an average framerate
+  lowpass1 = lowpass1 * 0.995 + 0.005 * currentFrameTime
+  upperSpendTimeDef = lowpass1 * 0.98 --A bit higher than target framerate => try to reach the cap
+  upperSpendTimeDefNoHUD = upperSpendTimeDef * 1.21429
+  lowerSpendTimeDef = upperSpendTimeDef * 2 -- Half of target framerate
   lowerSpendTimeDefNoHUD = lowerSpendTimeDef * 1.21429
 end
 local function needMoreTime()
-  spendTime = min(GetLowerThreshold(), spendTime + spendTime * CPU_INCREASE_RATE)
+  local currentFrameTime = 1.0 / GetFramerate()
+  spendTime = min(GetLowerThreshold(), spendTime + currentFrameTime * CPU_INCREASE_RATE)
 end
 
 function async.Scheduler()
+  --InfoBarFormRepair:SetText(1.0 / spendTime)
   if not running then
     returnToTargetFramerate()
     return
@@ -215,7 +221,7 @@ function async.Scheduler()
       end
     end
   else
-   needMoreTime()
+    needMoreTime()
   end
   if debug and job then
     local freezeTime = now - start
@@ -672,9 +678,9 @@ local SceneManager = {
 
 function SceneManager:handleStateChange(_, newState)
   if newState == SCENE_SHOWNING then
-    --if not running then
-      spendTime = GetUpperThreshold()
     --end
+    --if not running then
+    spendTime = GetUpperThreshold()
   elseif newState == SCENE_HIDING then
     -- Increase time, if not higher already
     spendTime = max(spendTime, upperSpendTimeDefNoHUD)
