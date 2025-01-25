@@ -18,7 +18,7 @@ local Warn = async.Warn
 local log_to_chat = false
 
 -- Main Constants
-local VSYNC_FRAME_TIME_MS = 0.01667
+local VSYNC_FRAME_TIME_MS = 0.01667 -- 60 fps
 local MIN_DELAY_FOR_ASYNC = 10 -- minimum ms before using async delay
 local INIT_DELAY_MS = 50 -- delay for initialization
 local CPU_DECREASE_RATE = 0.005 -- 0.5% decrease per frame when not running
@@ -126,10 +126,10 @@ minFrameTimeValue = (minFrameTimeValue and minFrameTimeValue > 0.0001) and minFr
 -- Final frameTimeTarget Calculation
 local frameTimeTarget = vsyncValue or minFrameTimeValue or VSYNC_FRAME_TIME_MS
 
-local upperSpendTimeDef = frameTimeTarget * 0.70574 -- 0.01176 (85.03 FPS)
-local upperSpendTimeDefNoHUD = upperSpendTimeDef * 1.21429 -- 0.01428 (70.03 FPS)
-local lowerSpendTimeDef = frameTimeTarget * 2.9994 -- 0.05000 (20.00 FPS)
-local lowerSpendTimeDefNoHUD = lowerSpendTimeDef * 0.8 -- 0.04000 (25.00 FPS)
+local upperSpendTimeDef = frameTimeTarget * 0.995 --A bit higher than target framerate
+local upperSpendTimeDefNoHUD = upperSpendTimeDef * 1.21429
+local lowerSpendTimeDef = frameTimeTarget * 2 -- Half of target framerate
+local lowerSpendTimeDefNoHUD = lowerSpendTimeDef * 1.21429
 
 --- @return number
 local function GetUpperThreshold()
@@ -143,9 +143,22 @@ end
 local spendTime = GetUpperThreshold()
 local job = nil
 local cpuLoad = 0
+local lowpass1 = lowerSpendTimeDef
+local function returnToTargetFramerate()
+  local upperLimit = GetUpperThreshold()
+  spendTime = max(upperLimit, spendTime - spendTime * CPU_DECREASE_RATE)
+  --Learn capability of lower end machines
+  lowpass1 = lowpass1 * 0.92 + 0.08 / GetFramerate()
+  lowerSpendTimeDef = max(upperLimit * 2, lowpass1 * 1.5)
+  lowerSpendTimeDefNoHUD = lowerSpendTimeDef * 1.21429
+end
+local function needMoreTime()
+  spendTime = min(GetLowerThreshold(), spendTime + spendTime * CPU_INCREASE_RATE)
+end
+
 function async.Scheduler()
   if not running then
-    spendTime = max(GetUpperThreshold(), spendTime - spendTime * CPU_DECREASE_RATE)
+    returnToTargetFramerate()
     return
   end
 
@@ -156,7 +169,7 @@ function async.Scheduler()
   async.frameTimeSeconds = start
   runTime, cpuLoad = start, now - start
   if cpuLoad > spendTime then
-    spendTime = min(GetLowerThreshold(), spendTime + spendTime * CPU_INCREASE_RATE)
+    needMoreTime()
     if debug then
       Debug(format("initial gap: %.3fms CPU time. skip. new threshold: %.3fms", cpuLoad * DEBUG_TIME_MULTIPLIER, spendTime * DEBUG_TIME_MULTIPLIER))
     end
@@ -180,6 +193,8 @@ function async.Scheduler()
       name, job = next(jobs, name)
       if not job then
         if allOnlyOnce then
+          -- Could leave earlier
+          returnToTargetFramerate()
           break
         end
         name, job = next(jobs)
@@ -194,9 +209,13 @@ function async.Scheduler()
         end
       else
         running = next(jobs) ~= nil
-        return
+        -- Could leave earlier
+        returnToTargetFramerate()
+        break
       end
     end
+  else
+   needMoreTime()
   end
   if debug and job then
     local freezeTime = now - start
@@ -652,12 +671,13 @@ local SceneManager = {
 }
 
 function SceneManager:handleStateChange(_, newState)
-  if newState == SCENE_SHOWN or newState == SCENE_HIDING then
-    if cpuLoad > spendTime then
-      spendTime = GetLowerThreshold()
-    else
+  if newState == SCENE_SHOWNING then
+    --if not running then
       spendTime = GetUpperThreshold()
-    end
+    --end
+  elseif newState == SCENE_HIDING then
+    -- Increase time, if not higher already
+    spendTime = max(spendTime, upperSpendTimeDefNoHUD)
   end
 end
 
