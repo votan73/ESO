@@ -1,0 +1,16 @@
+## Title: Circular Votan's Mini Map
+## Author: Shinni & votan
+## APIVersion: 101044 101045
+## Version: 2.0.0
+## DependsOn: VotansMiniMap
+
+## This Add-On is not created by, affiliated with or sponsored by ZeniMax Media Inc. or its
+## affiliates. The Elder Scrolls® and related logos are registered trademarks or trademarks
+## of ZeniMax Media Inc. in the United States and/or other countries. All rights reserved.
+
+## Textures provided by
+## Moosetrax (http://www.esoui.com/forums/member.php?u=591)
+
+Libs/LibDAU/LibDAU.lua
+
+CircularMinimap.lua
