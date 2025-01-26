@@ -882,6 +882,11 @@ function lib:RegisterFriendsListContextMenu(func, category, ...)
 	self.friendsListContextMenuRegistry:RegisterCallback(category, func, ...)
 end
 
+function lib:RegisterIgnoreListContextMenu(func, category, ...)
+	category = zo_clamp(category or self.CATEGORY_LATE, self.CATEGORY_EARLY, self.CATEGORY_LATE)
+	self.ignoreListContextMenuRegistry:RegisterCallback(category, func, ...)
+end
+
 function lib:RegisterGroupListContextMenu(func, category, ...)
 	category = zo_clamp(category or self.CATEGORY_LATE, self.CATEGORY_EARLY, self.CATEGORY_LATE)
 	self.groupListContextMenuRegistry:RegisterCallback(category, func, ...)
@@ -937,8 +942,8 @@ local function HookShowPlayerContextMenu()
 	end
 end
 
-local function HookGuildRosterContextMenu()
-	local registry, category, rowData, showing
+local function HookSocialListContextMenu(registry, owner, mouseUpName, oneTimeHookName)
+	local category, rowData, showing
 
 	local function addCategory()
 		category = category + 1
@@ -954,54 +959,11 @@ local function HookGuildRosterContextMenu()
 			addCategory()
 		end
 	end
-	local orgGuildRosterRow_OnMouseUp = GUILD_ROSTER_KEYBOARD.GuildRosterRow_OnMouseUp
-	function GUILD_ROSTER_KEYBOARD.GuildRosterRow_OnMouseUp(...)
+	local orgOnMouseUp = owner[mouseUpName]
+	local function onMouseUp(...)
 		local manager, control, button, upInside = ...
 
-		registry, rowData, showing = nil, nil, false
-		if button == MOUSE_BUTTON_INDEX_RIGHT and upInside then
-			local data = ZO_ScrollList_GetData(control)
-			showing = data ~= nil
-			if data then
-				rowData = data
-				registry, category = lib.guildRosterContextMenuRegistry, 0
-				OneTimeHook("GetPlayerGuildMemberIndex", insertEntries)
-			end
-		end
-		return orgGuildRosterRow_OnMouseUp(...)
-	end
-	local orgShowMenu = GUILD_ROSTER_KEYBOARD.ShowMenu
-	function GUILD_ROSTER_KEYBOARD.ShowMenu(...)
-		if showing then
-			appendEntries()
-			showing = false
-		end
-		return orgShowMenu(...)
-	end
-end
-
-local function HookFriendsListContextMenu()
-	local registry, category, rowData, showing
-
-	local function addCategory()
-		category = category + 1
-		registry:FireCallbacks(category, rowData)
-	end
-	local function appendEntries()
-		while category < lib.CATEGORY_LATE do
-			addCategory()
-		end
-	end
-	local function insertEntries()
-		while category < lib.CATEGORY_SECONDARY do
-			addCategory()
-		end
-	end
-	local orgFriendsListRow_OnMouseUp = FRIENDS_LIST.FriendsListRow_OnMouseUp
-	function FRIENDS_LIST.FriendsListRow_OnMouseUp(...)
-		local manager, control, button, upInside = ...
-
-		registry, rowData, showing = nil, nil, false
+		rowData, showing = nil, false
 		if button == MOUSE_BUTTON_INDEX_RIGHT and upInside then
 			local data = ZO_ScrollList_GetData(control)
 			showing = data ~= nil
@@ -1010,60 +972,15 @@ local function HookFriendsListContextMenu()
 					ClearMenu()
 				end
 				rowData = data
-				registry, category = lib.friendsListContextMenuRegistry, 0
-				OneTimeHook("ZO_ScrollList_GetData", insertEntries)
+				category = 0
+				OneTimeHook(oneTimeHookName, insertEntries)
 			end
 		end
-		return orgFriendsListRow_OnMouseUp(...)
+		return orgOnMouseUp(...)
 	end
-	local orgShowMenu = FRIENDS_LIST.ShowMenu
-	function FRIENDS_LIST.ShowMenu(...)
-		if showing then
-			appendEntries()
-			showing = false
-		end
-		return orgShowMenu(...)
-	end
-end
-
-local function HookGroupListContextMenu()
-	local registry, category, rowData, showing
-
-	local function addCategory()
-		category = category + 1
-		registry:FireCallbacks(category, rowData)
-	end
-	local function appendEntries()
-		while category < lib.CATEGORY_LATE do
-			addCategory()
-		end
-	end
-	local function insertEntries()
-		while category < lib.CATEGORY_SECONDARY do
-			addCategory()
-		end
-	end
-	local orgGroupListRow_OnMouseUp = GROUP_LIST.GroupListRow_OnMouseUp
-	function GROUP_LIST.GroupListRow_OnMouseUp(...)
-		local manager, control, button, upInside = ...
-
-		registry, rowData, showing = nil, nil, false
-		if button == MOUSE_BUTTON_INDEX_RIGHT and upInside then
-			local data = ZO_ScrollList_GetData(control)
-			showing = data ~= nil
-			if data then
-				if #ZO_Menu.items > 0 then
-					ClearMenu()
-				end
-				rowData = data
-				registry, category = lib.groupListContextMenuRegistry, 0
-				OneTimeHook("ZO_ScrollList_GetData", insertEntries)
-			end
-		end
-		return orgGroupListRow_OnMouseUp(...)
-	end
-	local orgShowMenu = GROUP_LIST.ShowMenu
-	function GROUP_LIST.ShowMenu(...)
+	owner[mouseUpName] = onMouseUp
+	local orgShowMenu = owner.ShowMenu
+	function owner.ShowMenu(...)
 		if showing then
 			appendEntries()
 			showing = false
@@ -1092,17 +1009,25 @@ local function OnAddonLoaded(event, name)
 	HookMenuEnter()
 	HookAddSlotAction()
 	HookContextMenu()
-	HookShowPlayerContextMenu()
-	HookFriendsListContextMenu()
-	HookGroupListContextMenu()
 
+	if ZO_IsConsoleUI() then
+		return
+	end
+	HookShowPlayerContextMenu()
+	HookSocialListContextMenu(lib.friendsListContextMenuRegistry, FRIENDS_LIST, "FriendsListRow_OnMouseUp", "ZO_ScrollList_GetData")
+	HookSocialListContextMenu(lib.ignoreListContextMenuRegistry, IGNORE_LIST, "IgnoreListPanelRow_OnMouseUp", "ZO_ScrollList_GetData")
+	HookSocialListContextMenu(lib.groupListContextMenuRegistry, GROUP_LIST, "GroupListRow_OnMouseUp", "ZO_ScrollList_GetData")
+
+	local function hookLater()
+		HookSocialListContextMenu(lib.guildRosterContextMenuRegistry, GUILD_ROSTER_KEYBOARD, "GuildRosterRow_OnMouseUp", "GetPlayerGuildMemberIndex")
+	end
 	-- for ShissuContextMenu. Little hook war.
 	EVENT_MANAGER:RegisterForEvent(
 		identifier,
 		EVENT_PLAYER_ACTIVATED,
 		function()
 			EVENT_MANAGER:UnregisterForEvent(identifier, EVENT_PLAYER_ACTIVATED)
-			zo_callLater(HookGuildRosterContextMenu, 200)
+			zo_callLater(hookLater, 200)
 		end
 	)
 end
@@ -1112,6 +1037,7 @@ lib.keybindRegistry = lib.keybindRegistry or ZO_CallbackObject:New()
 lib.playerContextMenuRegistry = lib.playerContextMenuRegistry or ZO_CallbackObject:New()
 lib.guildRosterContextMenuRegistry = lib.guildRosterContextMenuRegistry or ZO_CallbackObject:New()
 lib.friendsListContextMenuRegistry = lib.friendsListContextMenuRegistry or ZO_CallbackObject:New()
+lib.ignoreListContextMenuRegistry = lib.ignoreListContextMenuRegistry or ZO_CallbackObject:New()
 lib.groupListContextMenuRegistry = lib.groupListContextMenuRegistry or ZO_CallbackObject:New()
 
 lib.CATEGORY_EARLY = 1

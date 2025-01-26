@@ -1,10 +1,10 @@
 ## Title: LibCustomMenu
 ## Author: votan
-## APIVersion: 101041 101042
-## Version: 7.2.2
-## AddOnVersion: 722
+## APIVersion: 101044 101045
+## Version: 7.3.0
+## AddOnVersion: 730
 ## IsLibrary: true
-## Description: Fixes in-game bug that causes "Access a private function from insecure code" created by custom context-menu items, sub-menu and divider.
+## Description: Fixes in-game bug that causes "Access a private function from insecure code" created by custom context-menu items. Adds support for sub-menu and divider.
 
 ## This Add-On is not created by, affiliated with or sponsored by ZeniMax Media Inc. or its affiliates. The Elder Scrolls� and related logos are registered trademarks or trademarks of ZeniMax Media Inc. in the United States and/or other countries. All rights reserved.
 
