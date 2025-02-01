@@ -1,17 +1,17 @@
-﻿## Title: ESO Profiler
+## Title: ESO Profiler
 ## Author: sirinsidiator & votan
-## APIVersion: 101040
-## Version: 1.4.1
+## APIVersion: 101044 101045
+## Version: 1.4.2
 ## DependsOn: LibAsync>=20100 LibCustomMenu>=690
 ## SavedVariables: ESOProfiler_Export
 
-## This Add-On is not created by, affiliated with or sponsored by ZeniMax Media Inc. or its affiliates. The Elder Scrolls� and related logos are registered trademarks or trademarks of ZeniMax Media Inc. in the United States and/or other countries. All rights reserved.
+## This Add-On is not created by, affiliated with or sponsored by ZeniMax Media Inc. or its affiliates. The Elder Scrolls and related logos are registered trademarks or trademarks of ZeniMax Media Inc. in the United States and/or other countries. All rights reserved.
 
 lang/strings.lua
 lang/$(language).lua
 
-Controls.xml
 Main.lua
 ProfilerData.lua
 
+Controls.xml
 Bindings.xml

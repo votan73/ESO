@@ -1,5 +1,5 @@
 local addon = {
-	name = "ESOProfiler",
+	name = "ESOProfiler"
 }
 local em = GetEventManager()
 local async = LibAsync
@@ -34,7 +34,9 @@ do
 
 	local orgStartScriptProfiler = StartScriptProfiler
 	function StartScriptProfiler()
-		if addon.profiling then return end
+		if addon.profiling then
+			return
+		end
 		NewRun()
 		UpdateKeybind()
 		d("Start profiler....")
@@ -56,7 +58,9 @@ local CLOSURE_FILE_INDEX = 2
 local CLOSURE_LINE_INDEX = 3
 
 function addon:GenerateReport()
-	if self.lastProfile == self.newRun or self.profiling then return end
+	if self.lastProfile == self.newRun or self.profiling then
+		return
+	end
 	self.lastProfile = self.newRun
 
 	local statusBar = self.statusBar
@@ -80,12 +84,16 @@ function addon:GenerateReport()
 	content:SetHidden(true)
 
 	-- at 100fps this are 300s = 5min. at 60fps 500s ~ 8min
-	task:Cancel():For(math.max(1, numFrames - 30000), numFrames):Do( function(frameIndex)
-		statusBar:SetValue(frameIndex)
-		task:For(1, GetScriptProfilerFrameNumRecords(frameIndex)):Do( function(recordIndex)
-			profilerData:ProcessRecord(frameIndex, recordIndex)
-		end )
-	end ):Then(PrintReport)
+	task:Cancel():For(math.max(1, numFrames - 30000), numFrames):Do(
+		function(frameIndex)
+			statusBar:SetValue(frameIndex)
+			task:For(1, GetScriptProfilerFrameNumRecords(frameIndex)):Do(
+				function(recordIndex)
+					profilerData:ProcessRecord(frameIndex, recordIndex)
+				end
+			)
+		end
+	):Then(PrintReport)
 end
 
 function addon:PrintReport()
@@ -98,17 +106,23 @@ function addon:PrintReport()
 	local line = tonumber(text)
 	local function doStep(recordDataIndex, recordDataType, closure)
 		if text == "" or line == closure.info[CLOSURE_LINE_INDEX] or zo_plainstrfind(closure.info[CLOSURE_NAME_INDEX]:lower(), text) or zo_plainstrfind(closure.info[CLOSURE_FILE_INDEX]:lower(), text) then
-			dataList[#dataList + 1] = ZO_ScrollList_CreateDataEntry(recordDataType, { closure = closure })
+			dataList[#dataList + 1] = ZO_ScrollList_CreateDataEntry(recordDataType, {closure = closure})
 		end
 	end
 	local function perType(recordDataType, recordTable)
-		task:For(pairs(recordTable)):Do( function(recordDataIndex, closure) doStep(recordDataIndex, recordDataType, closure) end)
+		task:For(pairs(recordTable)):Do(
+			function(recordDataIndex, closure)
+				doStep(recordDataIndex, recordDataType, closure)
+			end
+		)
 	end
 	task:For(pairs(self.profilerData:GetClosureInfoList())):Do(perType)
-	task:Then( function()
-		local sortHeaders = self.sortHeaders
-		self:ChangeSort(sortHeaders.selectedSortHeader.key, sortHeaders.sortDirection)
-	end )
+	task:Then(
+		function()
+			local sortHeaders = self.sortHeaders
+			self:ChangeSort(sortHeaders.selectedSortHeader.key, sortHeaders.sortDirection)
+		end
+	)
 end
 
 function addon:Export()
@@ -121,9 +135,15 @@ function addon:Export()
 		ZO_Loading_Initialize(loading, "Exporting ...")
 		loading:Show()
 
-		task:Call( function(task)
-			ESOProfiler_Export = self.profilerData:Export(task)
-		end ):Then( function() return ReloadUI() end)
+		task:Call(
+			function(task)
+				ESOProfiler_Export = self.profilerData:Export(task)
+			end
+		):Then(
+			function()
+				return ReloadUI()
+			end
+		)
 	end
 end
 ----------------------------------
@@ -131,15 +151,17 @@ end
 do
 	local function AddLine(tooltip, text, color, alignment)
 		local r, g, b = color:UnpackRGB()
-		tooltip:AddLine(text, "", r, g, b, CENTER, MODIFY_TEXT_TYPE_NONE, alignment, alignment ~= TEXT_ALIGN_LEFT)
+		tooltip:AddLine(text, "$(MEDIUM_FONT)|$(KB_18)", r, g, b, CENTER, MODIFY_TEXT_TYPE_NONE, alignment, alignment ~= TEXT_ALIGN_LEFT)
 	end
 
 	local function AddLineCenter(tooltip, text, color)
-		if not color then color = ZO_TOOLTIP_DEFAULT_COLOR end
+		if not color then
+			color = ZO_TOOLTIP_DEFAULT_COLOR
+		end
 		AddLine(tooltip, text, color, TEXT_ALIGN_CENTER)
 	end
 
-	local text = { }
+	local text = {}
 	function addon:OnSelectionChanged(previouslySelectedData, selectedData, selectingDuringRebuild)
 		self.selectedData = selectedData
 		if not selectedData or selectingDuringRebuild then
@@ -161,10 +183,10 @@ do
 		text[#text + 1] = string.format("wall-time: %.3fµs / avg: %.3fµs", closure.wallTime, closure.wallTime / count)
 		text[#text + 1] = string.format("self-time: %.3fµs / avg: %.3fµs", closure.selfTime, closure.selfTime / count)
 		text[#text + 1] = string.format("slowest %.3fµs / fastest: %.3fµs", closure.maxTime, closure.minTime)
-		text[#text + 1] = string.format("%i calls => %f per frame", count, count / self.numFrames)
+		text[#text + 1] = string.format("%i calls => %fµs per frame", count, count / self.numFrames)
 		AddLineCenter(ItemTooltip, table.concat(text, "\n"))
 
-		if closure.selfTime > 0 and(closure.selfTime / closure.wallTime) < 0.5 then
+		if closure.selfTime > 0 and (closure.selfTime / closure.wallTime) < 0.5 then
 			AddLineCenter(ItemTooltip, "Expensive sub-calls.")
 		end
 		ZO_ClearNumericallyIndexedTable(text)
@@ -197,15 +219,21 @@ do
 	addon.showSubCalls = false
 	local function FindSubCalls(self)
 		local selectedData = self.selectedData
-		if not selectedData then return end
+		if not selectedData then
+			return
+		end
 
 		local closure = selectedData.closure
 		local stackId = closure.slowestRun
-		if not stackId then return end
+		if not stackId then
+			return
+		end
 
 		local profilerData = self.profilerData
 		local stackFrames = profilerData.stackFrames
-		if #stackFrames == 0 then return end
+		if #stackFrames == 0 then
+			return
+		end
 
 		task:Cancel()
 
@@ -223,14 +251,14 @@ do
 		local dataList = ZO_ScrollList_GetDataList(scrollList)
 
 		local ZO_ScrollList_CreateDataEntry = ZO_ScrollList_CreateDataEntry
-		local processed = { }
+		local processed = {}
 
 		local function addStackFrame(stackId)
 			processed[stackId] = true
 			statusBar:SetMinMax(0, max)
 			statusBar:SetValue(value)
 			local closure = profilerData:GetClosureByStackId(stackId)
-			dataList[#dataList + 1] = ZO_ScrollList_CreateDataEntry(closure.recordDataType, { closure = closure })
+			dataList[#dataList + 1] = ZO_ScrollList_CreateDataEntry(closure.recordDataType, {closure = closure})
 			local stackId = closure.slowestRun
 			local function loop(index)
 				value = value + 1
@@ -245,13 +273,14 @@ do
 		end
 		addStackFrame(stackId)
 
-		task:Then( function()
-			local sortHeaders = self.sortHeaders
-			self:ChangeSort(sortHeaders.selectedSortHeader.key, sortHeaders.sortDirection)
-			statusBar:SetHidden(true)
-			content:SetHidden(false)
-		end )
-
+		task:Then(
+			function()
+				local sortHeaders = self.sortHeaders
+				self:ChangeSort(sortHeaders.selectedSortHeader.key, sortHeaders.sortDirection)
+				statusBar:SetHidden(true)
+				content:SetHidden(false)
+			end
+		)
 	end
 
 	function addon:ShowContextMenuInsertBefore(control)
@@ -260,14 +289,22 @@ do
 			self:OnSelectionChanged(self.selectedData, data, false)
 		end
 		if self.selectedData then
-			AddCustomMenuItem("Find Sub Calls", function() FindSubCalls(self) end)
+			AddCustomMenuItem(
+				"Find Sub Calls",
+				function()
+					FindSubCalls(self)
+				end
+			)
 		end
 		if self.showSubCalls then
-			AddCustomMenuItem("Show All", function()
-				task:Cancel()
-				self.showSubCalls = false
-				self:PrintReport()
-			end )
+			AddCustomMenuItem(
+				"Show All",
+				function()
+					task:Cancel()
+					self.showSubCalls = false
+					self:PrintReport()
+				end
+			)
 		end
 	end
 end
@@ -301,7 +338,9 @@ function addon:AddKeybind()
 	self.keybindButtonGroupRight = {
 		alignment = KEYBIND_STRIP_ALIGN_RIGHT,
 		{
-			name = function() return GetString(self.profiling and SI_JOURNAL_MENU_ESO_PROFILER_STOP or SI_JOURNAL_MENU_ESO_PROFILER_START) end,
+			name = function()
+				return GetString(self.profiling and SI_JOURNAL_MENU_ESO_PROFILER_STOP or SI_JOURNAL_MENU_ESO_PROFILER_START)
+			end,
 			keybind = "ESO_PROFILER_TOGGLE",
 			order = 100,
 			callback = function()
@@ -312,8 +351,8 @@ function addon:AddKeybind()
 				else
 					StartScriptProfiler()
 				end
-			end,
-		},
+			end
+		}
 	}
 	self.keybindButtonGroupAutoStart = {
 		alignment = KEYBIND_STRIP_ALIGN_CENTER,
@@ -325,8 +364,8 @@ function addon:AddKeybind()
 				PlaySound(SOUNDS.DEFAULT_CLICK)
 				SetAutoStartEnabled(true)
 				ReloadUI()
-			end,
-		},
+			end
+		}
 	}
 
 	self.keybindButtonGroupExtras = {
@@ -342,21 +381,24 @@ function addon:AddKeybind()
 				else
 					ESO_PROFILER_SCENE:AddFragmentGroup(extrasFragmentGroup)
 				end
-			end,
-		},
+			end
+		}
 	}
 
-	ESO_PROFILER_FRAGMENT:RegisterCallback("StateChange", function(oldState, newState)
-		if newState == SCENE_FRAGMENT_SHOWN then
-			KEYBIND_STRIP:AddKeybindButtonGroup(self.keybindButtonGroupExtras)
-			KEYBIND_STRIP:AddKeybindButtonGroup(self.keybindButtonGroupRight)
-			KEYBIND_STRIP:AddKeybindButtonGroup(self.keybindButtonGroupAutoStart)
-		elseif newState == SCENE_HIDING then
-			KEYBIND_STRIP:RemoveKeybindButtonGroup(self.keybindButtonGroupRight)
-			KEYBIND_STRIP:RemoveKeybindButtonGroup(self.keybindButtonGroupAutoStart)
-			KEYBIND_STRIP:RemoveKeybindButtonGroup(self.keybindButtonGroupExtras)
+	ESO_PROFILER_FRAGMENT:RegisterCallback(
+		"StateChange",
+		function(oldState, newState)
+			if newState == SCENE_FRAGMENT_SHOWN then
+				KEYBIND_STRIP:AddKeybindButtonGroup(self.keybindButtonGroupExtras)
+				KEYBIND_STRIP:AddKeybindButtonGroup(self.keybindButtonGroupRight)
+				KEYBIND_STRIP:AddKeybindButtonGroup(self.keybindButtonGroupAutoStart)
+			elseif newState == SCENE_HIDING then
+				KEYBIND_STRIP:RemoveKeybindButtonGroup(self.keybindButtonGroupRight)
+				KEYBIND_STRIP:RemoveKeybindButtonGroup(self.keybindButtonGroupAutoStart)
+				KEYBIND_STRIP:RemoveKeybindButtonGroup(self.keybindButtonGroupExtras)
+			end
 		end
-	end )
+	)
 end
 
 function addon:InitializeWindow()
@@ -410,7 +452,13 @@ function addon:InitializeWindow()
 	ZO_ScrollList_SetTypeSelectable(self.contentList, SCRIPT_PROFILER_RECORD_DATA_TYPE_USER_EVENT, true)
 
 	ZO_ScrollList_SetDeselectOnReselect(self.contentList, true)
-	ZO_ScrollList_EnableSelection(self.contentList, "ZO_ThinListHighlight", function(...) self:OnSelectionChanged(...) end)
+	ZO_ScrollList_EnableSelection(
+		self.contentList,
+		"ZO_ThinListHighlight",
+		function(...)
+			self:OnSelectionChanged(...)
+		end
+	)
 	ZO_ScrollList_EnableHighlight(self.contentList, "ZO_ThinListHighlight")
 
 	local sortByHeaderControl = self.control:GetNamedChild("ContentSortBy")
@@ -457,9 +505,13 @@ do
 	end
 	local function simple(name, order)
 		if order then
-			return function(a, b) return a.data.closure[name] < b.data.closure[name] end
+			return function(a, b)
+				return a.data.closure[name] < b.data.closure[name]
+			end
 		else
-			return function(a, b) return a.data.closure[name] > b.data.closure[name] end
+			return function(a, b)
+				return a.data.closure[name] > b.data.closure[name]
+			end
 		end
 	end
 
@@ -490,40 +542,97 @@ end
 
 function addon:CreateJournalTab()
 	local sceneName = "eso_profiler"
+	local isConsoleUI = IsConsoleUI()
 	ESO_PROFILER_FRAGMENT = ZO_HUDFadeSceneFragment:New(self.control)
 	ESO_PROFILER_SCRIPT_FRAGMENT = ZO_HUDFadeSceneFragment:New(ESOProfilerScriptTopLevel)
 	ESO_PROFILER_SCENE = ZO_Scene:New(sceneName, SCENE_MANAGER)
-	ESO_PROFILER_SCENE:AddFragmentGroup(FRAGMENT_GROUP.PLAYER_PROGRESS_BAR_KEYBOARD_CURRENT)
-	ESO_PROFILER_SCENE:AddFragmentGroup(FRAGMENT_GROUP.MOUSE_DRIVEN_UI_WINDOW)
+	if isConsoleUI then
+		ESO_PROFILER_SCENE:AddFragmentGroup(FRAGMENT_GROUP.GAMEPAD_DRIVEN_UI_WINDOW)
+	else
+		ESO_PROFILER_SCENE:AddFragmentGroup(FRAGMENT_GROUP.MOUSE_DRIVEN_UI_WINDOW)
+	end
 	ESO_PROFILER_SCENE:AddFragment(FRAME_TARGET_BLUR_STANDARD_RIGHT_PANEL_FRAGMENT)
 	ESO_PROFILER_SCENE:AddFragment(FRAME_EMOTE_FRAGMENT_JOURNAL)
-	ESO_PROFILER_SCENE:AddFragment(FRAME_PLAYER_FRAGMENT)
-	-- ESO_PROFILER_SCENE:AddFragmentGroup(FRAGMENT_GROUP.FRAME_TARGET_CENTERED_NO_BLUR)
 	ESO_PROFILER_SCENE:AddFragment(RIGHT_BG_FRAGMENT)
-	ESO_PROFILER_SCENE:AddFragment(TITLE_FRAGMENT)
-	ESO_PROFILER_SCENE:AddFragment(JOURNAL_TITLE_FRAGMENT)
+	if not isConsoleUI then
+		ESO_PROFILER_SCENE:AddFragmentGroup(FRAGMENT_GROUP.PLAYER_PROGRESS_BAR_KEYBOARD_CURRENT)
+		ESO_PROFILER_SCENE:AddFragment(FRAME_PLAYER_FRAGMENT)
+		ESO_PROFILER_SCENE:AddFragment(TITLE_FRAGMENT)
+		ESO_PROFILER_SCENE:AddFragment(JOURNAL_TITLE_FRAGMENT)
+	end
 	ESO_PROFILER_SCENE:AddFragment(CODEX_WINDOW_SOUNDS)
 	ESO_PROFILER_SCENE:AddFragment(ESO_PROFILER_FRAGMENT)
 
-	extrasFragmentGroup = { MINIMIZE_CHAT_FRAGMENT, LEFT_PANEL_BG_FRAGMENT, ESO_PROFILER_SCRIPT_FRAGMENT }
+	extrasFragmentGroup = {MINIMIZE_CHAT_FRAGMENT, LEFT_PANEL_BG_FRAGMENT, ESO_PROFILER_SCRIPT_FRAGMENT}
 
 	SYSTEMS:RegisterKeyboardRootScene(sceneName, ESO_PROFILER_SCENE)
 
-	local sceneGroupInfo = MAIN_MENU_KEYBOARD.sceneGroupInfo["journalSceneGroup"]
-	local iconData = sceneGroupInfo.menuBarIconData
-	iconData[#iconData + 1] = {
-		categoryName = SI_JOURNAL_MENU_ESO_PROFILER,
-		descriptor = sceneName,
-		normal = "esoui/art/treeicons/collection_indexicon_service_up.dds",
-		pressed = "esoui/art/treeicons/collection_indexicon_service_down.dds",
-		highlight = "esoui/art/treeicons/collection_indexicon_service_over.dds",
-	}
-	local sceneGroupBarFragment = sceneGroupInfo.sceneGroupBarFragment
-	ESO_PROFILER_SCENE:AddFragment(sceneGroupBarFragment)
+	if MAIN_MENU_KEYBOARD then
+		local sceneGroupInfo = MAIN_MENU_KEYBOARD.sceneGroupInfo["journalSceneGroup"]
+		local iconData = sceneGroupInfo.menuBarIconData
+		iconData[#iconData + 1] = {
+			categoryName = SI_JOURNAL_MENU_ESO_PROFILER,
+			descriptor = sceneName,
+			normal = "esoui/art/treeicons/collection_indexicon_service_up.dds",
+			pressed = "esoui/art/treeicons/collection_indexicon_service_down.dds",
+			highlight = "esoui/art/treeicons/collection_indexicon_service_over.dds"
+		}
+		local sceneGroupBarFragment = sceneGroupInfo.sceneGroupBarFragment
+		ESO_PROFILER_SCENE:AddFragment(sceneGroupBarFragment)
+		local scenegroup = SCENE_MANAGER:GetSceneGroup("journalSceneGroup")
+		scenegroup:AddScene(sceneName)
+		MAIN_MENU_KEYBOARD:AddRawScene(sceneName, MENU_CATEGORY_JOURNAL, MAIN_MENU_KEYBOARD.categoryInfo[MENU_CATEGORY_JOURNAL], "journalSceneGroup")
+	end
+	if MAIN_MENU_GAMEPAD then
+		local function CreateEntry(id, data)
+			local name = data.name
+			if type(name) == "function" then
+				name = "" --will be updated whenever the list is generated
+			end
 
-	local scenegroup = SCENE_MANAGER:GetSceneGroup("journalSceneGroup")
-	scenegroup:AddScene(sceneName)
-	MAIN_MENU_KEYBOARD:AddRawScene(sceneName, MENU_CATEGORY_JOURNAL, MAIN_MENU_KEYBOARD.categoryInfo[MENU_CATEGORY_JOURNAL], "journalSceneGroup")
+			local entry = ZO_GamepadEntryData:New(name, data.icon, nil, nil, data.isNewCallback)
+			entry:SetIconTintOnSelection(true)
+			entry:SetIconDisabledTintOnSelection(true)
+
+			local header = data.header
+			if header then
+				entry:SetHeader(header)
+			end
+
+			entry.canLevel = data.canLevel
+			entry.narrationText = data.narrationText
+			entry.subLabelsNarrationText = data.subLabelsNarrationText
+
+			entry.data = data
+			entry.id = id
+			return entry
+		end
+
+		local journalPosition = 0
+		for i = 1, #ZO_MENU_ENTRIES do
+			if ZO_MENU_ENTRIES[i].id == ZO_MENU_MAIN_ENTRIES.JOURNAL then
+				journalPosition = i
+				break
+			end
+		end
+		if journalPosition == 0 then
+			return
+		end
+		table.insert(
+			ZO_MENU_ENTRIES[journalPosition].subMenu,
+			CreateEntry(
+				addon.name,
+				{
+					scene = sceneName,
+					name = GetString(SI_KEYBINDINGS_CATEGORY_ESO_PROFILER),
+					icon = "esoui/art/treeicons/gamepad/gp_collection_indexicon_service.dds"
+				}
+			)
+		)
+	end
+end
+function ESOProfiler_InitSortHeader(header, stringId, textAlignment, sortKey, sortOrder)
+	ZO_SortHeader_Initialize(header, GetString(stringId), sortKey, sortOrder or ZO_SORT_ORDER_UP, textAlignment or TEXT_ALIGN_LEFT, "$(MEDIUM_FONT)|$(KB_18)|soft-shadow-thin")
 end
 
 function addon:Initialize()
@@ -531,13 +640,16 @@ function addon:Initialize()
 	self:CreateJournalTab()
 	self:AddKeybind()
 
-	ESO_PROFILER_SCENE:RegisterCallback("StateChange", function(oldState, newState)
-		if newState == SCENE_SHOWING then
-			self:GenerateReport()
-		elseif newState == SCENE_HIDING then
-			ClearTooltip(ItemTooltip)
+	ESO_PROFILER_SCENE:RegisterCallback(
+		"StateChange",
+		function(oldState, newState)
+			if newState == SCENE_SHOWING then
+				self:GenerateReport()
+			elseif newState == SCENE_HIDING then
+				ClearTooltip(ItemTooltip)
+			end
 		end
-	end )
+	)
 end
 
 do
@@ -547,13 +659,19 @@ do
 		addon:GenerateReport()
 	end
 	runner:Finally(finallyStop)
-	runner:OnError(function() d(runner.Error) end)
+	runner:OnError(
+		function()
+			d(runner.Error)
+		end
+	)
 	local function stop(runner)
 		-- The frame, StopScriptProfiler is called in, seems to be excluded
 		runner:Delay(20, StopScriptProfiler)
 	end
 	function addon:RunCode(control, button, upInside)
-		if not upInside then return end
+		if not upInside then
+			return
+		end
 
 		local code = ESOProfilerScriptTopLevelScriptEditBox:GetText()
 		-- code = string.format("function script() %s\nend\nscript()", code)
@@ -588,7 +706,9 @@ do
 end
 
 local function OnAddonLoaded(event, name)
-	if name ~= addon.name then return end
+	if name ~= addon.name then
+		return
+	end
 	em:UnregisterForEvent(addon.name, EVENT_ADD_ON_LOADED)
 	addon:Initialize()
 	-- clear last export on load to prevent longer loading times due to the huge amount of data
@@ -604,12 +724,20 @@ if IsScriptProfilerEnabled() then
 	local function stop()
 		em:UnregisterForUpdate(identifier)
 		StopScriptProfiler()
-		MAIN_MENU_KEYBOARD:ShowScene(ESO_PROFILER_SCENE:GetName())
+		if MAIN_MENU_KEYBOARD then
+			MAIN_MENU_KEYBOARD:ShowScene(ESO_PROFILER_SCENE:GetName())
+		elseif MAIN_MENU_GAMEPAD then
+			MAIN_MENU_GAMEPAD:ShowScene(ESO_PROFILER_SCENE:GetName())
+		end
 	end
-	em:RegisterForEvent(addon.name, EVENT_PLAYER_ACTIVATED, function()
-		em:UnregisterForEvent(addon.name, EVENT_PLAYER_ACTIVATED)
-		em:RegisterForUpdate(identifier, 2000, stop)
-	end )
+	em:RegisterForEvent(
+		addon.name,
+		EVENT_PLAYER_ACTIVATED,
+		function()
+			em:UnregisterForEvent(addon.name, EVENT_PLAYER_ACTIVATED)
+			em:RegisterForUpdate(identifier, 2000, stop)
+		end
+	)
 end
 
 ESO_PROFILER = addon
