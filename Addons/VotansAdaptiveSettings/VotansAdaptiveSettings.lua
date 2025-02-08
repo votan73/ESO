@@ -271,7 +271,7 @@ do
 
 		local distance = self.viewDistance
 
-		local diff = 1 + (math.min(0, (self.fps - self.fps_1) * self.settings.framedropWeight * 0.5) + self.fps - self.fps_target) / self.settings.speed
+		local diff = 1 + (math.min(0, (math.min(self.fps_target, self.fps) - math.min(self.fps_target, self.fps_1)) * self.settings.framedropWeight * 0.5) + self.fps - self.fps_target) / self.settings.speed
 		local newdistance = distance * diff
 		if newdistance > distance then
 			-- 32 = 1024/32
@@ -378,7 +378,7 @@ function addon:InitSettings()
 		return
 	end
 	addon.settingsControls = settings
-	settings.version = "1.5.7"
+	settings.version = "1.5.8"
 	settings.website = "http://www.esoui.com/downloads/info1239-VotansAdaptiveVideo-Settings.html"
 	settings.allowDefaults = true
 
@@ -555,7 +555,7 @@ function addon:InitSettings()
 		label = "Framedrop Weight",
 		tooltip = "To prevend falling below threshold before adjusting view distance, the algorithm can react to changing framerate as an indicator of upcoming graphic load.\n0 = off\n1 = very gentle\n8 = aggressive\n12 = very aggressive",
 		min = 0,
-		max = 12,
+		max = 24,
 		step = 1,
 		format = "%f",
 		unit = "",
