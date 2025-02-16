@@ -1,9 +1,10 @@
 ## Title: LibAsync
-## Author: votan
+## Author: votan, Sharlikran and Dack
 ## APIVersion: 101044 101045
-## AddOnVersion: 30001
-## Version: 3.0.1
+## AddOnVersion: 30002
+## Version: 3.0.2
 ## IsLibrary: true
+## SavedVariables: AsyncSavedVars
 ## Description: A share scheduler for deferred actions
 ## OptionalDependsOn: LibDebugLogger
 

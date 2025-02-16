@@ -19,19 +19,16 @@ local log_to_chat = false
 
 -- Main Constants
 local VSYNC_FRAME_TIME_MS = 0.01667 -- 60 fps
+local ASYNC_DEFAULT_STALL_THRESHOLD = 15
+local ASYNC_STALL_THRESHOLD = ASYNC_DEFAULT_STALL_THRESHOLD
+local ASYNC_MIN_STALL_THRESHOLD = 15
+local UPPER_FPS_BOUND = 200 -- for slash command
 local MIN_DELAY_FOR_ASYNC = 10 -- minimum ms before using async delay
 local INIT_DELAY_MS = 50 -- delay for initialization
-local CPU_DECREASE_RATE = 0.005 -- 0.5% decrease per frame when not running
-local CPU_INCREASE_RATE = 0.02 -- 2% increase per frame when overloaded
 
 -- Scheduler Operation Constants
-local SCHEDULER_THROTTLE_RATE = 0.5 -- Rate to throttle scheduler when time threshold reached
 local DEBUG_FREEZE_THRESHOLD_MS = 0.016 -- Threshold in ms before considering a frame freeze
 local DEBUG_TIME_MULTIPLIER = 1000 -- Multiplier to convert time to milliseconds for debug output
-
--- Scene State Constants
-local SCENE_SHOWN = ZO_STATE.SHOWN
-local SCENE_HIDING = ZO_STATE.HIDING
 
 local em = GetEventManager()
 local remove = table.remove
@@ -113,75 +110,76 @@ local function DoJob(job)
   current, call = nil, nil
 end
 
+-- Create local variables from AsyncSavedVars
+function InitSavedVar()
+  -- Initialize AsyncSavedVars if not already defined
+  AsyncSavedVars = AsyncSavedVars or {}
+
+  -- Use ASYNC_DEFAULT_STALL_THRESHOLD if ASYNC_STALL_THRESHOLD is not defined
+  AsyncSavedVars.ASYNC_STALL_THRESHOLD = AsyncSavedVars.ASYNC_STALL_THRESHOLD or ASYNC_DEFAULT_STALL_THRESHOLD
+
+  -- Create local variable from AsyncSavedVars
+  ASYNC_STALL_THRESHOLD = AsyncSavedVars.ASYNC_STALL_THRESHOLD
+end
+
 local debug = false
 local running
+local jobsDone = false
 local GetFrameTimeSeconds, GetGameTimeSeconds = GetFrameTimeSeconds, GetGameTimeSeconds
--- VSYNC Value (based on a 60Hz monitor refresh rate)
-local vsyncValue = GetCVar("VSYNC") == "1" and VSYNC_FRAME_TIME_MS or nil
-
--- MinFrameTime.2 Setting
-local minFrameTimeValue = tonumber(GetCVar("MinFrameTime.2"))
-minFrameTimeValue = (minFrameTimeValue and minFrameTimeValue > 0.0001) and minFrameTimeValue or nil
 
 -- Final frameTimeTarget Calculation
-local frameTimeTarget = vsyncValue or minFrameTimeValue or VSYNC_FRAME_TIME_MS
+local frameTimeTarget = VSYNC_FRAME_TIME_MS
 
-local upperSpendTimeDef = frameTimeTarget * 0.995 --A bit higher than target framerate
-local upperSpendTimeDefNoHUD = upperSpendTimeDef
-local lowerSpendTimeDef = upperSpendTimeDef * 2 -- Half of target framerate
-local lowerSpendTimeDefNoHUD = lowerSpendTimeDef * 1.21429
+local spendTime = VSYNC_FRAME_TIME_MS
+local nextFrameReduce = 0
+local lastStart = GetFrameTimeSeconds()
 
---- @return number
-local function GetUpperThreshold()
-  return (HUD_SCENE:IsShowing() or HUD_UI_SCENE:IsShowing()) and upperSpendTimeDef or upperSpendTimeDefNoHUD
+local function doMeasure() -- uniform measuring rate
+  local framerate = GetFramerate()
+  if jobsDone then
+    framerate = framerate * 1.5
+  --else
+  --  framerate = framerate * 1.3334
+  end
+  if framerate > 65 then
+    frameTimeTarget = VSYNC_FRAME_TIME_MS
+  elseif framerate > 45 then
+    frameTimeTarget = 2 * VSYNC_FRAME_TIME_MS
+  elseif framerate > 30 then
+    frameTimeTarget = 3 * VSYNC_FRAME_TIME_MS
+  else
+    frameTimeTarget = 4 * VSYNC_FRAME_TIME_MS
+  end
+  if HUD_SCENE:IsShowing() or HUD_UI_SCENE:IsShowing() then
+    frameTimeTarget = frameTimeTarget * 0.91
+  else
+    frameTimeTarget = frameTimeTarget * 1.21429
+  end
+  frameTimeTarget = min(1 / ASYNC_STALL_THRESHOLD, frameTimeTarget)
+
+  spendTime = spendTime * 0.8 + frameTimeTarget * 0.2
 end
 
---- @return number
-local function GetLowerThreshold()
-  return (HUD_SCENE:IsShowing() or HUD_UI_SCENE:IsShowing()) and lowerSpendTimeDef or lowerSpendTimeDefNoHUD
-end
-local spendTime = GetUpperThreshold()
 local job = nil
 local cpuLoad = 0
-local lowpass1 = frameTimeTarget
-local function returnToTargetFramerate()
-  local upperLimit = GetUpperThreshold()
-  spendTime = max(upperLimit, spendTime - spendTime * CPU_DECREASE_RATE)
-
-  local currentFrameTime = 1.0 / GetFramerate()
-  --Learn capability of the machine by getting an average framerate
-  lowpass1 = lowpass1 * 0.995 + 0.005 * currentFrameTime
-  upperSpendTimeDef = lowpass1 * 0.98 --A bit higher than target framerate => try to reach the cap
-  upperSpendTimeDefNoHUD = upperSpendTimeDef * 1.21429
-  lowerSpendTimeDef = upperSpendTimeDef * 2 -- Half of target framerate
-  lowerSpendTimeDefNoHUD = lowerSpendTimeDef * 1.21429
-end
-local function needMoreTime()
-  local currentFrameTime = 1.0 / GetFramerate()
-  spendTime = min(GetLowerThreshold(), spendTime + currentFrameTime * CPU_INCREASE_RATE)
-end
 
 function async.Scheduler()
+  local start, now = GetFrameTimeSeconds(), GetGameTimeSeconds()
+  async.frameTimeSeconds = start
+
   --InfoBarFormRepair:SetText(1.0 / spendTime)
   if not running then
-    returnToTargetFramerate()
+    cpuLoad = now - start
     return
   end
 
   job = nil
   local name = nil
-  local runTime
-  local start, now = GetFrameTimeSeconds(), GetGameTimeSeconds()
-  async.frameTimeSeconds = start
-  runTime, cpuLoad = start, now - start
-  if cpuLoad > spendTime then
-    needMoreTime()
-    if debug then
-      Debug(format("initial gap: %.3fms CPU time. skip. new threshold: %.3fms", cpuLoad * DEBUG_TIME_MULTIPLIER, spendTime * DEBUG_TIME_MULTIPLIER))
-    end
-    return
-  end
-  -- oncePerFrame
+  local runTime = start
+
+  jobsDone = false
+  local spendTime = spendTime - nextFrameReduce
+  -- Include oncePerFrame
   while (now - start) <= spendTime do
     name, job = next(jobs, name)
     if job then
@@ -189,48 +187,51 @@ function async.Scheduler()
       DoJob(job)
       now = GetGameTimeSeconds()
     else
+      jobsDone = true
       break
     end
   end
-  if (now - start) <= (spendTime - 0.001) then -- Worth starting?
-    -- loops
-    local allOnlyOnce = true
-    while (now - start) <= spendTime do
-      name, job = next(jobs, name)
-      if not job then
-        if allOnlyOnce then
-          -- Could leave earlier
-          returnToTargetFramerate()
-          break
-        end
-        name, job = next(jobs)
-        allOnlyOnce = true
-      end
-      if job then
-        if not job.oncePerFrame then
-          allOnlyOnce = false
-          runTime = now
-          DoJob(job)
-          now = GetGameTimeSeconds()
-        end
-      else
-        running = next(jobs) ~= nil
-        -- Could leave earlier
-        returnToTargetFramerate()
+
+  -- loops: Exclude oncePerFrame
+  local allOnlyOnce = true
+  while (now - start) <= spendTime do
+    name, job = next(jobs, name)
+    if not job then
+      if allOnlyOnce then
+        -- All remaining jobs are oncePerFrame
+        jobsDone = true
         break
       end
+      name, job = next(jobs)
+      allOnlyOnce = true
     end
-  else
-    needMoreTime()
+    if job then
+      if not job.oncePerFrame then
+        allOnlyOnce = false
+        runTime = now
+        DoJob(job)
+        now = GetGameTimeSeconds()
+      end
+    else
+      running = next(jobs) ~= nil
+      jobsDone = true
+      break
+    end
   end
+  local freezeTime = now - start
+  local realFrameTime = start - lastStart
+  -- freezeTime - spendTime: We have gone too far. Next time we have to finish earlier.
+  -- realFrameTime: Time between two frames. Should match spendTime, but there is some overhead.
+  nextFrameReduce = min(frameTimeTarget, (nextFrameReduce + max(0, freezeTime - spendTime, realFrameTime - frameTimeTarget, 1 / GetFramerate() - frameTimeTarget)) * 0.5)
   if debug and job then
-    local freezeTime = now - start
     if freezeTime >= DEBUG_FREEZE_THRESHOLD_MS then
       -- Add debug output to verify values
       local msg = format("%s freeze. allowed: %.3fms, used %.3fms starting at %.3fms, resulting fps %i.", job.name, spendTime * DEBUG_TIME_MULTIPLIER, (now - runTime) * DEBUG_TIME_MULTIPLIER, (runTime - start) * DEBUG_TIME_MULTIPLIER, 1 / freezeTime)
       Warn(msg) -- Use pre-formatted string
     end
   end
+  lastStart = start
+  cpuLoad = now - start
 end
 
 --- @return boolean
@@ -245,7 +246,7 @@ end
 
 --- @return number
 function async:GetCpuLoad()
-  return cpuLoad / frameTimeTarget
+  return floor(cpuLoad * ASYNC_STALL_THRESHOLD * 100)
 end
 
 --- Enable or disable logging to chat
@@ -628,6 +629,72 @@ end
 -- To break a for-loop, return async.BREAK
 async.BREAK = true
 
+function async.Slash(...)
+  local num_args = select("#", ...)
+  local allArgs = ""
+
+  -- Concatenate arguments into a single string
+  if num_args > 0 then
+    for i = 1, num_args do
+      local value = select(i, ...)
+      if type(value) == "string" then
+        allArgs = allArgs .. " " .. value
+      elseif type(value) == "number" then
+        allArgs = allArgs .. " " .. tostring(value)
+      end
+    end
+    allArgs = zo_strtrim(allArgs)
+  end
+
+  local args, argValue = "", nil
+  for w in zo_strgmatch(allArgs, "%w+") do
+    if args == "" then
+      args = w
+    else
+      argValue = tonumber(w) or zo_strlower(w)
+    end
+  end
+
+  args = zo_strlower(args)
+
+  local d = function(text)
+    CHAT_ROUTER:AddSystemMessage(text)
+  end
+  if args == "stall" then
+    if type(argValue) == "number" then
+      -- Validate the FPS number
+      if argValue < ASYNC_MIN_STALL_THRESHOLD then
+        d(string.format("[LibAsync] Invalid FPS value. The stall threshold must be at least %d FPS. Use /async stall <number>.", ASYNC_MIN_STALL_THRESHOLD))
+        return
+      elseif argValue > UPPER_FPS_BOUND then
+        d(string.format("[LibAsync] Invalid FPS value. The stall threshold must be no greater than %d FPS. Use /async stall <number>.", UPPER_FPS_BOUND))
+        return
+      end
+
+      -- Clamp and apply the value
+      local adjustedFps = zo_min(UPPER_FPS_BOUND, zo_max(ASYNC_MIN_STALL_THRESHOLD, argValue))
+      AsyncSavedVars.ASYNC_STALL_THRESHOLD = adjustedFps
+      ASYNC_STALL_THRESHOLD = AsyncSavedVars.ASYNC_STALL_THRESHOLD
+
+      -- Notify the user of the updated stall threshold
+      d(string.format("[LibAsync] Stall threshold set to %d FPS.", adjustedFps))
+    elseif type(argValue) == "string" and argValue == "default" then
+      -- Set to the default stall threshold
+      AsyncSavedVars.ASYNC_STALL_THRESHOLD = ASYNC_DEFAULT_STALL_THRESHOLD
+      ASYNC_STALL_THRESHOLD = AsyncSavedVars.ASYNC_STALL_THRESHOLD
+
+      -- Notify the user of the reset to default
+      d(string.format("[LibAsync] Stall threshold reset to the default value of %d FPS.", ASYNC_DEFAULT_STALL_THRESHOLD))
+    else
+      -- Invalid argument
+      d("[LibAsync] Invalid argument. Use /async stall <number> or /async stall default.")
+    end
+  else
+    -- Unknown command
+    d("[LibAsync] Unknown command. Use /async stall <number> or /async stall default.")
+  end
+end
+
 -- Scheduler Management
 local SchedulerManager = {
   schedulerId = nil,
@@ -640,18 +707,18 @@ function SchedulerManager:stopScheduler()
     em:UnregisterForUpdate(self.schedulerId)
     self.schedulerId = nil
   end
+  if self.measureId then
+    em:UnregisterForUpdate(self.measureId)
+    self.measureId = nil
+  end
 end
 
 function SchedulerManager:startScheduler()
   self:stopScheduler()
+  self.measureId = "AsyncSchedulerMeasure"
+  em:RegisterForUpdate(self.measureId, 100, doMeasure)
   self.schedulerId = "AsyncScheduler"
-  em:RegisterForUpdate(
-    self.schedulerId,
-    0,
-    function()
-      async.Scheduler()
-    end
-  )
+  em:RegisterForUpdate(self.schedulerId, 0, async.Scheduler)
 end
 
 function SchedulerManager:initialize(delay)
@@ -671,32 +738,6 @@ function SchedulerManager:initialize(delay)
   )
 end
 
--- Scene Management
-local SceneManager = {
-  scenes = {HUD_SCENE, HUD_UI_SCENE}
-}
-
-function SceneManager:handleStateChange(_, newState)
-  if newState == SCENE_SHOWNING then
-    --end
-    --if not running then
-    spendTime = GetUpperThreshold()
-  elseif newState == SCENE_HIDING then
-    -- Increase time, if not higher already
-    spendTime = max(spendTime, upperSpendTimeDefNoHUD)
-  end
-end
-
-function SceneManager:initialize()
-  local stateCallback = function(...)
-    self:handleStateChange(...)
-  end
-
-  for _, scene in ipairs(self.scenes) do
-    scene:RegisterCallback("StateChange", stateCallback)
-  end
-end
-
 do
   local identifier = "ASYNCTASKS_JOBS"
 
@@ -708,10 +749,21 @@ do
       SchedulerManager:initialize()
     end
   )
-
-  SceneManager:initialize()
-
+  SLASH_COMMANDS["/async"] = function(...)
+    async:Slash(...)
+  end
   SchedulerManager:startScheduler()
+
+  local function OnAddonLoaded(event, name)
+    if name ~= MAJOR then
+      return
+    end
+    em:UnregisterForEvent(MAJOR, EVENT_ADD_ON_LOADED)
+
+    InitSavedVar()
+  end
+
+  em:RegisterForEvent(MAJOR, EVENT_ADD_ON_LOADED, OnAddonLoaded)
 end
 
-rawset(_G, "LibAsync", async)
+rawset(_G, MAJOR, async)
