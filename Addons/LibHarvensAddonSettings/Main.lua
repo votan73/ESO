@@ -115,9 +115,9 @@ end
 
 function AddonSettingsControl:CleanUp()
 	if IsConsoleUI() then
-		return self:CleanUp_Gamepad(state)
+		return self:CleanUp_Gamepad()
 	else
-		return self:CleanUp_Keyboard(state)
+		return self:CleanUp_Keyboard()
 	end
 end
 
@@ -130,25 +130,18 @@ function AddonSettingsControl:GetValueOrCallback(arg)
 end
 
 function AddonSettingsControl:UpdateControl(lastControl)
-	if self.control == nil and not IsConsoleUI() then
-		return self:CreateControl(lastControl)
+	if IsConsoleUI() then
+		return self:UpdateControl_Gamepad(lastControl)
+	else
+		return self:UpdateControl_Keyboard(lastControl)
 	end
-
-	local updateFunc = updateControlFunctions[self.type]
-	if self.control and updateFunc then
-		updateFunc(self, self.control)
-	end
-
-	self:SetEnabled(not self:IsDisabled())
-
-	return self.control
 end
 
 function AddonSettingsControl:SetValue(...)
 	if not self.control or not self.control.SetValue then
 		return
 	end
-	self.control:SetValue(...)
+	return self.control:SetValue(...)
 end
 
 function AddonSettingsControl:ResetToDefaults()
@@ -248,70 +241,9 @@ end
 
 function AddonSettings:InitHandlers()
 	if IsConsoleUI() then
-		CALLBACK_MANAGER:RegisterCallback(
-			"LibHarvensAddonSettings_AddonSelected",
-			function()
-				if self.selected then
-					self:CleanUp()
-					self.selected = false
-					self:UpdateHighlight()
-				end
-			end
-		)
+		self:InitHandlers_Gamepad()
 	else
-		local label = self.control:GetNamedChild("Label")
-		label:SetText(self.name)
-
-		self.control:SetResizeToFitDescendents(false)
-		self.control:SetHeight(label:GetHeight())
-		self.control:SetWidth(label:GetWidth())
-
-		self.control:SetMouseEnabled(true)
-		self.control:SetHandler(
-			"OnMouseUp",
-			function(control, isInside)
-				if not isInside or self.selected then
-					return
-				end
-				PlaySound(SOUNDS.DEFAULT_CLICK)
-
-				self:Select()
-			end
-		)
-		self.control:SetHandler(
-			"OnMouseEnter",
-			function(control)
-				self.mouseOver = true
-				self:UpdateHighlight()
-			end
-		)
-		self.control:SetHandler(
-			"OnMouseExit",
-			function(control)
-				self.mouseOver = false
-				self:UpdateHighlight()
-			end
-		)
-		self:UpdateHighlight()
-
-		CALLBACK_MANAGER:RegisterCallback(
-			"LibHarvensAddonSettings_AddonSelected",
-			function(_, title)
-				if self.selected then
-					self:CleanUp()
-					self.selected = false
-					if self.prev and self.prev ~= title then
-						self.control:ClearAnchors()
-						self.control:SetAnchor(TOPLEFT, self.prev.control, BOTTOMLEFT, 0, 8)
-					end
-					if self.next and self.next ~= title then
-						self.next.control:ClearAnchors()
-						self.next.control:SetAnchor(TOPLEFT, self.control, BOTTOMLEFT, 0, 8)
-					end
-					self:UpdateHighlight()
-				end
-			end
-		)
+		self:InitHandlers_Keyboard()
 	end
 end
 
@@ -358,34 +290,18 @@ end
 
 function AddonSettings:CreateControls()
 	if IsConsoleUI() then
-		local list = LibHarvensAddonSettings.list
-		list:Clear()
-		for i = 1, #self.settings do
-			self.settings[i]:CreateControl()
-		end
-		list:Commit()
+		self:CreateControls_Gamepad()
 	else
-		local last = LibHarvensAddonSettings.container
-		for i = 1, #self.settings do
-			last = self.settings[i]:CreateControl(last)
-		end
+		self:CreateControls_Keyboard()
 	end
-	needUpdate = false
 end
 
 function AddonSettings:UpdateControls()
 	if IsConsoleUI() then
-		for i = 1, #self.settings do
-			self.settings[i]:UpdateControl()
-		end
-		LibHarvensAddonSettings.list:RefreshVisible()
+		self:UpdateControls_Gamepad()
 	else
-		local last = LibHarvensAddonSettings.container
-		for i = 1, #self.settings do
-			last = self.settings[i]:UpdateControl(last)
-		end
+		self:UpdateControls_Keyboard()
 	end
-	needUpdate = false
 end
 
 function AddonSettings:CleanUp()
@@ -464,16 +380,18 @@ function LibHarvensAddonSettings:SetContainerHeightPercentage(progress)
 end
 
 function LibHarvensAddonSettings:RefreshAddonSettings()
-	-- Called from out-side, therefore need to check this (again)
-	if needUpdate and currentSettings ~= nil then
-		currentSettings:UpdateControls()
+	if IsConsoleUI() then
+		self:RefreshAddonSettings_Gamepad()
+	else
+		self:RefreshAddonSettings_Keyboard()
 	end
 end
 
 function LibHarvensAddonSettings:SelectFirstAddon()
-	currentSettings = LibHarvensAddonSettings.addons[1]
-	if not currentSettings.selected then
-		currentSettings:Select()
+	if IsConsoleUI() then
+		self:SelectFirstAddon_Gamepad()
+	else
+		self:SelectFirstAddon_Keyboard()
 	end
 end
 

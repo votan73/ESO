@@ -2,6 +2,8 @@ if not IsConsoleUI() then
 	return
 end
 
+local LibHarvensAddonSettings = LibHarvensAddonSettings
+
 local Templates = {
 	[LibHarvensAddonSettings.ST_CHECKBOX] = "ZO_GamepadOptionsCheckboxRow",
 	[LibHarvensAddonSettings.ST_SLIDER] = "LibHarvensAddonSettingsGamepadSlider",
@@ -302,7 +304,6 @@ local setupControlFunctions = {
 -----
 -- AddonSettingsControl class - represents single option control
 -----
-
 function LibHarvensAddonSettings.AddonSettingsControl:SetupControl_Gamepad(params)
 	if setupControlFunctions[self.type] then
 		setupControlFunctions[self.type](self, params)
@@ -321,11 +322,68 @@ function LibHarvensAddonSettings.AddonSettingsControl:SetEnabled_Gamepad(state)
 	end
 end
 
+function LibHarvensAddonSettings.AddonSettingsControl:UpdateControl_Gamepad()
+	local updateFunc = updateControlFunctions[self.type]
+	if self.control and updateFunc then
+		updateFunc(self, self.control)
+	end
+
+	self:SetEnabled(not self:IsDisabled())
+end
+
 function LibHarvensAddonSettings.AddonSettingsControl:CleanUp_Gamepad()
 	self:SetEnabled(true)
 end
 
+-----
+-- AddonSettings class - represents addon settings panel
+-----
+function LibHarvensAddonSettings.AddonSettings:InitHandlers_Gamepad()
+	CALLBACK_MANAGER:RegisterCallback(
+		"LibHarvensAddonSettings_AddonSelected",
+		function()
+			if self.selected then
+				self:CleanUp()
+				self.selected = false
+				self:UpdateHighlight()
+			end
+		end
+	)
+end
+
+function LibHarvensAddonSettings.AddonSettings:CreateControls_Gamepad()
+	local list = LibHarvensAddonSettings.list
+	list:Clear()
+	for i = 1, #self.settings do
+		self.settings[i]:CreateControl()
+	end
+	list:Commit()
+	needUpdate = false
+end
+
+function LibHarvensAddonSettings.AddonSettings:UpdateControls_Gamepad()
+	for i = 1, #self.settings do
+		self.settings[i]:UpdateControl()
+	end
+	LibHarvensAddonSettings.list:RefreshVisible()
+	needUpdate = false
+end
+
 ----- end -----
+
+function LibHarvensAddonSettings:RefreshAddonSettings_Gamepad()
+	-- Called from out-side, therefore need to check this (again)
+	if needUpdate and currentSettings ~= nil then
+		currentSettings:UpdateControls()
+	end
+end
+
+function LibHarvensAddonSettings:SelectFirstAddon_Gamepad()
+	currentSettings = LibHarvensAddonSettings.addons[1]
+	if not currentSettings.selected then
+		currentSettings:Select()
+	end
+end
 
 -----
 -- Settings_ParametricList class

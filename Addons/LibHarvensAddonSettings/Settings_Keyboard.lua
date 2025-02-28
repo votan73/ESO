@@ -1,3 +1,5 @@
+local LibHarvensAddonSettings = LibHarvensAddonSettings
+
 local TOOLTIPS =
 {
 	ItemTooltip,
@@ -68,7 +70,7 @@ local changeControlStateFunctions = {
 	end,
 	[LibHarvensAddonSettings.ST_SLIDER] = function(control, state)
 		SetNameControlState(control, state)
-		control:GetNamedChild("Slider"):SetEnabled(state)
+		control.slider:SetEnabled(state)
 		local alpha = GetAlphaFromState(state)
 		control:GetNamedChild("SliderBackdrop"):SetAlpha(alpha)
 		control:GetNamedChild("ValueLabel"):SetAlpha(alpha)
@@ -107,7 +109,7 @@ local updateControlFunctions = {
 	[LibHarvensAddonSettings.ST_SLIDER] = function(self, lastControl)
 		self:SetAnchor(lastControl)
 		self.control:GetNamedChild("Name"):SetText(self:GetValueOrCallback(self.labelText))
-		local slider = self.control.slider or self.control:GetNamedChild("Slider")
+		local slider = self.control.slider
 		slider:SetMinMax(self.min, self.max)
 		slider:SetValue(self.getFunction())
 		local label = slider.label or self.control:GetNamedChild("ValueLabel")
@@ -196,7 +198,7 @@ local createControlFunctions = {
 		self.control, self.controlKey = LibHarvensAddonSettings.sliderPool:AcquireObject()
 		self.control.data = self.control.data or ZO_Object:New(self)
 		local slider = self.control.slider or self.control:GetNamedChild("Slider")
-		self.control.slider = silder
+		self.control.slider = slider
 		-- Reset the template (ZO_Options_Slider) before calling InitializeControl
 		slider:SetHandler("OnValueChanged", nil)
 		updateControlFunctions[LibHarvensAddonSettings.ST_SLIDER](self, lastControl)
@@ -214,7 +216,7 @@ local createControlFunctions = {
 		self.control, self.controlKey = LibHarvensAddonSettings.buttonPool:AcquireObject()
 		self.control.data = self.control.data or ZO_Object:New(self)
 		updateControlFunctions[LibHarvensAddonSettings.ST_BUTTON](self, lastControl)
-		local button = GetControl(self.control, "Button")
+		local button = self.control:GetNamedChild("Button")
 		button:SetHandler("OnClicked", function(...) self:ValueChanged(...) end)
 		self.button = button
 	end,
@@ -279,7 +281,7 @@ local cleanControlFunctions = {
 		LibHarvensAddonSettings.checkboxPool:ReleaseObject(self.controlKey)
 	end,
 	[LibHarvensAddonSettings.ST_SLIDER] = function(self)
-		(self.control.slider or self.control:GetNamedChild("Slider")):SetHandler("OnValueChanged", nil)
+		self.control.slider:SetHandler("OnValueChanged", nil)
 		LibHarvensAddonSettings.sliderPool:ReleaseObject(self.controlKey)
 	end,
 	[LibHarvensAddonSettings.ST_BUTTON] = function(self)
@@ -386,7 +388,6 @@ local setupControlFunctions = {
 -----
 -- AddonSettingsControl class - represents single option control
 -----
-
 function LibHarvensAddonSettings.AddonSettingsControl:SetupControl_Keyboard(params)
 	if setupControlFunctions[self.type] then
 		setupControlFunctions[self.type](self, params)
@@ -422,6 +423,21 @@ function LibHarvensAddonSettings.AddonSettingsControl:SetEnabled_Keyboard(state)
 	if self.control and changeControlStateFunctions[self.type] then
 		changeControlStateFunctions[self.type](self.control, state)
 	end
+end
+
+function LibHarvensAddonSettings.AddonSettingsControl:UpdateControl_Keyboard(lastControl)
+	if self.control == nil then
+		return self:CreateControl(lastControl)
+	end
+
+	local updateFunc = updateControlFunctions[self.type]
+	if self.control and updateFunc then
+		updateFunc(self, self.control)
+	end
+
+	self:SetEnabled(not self:IsDisabled())
+
+	return self.control
 end
 
 function LibHarvensAddonSettings.AddonSettingsControl:CleanUp_Keyboard()
@@ -469,7 +485,96 @@ function LibHarvensAddonSettings.AddonSettingsControl:CreateControl_Keyboard(las
 	return self.control
 end
 
+-----
+-- AddonSettings class - represents addon settings panel
+-----
+function LibHarvensAddonSettings.AddonSettings:InitHandlers_Keyboard()
+	local label = self.control:GetNamedChild("Label")
+	label:SetText(self.name)
+
+	self.control:SetResizeToFitDescendents(false)
+	self.control:SetHeight(label:GetHeight())
+	self.control:SetWidth(label:GetWidth())
+
+	self.control:SetMouseEnabled(true)
+	self.control:SetHandler(
+		"OnMouseUp",
+		function(control, isInside)
+			if not isInside or self.selected then
+				return
+			end
+			PlaySound(SOUNDS.DEFAULT_CLICK)
+
+			self:Select()
+		end
+	)
+	self.control:SetHandler(
+		"OnMouseEnter",
+		function(control)
+			self.mouseOver = true
+			self:UpdateHighlight()
+		end
+	)
+	self.control:SetHandler(
+		"OnMouseExit",
+		function(control)
+			self.mouseOver = false
+			self:UpdateHighlight()
+		end
+	)
+	self:UpdateHighlight()
+
+	CALLBACK_MANAGER:RegisterCallback(
+		"LibHarvensAddonSettings_AddonSelected",
+		function(_, title)
+			if self.selected then
+				self:CleanUp()
+				self.selected = false
+				if self.prev and self.prev ~= title then
+					self.control:ClearAnchors()
+					self.control:SetAnchor(TOPLEFT, self.prev.control, BOTTOMLEFT, 0, 8)
+				end
+				if self.next and self.next ~= title then
+					self.next.control:ClearAnchors()
+					self.next.control:SetAnchor(TOPLEFT, self.control, BOTTOMLEFT, 0, 8)
+				end
+				self:UpdateHighlight()
+			end
+		end
+	)
+end
+
+function LibHarvensAddonSettings.AddonSettings:CreateControls_Keyboard()
+	local last = LibHarvensAddonSettings.container
+	for i = 1, #self.settings do
+		last = self.settings[i]:CreateControl(last)
+	end
+	needUpdate = false
+end
+
+function LibHarvensAddonSettings.AddonSettings:UpdateControls_Keyboard()
+	local last = LibHarvensAddonSettings.container
+	for i = 1, #self.settings do
+		last = self.settings[i]:UpdateControl(last)
+	end
+	needUpdate = false
+end
+
 ----- end -----
+
+function LibHarvensAddonSettings:RefreshAddonSettings_Keyboard()
+	-- Called from out-side, therefore need to check this (again)
+	if needUpdate and currentSettings ~= nil then
+		currentSettings:UpdateControls()
+	end
+end
+
+function LibHarvensAddonSettings:SelectFirstAddon_Keyboard()
+	currentSettings = LibHarvensAddonSettings.addons[1]
+	if not currentSettings.selected then
+		currentSettings:Select()
+	end
+end
 
 local function PoolCreateControlBase(name, pool)
 	local id = pool:GetNextControlId()
@@ -597,8 +702,7 @@ function LibHarvensAddonSettings:CreateControlPools()
 		self.sliderPool,
 		function(control)
 			function control:SetValue(...)
-				local slider = self.slider or self:GetNamedChild("Slider")
-				slider:SetValue(...)
+				self.slider:SetValue(...)
 			end
 		end
 	)
