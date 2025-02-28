@@ -1,0 +1,25 @@
+<GuiXml>
+  <Controls>
+    <TopLevelControl name="LibHarvensAddonSettingsGamepadTopLevel" inherits="ZO_Gamepad_ParametricList_Screen" virtual="true" />
+    <Control name="LibHarvensAddonSettingsGamepadSlider" inherits="ZO_GamepadOptionsSliderRow" virtual="true">
+      <Controls>
+        <Label name="$(parent)ValueLabel" font="ZoFontGamepad25">
+          <Anchor point="LEFT" relativeTo="$(parent)Slider" relativePoint="RIGHT" offsetX="4" />
+        </Label>
+      </Controls>
+    </Control>
+    <Control name="LibHarvensAddonSettingsGamepadEdit" inherits="ZO_GamepadOptionsLabelRow" virtual="true">
+      <OnInitialized>
+        self.GetHeight = function(control)
+        --The on and off labels are setup to not wrap to a new line
+        return self:GetNamedChild("Name"):GetTextHeight() + self:GetNamedChild("ValueTextFieldEdit"):GetHeight()
+        end
+      </OnInitialized>
+      <Controls>
+        <Control name="$(parent)Value" inherits="ZO_Gamepad_TextEditEntry_FullWidth">
+          <Anchor point="TOPLEFT" relativeTo="$(parent)Name" relativePoint="BOTTOMLEFT" />
+        </Control>
+      </Controls>
+    </Control>
+  </Controls>
+</GuiXml>
