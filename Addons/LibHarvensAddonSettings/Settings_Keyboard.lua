@@ -432,7 +432,7 @@ function LibHarvensAddonSettings.AddonSettingsControl:UpdateControl_Keyboard(las
 
 	local updateFunc = updateControlFunctions[self.type]
 	if self.control and updateFunc then
-		updateFunc(self, self.control)
+		updateFunc(self, lastControl)
 	end
 
 	self:SetEnabled(not self:IsDisabled())
@@ -446,7 +446,7 @@ function LibHarvensAddonSettings.AddonSettingsControl:CleanUp_Keyboard()
 
 	self:SetEnabled(true)
 
-	if cleanControlFunctions[self.type] and not IsConsoleUI() then
+	if cleanControlFunctions[self.type] then
 		cleanControlFunctions[self.type](self)
 	end
 end
@@ -454,8 +454,6 @@ end
 function LibHarvensAddonSettings.AddonSettingsControl:CreateControl_Keyboard(lastControl)
 	if createControlFunctions[self.type] then
 		createControlFunctions[self.type](self, lastControl)
-	else
-		return lastControl
 	end
 
 	self.OnMouseEnterOriginal = self.control:GetHandler("OnMouseEnter")
