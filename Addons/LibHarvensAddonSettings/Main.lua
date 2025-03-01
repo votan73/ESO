@@ -83,57 +83,11 @@ function AddonSettingsControl:ValueChanged(...)
 	end
 end
 
-function AddonSettingsControl:SetupTooltip(control)
-	if not IsConsoleUI() then
-		self:SetupTooltip_Keyboard(control)
-	end
-end
-
-function AddonSettingsControl:CreateControl(lastControl)
-	if IsConsoleUI() then
-		return self:CreateControl_Gamepad(lastControl)
-	else
-		return self:CreateControl_Keyboard(lastControl)
-	end
-end
-
-function AddonSettingsControl:SetupControl(params)
-	if IsConsoleUI() then
-		self:SetupControl_Gamepad(params)
-	else
-		self:SetupControl_Keyboard(params)
-	end
-end
-
-function AddonSettingsControl:SetEnabled(state)
-	if IsConsoleUI() then
-		return self:SetEnabled_Gamepad(state)
-	else
-		return self:SetEnabled_Keyboard(state)
-	end
-end
-
-function AddonSettingsControl:CleanUp()
-	if IsConsoleUI() then
-		return self:CleanUp_Gamepad()
-	else
-		return self:CleanUp_Keyboard()
-	end
-end
-
 function AddonSettingsControl:GetValueOrCallback(arg)
 	if type(arg) == "function" then
 		return arg(self)
 	else
 		return arg
-	end
-end
-
-function AddonSettingsControl:UpdateControl(lastControl)
-	if IsConsoleUI() then
-		return self:UpdateControl_Gamepad(lastControl)
-	else
-		return self:UpdateControl_Keyboard(lastControl)
 	end
 end
 
@@ -154,7 +108,7 @@ function AddonSettingsControl:ResetToDefaults()
 				break
 			end
 		end
-		local combobox = IsConsoleUI() and self.control.horizontalListObject or ZO_ComboBox_ObjectFromContainer(self.control.dropdown)
+		local combobox = self.control:GetDropDown()
 		self.setFunction(combobox, self.default, self.items[itemIndex])
 	elseif self.type == LibHarvensAddonSettings.ST_COLOR then
 		self:SetValue(unpack(self.default))
@@ -239,14 +193,6 @@ function AddonSettings:Select()
 	self:UpdateHighlight()
 end
 
-function AddonSettings:InitHandlers()
-	if IsConsoleUI() then
-		self:InitHandlers_Gamepad()
-	else
-		self:InitHandlers_Keyboard()
-	end
-end
-
 function AddonSettings:UpdateHighlight()
 	if IsConsoleUI() then
 		return
@@ -268,39 +214,7 @@ function AddonSettings:ResetToDefaults()
 		if type(self.defaultsFunction) == "function" then
 			self.defaultsFunction()
 		end
-	end
-end
-
-function AddonSettings:AddToOptionsPanel(panelID)
-	if IsConsoleUI() then
-		return
-	end
-	self.control.data = {
-		panel = panelID,
-		controlType = OPTIONS_CUSTOM,
-		customResetToDefaultsFunction = function()
-			self:ResetToDefaults()
-		end,
-		visible = true,
-		system = SETTING_TYPE_UI,
-		settingsId = 0
-	}
-	ZO_OptionsWindow_InitializeControl(self.control)
-end
-
-function AddonSettings:CreateControls()
-	if IsConsoleUI() then
-		self:CreateControls_Gamepad()
-	else
-		self:CreateControls_Keyboard()
-	end
-end
-
-function AddonSettings:UpdateControls()
-	if IsConsoleUI() then
-		self:UpdateControls_Gamepad()
-	else
-		self:UpdateControls_Keyboard()
+		self:UpdateControls()
 	end
 end
 
@@ -372,27 +286,6 @@ function LibHarvensAddonSettings:AttachContainerToControl(control)
 	self.container:SetHidden(false)
 	self.container:SetHeight(0)
 	self.container.currentHeight = 0
-end
-
-function LibHarvensAddonSettings:SetContainerHeightPercentage(progress)
-	self.container.currentHeight = self.container.endHeight * progress
-	self.container:SetHeight(self.container.currentHeight)
-end
-
-function LibHarvensAddonSettings:RefreshAddonSettings()
-	if IsConsoleUI() then
-		self:RefreshAddonSettings_Gamepad()
-	else
-		self:RefreshAddonSettings_Keyboard()
-	end
-end
-
-function LibHarvensAddonSettings:SelectFirstAddon()
-	if IsConsoleUI() then
-		self:SelectFirstAddon_Gamepad()
-	else
-		self:SelectFirstAddon_Keyboard()
-	end
 end
 
 function LibHarvensAddonSettings:Initialize()

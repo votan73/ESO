@@ -38,7 +38,7 @@ local changeControlStateFunctions = {
 	end,
 	[LibHarvensAddonSettings.ST_DROPDOWN] = function(control, state)
 		SetNameControlState(control, state)
-		control.horizontalListObject:SetSelectedFromParent(state)
+		control:GetDropDown():SetSelectedFromParent(state)
 	end,
 	[LibHarvensAddonSettings.ST_SLIDER] = function(control, state)
 		SetNameControlState(control, state)
@@ -138,7 +138,7 @@ local updateControlFunctions = {
 	end,
 	[LibHarvensAddonSettings.ST_DROPDOWN] = function(self, control)
 		control:GetNamedChild("Name"):SetText(self:GetValueOrCallback(self.labelText))
-		local combobox = control.horizontalListObject
+		local combobox = control:GetDropDown()
 		combobox:SetOnSelectedDataChangedCallback(nil)
 		combobox:Clear()
 		local itemEntry
@@ -218,7 +218,7 @@ local cleanControlFunctions = {
 		self.control:SetHidden(true)
 	end,
 	[LibHarvensAddonSettings.ST_DROPDOWN] = function(self)
-		local combobox = self.control.horizontalListObject
+		local combobox = self.control:GetDropDown()
 		combobox:SetOnSelectedDataChangedCallback(nil)
 	end,
 	[LibHarvensAddonSettings.ST_LABEL] = function(self)
@@ -304,25 +304,25 @@ local setupControlFunctions = {
 -----
 -- AddonSettingsControl class - represents single option control
 -----
-function LibHarvensAddonSettings.AddonSettingsControl:SetupControl_Gamepad(params)
+function LibHarvensAddonSettings.AddonSettingsControl:SetupControl(params)
 	if setupControlFunctions[self.type] then
 		setupControlFunctions[self.type](self, params)
 	end
 end
 
-function LibHarvensAddonSettings.AddonSettingsControl:CreateControl_Gamepad(lastControl)
+function LibHarvensAddonSettings.AddonSettingsControl:CreateControl(lastControl)
 	if createControlFunctions[self.type] then
 		createControlFunctions[self.type](self, lastControl)
 	end
 end
 
-function LibHarvensAddonSettings.AddonSettingsControl:SetEnabled_Gamepad(state)
+function LibHarvensAddonSettings.AddonSettingsControl:SetEnabled(state)
 	if self.control and changeControlStateFunctions[self.type] then
 		changeControlStateFunctions[self.type](self.control, state)
 	end
 end
 
-function LibHarvensAddonSettings.AddonSettingsControl:UpdateControl_Gamepad()
+function LibHarvensAddonSettings.AddonSettingsControl:UpdateControl()
 	local updateFunc = updateControlFunctions[self.type]
 	if self.control and updateFunc then
 		updateFunc(self, self.control)
@@ -331,14 +331,14 @@ function LibHarvensAddonSettings.AddonSettingsControl:UpdateControl_Gamepad()
 	self:SetEnabled(not self:IsDisabled())
 end
 
-function LibHarvensAddonSettings.AddonSettingsControl:CleanUp_Gamepad()
+function LibHarvensAddonSettings.AddonSettingsControl:CleanUp()
 	self:SetEnabled(true)
 end
 
 -----
 -- AddonSettings class - represents addon settings panel
 -----
-function LibHarvensAddonSettings.AddonSettings:InitHandlers_Gamepad()
+function LibHarvensAddonSettings.AddonSettings:InitHandlers()
 	CALLBACK_MANAGER:RegisterCallback(
 		"LibHarvensAddonSettings_AddonSelected",
 		function()
@@ -351,17 +351,20 @@ function LibHarvensAddonSettings.AddonSettings:InitHandlers_Gamepad()
 	)
 end
 
-function LibHarvensAddonSettings.AddonSettings:CreateControls_Gamepad()
+function LibHarvensAddonSettings.AddonSettings:CreateControls()
 	local list = LibHarvensAddonSettings.list
 	list:Clear()
+	local hasDefaults = false
 	for i = 1, #self.settings do
 		self.settings[i]:CreateControl()
+		hasDefaults = hasDefaults or self.settings[i].default ~= nil
 	end
+	self.hasDefaults = hasDefaults
 	list:Commit()
 	needUpdate = false
 end
 
-function LibHarvensAddonSettings.AddonSettings:UpdateControls_Gamepad()
+function LibHarvensAddonSettings.AddonSettings:UpdateControls()
 	for i = 1, #self.settings do
 		self.settings[i]:UpdateControl()
 	end
@@ -371,14 +374,14 @@ end
 
 ----- end -----
 
-function LibHarvensAddonSettings:RefreshAddonSettings_Gamepad()
+function LibHarvensAddonSettings:RefreshAddonSettings()
 	-- Called from out-side, therefore need to check this (again)
 	if needUpdate and currentSettings ~= nil then
 		currentSettings:UpdateControls()
 	end
 end
 
-function LibHarvensAddonSettings:SelectFirstAddon_Gamepad()
+function LibHarvensAddonSettings:SelectFirstAddon()
 	currentSettings = LibHarvensAddonSettings.addons[1]
 	if not currentSettings.selected then
 		currentSettings:Select()
@@ -484,6 +487,17 @@ function Settings_ParametricList:InitializeKeybindStripDescriptors()
 
 				return data and CONTROL_TYPES_WITH_PRIMARY_ACTION[data.type]
 			end
+		},
+		{
+			alignment = KEYBIND_STRIP_ALIGN_LEFT,
+			name = GetString(SI_OPTIONS_DEFAULTS),
+			keybind = "UI_SHORTCUT_SECONDARY",
+			visible = function()
+				return currentSettings and currentSettings.hasDefaults
+			end,
+			callback = function()
+				ZO_Dialogs_ShowGamepadDialog("LibHarvensAddonSettings_Defaults")
+			end
 		}
 	}
 	ZO_Gamepad_AddBackNavigationKeybindDescriptors(self.keybindStripDescriptor, GAME_NAVIGATION_TYPE_BUTTON)
@@ -495,6 +509,36 @@ function Settings_ParametricList:InitializeKeybindStripDescriptors()
 				lastActiveInput = nil
 			end
 		end
+	)
+	ZO_Dialogs_RegisterCustomDialog(
+		"LibHarvensAddonSettings_Defaults",
+		{
+			mustChoose = true,
+			gamepadInfo = {
+				dialogType = GAMEPAD_DIALOGS.BASIC
+			},
+			title = {
+				text = SI_OPTIONS_RESET_TITLE
+			},
+			mainText = {
+				text = function()
+					return SI_OPTIONS_RESET_PROMPT
+				end
+			},
+			buttons = {
+				[1] = {
+					text = SI_OPTIONS_RESET,
+					callback = function(dialog)
+						if currentSettings then
+							currentSettings:ResetToDefaults()
+						end
+					end
+				},
+				[2] = {
+					text = SI_DIALOG_CANCEL
+				}
+			}
+		}
 	)
 end
 
@@ -746,13 +790,16 @@ function LibHarvensAddonSettings:CreateControlPools()
 			horizontalListObject.setupFunction = setupDropDown
 			horizontalListObject.equalityFunction = equalityFunctionDropDown
 			function control:Activate()
-				self.horizontalListObject:Activate()
+				self:GetDropDown():Activate()
 			end
 			function control:Deactivate()
-				self.horizontalListObject:Deactivate()
+				self:GetDropDown():Deactivate()
+			end
+			function control:GetDropDown()
+				return self.horizontalListObject
 			end
 			function control:SetValue(data)
-				local combobox = self.horizontalListObject
+				local combobox = self:GetDropDown()
 				combobox:SetSelectedIndex(combobox:FindIndexFromData(data, combobox.equalityFunction), false, false)
 			end
 		end

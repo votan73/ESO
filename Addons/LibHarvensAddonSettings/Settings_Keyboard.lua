@@ -1,7 +1,6 @@
 local LibHarvensAddonSettings = LibHarvensAddonSettings
 
-local TOOLTIPS =
-{
+local TOOLTIPS = {
 	ItemTooltip,
 	InformationTooltip,
 	GameTooltip,
@@ -9,7 +8,7 @@ local TOOLTIPS =
 	AchievementTooltip,
 	KeepUpgradeTooltip,
 	PopupTooltip,
-	SkillTooltip,
+	SkillTooltip
 }
 
 local currentSettings
@@ -18,10 +17,9 @@ local needUpdate = true
 -----
 -- Control specific functions tables
 -----
-local ALPHA_STATES =
-{
+local ALPHA_STATES = {
 	[true] = 1,
-	[false] = 0.5,
+	[false] = 0.5
 }
 
 local function GetAlphaFromState(state)
@@ -142,7 +140,7 @@ local updateControlFunctions = {
 	[LibHarvensAddonSettings.ST_DROPDOWN] = function(self, lastControl)
 		self:SetAnchor(lastControl)
 		self.control:GetNamedChild("Name"):SetText(self:GetValueOrCallback(self.labelText))
-		local combobox = ZO_ComboBox_ObjectFromContainer(self.control.dropdown)
+		local combobox = self.control:GetDropDown()
 		combobox:ClearItems()
 		local itemEntry
 		local callback = function(...) self:ValueChanged(...) end
@@ -203,13 +201,13 @@ local createControlFunctions = {
 		slider:SetHandler("OnValueChanged", nil)
 		updateControlFunctions[LibHarvensAddonSettings.ST_SLIDER](self, lastControl)
 		slider:SetHandler("OnValueChanged", function(control, value)
-			local formattedValue = tonumber(string.format(self.format, value))
-			if self.unit and #self.unit > 0 then
-				control.label:SetText(formattedValue .. self:GetValueOrCallback(self.unit))
-			else
-				control.label:SetText(formattedValue)
-			end
-			self:ValueChanged(formattedValue)
+				local formattedValue = tonumber(string.format(self.format, value))
+				if self.unit and #self.unit > 0 then
+					control.label:SetText(formattedValue .. self:GetValueOrCallback(self.unit))
+				else
+					control.label:SetText(formattedValue)
+				end
+				self:ValueChanged(formattedValue)
 		end)
 	end,
 	[LibHarvensAddonSettings.ST_BUTTON] = function(self, lastControl)
@@ -226,22 +224,22 @@ local createControlFunctions = {
 		updateControlFunctions[LibHarvensAddonSettings.ST_EDIT](self, lastControl)
 		local editControl = self.control:GetNamedChild("EditBackdrop"):GetNamedChild("Edit")
 		editControl:SetHandler("OnEnter", function(control)
-			self:ValueChanged(control:GetText())
-			control:LoseFocus()
+				self:ValueChanged(control:GetText())
+				control:LoseFocus()
 		end)
 		editControl:SetHandler("OnEscape", function(control)
-			control:SetText(self.getFunction() or "")
-			control:LoseFocus()
+				control:SetText(self.getFunction() or "")
+				control:LoseFocus()
 		end)
 		editControl:SetHandler("OnFocusLost", function(editControl)
-			self:ValueChanged(editControl:GetText())
-			editControl:SetColor(ZO_NORMAL_TEXT:UnpackRGB())
-			editControl:SetText(self.getFunction() or "")
-			editControl:SetCursorPosition(0)
+				self:ValueChanged(editControl:GetText())
+				editControl:SetColor(ZO_NORMAL_TEXT:UnpackRGB())
+				editControl:SetText(self.getFunction() or "")
+				editControl:SetCursorPosition(0)
 		end)
 		editControl:SetHandler("OnFocusGained", function(control)
-			control:SetColor(ZO_HIGHLIGHT_TEXT:UnpackRGB())
-			control:TakeFocus()
+				control:SetColor(ZO_HIGHLIGHT_TEXT:UnpackRGB())
+				control:TakeFocus()
 		end)
 	end,
 	[LibHarvensAddonSettings.ST_DROPDOWN] = function(self, lastControl)
@@ -269,7 +267,7 @@ local createControlFunctions = {
 			self.control.texture:SetColor(self.getFunction())
 		end
 		self.control:GetNamedChild("ColorSection"):SetHandler("OnMouseUp", function()
-			COLOR_PICKER:Show(OnColorSet, self.getFunction())
+				COLOR_PICKER:Show(OnColorSet, self.getFunction())
 		end)
 		return self.control
 	end,
@@ -297,7 +295,7 @@ local cleanControlFunctions = {
 		LibHarvensAddonSettings.editPool:ReleaseObject(self.controlKey)
 	end,
 	[LibHarvensAddonSettings.ST_DROPDOWN] = function(self)
-		local combobox = ZO_ComboBox_ObjectFromContainer(self.control.dropdown)
+		local combobox = self.control:GetDropDown()
 		combobox:ClearItems()
 		LibHarvensAddonSettings.dropdownPool:ReleaseObject(self.controlKey)
 	end,
@@ -388,44 +386,44 @@ local setupControlFunctions = {
 -----
 -- AddonSettingsControl class - represents single option control
 -----
-function LibHarvensAddonSettings.AddonSettingsControl:SetupControl_Keyboard(params)
+function LibHarvensAddonSettings.AddonSettingsControl:SetupControl(params)
 	if setupControlFunctions[self.type] then
 		setupControlFunctions[self.type](self, params)
 	end
 end
 
-function LibHarvensAddonSettings.AddonSettingsControl:SetupTooltip_Keyboard(control)
-    control:SetHandler(
-        "OnMouseEnter",
-        function(sender, ...)
-            local exitHandler = self.tooltipText(self, sender)
-            self.control:SetHandler(
-                "OnMouseExit",
-                function(sender, ...)
-                    if type(exitHandler) == "function" then
-                        exitHandler(self, sender)
-                    else
-                        for _, tooltip in ipairs(TOOLTIPS) do
-                            ClearTooltip(tooltip)
-                        end
-                    end
+function LibHarvensAddonSettings.AddonSettingsControl:SetupTooltip(control)
+	control:SetHandler(
+		"OnMouseEnter",
+		function(sender, ...)
+			local exitHandler = self.tooltipText(self, sender)
+			self.control:SetHandler(
+				"OnMouseExit",
+				function(sender, ...)
+					if type(exitHandler) == "function" then
+						exitHandler(self, sender)
+					else
+						for _, tooltip in ipairs(TOOLTIPS) do
+							ClearTooltip(tooltip)
+						end
+					end
 
-                    if self.OnMouseExitOriginal then
-                        self.OnMouseExitOriginal(sender, ...)
-                    end
-                end
-            )
-        end
-    )
+					if self.OnMouseExitOriginal then
+						self.OnMouseExitOriginal(sender, ...)
+					end
+				end
+			)
+		end
+	)
 end
 
-function LibHarvensAddonSettings.AddonSettingsControl:SetEnabled_Keyboard(state)
+function LibHarvensAddonSettings.AddonSettingsControl:SetEnabled(state)
 	if self.control and changeControlStateFunctions[self.type] then
 		changeControlStateFunctions[self.type](self.control, state)
 	end
 end
 
-function LibHarvensAddonSettings.AddonSettingsControl:UpdateControl_Keyboard(lastControl)
+function LibHarvensAddonSettings.AddonSettingsControl:UpdateControl(lastControl)
 	if self.control == nil then
 		return self:CreateControl(lastControl)
 	end
@@ -440,7 +438,7 @@ function LibHarvensAddonSettings.AddonSettingsControl:UpdateControl_Keyboard(las
 	return self.control
 end
 
-function LibHarvensAddonSettings.AddonSettingsControl:CleanUp_Keyboard()
+function LibHarvensAddonSettings.AddonSettingsControl:CleanUp()
 	self.control:SetHandler("OnMouseEnter", self.OnMouseEnterOriginal)
 	self.control:SetHandler("OnMouseExit", self.OnMouseExitOriginal)
 
@@ -451,7 +449,7 @@ function LibHarvensAddonSettings.AddonSettingsControl:CleanUp_Keyboard()
 	end
 end
 
-function LibHarvensAddonSettings.AddonSettingsControl:CreateControl_Keyboard(lastControl)
+function LibHarvensAddonSettings.AddonSettingsControl:CreateControl(lastControl)
 	if createControlFunctions[self.type] then
 		createControlFunctions[self.type](self, lastControl)
 	end
@@ -464,17 +462,17 @@ function LibHarvensAddonSettings.AddonSettingsControl:CreateControl_Keyboard(las
 		self:SetupTooltip(self.control)
 	elseif self.tooltipText and #self.tooltipText > 0 then
 		self.control:SetHandler("OnMouseEnter", function(...)
-			InitializeTooltip(InformationTooltip, self.control, BOTTOMLEFT, 0, 0, TOPLEFT)
-			SetTooltipText(InformationTooltip, self.tooltipText, ZO_TOOLTIP_INSTRUCTIONAL_COLOR)
-			if self.OnMouseEnterOriginal then
-				self.OnMouseEnterOriginal(...)
-			end
+				InitializeTooltip(InformationTooltip, self.control, BOTTOMLEFT, 0, 0, TOPLEFT)
+				SetTooltipText(InformationTooltip, self.tooltipText, ZO_TOOLTIP_INSTRUCTIONAL_COLOR)
+				if self.OnMouseEnterOriginal then
+					self.OnMouseEnterOriginal(...)
+				end
 		end)
 		self.control:SetHandler("OnMouseExit", function(...)
-			ClearTooltip(InformationTooltip)
-			if self.OnMouseExitOriginal then
-				self.OnMouseExitOriginal(...)
-			end
+				ClearTooltip(InformationTooltip)
+				if self.OnMouseExitOriginal then
+					self.OnMouseExitOriginal(...)
+				end
 		end)
 	end
 
@@ -486,7 +484,21 @@ end
 -----
 -- AddonSettings class - represents addon settings panel
 -----
-function LibHarvensAddonSettings.AddonSettings:InitHandlers_Keyboard()
+function LibHarvensAddonSettings.AddonSettings:AddToOptionsPanel(panelID)
+	self.control.data = {
+		panel = panelID,
+		controlType = OPTIONS_CUSTOM,
+		customResetToDefaultsFunction = function()
+			self:ResetToDefaults()
+		end,
+		visible = true,
+		system = SETTING_TYPE_UI,
+		settingsId = 0
+	}
+	ZO_OptionsWindow_InitializeControl(self.control)
+end
+
+function LibHarvensAddonSettings.AddonSettings:InitHandlers()
 	local label = self.control:GetNamedChild("Label")
 	label:SetText(self.name)
 
@@ -542,15 +554,18 @@ function LibHarvensAddonSettings.AddonSettings:InitHandlers_Keyboard()
 	)
 end
 
-function LibHarvensAddonSettings.AddonSettings:CreateControls_Keyboard()
+function LibHarvensAddonSettings.AddonSettings:CreateControls()
 	local last = LibHarvensAddonSettings.container
+	local hasDefaults = false
 	for i = 1, #self.settings do
 		last = self.settings[i]:CreateControl(last)
+		hasDefaults = hasDefaults or self.settings[i].default ~= nil
 	end
+	self.hasDefaults = hasDefaults
 	needUpdate = false
 end
 
-function LibHarvensAddonSettings.AddonSettings:UpdateControls_Keyboard()
+function LibHarvensAddonSettings.AddonSettings:UpdateControls()
 	local last = LibHarvensAddonSettings.container
 	for i = 1, #self.settings do
 		last = self.settings[i]:UpdateControl(last)
@@ -560,14 +575,19 @@ end
 
 ----- end -----
 
-function LibHarvensAddonSettings:RefreshAddonSettings_Keyboard()
+function LibHarvensAddonSettings:SetContainerHeightPercentage(progress)
+	self.container.currentHeight = self.container.endHeight * progress
+	self.container:SetHeight(self.container.currentHeight)
+end
+
+function LibHarvensAddonSettings:RefreshAddonSettings()
 	-- Called from out-side, therefore need to check this (again)
 	if needUpdate and currentSettings ~= nil then
 		currentSettings:UpdateControls()
 	end
 end
 
-function LibHarvensAddonSettings:SelectFirstAddon_Keyboard()
+function LibHarvensAddonSettings:SelectFirstAddon()
 	currentSettings = LibHarvensAddonSettings.addons[1]
 	if not currentSettings.selected then
 		currentSettings:Select()
@@ -655,10 +675,10 @@ function LibHarvensAddonSettings:CreateAddonSettingsPanel()
 	anim:SetEasingFunction(ZO_EaseOutQuadratic)
 
 	CALLBACK_MANAGER:RegisterCallback("LibHarvensAddonSettings_AddonSelected", function(_, addonSettings)
-		currentSettings = addonSettings
-		addonSettings:CreateControls()
-		self.container.endHeight = addonSettings:GetOverallHeight() + 8
-		self.openTimeline:PlayFromStart()
+			currentSettings = addonSettings
+			addonSettings:CreateControls()
+			self.container.endHeight = addonSettings:GetOverallHeight() + 8
+			self.openTimeline:PlayFromStart()
 	end)
 
 	local orgUpdatePanelVisibility = ZO_KeyboardOptions.UpdatePanelVisibility
@@ -712,19 +732,22 @@ function LibHarvensAddonSettings:CreateControlPools()
 		local combobox = ZO_ComboBox_ObjectFromContainer(control.dropdown)
 		local popup = combobox.m_dropdown
 		ZO_PreHook(combobox, "AddMenuItems", function(combobox)
-			local items = combobox.m_sortedItems
-			local width = control.dropdown:GetWidth()
-			for i = 1, #items do
-				width = math.max(width, ZO_LabelUtils_GetTextDimensions(items[i].name or "", "ZoFontGame") + 36)
-			end
-			popup:SetWidth(width)
+				local items = combobox.m_sortedItems
+				local width = control.dropdown:GetWidth()
+				for i = 1, #items do
+					width = math.max(width, ZO_LabelUtils_GetTextDimensions(items[i].name or "", "ZoFontGame") + 36)
+				end
+				popup:SetWidth(width)
 		end)
 		popup:ClearAnchors()
 		popup:SetAnchor(TOPRIGHT, nil, BOTTOMRIGHT)
 		popup:SetDrawTier(DT_HIGH)
 		function control:SetValue(...)
-			local combobox = ZO_ComboBox_ObjectFromContainer(self.dropdown)
+			local combobox = self:GetDropDown()
 			combobox:SetSelectedItem(...)
+		end
+		function control:GetDropDown()
+			return ZO_ComboBox_ObjectFromContainer(self.dropdown)
 		end
 	end
 	extendFactory(self.dropdownPool, comboboxSetup)
