@@ -101,15 +101,17 @@ end
 function AddonSettingsControl:ResetToDefaults()
 	if self.type == LibHarvensAddonSettings.ST_DROPDOWN then
 		self:SetValue(self.default)
-		local itemIndex = 1
-		for i = 1, #self.items do
-			if self.items[i].name == self.default then
-				itemIndex = i
-				break
+		if self.control then
+			local itemIndex = 1
+			for i = 1, #self.items do
+				if self.items[i].name == self.default then
+					itemIndex = i
+					break
+				end
 			end
+			local combobox = self.control:GetDropDown()
+			self.setFunction(combobox, self.default, self.items[itemIndex])
 		end
-		local combobox = self.control:GetDropDown()
-		self.setFunction(combobox, self.default, self.items[itemIndex])
 	elseif self.type == LibHarvensAddonSettings.ST_COLOR then
 		self:SetValue(unpack(self.default))
 		self.setFunction(unpack(self.default))

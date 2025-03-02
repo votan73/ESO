@@ -667,7 +667,7 @@ function LibHarvensAddonSettings:CreateAddonSettingsPanel()
 	self.container:SetHidden(true)
 	self.container.currentHeight = 0
 	self.container.endHeight = 0
-	self.container:ClearClips()
+	--self.container:ClearClips()
 
 	self.openTimeline = ANIMATION_MANAGER:CreateTimelineFromVirtual("ZO_TreeOpenAnimation")
 	local anim = self.openTimeline:GetFirstAnimation()
@@ -789,7 +789,7 @@ function LibHarvensAddonSettings:CreateAddonList()
 end
 
 local function OptionsWindowFragmentStateChange(oldState, newState)
-	if newState ~= SCENE_FRAGMENT_SHOWING or LibHarvensAddonSettings.initialized then
+	if newState ~= SCENE_SHOWING or LibHarvensAddonSettings.initialized then
 		return
 	end
 
