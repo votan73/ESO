@@ -7,10 +7,10 @@
 ## Author: Harven, Votan
 ## AddOnVersion: 20000
 ## Version: 2.0.0
-## APIVersion: 101045 101046
+## APIVersion: 101044 101045
 ## IsLibrary: true
 ## Description: With this addon you can create and add your addon settings to the common settings page. The settings page can be found in Settings->Addons menu.
-## OptionalDependsOn: LibAddonMenu-2.0>=35
+## OptionalDependsOn: LibAddonMenu-2.0>=37
 
 Main.lua
 Settings_Keyboard.lua
