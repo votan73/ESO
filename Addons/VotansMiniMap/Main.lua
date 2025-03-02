@@ -52,6 +52,9 @@ function addon:SetCurrentZoom(zoom)
 end
 
 function addon:InitTweaks()
+	local function ZoomDone()
+		return self.panZoom.targetNormalizedZoom == nil
+	end
 	do
 		local task = async:Create("VOTAN_RefreshAllPOIs")
 
@@ -103,7 +106,11 @@ function addon:InitTweaks()
 			if not ZO_WorldMap_IsPinGroupShown(MAP_FILTER_OBJECTIVES) then
 				return
 			end
-			task:For(1, GetNumPOIs(zoneIndex)):Do(DrawPin)
+			task:WaitUntil(ZoomDone):Then(
+				function(task)
+					task:For(1, GetNumPOIs(zoneIndex)):Do(DrawPin)
+				end
+			)
 		end
 		function ZO_WorldMap_RefreshAllPOIs()
 			createTag = ZO_MapPin.CreatePOIPinTag
@@ -157,7 +164,11 @@ function addon:InitTweaks()
 				return
 			end
 			createTag, nodeInfo, g_fastTravelNodeIndex = ZO_MapPin.CreateTravelNetworkPinTag, GetFastTravelNodeInfo, ZO_Map_GetFastTravelNode()
-			task:For(1, GetNumFastTravelNodes()):Do(DrawPin)
+			task:WaitUntil(ZoomDone):Then(
+				function(task)
+					task:For(1, GetNumFastTravelNodes()):Do(DrawPin)
+				end
+			)
 		end
 		function ZO_WorldMap_RefreshWayshrines()
 			running = true
@@ -190,21 +201,25 @@ function addon:InitTweaks()
 		end
 		local function removePins(task)
 			addon.pinManager:RemovePins("loc")
-			task:For(1, GetNumMapLocations()):Do(DrawPin)
+			task:WaitUntil(ZoomDone):Then(
+				function(task)
+					task:For(1, GetNumMapLocations()):Do(DrawPin)
+				end
+			)
 		end
 		local function delayStart(task)
 			task:Call(releaseAllObjects):Then(removePins)
 		end
 		local function start(task)
 			if GetScene():IsShowing() then
-				task:Delay(25, delayStart)
+				task:Call(delayStart)
 			else
 				task:Delay(200, delayStart)
 			end
 		end
 		function ZO_MapLocationPins_Manager:RefreshLocations()
 			locations = self
-			task:Cancel():Call(start)
+			task:Cancel():WaitUntil(ZoomDone):Then(start)
 		end
 	end
 
@@ -212,10 +227,10 @@ function addon:InitTweaks()
 		local task = async:Create("VOTAN_" .. identifier)
 		local orgMethod = _G[methodName]
 		local function runRefresh(task)
-			task:Call(orgMethod)
+			task:WaitUntil(ZoomDone):Then(orgMethod)
 		end
 		_G[methodName] = function()
-			task:Cancel():Delay(GetScene():IsShowing() and 0 or (delay * 7), runRefresh)
+			task:Cancel():ThenDelay(GetScene():IsShowing() and 0 or (delay * 7), runRefresh)
 		end
 	end
 	--DeferRefresh("ZO_WorldMap_RefreshWorldEvent", "MAP_RefreshWorldEvent", 50)
@@ -278,7 +293,11 @@ function addon:InitTweaks()
 					refreshPinType[pinTypeId] = pinData
 				end
 			end
-			task:Cancel():For(pairs(refreshPinType)):Do(removePinType):Then(startDrawPins)
+			task:Cancel():Call(
+				function(task)
+					task:For(pairs(refreshPinType)):Do(removePinType):WaitUntil(ZoomDone):Then(startDrawPins)
+				end
+			)
 		end
 	end
 
@@ -317,15 +336,15 @@ function addon:InitTweaks()
 			if lastW ~= w or lastH ~= h or lastZone ~= zone then
 				lastW, lastH, lastZone, pins = w, h, zone, self
 
-				task:StopTimer():Cancel()
+				task:Cancel()
 
 				updatePlayerPinLevel()
 
-				if GetScene():IsShowing() then
-					return orgUpdatePinsForMapSizeChange(self)
-				end
+				--if GetScene():IsShowing() then
+				--	return orgUpdatePinsForMapSizeChange(self)
+				--end
 
-				task:Call(resizePins):Delay(50)
+				task:Call(resizePins)
 			end
 		end
 	end
@@ -491,9 +510,9 @@ function addon:InitMiniMap()
 
 	-- Map Pin Filter checked-state is the same
 	local filters = vars[MAP_MODE_LARGE_CUSTOM].filters
-	myMode.filters[1] = filters[1]
-	myMode.filters[2] = filters[2]
-	myMode.filters[3] = filters[3]
+	for index, filter in ipairs(filters) do
+		myMode.filters[index] = filter
+	end
 
 	self.modeData = myMode
 	if self.account.keepSquare ~= nil then
@@ -555,7 +574,7 @@ function addon:InitMiniMap()
 	em:RegisterForEvent(self.name, EVENT_PLAYER_ACTIVATED, PlayerActivated)
 	em:RegisterForEvent(self.name, EVENT_PLAYER_DEACTIVATED, PlayerDeactivated)
 
-	local function RestorePosition()
+	function addon:RestorePosition()
 		-- Skip full update for just setting new position
 		local orgZO_WorldMap_UpdateMap = ZO_WorldMap_UpdateMap
 		ZO_WorldMap_UpdateMap = NoOp
@@ -567,8 +586,8 @@ function addon:InitMiniMap()
 
 		ZO_WorldMap:ClearAnchors()
 		ZO_WorldMap:SetDimensionConstraints(128, 144, UIWidth, UIHeight)
-		ZO_WorldMap:SetAnchor(CENTER, nil, CENTER, self.account.x or (UIWidth / 2 - 300), self.account.y or (UIHeight / 2 - 363))
-		ZO_WorldMap:SetDimensions(self.account.width or sv.width or 300, self.account.height or sv.height or 363)
+		ZO_WorldMap:SetAnchor(CENTER, nil, CENTER, self.account.x or (UIWidth / 2 - 304), self.account.y or (UIHeight / 2 - 368))
+		ZO_WorldMap:SetDimensions(self.account.width or sv.width or 304, self.account.height or sv.height or 368)
 
 		ZO_WorldMap_OnResizeStop(ZO_WorldMap)
 		ZO_WorldMap_UpdateMap = orgZO_WorldMap_UpdateMap
@@ -602,7 +621,7 @@ function addon:InitMiniMap()
 			self:UpdateVisibility()
 			self:UpdateBorder()
 			if IsInGamepadPreferredMode() then
-				RestorePosition()
+				self:RestorePosition()
 				local ZO_MapPanAndZoom = ZO_WorldMap_GetPanAndZoom()
 				NoGamepad(ZO_MapPanAndZoom.SetCurrentNormalizedZoomInternal, ZO_MapPanAndZoom, ZO_MapPanAndZoom.currentNormalizedZoom)
 			end
@@ -762,7 +781,7 @@ function addon:InitMiniMap()
 				SetMapToPlayerLocation = orgSetMapToPlayerLocation
 			end
 			if IsInGamepadPreferredMode() then
-				RestorePosition()
+				self:RestorePosition()
 			end
 		end
 	end
@@ -947,6 +966,9 @@ function addon:InitMiniMap()
 			if GetScene():IsShowing() or not WORLD_MAP_MANAGER:IsInMode(MAP_MODE_VOTANS_MINIMAP) then
 				return true
 			end
+			if self.settingsScene and self.settingsScene:IsShowing() then
+				return self.wasMapAdded
+			end
 
 			if not addon.player.showMap then
 				return false
@@ -1063,7 +1085,7 @@ function addon:InitMiniMap()
 			ZO_WorldMap:StopMovingOrResizing()
 			ZO_WorldMap_MouseUp()
 			MoveToPlayer = ZO_WorldMap_JumpToPlayer
-			RestorePosition()
+			self:RestorePosition()
 			self:UpdateBorder()
 			ClearMouseoverText()
 			lastZoom = -1
@@ -1083,7 +1105,7 @@ function addon:InitMiniMap()
 
 						self.background:SetHidden(false)
 
-						RestorePosition()
+						self:RestorePosition()
 						self:UpdateBorder()
 					else
 						CALLBACK_MANAGER:RegisterCallback("OnWorldMapModeChanged", DoIt, orgZO_WorldMap_UpdateMap, skipWorldMapUpdate)
@@ -1203,7 +1225,7 @@ function addon:InitMiniMap()
 		local orgZO_WorldMap_RefreshMapFrameAnchor = ZO_WorldMapManager.RefreshMapFrameAnchor
 		function ZO_WorldMapManager.RefreshMapFrameAnchor(manager, ...)
 			if addon.account and manager:IsInMode(MAP_MODE_VOTANS_MINIMAP) then
-				RestorePosition()
+				addon:RestorePosition()
 				return
 			end
 			return orgZO_WorldMap_RefreshMapFrameAnchor(manager, ...)

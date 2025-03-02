@@ -93,3 +93,9 @@ ZO_CreateStringId("SI_VOTANSMINIMAP_ASYNC_UPDATE_TOOLTIP", "On: Framerate over u
 ZO_CreateStringId("SI_VOTANSMINIMAP_PINSIZE_KEEP_FAST_TRAVEL", "Transitus Shrine")
 ZO_CreateStringId("SI_VOTANSMINIMAP_PINSIZE_KEEPS", "Keeps")
 ZO_CreateStringId("SI_VOTANSMINIMAP_PINSIZE_DISTRICTS", "Districts")
+
+ZO_CreateStringId("SI_VOTANSMINIMAP_GRID_X", "Position - Grid X")
+ZO_CreateStringId("SI_VOTANSMINIMAP_GRID_Y", "Position - Grid Y")
+ZO_CreateStringId("SI_VOTANSMINIMAP_GRID_W", "Size - Grid Width")
+ZO_CreateStringId("SI_VOTANSMINIMAP_GRID_H", "Size - Grid Height")
+ZO_CreateStringId("SI_VOTANSMINIMAP_GRID_TOOLTIP", "Position & size in an 8x8 grid. But you can also use the mouse to change position and size.")

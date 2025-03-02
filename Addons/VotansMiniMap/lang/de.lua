@@ -95,3 +95,9 @@ SafeAddString(SI_VOTANSMINIMAP_ASYNC_UPDATE_TOOLTIP, "Ein: Framerate über Aktua
 SafeAddString(SI_VOTANSMINIMAP_PINSIZE_KEEP_FAST_TRAVEL, "Transitus-Schrein")
 SafeAddString(SI_VOTANSMINIMAP_PINSIZE_KEEPS, "Burgen")
 SafeAddString(SI_VOTANSMINIMAP_PINSIZE_DISTRICTS, "Distrikte")
+
+SafeAddString(SI_VOTANSMINIMAP_GRID_X, "Position - Raster X")
+SafeAddString(SI_VOTANSMINIMAP_GRID_Y, "Position - Raster Y")
+SafeAddString(SI_VOTANSMINIMAP_GRID_W, "Größe - Raster Breite")
+SafeAddString(SI_VOTANSMINIMAP_GRID_H, "Größe - Raster Höhe")
+SafeAddString(SI_VOTANSMINIMAP_GRID_TOOLTIP, "Position und Größe in einem 8x8 Raster. Aber Ihr könnt auch die Maus benutzen um die Position und die Größe zu ändern.")

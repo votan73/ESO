@@ -99,7 +99,7 @@ function addon:InitSettings()
 	end
 	self.settingsControls = settings
 	settings.allowDefaults = true
-	settings.version = "2.0.8"
+	settings.version = "2.1.0"
 	settings.website = "http://www.esoui.com/downloads/info1399-VotansMiniMap.html"
 
 	settings:AddSetting {
@@ -391,7 +391,9 @@ function addon:InitSettings()
 			type = LibHarvensAddonSettings.ST_SECTION,
 			label = GetString(SI_VOTANSMINIMAP_APPEARANCE)
 		}
-		settings:AddSetting {
+		-- Always use the last setting before location settings
+		local prevSetting =
+			settings:AddSetting {
 			type = LibHarvensAddonSettings.ST_CHECKBOX,
 			label = GetString(SI_VOTANSMINIMAP_LOCK_POSITION),
 			tooltip = GetString(SI_VOTANSMINIMAP_LOCK_POSITION_TOOLTIP),
@@ -404,6 +406,162 @@ function addon:InitSettings()
 				self:UpdateBorder()
 			end
 		}
+
+		local locationSettings
+		local function updateLocationSettings()
+			local last = prevSetting.control
+			for i = 1, #locationSettings do
+				last = locationSettings[i]:UpdateControl(last)
+			end
+			ZO_WorldMap:SetDrawLayer(DL_BACKGROUND)
+			ZO_WorldMap:SetDrawLevel(0)
+		end
+		local scene
+		local function addMap()
+			if self.wasMapAdded then
+				return
+			end
+			scene = SCENE_MANAGER:GetCurrentScene()
+			scene:AddFragment(WORLD_MAP_FRAGMENT)
+			self.settingsScene = scene
+			self.wasMapAdded = true
+			WORLD_MAP_FRAGMENT:Refresh()
+		end
+		local function addonSelected(_, addonSettings)
+			local addMap = addonSettings == settings
+			if not addMap and self.wasMapAdded then
+				scene:RemoveFragment(WORLD_MAP_FRAGMENT)
+				self.wasMapAdded = false
+				self:UpdateBorder()
+				if settings.selected then
+					updateLocationSettings()
+				end
+				WORLD_MAP_FRAGMENT:Refresh()
+			end
+		end
+		CALLBACK_MANAGER:RegisterCallback("LibHarvensAddonSettings_AddonSelected", addonSelected)
+		CALLBACK_MANAGER:RegisterCallback("LAM-RefreshPanel", addonSelected)
+
+		local function getScreenDimensions()
+			local w, h = GuiRoot:GetDimensions()
+			local w, h = w / 8, h / 8
+			local w2, h2 = w * 0.5, h * 0.5
+			locationSettings[2].default = math.floor(w2 - locationSettings[3].default / 2)
+			locationSettings[2].min = -w2
+			locationSettings[2].max = w2
+			locationSettings[3].default = math.floor(h2 - locationSettings[4].default / 2)
+			locationSettings[3].min = -h2
+			locationSettings[3].max = h2
+			locationSettings[4].max = w
+			locationSettings[5].max = h
+			if settings.selected then
+				updateLocationSettings()
+			end
+		end
+		EVENT_MANAGER:RegisterForEvent(self.name, EVENT_ALL_GUI_SCREENS_RESIZED, getScreenDimensions)
+
+		locationSettings =
+			settings:AddSettings(
+			{
+				{
+					type = LibHarvensAddonSettings.ST_CHECKBOX,
+					label = "Show map now",
+					default = false,
+					getFunction = function()
+						return self.wasMapAdded
+					end,
+					setFunction = function(value)
+						if value then
+							addMap()
+						else
+							addonSelected()
+						end
+					end
+				},
+				{
+					type = LibHarvensAddonSettings.ST_SLIDER,
+					label = GetString(SI_VOTANSMINIMAP_GRID_X),
+					tooltip = GetString(SI_VOTANSMINIMAP_GRID_TOOLTIP),
+					default = 0,
+					min = -100000,
+					max = 100000,
+					step = 1,
+					getFunction = function()
+						return math.floor(select(5, ZO_WorldMap:GetAnchor(0)) / 8)
+					end,
+					setFunction = function(value)
+						self.account.x = value * 8
+						self:RestorePosition()
+						updateLocationSettings()
+					end
+				},
+				{
+					type = LibHarvensAddonSettings.ST_SLIDER,
+					label = GetString(SI_VOTANSMINIMAP_GRID_Y),
+					tooltip = GetString(SI_VOTANSMINIMAP_GRID_TOOLTIP),
+					default = 0,
+					min = -100000,
+					max = 100000,
+					step = 1,
+					getFunction = function()
+						return math.floor(select(6, ZO_WorldMap:GetAnchor(0)) / 8)
+					end,
+					setFunction = function(value)
+						self.account.y = value * 8
+						self:RestorePosition()
+						updateLocationSettings()
+					end
+				},
+				{
+					type = LibHarvensAddonSettings.ST_SLIDER,
+					label = GetString(SI_VOTANSMINIMAP_GRID_W),
+					tooltip = GetString(SI_VOTANSMINIMAP_GRID_TOOLTIP),
+					default = 304 / 8,
+					min = 14,
+					max = 100000,
+					step = 1,
+					getFunction = function()
+						return math.floor(ZO_WorldMapScroll:GetWidth() / 8)
+					end,
+					setFunction = function(value)
+						value = value * 8
+						self.account.width = ZO_WorldMap:GetWidth() - ZO_WorldMapScroll:GetWidth() + value
+						ZO_WorldMapScroll:SetWidth(value)
+						if addon.modeData.keepSquare then
+							self.account.height = ZO_WorldMap:GetHeight() - ZO_WorldMapScroll:GetHeight() + value
+							ZO_WorldMapScroll:SetHeight(value)
+						end
+						self:RestorePosition()
+						updateLocationSettings()
+					end
+				},
+				{
+					type = LibHarvensAddonSettings.ST_SLIDER,
+					label = GetString(SI_VOTANSMINIMAP_GRID_H),
+					tooltip = GetString(SI_VOTANSMINIMAP_GRID_TOOLTIP),
+					default = 304 / 8,
+					min = 14,
+					max = 100000,
+					step = 1,
+					getFunction = function()
+						return math.floor((addon.modeData.keepSquare and ZO_WorldMapScroll:GetWidth() or ZO_WorldMapScroll:GetHeight()) / 8)
+					end,
+					setFunction = function(value)
+						value = value * 8
+						self.account.height = ZO_WorldMap:GetHeight() - ZO_WorldMapScroll:GetHeight() + value
+						ZO_WorldMapScroll:SetHeight(value)
+						if addon.modeData.keepSquare then
+							self.account.width = ZO_WorldMap:GetWidth() - ZO_WorldMapScroll:GetWidth() + value
+							ZO_WorldMapScroll:SetWidth(value)
+						end
+						self:RestorePosition()
+						updateLocationSettings()
+					end
+				}
+			}
+		)
+		getScreenDimensions()
+
 		settings:AddSetting {
 			type = LibHarvensAddonSettings.ST_DROPDOWN,
 			label = GetString(SI_VOTANSMINIMAP_BORDER_STYLE),
