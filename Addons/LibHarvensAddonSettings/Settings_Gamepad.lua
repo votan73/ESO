@@ -703,7 +703,6 @@ function LibHarvensAddonSettings:CreateAddonSettingsPanel()
 
 	self.scrollList = Settings_ParametricList:New(control)
 	self.list = self.scrollList:GetMainList()
-	self.scrollList:SetCurrentList(self.list)
 
 	CALLBACK_MANAGER:RegisterCallback(
 		"LibHarvensAddonSettings_AddonSelected",
