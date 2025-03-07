@@ -1,3 +1,7 @@
+if IsConsoleUI() then
+	return
+end
+
 local LibHarvensAddonSettings = LibHarvensAddonSettings
 
 local TOOLTIPS = {
