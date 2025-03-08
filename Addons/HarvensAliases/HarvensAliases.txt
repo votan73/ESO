@@ -1,0 +1,11 @@
+; This Add-on is not created by, affiliated with or sponsored by ZeniMax
+; Media Inc. or its affiliates. The Elder Scrolls® and related logos are
+; registered trademarks or trademarks of ZeniMax Media Inc. in the United
+; States and/or other countries. All rights reserved.
+
+## Title: Harven's Aliases
+## APIVersion: 100030
+## SavedVariables: HarvensAliases_SavedVariables
+## Description: This very simple addon allows you to add an alias to any command. The command do not have to even exist. The addon should be compatible with all addons. Commands: |c00ff00/addalias|r, |c00ff00/delalias|r, |c00ff00/listaliases|r
+
+HarvensAliases.lua
