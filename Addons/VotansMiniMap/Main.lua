@@ -53,7 +53,7 @@ end
 
 function addon:InitTweaks()
 	local function ZoomDone()
-		return self.panZoom.targetNormalizedZoom == nil
+		return self.panZoom.targetNormalizedZoom == nil and self.panZoom:CanInitializeMap()
 	end
 	do
 		local task = async:Create("VOTAN_RefreshAllPOIs")
