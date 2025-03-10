@@ -1426,10 +1426,10 @@ local currentFilter = ""
 
 local function WaitForLibGPS(measuring)
 	if measuring then
-		ZO_WorldMap_SetCustomPinEnabled(data.pinTypeId, false)
+		data.pinManager:SetCustomPinEnabled(data.pinTypeId, false)
 	else
 		measureReady = true
-		ZO_WorldMap_SetCustomPinEnabled(data.pinTypeId, data.player.showPins[currentFilter] ~= false)
+		data.pinManager:SetCustomPinEnabled(data.pinTypeId, data.player.showPins[currentFilter] ~= false)
 		data:RefreshPins()
 	end
 end
@@ -1452,7 +1452,7 @@ local function AddFilter()
 		if mapPinGroup == data.pinTypeId then
 			data.player.showPins[panelToFilter[current]] = shown
 			if not gps:IsMeasuring() and panelToFilter[current] == currentFilter then
-				ZO_WorldMap_SetCustomPinEnabled(data.pinTypeId, shown)
+				data.pinManager:SetCustomPinEnabled(data.pinTypeId, shown)
 				data:RefreshPins()
 			end
 		else
@@ -1466,22 +1466,32 @@ local function AddFilter()
 		panelToFilter[panel] = filter
 		panel:AddPinFilterCheckBox(data.pinTypeId, FilterCallback, GetString(SI_FISHERMAN))
 	end
-	local self = WORLD_MAP_FILTERS
-	AddCheckBox(self.pvePanel, "pve")
-	AddCheckBox(self.pvpPanel, "pvp")
-	AddCheckBox(self.imperialPvPPanel, "imperialPvP")
-	AddCheckBox(self.battlegroundPanel, "battleground")
-	local self = GAMEPAD_WORLD_MAP_FILTERS
-	AddCheckBox(self.pvePanel, "pve")
-	AddCheckBox(self.pvpPanel, "pvp")
-	AddCheckBox(self.imperialPvPPanel, "imperialPvP")
-	AddCheckBox(self.battlegroundPanel, "battleground")
+	if WORLD_MAP_FILTERS then
+		local self = WORLD_MAP_FILTERS
+		AddCheckBox(self.pvePanel, "pve")
+		AddCheckBox(self.pvpPanel, "pvp")
+		AddCheckBox(self.imperialPvPPanel, "imperialPvP")
+		AddCheckBox(self.battlegroundPanel, "battleground")
+		AddCheckBox(self.globalPanel, "global")
+	end
+	if GAMEPAD_WORLD_MAP_FILTERS then
+		local self = GAMEPAD_WORLD_MAP_FILTERS
+		AddCheckBox(self.pvePanel, "pve")
+		AddCheckBox(self.pvpPanel, "pvp")
+		AddCheckBox(self.imperialPvPPanel, "imperialPvP")
+		AddCheckBox(self.battlegroundPanel, "battleground")
+		AddCheckBox(self.globalPanel, "global")
+	end
 
 	local function OnMapChanged()
 		local filters = (IsInGamepadPreferredMode() and GAMEPAD_WORLD_MAP_FILTERS or WORLD_MAP_FILTERS).currentPanel
 		currentFilter = panelToFilter[filters]
-		WORLD_MAP_FILTERS.currentPanel:SetPinFilter(data.pinTypeId, data.player.showPins[currentFilter] ~= false)
-		GAMEPAD_WORLD_MAP_FILTERS.currentPanel:SetPinFilter(data.pinTypeId, data.player.showPins[currentFilter] ~= false)
+		if WORLD_MAP_FILTERS then
+			WORLD_MAP_FILTERS.currentPanel:SetPinFilter(data.pinTypeId, data.player.showPins[currentFilter] ~= false)
+		end
+		if GAMEPAD_WORLD_MAP_FILTERS then
+			GAMEPAD_WORLD_MAP_FILTERS.currentPanel:SetPinFilter(data.pinTypeId, data.player.showPins[currentFilter] ~= false)
+		end
 	end
 	OnMapChanged()
 	CALLBACK_MANAGER:RegisterCallback("OnWorldMapChanged", OnMapChanged)
@@ -2174,7 +2184,7 @@ function data:RefreshPins()
 	local refreshPinsTimeout = "FishermanRefreshPinsTimeout"
 	local function DoRefreshPins()
 		em:UnregisterForUpdate(refreshPinsTimeout)
-		ZO_WorldMap_RefreshCustomPinsOfType(self.pinTypeId)
+		self.pinManager:RefreshCustomPins(self.pinTypeId)
 	end
 	em:UnregisterForUpdate(refreshPinsTimeout)
 	em:RegisterForUpdate(refreshPinsTimeout, 300, DoRefreshPins)
@@ -2462,9 +2472,9 @@ function data:AddPinType()
 		end
 	}
 
-	ZO_WorldMap_AddCustomPin(self.pinType, FyrMM and LayoutPinsWithMiniMap or LayoutPins, nil, self.layout, self.tooltip)
+	self.pinManager:AddCustomPin(self.pinType, FyrMM and LayoutPinsWithMiniMap or LayoutPins, nil, self.layout, self.tooltip)
 	data.pinTypeId = _G[self.pinType]
-	ZO_WorldMap_SetCustomPinEnabled(self.pinTypeId, false)
+	self.pinManager:SetCustomPinEnabled(self.pinTypeId, false)
 
 	ZO_CreateStringId("SI_MAPFILTER" .. self.pinTypeId, data.title)
 
@@ -2510,7 +2520,7 @@ function data:InitSettings()
 		name = data.title,
 		displayName = data.title,
 		author = "votan",
-		version = "1.16.0",
+		version = "1.16.1",
 		-- slashCommand = "",
 		-- registerForRefresh = true,
 		registerForDefaults = true,
