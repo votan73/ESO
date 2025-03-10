@@ -125,9 +125,6 @@ function addon:InitTweaks()
 			return GetMapType() == MAPTYPE_COSMIC
 		end
 
-		local function IsNormalizedPointInsideMapBounds(x, y)
-			return x > 0 and x < 1 and y > 0 and y < 1
-		end
 		local orgZO_WorldMap_PanToWayshrine = ZO_WorldMap_PanToWayshrine
 		local running = false
 		local pendingWayshrineNode = nil
@@ -141,32 +138,121 @@ function addon:InitTweaks()
 
 		local MAP_PIN_TYPE_FAST_TRAVEL_WAYSHRINE_CURRENT_LOC = MAP_PIN_TYPE_FAST_TRAVEL_WAYSHRINE_CURRENT_LOC
 		local MAP_PIN_TYPE_FAST_TRAVEL_WAYSHRINE = MAP_PIN_TYPE_FAST_TRAVEL_WAYSHRINE
-		local createTag, nodeInfo, g_fastTravelNodeIndex = ZO_MapPin.CreateTravelNetworkPinTag, GetFastTravelNodeInfo
-		local function DrawPin(nodeIndex)
-			local known, name, normalizedX, normalizedY, icon, glowIcon, poiType, isLocatedInCurrentMap, linkedCollectibleIsLocked = nodeInfo(nodeIndex)
+		local g_fastTravelNodeIndex
+		local isShowingWayshrines
+		local isShowingDungeons
+		local isShowingTrials
+		local isShowingHouses
+		local showPriorityFastTravelOnly
+		local priorityWayshrinesByZone
 
-			if known and isLocatedInCurrentMap and IsNormalizedPointInsideMapBounds(normalizedX, normalizedY) then
-				local isCurrentLoc = g_fastTravelNodeIndex == nodeIndex
-				if isCurrentLoc then
-					glowIcon = nil
+		local function DrawPin(nodeIndex)
+			local known, name, normalizedX, normalizedY, icon, glowIcon, poiType, isLocatedInCurrentMap, linkedCollectibleIsLocked = GetFastTravelNodeInfo(nodeIndex)
+			local zoneIndex, poiIndex = GetFastTravelNodePOIIndicies(nodeIndex)
+			local instanceType = GetPOIInstanceType(zoneIndex, poiIndex)
+
+			local passesFilter = false
+			if poiType == POI_TYPE_HOUSE then
+				passesFilter = isShowingHouses
+			elseif poiType == POI_TYPE_WAYSHRINE then
+				passesFilter = isShowingWayshrines
+			elseif instanceType == INSTANCE_TYPE_RAID then
+				passesFilter = isShowingTrials
+			else
+				passesFilter = isShowingDungeons
+			end
+
+			if passesFilter and known and isLocatedInCurrentMap and ZO_WorldMap_IsNormalizedPointInsideMapBounds(normalizedX, normalizedY) then
+				local suppressPin = false
+				if showPriorityFastTravelOnly then
+					if poiType == POI_TYPE_HOUSE then
+						-- Only favorite/primary houses are priority
+						local houseId = GetFastTravelNodeHouseId(nodeIndex)
+						if not IsPrimaryHouse(houseId) then
+							local collectibleId = GetCollectibleIdForHouse(houseId)
+							local userFlags = GetCollectibleUserFlags(collectibleId)
+							if not ZO_FlagHelpers.MaskHasFlag(userFlags, COLLECTIBLE_USER_FLAG_FAVORITE) then
+								suppressPin = true
+							end
+						end
+					end
 				end
 
-				local pinType = isCurrentLoc and MAP_PIN_TYPE_FAST_TRAVEL_WAYSHRINE_CURRENT_LOC or MAP_PIN_TYPE_FAST_TRAVEL_WAYSHRINE
+				if not suppressPin then
+					local isCurrentLoc = g_fastTravelNodeIndex == nodeIndex
 
-				addon.pinManager:CreatePin(pinType, createTag(nodeIndex, icon, glowIcon, linkedCollectibleIsLocked), normalizedX, normalizedY)
+					if isCurrentLoc then
+						glowIcon = nil
+					end
+
+					local tag = ZO_MapPin.CreateTravelNetworkPinTag(nodeIndex, icon, glowIcon, linkedCollectibleIsLocked, poiType)
+					local pinType = isCurrentLoc and MAP_PIN_TYPE_FAST_TRAVEL_WAYSHRINE_CURRENT_LOC or MAP_PIN_TYPE_FAST_TRAVEL_WAYSHRINE
+					local mapPriority = nil
+					if showPriorityFastTravelOnly and poiType == POI_TYPE_WAYSHRINE then
+						-- Can return nil, which means ignore prioritization rules and always show (designer controlled)
+						mapPriority = GetFastTravelNodeMapPriority(nodeIndex)
+					end
+
+					if mapPriority then
+						if IsFastTravelNodeAutoDiscovered(nodeIndex) then
+							-- Prefer auto discovered when priorities are the same
+							mapPriority = mapPriority + 0.5
+						end
+
+						local priorityWayshrineInfo = priorityWayshrinesByZone[zoneIndex]
+
+						if not priorityWayshrineInfo or priorityWayshrineInfo.mapPriority < mapPriority then
+							if not priorityWayshrineInfo then
+								priorityWayshrineInfo = {}
+								priorityWayshrinesByZone[zoneIndex] = priorityWayshrineInfo
+							end
+							priorityWayshrineInfo.mapPriority = mapPriority
+							priorityWayshrineInfo.pinType = pinType
+							priorityWayshrineInfo.tag = tag
+							priorityWayshrineInfo.normalizedX = normalizedX
+							priorityWayshrineInfo.normalizedY = normalizedY
+						end
+					else
+						addon.pinManager:CreatePin(pinType, tag, normalizedX, normalizedY)
+					end
+				end
 			end
 		end
 		local function RemovePins(task)
 			addon.pinManager:RemovePins("fastTravelWayshrine")
-			-- Dungeons no longer show wayshrines of any kind (possibly pending some system rework)
-			-- Design rule, don't show wayshrine pins on cosmic, even if they're in the map
-			if IsShowingCosmicMap() or not ZO_WorldMap_IsPinGroupShown(MAP_FILTER_WAYSHRINES) then
+			if IsShowingCosmicMap() then
 				return
 			end
-			createTag, nodeInfo, g_fastTravelNodeIndex = ZO_MapPin.CreateTravelNetworkPinTag, GetFastTravelNodeInfo, ZO_Map_GetFastTravelNode()
+
+			-- Dungeon maps no longer show wayshrines of any kind (possibly pending some system rework)
+			-- Filters are split, with the "Wayshrines" filter being explicitly lore Wayshrines
+			isShowingWayshrines = ZO_WorldMap_IsPinGroupShown(MAP_FILTER_WAYSHRINES)
+			isShowingDungeons = ZO_WorldMap_IsPinGroupShown(MAP_FILTER_DUNGEONS)
+			isShowingTrials = ZO_WorldMap_IsPinGroupShown(MAP_FILTER_TRIALS)
+			isShowingHouses = ZO_WorldMap_IsPinGroupShown(MAP_FILTER_HOUSES)
+			if not (isShowingWayshrines or isShowingDungeons or isShowingTrials or isShowingHouses) then
+				return
+			end
+
+			showPriorityFastTravelOnly = not addon.account.showAllTravelNodes and ShouldMapShowPriorityFastTravelOnly() or false -- This refers to all 4 kinds of fast travel
+			priorityWayshrinesByZone = showPriorityFastTravelOnly and {}
+
+			g_fastTravelNodeIndex = ZO_Map_GetFastTravelNode()
 			task:WaitUntil(ZoomDone):Then(
 				function(task)
 					task:For(1, GetNumFastTravelNodes()):Do(DrawPin)
+				end
+			)
+			if not showPriorityFastTravelOnly then
+				return
+			end
+			task:Then(
+				function(task)
+					task:For(pairs(priorityWayshrinesByZone)):Do(
+						function(_, info)
+							addon.pinManager:CreatePin(info.pinType, info.tag, info.normalizedX, info.normalizedY)
+						end
+					)
 				end
 			)
 		end
@@ -1533,7 +1619,8 @@ function addon:Initialize()
 		showMounted = true,
 		showCombat = false,
 		showSiege = false,
-		fixedMaps = {}
+		fixedMaps = {},
+		showAllTravelNodes = false
 	}
 	self.accountDefaults = accountDefaults
 

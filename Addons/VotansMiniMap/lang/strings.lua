@@ -94,6 +94,8 @@ ZO_CreateStringId("SI_VOTANSMINIMAP_PINSIZE_KEEP_FAST_TRAVEL", "Transitus Shrine
 ZO_CreateStringId("SI_VOTANSMINIMAP_PINSIZE_KEEPS", "Keeps")
 ZO_CreateStringId("SI_VOTANSMINIMAP_PINSIZE_DISTRICTS", "Districts")
 
+ZO_CreateStringId("SI_VOTANSMINIMAP_SHOW_ALL_TRAVEL_NODES", "Show all way shrines")
+ZO_CreateStringId("SI_VOTANSMINIMAP_SHOW_IN_SETTINGS", "Show mini map now")
 ZO_CreateStringId("SI_VOTANSMINIMAP_GRID_X", "Position - Grid X")
 ZO_CreateStringId("SI_VOTANSMINIMAP_GRID_Y", "Position - Grid Y")
 ZO_CreateStringId("SI_VOTANSMINIMAP_GRID_W", "Size - Grid Width")

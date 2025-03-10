@@ -96,6 +96,8 @@ SafeAddString(SI_VOTANSMINIMAP_PINSIZE_KEEP_FAST_TRAVEL, "Transitus-Schrein")
 SafeAddString(SI_VOTANSMINIMAP_PINSIZE_KEEPS, "Burgen")
 SafeAddString(SI_VOTANSMINIMAP_PINSIZE_DISTRICTS, "Distrikte")
 
+SafeAddString(SI_VOTANSMINIMAP_SHOW_ALL_TRAVEL_NODES, "Alle Wegschreine anzeigen")
+SafeAddString(SI_VOTANSMINIMAP_SHOW_IN_SETTINGS, "Mini Map jetzt einblenden")
 SafeAddString(SI_VOTANSMINIMAP_GRID_X, "Position - Raster X")
 SafeAddString(SI_VOTANSMINIMAP_GRID_Y, "Position - Raster Y")
 SafeAddString(SI_VOTANSMINIMAP_GRID_W, "Größe - Raster Breite")

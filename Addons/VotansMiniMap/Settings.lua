@@ -465,7 +465,7 @@ function addon:InitSettings()
 			{
 				{
 					type = LibHarvensAddonSettings.ST_CHECKBOX,
-					label = "Show map now",
+					label = GetString(SI_VOTANSMINIMAP_SHOW_IN_SETTINGS),
 					default = false,
 					getFunction = function()
 						return self.wasMapAdded
@@ -842,6 +842,19 @@ function addon:InitSettings()
 			setFunction = function(value)
 				self.account.showOnTop = value
 				self:UpdateDrawLevel()
+			end
+		}
+
+		settings:AddSetting {
+			type = LibHarvensAddonSettings.ST_CHECKBOX,
+			label = GetString(SI_VOTANSMINIMAP_SHOW_ALL_TRAVEL_NODES),
+			tooltip = GetString(SI_VOTANSMINIMAP_SHOW_ALL_TRAVEL_NODES_TOOLTIP),
+			default = self.accountDefaults.showAllTravelNodes,
+			getFunction = function()
+				return self.account.showAllTravelNodes
+			end,
+			setFunction = function(value)
+				self.account.showAllTravelNodes = value
 			end
 		}
 
