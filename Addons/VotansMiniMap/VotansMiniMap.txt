@@ -1,12 +1,12 @@
 ## Title: Votan's Minimap
 ## Author: votan
 ## APIVersion: 101044 101045
-## Version: 2.1.0
+## Version: 2.1.1
 ## DependsOn: LibHarvensAddonSettings>=10705 LibAsync>=30001
 ## OptionalDependsOn: LibGPS>=69 TweakIt TrueExploration LibDebugLogger
 ## SavedVariables: VotansMiniMap_Data
 
-## This Add-On is not created by, affiliated with or sponsored by ZeniMax Media Inc. or its affiliates. The Elder Scrolls� and related logos are registered trademarks or trademarks of ZeniMax Media Inc. in the United States and/or other countries. All rights reserved.
+## This Add-On is not created by, affiliated with or sponsored by ZeniMax Media Inc. or its affiliates. The Elder Scrolls© and related logos are registered trademarks or trademarks of ZeniMax Media Inc. in the United States and/or other countries. All rights reserved.
 
 lang/strings.lua
 lang/$(language).lua

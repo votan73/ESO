@@ -426,9 +426,9 @@ function addon:InitTweaks()
 
 				updatePlayerPinLevel()
 
-				--if GetScene():IsShowing() then
-				--	return orgUpdatePinsForMapSizeChange(self)
-				--end
+				if GetScene():IsShowing() then
+					return orgUpdatePinsForMapSizeChange(self)
+				end
 
 				task:Call(resizePins)
 			end
