@@ -4,9 +4,9 @@
 ; States and/or other countries. All rights reserved.
 
 ## Title: Harven's Trait and Style
-## Version: 2.10.2
+## Version: 2.10.3
 ## Author: Harven & votan
-## APIVersion: 101032 101033
+## APIVersion: 101044 101045
 ## Description: This addon adds an additional information to the armor/weapon item's tooltip. The information includes armor/weapon style and knowledge about a trait.
 ## SavedVariables: HarvensTraitAndStyle_SavedVariables
 ## DependsOn: LibHarvensAddonSettings>=10705

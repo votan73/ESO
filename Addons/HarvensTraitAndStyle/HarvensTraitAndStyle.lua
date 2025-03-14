@@ -38,11 +38,11 @@ local function getStyleHeaderLine(styleIndex)
 
 	if g_savedVars.colorizeStyle then
 		if styleIndex >= ITEMSTYLE_RACIAL_BRETON and styleIndex <= ITEMSTYLE_RACIAL_KHAJIIT then
-			color = GetItemQualityColor(ITEM_QUALITY_ARCANE)
+			color = GetItemQualityColor(ITEM_FUNCTIONAL_QUALITY_ARCANE)
 		elseif styleIndex == ITEMSTYLE_RACIAL_IMPERIAL or styleIndex == ITEMSTYLE_AREA_DWEMER or styleIndex == ITEMSTYLE_AREA_XIVKYN or styleIndex == ITEMSTYLE_GLASS then
-			color = GetItemQualityColor(ITEM_QUALITY_LEGENDARY)
+			color = GetItemQualityColor(ITEM_FUNCTIONAL_QUALITY_LEGENDARY)
 		else
-			color = GetItemQualityColor(ITEM_QUALITY_ARTIFACT)
+			color = GetItemQualityColor(ITEM_FUNCTIONAL_QUALITY_ARTIFACT)
 		end
 	end
 
@@ -465,7 +465,6 @@ function HarvensTraitAndStyle:InitHooks()
 		[WEAPONTYPE_TWO_HANDED_SWORD] = CRAFTING_TYPE_BLACKSMITHING,
 		[WEAPONTYPE_TWO_HANDED_AXE] = CRAFTING_TYPE_BLACKSMITHING,
 		[WEAPONTYPE_TWO_HANDED_HAMMER] = CRAFTING_TYPE_BLACKSMITHING,
-		[WEAPONTYPE_PROP] = CRAFTING_TYPE_INVALID, -- what's that?
 		[WEAPONTYPE_BOW] = CRAFTING_TYPE_WOODWORKING,
 		[WEAPONTYPE_HEALING_STAFF] = CRAFTING_TYPE_WOODWORKING,
 		[WEAPONTYPE_RUNE] = CRAFTING_TYPE_INVALID,
@@ -519,7 +518,6 @@ function HarvensTraitAndStyle:InitHooks()
 		[WEAPONTYPE_HAMMER] = 2,
 		[WEAPONTYPE_HEALING_STAFF] = 5,
 		[WEAPONTYPE_LIGHTNING_STAFF] = 4,
-		[WEAPONTYPE_PROP] = 0,
 		[WEAPONTYPE_RUNE] = 0,
 		[WEAPONTYPE_SHIELD] = 6,
 		[WEAPONTYPE_SWORD] = 3,
@@ -541,7 +539,7 @@ function HarvensTraitAndStyle:InitSettings()
 	if not settings then
 		return
 	end
-	settings.version = "2.10.2"
+	settings.version = "2.10.3"
 
 	settings:AddSetting {
 		type = LibHarvensAddonSettings.ST_CHECKBOX,
