@@ -1,4 +1,3 @@
-ZO_CreateStringId("SI_VOTANS_TAMRIEL_MAP_HIDE_TRAVEL_PINS","Hide Travel Pins")
 ZO_CreateStringId("SI_VOTANS_TAMRIEL_MAP_FONT", "Font")
 --"Color"
 --"Opacity"
@@ -22,3 +21,5 @@ ZO_CreateStringId("SI_VOTANS_TAMRIEL_MAP_FONT_BASE_DLC", "Base Game/DLC")
 ZO_CreateStringId("SI_VOTANS_TAMRIEL_MAP_FONT_NO_COLOR", "No Color")
 
 ZO_CreateStringId("SI_VOTANS_TAMRIEL_MAP_SHOW_CITIES_NAME", "Show City Names")
+
+ZO_CreateStringId("SI_VOTANS_TAMRIEL_MAP_SHOW_LOCATIONS", "Show Regions")

@@ -1,4 +1,3 @@
-SafeAddString(SI_VOTANS_TAMRIEL_MAP_HIDE_TRAVEL_PINS, "Wegschrein Pins ausblenden")
 SafeAddString(SI_VOTANS_TAMRIEL_MAP_FONT, "Schriftart")
 
 SafeAddString(SI_VOTANS_TAMRIEL_MAP_FONT_NONE, "Keinen")
@@ -20,3 +19,4 @@ SafeAddString(SI_VOTANS_TAMRIEL_MAP_FONT_BASE_DLC, "Base Game/DLC")
 SafeAddString(SI_VOTANS_TAMRIEL_MAP_FONT_NO_COLOR, "Keine Farben")
 
 SafeAddString(SI_VOTANS_TAMRIEL_MAP_SHOW_CITIES_NAME, "Städtenamen anzeigen")
+SafeAddString(SI_VOTANS_TAMRIEL_MAP_SHOW_LOCATIONS, "Gebiete anzeigen")

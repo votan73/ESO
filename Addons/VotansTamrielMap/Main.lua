@@ -20,7 +20,8 @@
 			-- "Kluftspitze",
 			alliance = ALLIANCE_DAGGERFALL_COVENANT,
 			zoneOrder = 4,
-			poi = 55
+			poi = 55,
+			labelY = -0.0125
 		},
 		-- [4] =
 		{
@@ -34,21 +35,25 @@
 			-- "Alik'r-Wüste",
 			alliance = ALLIANCE_DAGGERFALL_COVENANT,
 			zoneOrder = 5,
-			poi = 43
+			poi = 43,
+			labelX = 0.01
 		},
 		-- [6] =
 		{
 			-- "Bangkorai",
 			alliance = ALLIANCE_DAGGERFALL_COVENANT,
 			zoneOrder = 6,
-			poi = 33
+			poi = 33,
+			labelY = 0.02
 		},
 		-- [7] =
 		{
 			-- "Grahtwald",
 			alliance = ALLIANCE_ALDMERI_DOMINION,
 			zoneOrder = 3,
-			poi = 214
+			poi = 214,
+			labelX = -0.0125,
+			labelY = -0.03
 		},
 		-- [8] =
 		{
@@ -76,7 +81,8 @@
 			-- "Steinfälle",
 			alliance = ALLIANCE_EBONHEART_PACT,
 			zoneOrder = 2,
-			poi = 67
+			poi = 65,
+			labelY = 0.035
 		},
 		-- [12] =
 		{
@@ -90,7 +96,8 @@
 			-- "Ostmarsch",
 			alliance = ALLIANCE_EBONHEART_PACT,
 			zoneOrder = 5,
-			poi = 87
+			poi = 87,
+			labelY = 0.0125
 		},
 		-- [14] =
 		{
@@ -102,14 +109,17 @@
 			-- "Auridon",
 			alliance = ALLIANCE_ALDMERI_DOMINION,
 			zoneOrder = 2,
-			poi = 177
+			poi = 177,
+			labelX = -0.0125,
+			labelY = -0.025
 		},
 		-- [16] =
 		{
 			-- "Grünschatten",
 			alliance = ALLIANCE_ALDMERI_DOMINION,
 			zoneOrder = 4,
-			poi = 143
+			poi = 143,
+			labelY = -0.025
 		},
 		-- [17] =
 		{
@@ -125,7 +135,9 @@
 			zoneOrder = 1,
 			poi = 173,
 			offsetX = -0.05,
-			offsetY = -0.1
+			offsetY = -0.1,
+			labelX = -0.0175,
+			labelY = -0.03
 		},
 		-- [19] =
 		{
@@ -157,7 +169,8 @@
 			zoneOrder = 1,
 			poi = 172,
 			offsetX = 0,
-			offsetY = 0.2
+			offsetY = 0.2,
+			labelY = -0.005
 		},
 		-- [23] =
 		{
@@ -176,18 +189,23 @@
 		{
 			-- "Kargstein",
 			alliance = 100,
-			poi = 220
+			poi = 220,
+			labelX = -0.0125,
+			labelY = -0.025
 		},
 		-- [26] =
 		{
 			-- "Kaiserstadt",
-			alliance = 100
+			alliance = 100,
+			labelX = -0.025
 		},
 		-- [27] =
 		{
 			-- "Wrothgar",
 			alliance = ALLIANCE_DAGGERFALL_COVENANT,
-			poi = 244
+			poi = 244,
+			labelX = 0.0125,
+			labelY = -0.0125
 		},
 		-- [28] =
 		{
@@ -201,7 +219,9 @@
 		{
 			-- "Gold Coast",
 			alliance = 100,
-			poi = 251
+			poi = 251,
+			labelX = 0.0125,
+			labelY = -0.0125
 		},
 		-- [30] =
 		{
@@ -247,13 +267,15 @@
 		{
 			-- "Northern Elswyer",
 			alliance = ALLIANCE_ALDMERI_DOMINION,
-			poi = 382
+			poi = 382,
+			labelY = 0.0125
 		},
 		-- [37] =
 		{
 			-- "Southern Elswyer",
 			alliance = ALLIANCE_ALDMERI_DOMINION,
-			poi = 402
+			poi = 402,
+			labelY = -0.0125
 		},
 		-- [38] =
 		{
@@ -282,13 +304,14 @@
 		{
 			-- "Reik",
 			alliance = ALLIANCE_EBONHEART_PACT,
-			poi = 449
+			poi = 449,
+			labelX = 0.025
 		},
 		-- [43] =
 		{
 			-- "Blackwood",
 			alliance = 999,
-			poi = 467
+			poi = 458
 		},
 		-- [44] =
 		{
@@ -324,7 +347,9 @@
 		{
 			-- "Telvani",
 			alliance = ALLIANCE_EBONHEART_PACT,
-			poi = 536
+			poi = 536,
+			labelX = 0.0125,
+			labelY = -0.005
 		},
 		-- [50] =
 		{
@@ -399,6 +424,7 @@ function addon:InitSettings()
 		titleFont = "ANTIQUE_FONT",
 		color = "Alliance",
 		opacity = 50,
+		showLocations = true,
 		showCitiesNames = true
 	}
 	self.account = ZO_SavedVars:NewAccountWide("VotansTamrielMap_Data", 1, nil, accountDefaults)
@@ -410,21 +436,21 @@ function addon:InitSettings()
 	end
 	addon.settingsControls = settings
 	settings.allowDefaults = true
-	settings.version = "1.2.2"
+	settings.version = "1.2.3"
 	settings.website = "https://www.esoui.com/downloads/info2672-VotansTamrielMap.html"
 
-	settings:AddSetting {
-		type = LibHarvensAddonSettings.ST_CHECKBOX,
-		label = GetString(SI_VOTANS_TAMRIEL_MAP_HIDE_TRAVEL_PINS),
-		tooltip = "",
-		default = accountDefaults.hidePins,
-		getFunction = function()
-			return self.account.hidePins
-		end,
-		setFunction = function(value)
-			self.account.hidePins = value
-		end
-	}
+	-- settings:AddSetting {
+	-- 	type = LibHarvensAddonSettings.ST_CHECKBOX,
+	-- 	label = GetString(SI_VOTANS_TAMRIEL_MAP_HIDE_TRAVEL_PINS),
+	-- 	tooltip = "",
+	-- 	default = accountDefaults.hidePins,
+	-- 	getFunction = function()
+	-- 		return self.account.hidePins
+	-- 	end,
+	-- 	setFunction = function(value)
+	-- 		self.account.hidePins = value
+	-- 	end
+	-- }
 
 	local function createFont()
 		local size, sizeCity = unpack(lookup.fontSizes[self.account.titleFont])
@@ -496,6 +522,18 @@ function addon:InitSettings()
 
 	settings:AddSetting {
 		type = LibHarvensAddonSettings.ST_CHECKBOX,
+		label = GetString(SI_VOTANS_TAMRIEL_MAP_SHOW_LOCATIONS),
+		tooltip = "",
+		default = accountDefaults.showLocations,
+		getFunction = function()
+			return self.account.showLocations
+		end,
+		setFunction = function(value)
+			self.account.showLocations = value
+		end
+	}
+	settings:AddSetting {
+		type = LibHarvensAddonSettings.ST_CHECKBOX,
 		label = GetString(SI_VOTANS_TAMRIEL_MAP_SHOW_CITIES_NAME),
 		tooltip = "",
 		default = accountDefaults.showCitiesNames,
@@ -528,6 +566,11 @@ function MapBlobManager:New(blobContainer)
 		return MapOverlayControlFactory(pool, "VotansTamrielMapBlob", "VotansTamrielBlobControl", blobContainer)
 	end
 	return ZO_ObjectPool.New(self, blobFactory, ZO_ObjectPool_DefaultResetControl)
+end
+
+local function NormalizedLabelDataToUI(x, y)
+	local w, h = ZO_WorldMapContainer:GetDimensions()
+	return (x or 0) * w, (y or 0) * h
 end
 
 local function NormalizedBlobDataToUI(blobWidth, blobHeight, blobXOffset, blobYOffset)
@@ -568,6 +611,7 @@ function MapBlobManager:Update(normalizedMouseX, normalizedMouseY)
 				ShowMapTexture(blob, textureFile, textureUIWidth, textureUIHeight, textureXOffset, textureYOffset)
 				blob.label:SetFont(addon.titleFont)
 				blob.label:SetText(ZO_CachedStrFormat(SI_WORLD_MAP_LOCATION_NAME, locationName))
+				blob.label:SetAlpha(math.max(0, 3 - self.m_zoom * 2.2))
 				return blob
 			end
 		end
@@ -592,6 +636,8 @@ end
 function addon:RenderMap(isTamriel)
 	local positions = self.positions
 	local bm, gps = self.blobManager, LibGPS3
+	local hidePins = not ZO_WorldMap_IsPinGroupShown(MAP_FILTER_WAYSHRINES)
+	local showCities, showLocations = self.account.showCitiesNames, self.account.showLocations
 	for i, pos in pairs(positions) do
 		local x, y = pos:GetOffset()
 		local w, h = pos:GetScale()
@@ -601,7 +647,12 @@ function addon:RenderMap(isTamriel)
 			local location = self.locations[i]
 			if location and (not location.cosmic) == isTamriel then
 				local blob = bm:Update(location.blobX or x, location.blobY or y)
-				if location and blob then
+				if blob then
+					blob.label:SetHidden(not showLocations)
+					if showLocations then
+						local locXN, locYN = NormalizedLabelDataToUI(location.labelX, location.labelY)
+						blob.label:SetAnchor(CENTER, nil, CENTER, locXN, locYN)
+					end
 					local color = self:GetColor(location)
 					local r, g, b, a = color:UnpackRGBA()
 					blob:SetColor(1, 1, 1, 1, a)
@@ -615,30 +666,23 @@ function addon:RenderMap(isTamriel)
 					blob.city:SetFont(self.cityFont)
 					blob.city:SetText(ZO_CachedStrFormat("<<!AC:1>>", location.locationName))
 
-					if location.poi and self.account.showCitiesNames then
+					if location.poi and showCities then
 						local locationName, locXN, locYN = select(2, GetFastTravelNodeInfo(location.poi))
+						x, y = x + (location.labelX or 0), y + (location.labelY or 0)
 						x, y, locXN, locYN = NormalizedBlobDataToUI(x, y, locXN, locYN)
+						locYN = locYN + (hidePins and -6 or 13)
 						local w, h1 = blob.label:GetDimensions()
 						local h1, h2 = h1 * 2 / 3, h1 / 3
-						if ((y - h1) < locYN and (y + h2) > locYN) and ((x - 64) < locXN and (x + 64) > locXN) then
+						if showLocations and blob.label:GetAlpha() > 0.1 and ((y - h1) < locYN and (y + h2) > locYN) and ((x - 64) < locXN and (x + 64) > locXN) then
 							blob.city:SetAnchor(TOP, blob.label, BOTTOM, 0, -3)
 						else
-							blob.city:SetAnchor(TOP, ZO_WorldMapContainer, TOPLEFT, locXN, locYN, 0, -6)
+							blob.city:SetAnchor(TOP, ZO_WorldMapContainer, TOPLEFT, locXN, locYN)
 						end
 					else
 						blob.city:ClearAnchors()
 					end
 
 					blob.city:SetHidden(not location.poi or not self.account.showCitiesNames)
-				elseif blob then
-					local color = self:GetDefaultColor(location)
-
-					local r, g, b, a = color:UnpackRGBA()
-					blob:SetColor(1, 1, 1, 1, a)
-					blob:SetColor(2, r, g, b, a)
-					blob:SetColor(3, r, g, b, a)
-					blob:SetColor(4, r, g, b, a)
-					blob.city:SetHidden(true)
 				end
 			end
 		end
@@ -652,6 +696,7 @@ end
 function addon:HookPOIPins()
 	local lessVisible = ZO_ColorDef:New(1, 1, 1, 0.5)
 	local GetCurrentMapIndex = GetCurrentMapIndex
+	local panZoom = ZO_WorldMap_GetPanAndZoom()
 	local function HookPinSize(data)
 		local orgMetaTable = getmetatable(data)
 		local orgSize = data.size or 40
@@ -662,11 +707,11 @@ function addon:HookPOIPins()
 		setmetatable(newMetaTable, orgMetaTable)
 		local alter = {}
 		alter.size = function()
-			return GetCurrentMapIndex() == 1 and 1 or orgSize
+			return GetCurrentMapIndex() == 1 and (orgSize * panZoom:GetCurrentNormalizedZoom()) or orgSize
 		end
-		alter.tint = function()
-			return GetCurrentMapIndex() == 1 and lessVisible or orgTint
-		end
+		--alter.tint = function()
+		--	return GetCurrentMapIndex() == 1 and lessVisible or orgTint
+		--end
 
 		newMetaTable.__index = function(data, key)
 			return alter[key] and alter[key](data) or newMetaTable[key]
@@ -687,18 +732,23 @@ function addon:HookPOIPins()
 	HookPinSize(ZO_MapPin.PIN_DATA[MAP_PIN_TYPE_FAST_TRAVEL_WAYSHRINE_CURRENT_LOC])
 end
 
-function addon:HookTravelInfo()
-	local orgGetFastTravelNodeInfo = GetFastTravelNodeInfo
-	function GetFastTravelNodeInfo(...)
-		if addon.account.hidePins then
-			local result = {orgGetFastTravelNodeInfo(...)}
-			result[8] = result[8] and GetCurrentMapIndex() ~= 1
-			return unpack(result)
-		else
-			return orgGetFastTravelNodeInfo(...)
-		end
-	end
-end
+-- function addon:HookTravelInfo()
+-- 	local orgGetFastTravelNodeInfo = GetFastTravelNodeInfo
+-- 	function GetFastTravelNodeInfo(...)
+-- 		if addon.account.hidePins and GetCurrentMapIndex() == 1 then
+-- 			local result = {orgGetFastTravelNodeInfo(...)}
+-- 			result[8] = false
+-- 			return unpack(result)
+-- 		else
+-- 			--return orgGetFastTravelNodeInfo(...)
+-- 			local result = {orgGetFastTravelNodeInfo(...)}
+-- 			if GetCurrentMapIndex() == 1 then
+-- 				result[6] = nil
+-- 			end
+-- 			return unpack(result)
+-- 		end
+-- 	end
+-- end
 function addon:Initialize()
 	self:InitSettings()
 	local gps = LibGPS3
@@ -736,7 +786,7 @@ function addon:Initialize()
 	self:ApplyColors()
 
 	--self:HookPOIPins()
-	self:HookTravelInfo()
+	-- self:HookTravelInfo()
 
 	local blobContainer = ZO_WorldMapContainer
 	self.blobManager = MapBlobManager:New(blobContainer)
@@ -768,9 +818,9 @@ function addon:Initialize()
 		end
 	end
 
-	ZO_WorldMap_AddCustomPin(self.pinType, LayoutPins, LayoutPins, self.layout)
+	ZO_WorldMap_GetPinManager():AddCustomPin(self.pinType, LayoutPins, LayoutPins, self.layout)
 	self.pinTypeId = _G[self.pinType]
-	ZO_WorldMap_SetCustomPinEnabled(self.pinTypeId, true)
+	ZO_WorldMap_GetPinManager():SetCustomPinEnabled(self.pinTypeId, true)
 end
 
 function addon:AddFont(font, displayText, size, sizeCity)

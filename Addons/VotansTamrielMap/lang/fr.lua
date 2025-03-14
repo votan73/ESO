@@ -1,5 +1,4 @@
 ﻿--Translation by @lexo1000
-SafeAddString(SI_VOTANS_TAMRIEL_MAP_HIDE_TRAVEL_PINS,"Cacher les marqueurs sur la carte")
 SafeAddString(SI_VOTANS_TAMRIEL_MAP_FONT, "Police du texte")
 --"Color"
 --"Opacity"
@@ -21,3 +20,6 @@ SafeAddString(SI_VOTANS_TAMRIEL_MAP_FONT_STONE_TABLET, "Stone Tablet")
 SafeAddString(SI_VOTANS_TAMRIEL_MAP_FONT_ALLIANCE, "Alliance")
 SafeAddString(SI_VOTANS_TAMRIEL_MAP_FONT_BASE_DLC, "Jeu de base/DLC")
 SafeAddString(SI_VOTANS_TAMRIEL_MAP_FONT_NO_COLOR, "Aucune")
+
+SafeAddString(SI_VOTANS_TAMRIEL_MAP_SHOW_CITIES_NAME, "Afficher les noms des villes")
+SafeAddString(SI_VOTANS_TAMRIEL_MAP_SHOW_LOCATIONS, "Afficher les zones")
