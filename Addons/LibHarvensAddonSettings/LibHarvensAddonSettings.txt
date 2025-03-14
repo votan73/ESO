@@ -5,15 +5,15 @@
 
 ## Title: LibHarvensAddonSettings
 ## Author: Harven, Votan
-## AddOnVersion: 20000
-## Version: 2.0.0
+## AddOnVersion: 20001
+## Version: 2.0.1
 ## APIVersion: 101044 101045
 ## IsLibrary: true
 ## Description: With this addon you can create and add your addon settings to the common settings page. The settings page can be found in Settings->Addons menu.
-## OptionalDependsOn: LibAddonMenu-2.0>=37
+## OptionalDependsOn: LibAddonMenu-2.0>=38
 
 Main.lua
-Settings_Keyboard.lua
+Keyboard\Settings.lua
 
-Controls_Gamepad.xml
-Settings_Gamepad.lua
+Console\Controls.xml
+Console\Settings.lua

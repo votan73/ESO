@@ -3,7 +3,7 @@ if LibHarvensAddonSettings then
 end
 
 LibHarvensAddonSettings = {}
-LibHarvensAddonSettings.version = 10901
+LibHarvensAddonSettings.version = 20001
 local LibHarvensAddonSettings = LibHarvensAddonSettings
 
 -----
