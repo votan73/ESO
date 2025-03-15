@@ -1,6 +1,6 @@
 -- Translation by @snorunt361(ESOUI),@Warashi-JP(github)
 
-ZO_CreateStringId("SI_VOTANSIMPROVEDLOCATIONS_SHOW_LEVELS", "メインクエストの順序で表示する")
+ZO_CreateStringId("SI_VOTANSIMPROVEDLOCATIONS_SHOW_LEVELS", "メインクエストの順序を表示する")
 ZO_CreateStringId("SI_VOTANSIMPROVEDLOCATIONS_SORT_ASC", "メインクエストの昇順で表示")
 ZO_CreateStringId("SI_VOTANSIMPROVEDLOCATIONS_SORT_DSC", "メインクエストの降順で表示")
 ZO_CreateStringId("SI_VOTANSIMPROVEDLOCATIONS_SORT", "並び順")
