@@ -1,4 +1,4 @@
--- Translation by @snorunt361
+-- Translation by @snorunt361(ESOUI),@Warashi-JP(github)
 
 SafeAddString(SI_KEYBINDINGS_CATEGORY_VOTANS_MINIMAP, "Mini Map")
 SafeAddString(SI_BINDING_NAME_VOTANS_TOGGLE_MAP_SHOW_HUD, "ミニマップを表示")
@@ -97,6 +97,14 @@ SafeAddString(SI_BINDING_NAME_VOTANS_TOGGLE_MAP_OFFSET_FIX, "ミニマップの�
 SafeAddString(SI_VOTANSMINIMAP_ASYNC_UPDATE, "非同期更新")
 SafeAddString(SI_VOTANSMINIMAP_ASYNC_UPDATE_TOOLTIP, "On: Framerate over update.\nOff: Update over framerate.")
 
-SafeAddString(SI_VOTANSMINIMAP_PINSIZE_KEEP_FAST_TRAVEL, "旅の祠")
-SafeAddString(SI_VOTANSMINIMAP_PINSIZE_KEEPS, "維持")
-SafeAddString(SI_VOTANSMINIMAP_PINSIZE_DISTRICTS, "地区")
+SafeAddString(SI_VOTANSMINIMAP_PINSIZE_KEEP_FAST_TRAVEL, "トランシタスの祠")
+SafeAddString(SI_VOTANSMINIMAP_PINSIZE_KEEPS, "砦(シロディール)")
+SafeAddString(SI_VOTANSMINIMAP_PINSIZE_DISTRICTS, "砦(帝都)")
+
+ZO_CreateStringId("SI_VOTANSMINIMAP_SHOW_ALL_TRAVEL_NODES", "全ての旅の祠を表示する")
+ZO_CreateStringId("SI_VOTANSMINIMAP_SHOW_IN_SETTINGS", "ミニマップを表示する")
+ZO_CreateStringId("SI_VOTANSMINIMAP_GRID_X", "位置調整　X軸")
+ZO_CreateStringId("SI_VOTANSMINIMAP_GRID_Y", "位置調整　Y軸")
+ZO_CreateStringId("SI_VOTANSMINIMAP_GRID_W", "サイズ調整　横幅")
+ZO_CreateStringId("SI_VOTANSMINIMAP_GRID_H", "サイズ調整　縦幅")
+ZO_CreateStringId("SI_VOTANSMINIMAP_GRID_TOOLTIP", "8×8グリッド以内のサイズと位置にできます。マウスで調整することも可能です。")

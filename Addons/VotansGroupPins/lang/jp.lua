@@ -1,4 +1,4 @@
-﻿-- Translated by @snorunt361
+-- Translation by @snorunt361(ESOUI),@Warashi-JP(github)
 
 SafeAddString(SI_VOTANS_GROUPPINS_PVE, "PvE")
 SafeAddString(SI_VOTANS_GROUPPINS_PVP, "PvP / AvA")
@@ -15,3 +15,8 @@ SafeAddString(SI_VOTANS_GROUPPINS_SHOW_CROWN, "グループリーダーに王冠
 SafeAddString(SI_VOTANS_GROUPPINS_SHOW_CROWN_TOOLTIP, "王冠はシンプルモードで設定している色になります")
 SafeAddString(SI_VOTANS_GROUPPINS_SHOW_FRIENDS, "フレンドを表示")
 SafeAddString(SI_VOTANS_GROUPPINS_SHOW_FRIENDS_TOOLTIP, "フレンドを透過されたピンで表示します")
+
+ZO_CreateStringId("SI_VOTANS_GROUPPINS_MODE_ROLE", "ロール表示モード")
+ZO_CreateStringId("SI_VOTANS_GROUPPINS_MODE_TANK", "タンクの色")
+ZO_CreateStringId("SI_VOTANS_GROUPPINS_MODE_HEAL", "ヒーラーの色")
+ZO_CreateStringId("SI_VOTANS_GROUPPINS_MODE_DAMAGE", "DPSの色")
