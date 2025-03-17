@@ -1,6 +1,6 @@
 -- Translation by @snorunt361(ESOUI),@Warashi-JP(github)
 
-SafeAddString(SI_RUNETOOLTIP_ESSENCE_RUNE_GLYPH45831 "<<z:1>> : 最大体力付呪\r\n<<z:2>> : ライフドレイン付呪")
+SafeAddString(SI_RUNETOOLTIP_ESSENCE_RUNE_GLYPH45831, "<<z:1>> : 最大体力付呪\r\n<<z:2>> : ライフドレイン付呪")
 SafeAddString(SI_RUNETOOLTIP_ESSENCE_RUNE_GLYPH45832, "<<z:1>> : 最大マジカ付呪\r\n<<z:2>> : マジカ吸収付呪")
 SafeAddString(SI_RUNETOOLTIP_ESSENCE_RUNE_GLYPH45833, "<<z:1>> : 最大スタミナ付呪\r\n<<z:2>> : スタミナ吸収付呪")
 SafeAddString(SI_RUNETOOLTIP_ESSENCE_RUNE_GLYPH45834, "<<z:1>> : 体力再生付呪\r\n<<z:2>> : 体力低下付呪(オブリビオンダメージ)")
