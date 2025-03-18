@@ -1,7 +1,7 @@
 ## Title: Votan's Improved Sets Book
 ## Author: votan
-## APIVersion: 101042 101043
-## Version: 1.2.3
+## APIVersion: 101044 101045
+## Version: 1.2.4
 ## DependsOn: LibChatMessage>=105
 ## OptionalDependsOn: pChat tim99sColoredLists
 ## SavedVariables: VotansImprovedSetsBook_Data
