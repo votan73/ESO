@@ -398,7 +398,7 @@ function addon:InitSettings()
 	local settings = LibHarvensAddonSettings:AddAddon("Votan's Group Pins")
 	if not settings then return end
 	addon.settingsControls = settings
-	settings.version = "1.2.18"
+	settings.version = "1.2.19"
 	settings.website = "http://www.esoui.com/downloads/info1619-VotansGroupPins.html"
 
 	local SI_TOOLTIP_ITEM_NAME = GetString(SI_TOOLTIP_ITEM_NAME)
