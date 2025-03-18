@@ -1285,7 +1285,7 @@ function addon:PostInitSettings(optionsTable)
 		type = "panel",
 		name = "Improved Locations",
 		author = "votan",
-		version = "1.23.1",
+		version = "1.23.2",
 		registerForRefresh = false,
 		registerForDefaults = true,
 		website = "http://www.esoui.com/downloads/info1096-VotansImprovedLocations.html"
