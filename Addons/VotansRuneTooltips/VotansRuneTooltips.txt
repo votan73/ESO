@@ -1,8 +1,8 @@
 ## Title: Votan's Rune Tooltips
 ## Author: votan
 ## Description: Shows resulting glyph type and level in tool-tip of runes.
-## Version: 1.4.7
-## APIVersion: 101033 101034
+## Version: 1.4.8
+## APIVersion: 101044 101045
 ## DependsOn: LibHarvensAddonSettings>=10704
 ## SavedVariables: VotansRuneTooltips_Storage
 

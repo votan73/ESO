@@ -226,7 +226,7 @@ local function InitSettings()
 	local settings = LibHarvensAddonSettings:AddAddon("Votan's Rune Tooltips")
 	if not settings then return end
 	addon.settingsControls = settings
-	settings.version = "1.4.7"
+	settings.version = "1.4.8"
 	settings.website = "http://www.esoui.com/downloads/info915-VotansRuneTooltips.html"
 
 	settings:AddSetting {
