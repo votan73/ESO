@@ -2,3 +2,5 @@
 SafeAddString(SI_VOTANS_IMPROVED_HOUSE_TOURS_LAST_VISITED, "Letzter Besuch: <<1>>")
 SafeAddString(SI_VOTANS_IMPROVED_HOUSE_TOURS_NOT_VISITED, "Noch nicht besucht")
 SafeAddString(SI_VOTANS_IMPROVED_HOUSE_TOURS_TOTAL_HOUSES, "Häuser insgesamt: <<1>>")
+SafeAddString(SI_VOTANS_IMPROVED_HOUSE_TOURS_SHOW_IN_CONTEXTMENU, "Kontextmenü der Weltkarte erweitern")
+SafeAddString(SI_VOTANS_IMPROVED_HOUSE_TOURS_ROTATION_INTERVAL, "Rotationsintervall")

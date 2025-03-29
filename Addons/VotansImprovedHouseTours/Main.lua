@@ -5,6 +5,7 @@ local em = GetEventManager()
 
 function addon:Initialize()
     self:RegisterForEvents()
+    self:SetupContextMenu()
 end
 
 function addon:IsShowing()
@@ -30,6 +31,33 @@ function addon:CurrentHouseIdentifier()
     return string.format("%i%s", houseId, owner)
 end
 
+function addon:SetupContextMenu()
+    local parent = ZO_MapPin.PIN_CLICK_HANDLERS[MOUSE_BUTTON_INDEX_LEFT][MAP_PIN_TYPE_FAST_TRAVEL_WAYSHRINE][3]
+    assert(parent, "out-dated")
+    local orgFn = parent.GetDynamicHandlers
+    parent.GetDynamicHandlers = function(...)
+        if not self.account.showInContextMenu then
+            return orgFn(...)
+        end
+        local pin = ...
+        local handlers = orgFn(...)
+        local handler = {
+            name = GetString(SI_COLLECTIBLE_ACTION_TOUR_THIS_HOME),
+            callback = function(pin)
+                ZO_Dialogs_ReleaseDialog("FAST_TRAVEL_CONFIRM")
+                ZO_Dialogs_ReleaseDialog("RECALL_CONFIRM")
+                ZO_Dialogs_ReleaseDialog("TRAVEL_TO_HOUSE_CONFIRM")
+                local nodeIndex = pin:GetFastTravelNodeIndex()
+                local houseId = GetFastTravelNodeHouseId(nodeIndex)
+                HOUSE_TOURS_SEARCH_RESULTS_KEYBOARD:BrowseToSpecificHouse(houseId)
+                GROUP_MENU_KEYBOARD:ShowCategoryByData(HOUSE_TOURS_SEARCH_RESULTS_KEYBOARD:GetActivityFinderCategoryData(HOUSE_TOURS_LISTING_TYPE_BROWSE))
+            end
+        }
+        handlers[#handlers + 1] = handler
+        return handlers
+    end
+end
+
 function addon:RegisterForEvents()
     HOUSE_TOURS_SEARCH_MANAGER:RegisterCallback(
         "OnSearchStateChanged",
@@ -38,10 +66,11 @@ function addon:RegisterForEvents()
                 self:HideLoading()
                 if self:IsShowing() then
                     self:RefreshHouse()
-                else
-                    self.dirty = true
+                    return
                 end
             end
+            self.dirty = true
+            self.lastHouse = nil
         end
     )
 
@@ -58,6 +87,7 @@ function addon:RegisterForEvents()
         if addonName == addon.name then
             em:UnregisterForEvent(addon.name, EVENT_ADD_ON_LOADED)
             self:InitSavedVar()
+            self:InitSettings()
         end
     end
 
@@ -72,7 +102,8 @@ function addon:RefreshHouse()
 
     self.dirty = false
 
-    local timeSlot = math.floor(GetTimeStamp() / 899) -- Not exactly 15min for a slight drift over day time
+    local interval = self.account.rotationInterval * 60 - 1 -- Not exactly 15min for a slight drift over day time
+    local timeSlot = math.floor(GetTimeStamp() / interval)
     local houseListingData
     if self.lastTimeSlot ~= timeSlot or not self.lastHouse then
         if not self.lastHouse then
@@ -199,12 +230,66 @@ function addon:InitSavedVar()
     -- keep data clean
     local expireDate = GetTimeStamp() - 7776000 -- 90 days
     for world, houses in pairs(VotansImprovedHouseTours_Data) do
-        for identifier, time in pairs(houses) do
-            if time < expireDate then
-                houses[identifier] = nil
+        if world ~= "account" then
+            for identifier, time in pairs(houses) do
+                if time < expireDate then
+                    houses[identifier] = nil
+                end
             end
         end
     end
+
+    self.account = settings.account or {}
+    settings.account = self.account
+end
+
+function addon:InitSettings()
+    local settings = LibHarvensAddonSettings:AddAddon("Votan's Improved House Tours")
+    if not settings then
+        return
+    end
+    settings.version = "1.0.1"
+
+    local accountDefaults = {
+        showInContextMenu = true,
+        rotationInterval = 15
+    }
+    for setting, value in pairs(accountDefaults) do
+        if self.account[setting] == nil then
+            self.account[setting] = accountDefaults[setting]
+        end
+    end
+
+    settings:AddSetting {
+        type = LibHarvensAddonSettings.ST_CHECKBOX,
+        label = GetString(SI_VOTANS_IMPROVED_HOUSE_TOURS_SHOW_IN_CONTEXTMENU),
+        default = accountDefaults.showInContextMenu,
+        getFunction = function()
+            return self.account.showInContextMenu
+        end,
+        setFunction = function(value)
+            self.account.showInContextMenu = value
+        end
+    }
+    local items = {}
+    local dataToItem = {}
+    for _, min in ipairs({5, 10, 15, 20, 30}) do
+        local item = {name = zo_strformat("<<1>>mins", min), data = min}
+        dataToItem[min] = item
+        items[#items + 1] = item
+    end
+    settings:AddSetting {
+        type = LibHarvensAddonSettings.ST_DROPDOWN,
+        label = GetString(SI_VOTANS_IMPROVED_HOUSE_TOURS_ROTATION_INTERVAL),
+        default = accountDefaults.rotationInterval,
+        items = items,
+        getFunction = function()
+            return (dataToItem[self.account.rotationInterval] or dataToItem[15]).name
+        end,
+        setFunction = function(combobox, name, item)
+            self.account.rotationInterval = item.data
+        end
+    }
 end
 
 VOTANS_IMPROVED_HOUSE_TOURS = addon:New()
