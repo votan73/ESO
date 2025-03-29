@@ -650,12 +650,16 @@ function addon:InitMiniMap()
 	end
 
 	local function PlayerActivated()
-		self:UpdateVisibility()
 		addon.cameraAngle = 0
 		addon:GoMiniMapMode(true)
+		self:UpdateVisibility()
 	end
 	local function PlayerDeactivated()
 		addon:StopFollowPlayer()
+		if GetKeepFastTravelInteraction() then
+			EndInteraction(INTERACTION_FAST_TRAVEL_KEEP)
+		end
+		WORLD_MAP_MANAGER:PopSpecialMode()
 	end
 	em:RegisterForEvent(self.name, EVENT_PLAYER_ACTIVATED, PlayerActivated)
 	em:RegisterForEvent(self.name, EVENT_PLAYER_DEACTIVATED, PlayerDeactivated)
