@@ -650,9 +650,9 @@ function addon:InitMiniMap()
 	end
 
 	local function PlayerActivated()
+		self:UpdateVisibility()
 		addon.cameraAngle = 0
 		addon:GoMiniMapMode(true)
-		self:UpdateVisibility()
 	end
 	local function PlayerDeactivated()
 		addon:StopFollowPlayer()
@@ -699,7 +699,6 @@ function addon:InitMiniMap()
 		self:UpdateVisibility()
 	end
 	em:RegisterForEvent(addon.name, EVENT_PLAYER_COMBAT_STATE, StateChanged)
-	em:RegisterForEvent(addon.name, EVENT_MOUNTED_STATE_CHANGED, StateChanged)
 
 	local lastZoom, lastW, lastH = -1, -1, -1
 	em:RegisterForEvent(
@@ -759,7 +758,7 @@ function addon:InitMiniMap()
 			mode = "zoom"
 			targetScale = addon.account.zoom
 		end
-		if IsMounted() and addon.account.mountedZoom ~= 1 then
+		if addon.isMounted then
 			targetScale = targetScale * addon.account.mountedZoom
 			mode = "mountedZoom"
 		end
@@ -1065,7 +1064,7 @@ function addon:InitMiniMap()
 			end
 
 			local settings = addon.account
-			if IsMounted() then
+			if addon.isMounted then
 				return settings.showMounted
 			end
 			if SIEGE_BAR_SCENE:IsShowing() then
@@ -1428,7 +1427,8 @@ function addon:InitMiniMap()
 	local function refreshFragment()
 		WORLD_MAP_FRAGMENT:Refresh()
 	end
-	local function mountedStateChanged()
+	local function mountedStateChanged(_, mounted)
+		self.isMounted = mounted
 		async:Call(refreshFragment)
 	end
 	em:RegisterForEvent(addon.name, EVENT_MOUNTED_STATE_CHANGED, mountedStateChanged)
@@ -1681,7 +1681,7 @@ do
 		UpdateControls()
 	end
 	function addon:ToggleShowHUD()
-		if IsMounted() then
+		if self.isMounted then
 			self.account.showMounted = not self.account.showMounted
 		else
 			self.account.showHUD = not self.account.showHUD
