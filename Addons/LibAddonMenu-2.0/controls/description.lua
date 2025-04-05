@@ -8,11 +8,12 @@
     enableLinks = nil, -- or true for default tooltips, or function OnLinkClicked handler (optional)
                        -- see: https://wiki.esoui.com/UI_XML#OnLinkClicked
     helpUrl = "https://www.esoui.com/portal.php?id=218&a=faq", -- a string URL or a function that returns the string URL (optional)
-    reference = "MyAddonDescription" -- unique global reference to control (optional)
+    reference = "MyAddonDescription", -- unique global reference to control (optional)
+    resetFunc = function(descriptionControl) d("defaults reset") end, -- custom function to run after the control is reset to defaults (optional)
 } ]]
 
 
-local widgetVersion = 13
+local widgetVersion = 14
 local LAM = LibAddonMenu2
 if not LAM:RegisterWidget("description", widgetVersion) then return end
 
@@ -52,8 +53,10 @@ function LAMCreateControl.description(parent, descriptionData, controlName)
 
     if isHalfWidth then
         control:SetDimensionConstraints(width / 2, 0, width / 2, 0)
+        control:SetResizeToFitConstrains(ANCHOR_CONSTRAINS_Y)
     else
         control:SetDimensionConstraints(width, 0, width, 0)
+        control:SetResizeToFitConstrains(ANCHOR_CONSTRAINS_Y)
     end
 
     control.desc = wm:CreateControl(nil, control, CT_LABEL)

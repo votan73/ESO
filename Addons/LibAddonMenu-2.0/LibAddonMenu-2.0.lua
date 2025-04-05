@@ -3,7 +3,7 @@
 ------------------------------------------------------------------
 
 
-local MAJOR, MINOR = "LibAddonMenu-2.0", 34
+local MAJOR, MINOR = "LibAddonMenu-2.0", 38
 
 local lam
 if(not LibStub) then
@@ -121,7 +121,7 @@ local function CreateFAQTexture(control)
     faqControl.data.tooltipText = FAQ_ICON_TOOTIP_TEMPLATE:format(util.L.WEBSITE, helpUrl)
 
     faqControl:SetMouseEnabled(true)
-    local function onMouseExitFAQ(ctrl)
+    local function onMouseExitFAQ(ctrl, ...)
         ZO_Options_OnMouseExit(ctrl)
         ctrl:SetColor(FAQ_ICON_COLOR:UnpackRGBA())
         ctrl:SetAlpha(FAQ_ICON_MOUSE_EXIT_ALPHA)
@@ -547,6 +547,36 @@ local localization = {
         RELOAD_DIALOG_RELOAD_BUTTON = "Recarregar",
         RELOAD_DIALOG_DISCARD_BUTTON = "Descartar",
     },
+    tr = {
+        PANEL_NAME= "Eklentiler",
+        AUTHOR = string.format("%s: <<X:1>>", GetString(SI_ADDON_MANAGER_AUTHOR)), -- "Yazar: <<X:1>>"
+        VERSION = "Sürüm: <<X:1>>",
+        WEBSITE = "Web Sitesini Ziyaret Edin",
+        FEEDBACK = "Geri bildirim",
+        TRANSLATION = "Çeviri",
+        DONATION = "Bağış",
+        PANEL_INFO_FONT = "$(CHAT_FONT)|14|soft-shadow-thin",
+        RELOAD_UI_WARNING = "Bu ayarda yapılan değişikliklerin etkili olması için kullanıcı arayüzünün yeniden yüklenmesi gerekir.",
+        RELOAD_DIALOG_TITLE = "Kullanıcı Arayüzünün Yeniden Yüklenmesi Gerekli",
+        RELOAD_DIALOG_TEXT = "Bazı değişikliklerin etkili olması için kullanıcı arayüzünün yeniden yüklenmesi gerekir. Şimdi yeniden yüklemek mi yoksa değişiklikleri iptal etmek mi istiyorsunuz?",
+        RELOAD_DIALOG_RELOAD_BUTTON = "Yeniden Yükle",
+        RELOAD_DIALOG_DISCARD_BUTTON = "İptal et",
+    },
+    ua = {
+        PANEL_NAME = "Додатки",
+        AUTHOR = string.format("%s: <<X:1>>", GetString(SI_ADDON_MANAGER_AUTHOR)), -- "Автор: <<X:1>>"
+        VERSION = "Версія: <<X:1>>",
+        WEBSITE = "Відвідати вебсайт",
+        FEEDBACK = "Відгук",
+        TRANSLATION = "Переклад",
+        DONATION = "Підтримати",
+        PANEL_INFO_FONT = "$(CHAT_FONT)|14|soft-shadow-thin",
+        RELOAD_UI_WARNING = "Зміни цього параметра потребують перезавантаження інтерфейсу, аби вони набули чинності.",
+        RELOAD_DIALOG_TITLE = "Необхідне перезавантаження інтерфейсу",
+        RELOAD_DIALOG_TEXT = "Деякі зміни потребують перезавантаження інтерфейсу, аби вони набули чинності. Перезавантажити зараз чи бажаєте скасувати зміни?",
+        RELOAD_DIALOG_RELOAD_BUTTON = "Перезавантажити",
+        RELOAD_DIALOG_DISCARD_BUTTON = "Скасувати",
+    },
 }
 
 do
@@ -854,6 +884,7 @@ local function CreateOptionsControls(panel)
         OpenCurrentPanel()
     end
 
+    cm:FireCallbacks("LAM-BeforePanelControlsCreated", panel)
     local optionsTable = addonToOptionsMap[addonID]
     if optionsTable then
         local function CreateAndAnchorWidget(parent, widgetData, offsetX, offsetY, anchorTarget, wasHalf)
@@ -892,9 +923,11 @@ local function CreateOptionsControls(panel)
         local function SetupCreationCalls(parent, widgetDataTable)
             fifo[#fifo + 1] = PrepareForNextPanel
             local count = #widgetDataTable
-            for i = 1, count, THROTTLE_COUNT do
+            for i = 1, zo_ceil(count / THROTTLE_COUNT) do
                 fifo[#fifo + 1] = function()
-                    CreateWidgetsInPanel(parent, widgetDataTable, i, zo_min(i + THROTTLE_COUNT - 1, count))
+                    local startIndex = (i - 1) * THROTTLE_COUNT + 1
+                    local endIndex = zo_min(i * THROTTLE_COUNT, count)
+                    CreateWidgetsInPanel(parent, widgetDataTable, startIndex, endIndex)
                 end
             end
             return count ~= NonContiguousCount(widgetDataTable)
