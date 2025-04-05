@@ -1,89 +1,97 @@
--- Translation updated by @lucelem
-SafeAddString(SI_KEYBINDINGS_CATEGORY_VOTANS_MINIMAP, "Мини-карта")
-SafeAddString(SI_BINDING_NAME_VOTANS_TOGGLE_MAP_SHOW_HUD, "Показывать мини-карту")
-SafeAddString(SI_BINDING_NAME_VOTANS_TOGGLE_MAP_SHOW_SIEGE_HUD, "Показывать мини-карту")
-SafeAddString(SI_BINDING_NAME_VOTANS_TOGGLE_MAP_SHOW_COMBAT, "Показывать мини-карту в бою")
-SafeAddString(SI_BINDING_NAME_VOTANS_TOGGLE_MAP_ZOOM_OUT, "Макс. отдаление")
-SafeAddString(SI_BINDING_NAME_VOTANS_TOGGLE_MAP_ZOOM_IN, "Макс. приближение")
-SafeAddString(SI_BINDING_NAME_VOTANS_TOGGLE_MAP_ZOOM_PLUS, "Приблизить")
-SafeAddString(SI_BINDING_NAME_VOTANS_TOGGLE_MAP_ZOOM_MINUS, "Отдалить")
+local strings =
+{
+    -- Translation updated by @lucelem
+    SI_KEYBINDINGS_CATEGORY_VOTANS_MINIMAP = "Мини-карта",
+    SI_BINDING_NAME_VOTANS_TOGGLE_MAP_SHOW_HUD = "Показывать мини-карту",
+    SI_BINDING_NAME_VOTANS_TOGGLE_MAP_SHOW_SIEGE_HUD = "Показывать мини-карту",
+    SI_BINDING_NAME_VOTANS_TOGGLE_MAP_SHOW_COMBAT = "Показывать мини-карту в бою",
+    SI_BINDING_NAME_VOTANS_TOGGLE_MAP_ZOOM_OUT = "Макс. отдаление",
+    SI_BINDING_NAME_VOTANS_TOGGLE_MAP_ZOOM_IN = "Макс. приближение",
+    SI_BINDING_NAME_VOTANS_TOGGLE_MAP_ZOOM_PLUS = "Приблизить",
+    SI_BINDING_NAME_VOTANS_TOGGLE_MAP_ZOOM_MINUS = "Отдалить",
 
-SafeAddString(SI_VOTANSMINIMAP_WORLD_MAP_TWEAKS, "Настройки карты мира")
-SafeAddString(SI_VOTANSMINIMAP_WORLD_MAP_TWEAKS_TOOLTIP, "Включает настройки распределения нагрузки на ЦП с течением времени.")
-SafeAddString(SI_VOTANSMINIMAP_MINI_MAP, "Мини-карта")
-SafeAddString(SI_VOTANSMINIMAP_MINI_MAP_TOOLTIP, "Включает встроенный функционал мини-карты.")
-SafeAddString(SI_VOTANSMINIMAP_APPLY_BUTTON, "Применить")
-SafeAddString(SI_VOTANSMINIMAP_LOCK_POSITION, "Фиксировать положение и размер")
-SafeAddString(SI_VOTANSMINIMAP_LOCK_POSITION_TOOLTIP, "Не позволяет перемещать и изменять размер окна.")
-SafeAddString(SI_VOTANSMINIMAP_ZOOM, "Масштаб")
-SafeAddString(SI_VOTANSMINIMAP_ZOOM_TOOLTIP, "Масштаб относительно разрешения карты.")
-SafeAddString(SI_VOTANSMINIMAP_MOUNTED_ZOOM, "Масштаб верхом")
-SafeAddString(SI_VOTANSMINIMAP_MOUNTED_ZOOM_TOOLTIP, "Задаёт масштаб, когда вы верхом. Значение 1 оставляет текущий масштаб.")
-SafeAddString(SI_VOTANSMINIMAP_SUB_ZONE_ZOOM, "Масштаб подзоны")
-SafeAddString(SI_VOTANSMINIMAP_SUB_ZONE_ZOOM_TOOLTIP, "Задаёт масштаб, когда вы находитесь в подзоне.")
-SafeAddString(SI_VOTANSMINIMAP_DUNGEON_ZOOM, "Масштаб подземелья")
-SafeAddString(SI_VOTANSMINIMAP_DUNGEON_ZOOM_TOOLTIP, "Задаёт масштаб, когда вы находитесь в подземелье.")
-ZO_CreateStringId("SI_VOTANSMINIMAP_BG_ZOOM", "Масштаб поля сражений")
-ZO_CreateStringId("SI_VOTANSMINIMAP_BG_ZOOM_TOOLTIP", "Масштаб в зависимости от стандартного разрешения карты на поле сражений.")
-SafeAddString(SI_VOTANSMINIMAP_UNIT_PINS_MINIMUM_SIZE, "Мин. размер значков юнитов")
-SafeAddString(SI_VOTANSMINIMAP_UNIT_PINS_MINIMUM_SIZE_TOOLTIP, "Значки юнитов не будут масштабированы меньше указанного здесь значения.")
-ZO_CreateStringId("SI_VOTANSMINIMAP_SHOW_MAP", "Показать карту")
-ZO_CreateStringId("SI_VOTANSMINIMAP_SHOW_MAP_TOOLTIP", "Показать целую мини-карту.")
-SafeAddString(SI_VOTANSMINIMAP_SHOW_HUD, "В интерфейсе")
-SafeAddString(SI_VOTANSMINIMAP_SHOW_HUD_TOOLTIP, "Показывает, когда вы странствуете по миру.")
-SafeAddString(SI_VOTANSMINIMAP_SHOW_LOOTING, "Во время лута")
-SafeAddString(SI_VOTANSMINIMAP_SHOW_LOOTING_TOOLTIP, "Реже прячет/показывает карту.")
-SafeAddString(SI_VOTANSMINIMAP_ZOOM_TO_PLAYER, "Масштабировать на игрока")
-SafeAddString(SI_VOTANSMINIMAP_ZOOM_TO_PLAYER_TOOLTIP, "Макс. приближать и отдалять с центрированием на игрока.")
-SafeAddString(SI_VOTANSMINIMAP_SHOW_MOUNTED, "Показывать верхом")
-SafeAddString(SI_VOTANSMINIMAP_SHOW_MOUNTED_TOOLTIP, "Показывать мини-карту, когда вы находитесь верхом. Имеет больший приоритет, чем \"В бою\".")
-SafeAddString(SI_VOTANSMINIMAP_SHOW_COMBAT, "Показывать в бою")
-SafeAddString(SI_VOTANSMINIMAP_SHOW_COMBAT_TOOLTIP, "Показывать мини-карту, когда вы находитесь в бою.")
-SafeAddString(SI_VOTANSMINIMAP_SHOW_SIEGE, "На осадном орудии")
-SafeAddString(SI_VOTANSMINIMAP_SHOW_SIEGE_TOOLTIP, "Показывать мини-карту, когда вы управляете осадным орудием.")
-SafeAddString(SI_VOTANSMINIMAP_KEYBINDINGS_ZOOM, "Клавиши масштаба")
-SafeAddString(SI_VOTANSMINIMAP_ZOOM_OUT, "Отдаление")
-SafeAddString(SI_VOTANSMINIMAP_ZOOM_OUT_TOOLTIP, "Масштаб для клавиши отдаления.\n(Нажать и удерживать.)")
-SafeAddString(SI_VOTANSMINIMAP_ZOOM_IN, "Приближение")
-SafeAddString(SI_VOTANSMINIMAP_ZOOM_IN_TOOLTIP, "Масштаб для клавиши приближения.\n(Нажать и удерживать.)")
-SafeAddString(SI_VOTANSMINIMAP_APPEARANCE, "Внешний вид")
-SafeAddString(SI_VOTANSMINIMAP_BORDER_STYLE, "Стиль границ")
-SafeAddString(SI_VOTANSMINIMAP_BORDER_OPACITY, "Прозрачность границ")
-SafeAddString(SI_VOTANSMINIMAP_TITLE_FONT, "Шрифт заголовка")
-SafeAddString(SI_VOTANSMINIMAP_TITLE_FONT_SIZE, "Размер заголовка")
-SafeAddString(SI_VOTANSMINIMAP_TITLE_COLOR, "Цвет заголовка")
-SafeAddString(SI_VOTANSMINIMAP_TITLE_POSITION, "Положение заголовка")
-ZO_CreateStringId("SI_VOTANSMINIMAP_SHOW_FULL_TITLE", "Показать полный заголовок")
-ZO_CreateStringId("SI_VOTANSMINIMAP_SHOW_FULL_TITLE_TOOLTIP", "Показывает полный заголовок. Включая название кампании и сложность, даже если это выходит за пределы окна мини-карты.")
-SafeAddString(SI_VOTANSMINIMAP_SHOW_CLOCK, "Часы")
-SafeAddString(SI_VOTANSMINIMAP_SHOW_CLOCK_TOOLTIP, "Показывать часы на мини-карте.")
-SafeAddString(SI_VOTANSMINIMAP_TIME_FORMAT, "Формат времени")
-SafeAddString(SI_VOTANSMINIMAP_ZONE_CHANGE_ALERT, "Предупреждение о смене зоны")
-SafeAddString(SI_VOTANSMINIMAP_SHOW_COMPASS, "Скрыть/показать компас")
-SafeAddString(SI_VOTANSMINIMAP_SHOW_COMPASS_TOOLTIP, "Скрывает или показывает компас, если отображается мини-карта, или оставить его нетронутым, чтобы другие аддоны могли изменять его видимость.")
-SafeAddString(SI_VOTANSMINIMAP_FRAMEDROP_DEBUG, "Отладка падения FPS")
-SafeAddString(SI_VOTANSMINIMAP_SHOW_FREEZE_WARNING, "Предуп-е о притормаживаниях")
-SafeAddString(SI_VOTANSMINIMAP_SHOW_FREEZE_WARNING_TOOLTIP, "Выдаёт предупреждение, если действие вызывает падение FPS ниже 60.")
-ZO_CreateStringId("SI_VOTANSMINIMAP_SHOW_CAMERA_HEADING", "Показывать направление камеры")
-ZO_CreateStringId("SI_VOTANSMINIMAP_SHOW_CAMERA_HEADING_TOOLTIP", "Отслеживает движение камер персонажей на мировой и мини-карте.")
-ZO_CreateStringId("SI_VOTANSMINIMAP_CAMERA_HEADING_ANGLE", "Угол метки")
-ZO_CreateStringId("SI_VOTANSMINIMAP_CAMERA_HEADING_ANGLE_TOOLTIP", "Угол линии метки.")
+    SI_VOTANSMINIMAP_WORLD_MAP_TWEAKS = "Настройки карты мира",
+    SI_VOTANSMINIMAP_WORLD_MAP_TWEAKS_TOOLTIP = "Включает настройки распределения нагрузки на ЦП с течением времени.",
+    SI_VOTANSMINIMAP_MINI_MAP = "Мини-карта",
+    SI_VOTANSMINIMAP_MINI_MAP_TOOLTIP = "Включает встроенный функционал мини-карты.",
+    SI_VOTANSMINIMAP_APPLY_BUTTON = "Применить",
+    SI_VOTANSMINIMAP_LOCK_POSITION = "Фиксировать положение и размер",
+    SI_VOTANSMINIMAP_LOCK_POSITION_TOOLTIP = "Не позволяет перемещать и изменять размер окна.",
+    SI_VOTANSMINIMAP_ZOOM = "Масштаб",
+    SI_VOTANSMINIMAP_ZOOM_TOOLTIP = "Масштаб относительно разрешения карты.",
+    SI_VOTANSMINIMAP_MOUNTED_ZOOM = "Масштаб верхом",
+    SI_VOTANSMINIMAP_MOUNTED_ZOOM_TOOLTIP = "Задаёт масштаб, когда вы верхом. Значение 1 оставляет текущий масштаб.",
+    SI_VOTANSMINIMAP_SUB_ZONE_ZOOM = "Масштаб подзоны",
+    SI_VOTANSMINIMAP_SUB_ZONE_ZOOM_TOOLTIP = "Задаёт масштаб, когда вы находитесь в подзоне.",
+    SI_VOTANSMINIMAP_DUNGEON_ZOOM = "Масштаб подземелья",
+    SI_VOTANSMINIMAP_DUNGEON_ZOOM_TOOLTIP = "Задаёт масштаб, когда вы находитесь в подземелье.",
+    SI_VOTANSMINIMAP_BG_ZOOM = "Масштаб поля сражений",
+    SI_VOTANSMINIMAP_BG_ZOOM_TOOLTIP = "Масштаб в зависимости от стандартного разрешения карты на поле сражений.",
+    SI_VOTANSMINIMAP_UNIT_PINS_MINIMUM_SIZE = "Мин. размер значков юнитов",
+    SI_VOTANSMINIMAP_UNIT_PINS_MINIMUM_SIZE_TOOLTIP = "Значки юнитов не будут масштабированы меньше указанного здесь значения.",
+    SI_VOTANSMINIMAP_SHOW_MAP = "Показать карту",
+    SI_VOTANSMINIMAP_SHOW_MAP_TOOLTIP = "Показать целую мини-карту.",
+    SI_VOTANSMINIMAP_SHOW_HUD = "В интерфейсе",
+    SI_VOTANSMINIMAP_SHOW_HUD_TOOLTIP = "Показывает, когда вы странствуете по миру.",
+    SI_VOTANSMINIMAP_SHOW_LOOTING = "Во время лута",
+    SI_VOTANSMINIMAP_SHOW_LOOTING_TOOLTIP = "Реже прячет/показывает карту.",
+    SI_VOTANSMINIMAP_ZOOM_TO_PLAYER = "Масштабировать на игрока",
+    SI_VOTANSMINIMAP_ZOOM_TO_PLAYER_TOOLTIP = "Макс. приближать и отдалять с центрированием на игрока.",
+    SI_VOTANSMINIMAP_SHOW_MOUNTED = "Показывать верхом",
+    SI_VOTANSMINIMAP_SHOW_MOUNTED_TOOLTIP = "Показывать мини-карту, когда вы находитесь верхом. Имеет больший приоритет, чем \"В бою\".",
+    SI_VOTANSMINIMAP_SHOW_COMBAT = "Показывать в бою",
+    SI_VOTANSMINIMAP_SHOW_COMBAT_TOOLTIP = "Показывать мини-карту, когда вы находитесь в бою.",
+    SI_VOTANSMINIMAP_SHOW_SIEGE = "На осадном орудии",
+    SI_VOTANSMINIMAP_SHOW_SIEGE_TOOLTIP = "Показывать мини-карту, когда вы управляете осадным орудием.",
+    SI_VOTANSMINIMAP_KEYBINDINGS_ZOOM = "Клавиши масштаба",
+    SI_VOTANSMINIMAP_ZOOM_OUT = "Отдаление",
+    SI_VOTANSMINIMAP_ZOOM_OUT_TOOLTIP = "Масштаб для клавиши отдаления.\n(Нажать и удерживать.)",
+    SI_VOTANSMINIMAP_ZOOM_IN = "Приближение",
+    SI_VOTANSMINIMAP_ZOOM_IN_TOOLTIP = "Масштаб для клавиши приближения.\n(Нажать и удерживать.)",
+    SI_VOTANSMINIMAP_APPEARANCE = "Внешний вид",
+    SI_VOTANSMINIMAP_BORDER_STYLE = "Стиль границ",
+    SI_VOTANSMINIMAP_BORDER_OPACITY = "Прозрачность границ",
+    SI_VOTANSMINIMAP_TITLE_FONT = "Шрифт заголовка",
+    SI_VOTANSMINIMAP_TITLE_FONT_SIZE = "Размер заголовка",
+    SI_VOTANSMINIMAP_TITLE_COLOR = "Цвет заголовка",
+    SI_VOTANSMINIMAP_TITLE_POSITION = "Положение заголовка",
+    SI_VOTANSMINIMAP_SHOW_FULL_TITLE = "Показать полный заголовок",
+    SI_VOTANSMINIMAP_SHOW_FULL_TITLE_TOOLTIP = "Показывает полный заголовок. Включая название кампании и сложность, даже если это выходит за пределы окна мини-карты.",
+    SI_VOTANSMINIMAP_SHOW_CLOCK = "Часы",
+    SI_VOTANSMINIMAP_SHOW_CLOCK_TOOLTIP = "Показывать часы на мини-карте.",
+    SI_VOTANSMINIMAP_TIME_FORMAT = "Формат времени",
+    SI_VOTANSMINIMAP_ZONE_CHANGE_ALERT = "Предупреждение о смене зоны",
+    SI_VOTANSMINIMAP_SHOW_COMPASS = "Скрыть/показать компас",
+    SI_VOTANSMINIMAP_SHOW_COMPASS_TOOLTIP = "Скрывает или показывает компас, если отображается мини-карта, или оставить его нетронутым, чтобы другие аддоны могли изменять его видимость.",
+    SI_VOTANSMINIMAP_FRAMEDROP_DEBUG = "Отладка падения FPS",
+    SI_VOTANSMINIMAP_SHOW_FREEZE_WARNING = "Предуп-е о притормаживаниях",
+    SI_VOTANSMINIMAP_SHOW_FREEZE_WARNING_TOOLTIP = "Выдаёт предупреждение, если действие вызывает падение FPS ниже 60.",
+    SI_VOTANSMINIMAP_SHOW_CAMERA_HEADING = "Показывать направление камеры",
+    SI_VOTANSMINIMAP_SHOW_CAMERA_HEADING_TOOLTIP = "Отслеживает движение камер персонажей на мировой и мини-карте.",
+    SI_VOTANSMINIMAP_CAMERA_HEADING_ANGLE = "Угол метки",
+    SI_VOTANSMINIMAP_CAMERA_HEADING_ANGLE_TOOLTIP = "Угол линии метки.",
 
-SafeAddString(SI_VOTANSMINIMAP_ZONEALERTMODE_ALWAYS, "Всегда")
-SafeAddString(SI_VOTANSMINIMAP_ZONEALERTMODE_MAP_HIDDEN, "Мини-карта скрыта")
-SafeAddString(SI_VOTANSMINIMAP_ZONEALERTMODE_NEVER, "Никогда")
-SafeAddString(SI_VOTANSMINIMAP_COMPASSMODE_UNTOUCHED, "Не трогать")
-SafeAddString(SI_VOTANSMINIMAP_COMPASSMODE_HIDDEN, "Скрыть")
-SafeAddString(SI_VOTANSMINIMAP_COMPASSMODE_SHOWN, "Показать")
+    SI_VOTANSMINIMAP_ZONEALERTMODE_ALWAYS = "Всегда",
+    SI_VOTANSMINIMAP_ZONEALERTMODE_MAP_HIDDEN = "Мини-карта скрыта",
+    SI_VOTANSMINIMAP_ZONEALERTMODE_NEVER = "Никогда",
+    SI_VOTANSMINIMAP_COMPASSMODE_UNTOUCHED = "Не трогать",
+    SI_VOTANSMINIMAP_COMPASSMODE_HIDDEN = "Скрыть",
+    SI_VOTANSMINIMAP_COMPASSMODE_SHOWN = "Показать",
 
-ZO_CreateStringId("SI_VOTANSMINIMAP_KEEP_SQUARE", "Хранить площадь")
-ZO_CreateStringId("SI_VOTANSMINIMAP_KEEP_SQUARE_TOOLTIP", "Сохраняет квадрат зоны на карте. Стандартное поведение.")
+    SI_VOTANSMINIMAP_KEEP_SQUARE = "Хранить площадь",
+    SI_VOTANSMINIMAP_KEEP_SQUARE_TOOLTIP = "Сохраняет квадрат зоны на карте. Стандартное поведение.",
 
-ZO_CreateStringId("SI_BINDING_NAME_VOTANS_TOGGLE_MAP_OFFSET_FIX", "Показывать фиксированние положение мини-карты")
+    SI_BINDING_NAME_VOTANS_TOGGLE_MAP_OFFSET_FIX = "Показывать фиксированние положение мини-карты",
 
-ZO_CreateStringId("SI_VOTANSMINIMAP_ASYNC_UPDATE", "Асинхронное обновление")
-ZO_CreateStringId("SI_VOTANSMINIMAP_ASYNC_UPDATE_TOOLTIP", "Вкл: Частота кадров поверх обновлений.\nOff: Обновления поверх частоты кадров.")
+    SI_VOTANSMINIMAP_ASYNC_UPDATE = "Асинхронное обновление",
+    SI_VOTANSMINIMAP_ASYNC_UPDATE_TOOLTIP = "Вкл: Частота кадров поверх обновлений.\nOff: Обновления поверх частоты кадров.",
 
-ZO_CreateStringId("SI_VOTANSMINIMAP_PINSIZE_KEEP_FAST_TRAVEL", "Транзитные святыни")
-ZO_CreateStringId("SI_VOTANSMINIMAP_PINSIZE_KEEPS", "Крепости")
-ZO_CreateStringId("SI_VOTANSMINIMAP_PINSIZE_DISTRICTS", "Районы")
+    SI_VOTANSMINIMAP_PINSIZE_KEEP_FAST_TRAVEL = "Транзитные святыни",
+    SI_VOTANSMINIMAP_PINSIZE_KEEPS = "Крепости",
+    SI_VOTANSMINIMAP_PINSIZE_DISTRICTS = "Районы",
+
+}
+
+for stringId, stringValue in pairs(strings) do
+    SafeAddString(_G[stringId], stringValue, 2)
+end

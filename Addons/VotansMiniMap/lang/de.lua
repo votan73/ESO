@@ -1,105 +1,113 @@
-﻿SafeAddString(SI_KEYBINDINGS_CATEGORY_VOTANS_MINIMAP, "Mini Map")
-SafeAddString(SI_BINDING_NAME_VOTANS_TOGGLE_MAP_SHOW_MAP, "Kartenansicht umschalten")
-SafeAddString(SI_BINDING_NAME_VOTANS_TOGGLE_MAP_SHOW_HUD, "Kartenansicht umschalten HUD")
-SafeAddString(SI_BINDING_NAME_VOTANS_TOGGLE_MAP_SHOW_SIEGE_HUD, "Kartenansicht umschalten Siege")
-SafeAddString(SI_BINDING_NAME_VOTANS_TOGGLE_MAP_SHOW_COMBAT, "Kartenansicht im Kampf umschalten")
-SafeAddString(SI_BINDING_NAME_VOTANS_TOGGLE_MAP_ZOOM_OUT, "Maximal-Zoom raus")
-SafeAddString(SI_BINDING_NAME_VOTANS_TOGGLE_MAP_ZOOM_IN, "Maximal-Zoom rein")
-SafeAddString(SI_BINDING_NAME_VOTANS_TOGGLE_MAP_ZOOM_PLUS, "Zoom-Schritt rein")
-SafeAddString(SI_BINDING_NAME_VOTANS_TOGGLE_MAP_ZOOM_MINUS, "Zoom-Schritt raus")
+local strings =
+{
+    SI_KEYBINDINGS_CATEGORY_VOTANS_MINIMAP = "Mini Map",
+    SI_BINDING_NAME_VOTANS_TOGGLE_MAP_SHOW_MAP = "Kartenansicht umschalten",
+    SI_BINDING_NAME_VOTANS_TOGGLE_MAP_SHOW_HUD = "Kartenansicht umschalten HUD",
+    SI_BINDING_NAME_VOTANS_TOGGLE_MAP_SHOW_SIEGE_HUD = "Kartenansicht umschalten Siege",
+    SI_BINDING_NAME_VOTANS_TOGGLE_MAP_SHOW_COMBAT = "Kartenansicht im Kampf umschalten",
+    SI_BINDING_NAME_VOTANS_TOGGLE_MAP_ZOOM_OUT = "Maximal-Zoom raus",
+    SI_BINDING_NAME_VOTANS_TOGGLE_MAP_ZOOM_IN = "Maximal-Zoom rein",
+    SI_BINDING_NAME_VOTANS_TOGGLE_MAP_ZOOM_PLUS = "Zoom-Schritt rein",
+    SI_BINDING_NAME_VOTANS_TOGGLE_MAP_ZOOM_MINUS = "Zoom-Schritt raus",
 
-SafeAddString(SI_VOTANSMINIMAP_WORLD_MAP_TWEAKS, "Weltkarten Optimierungen")
-SafeAddString(SI_VOTANSMINIMAP_WORLD_MAP_TWEAKS_TOOLTIP, "Aktiviert Optimierungen zur zeitlichen CPU-Lastverteilung.")
-SafeAddString(SI_VOTANSMINIMAP_MINI_MAP, "Mini Map")
-SafeAddString(SI_VOTANSMINIMAP_MINI_MAP_TOOLTIP, "Aktiviert das Mini Map Feature der eingebauten Karte.")
-SafeAddString(SI_VOTANSMINIMAP_APPLY_BUTTON, "Anwenden")
-SafeAddString(SI_VOTANSMINIMAP_LOCK_POSITION, "Position & Größe fixieren")
-SafeAddString(SI_VOTANSMINIMAP_LOCK_POSITION_TOOLTIP, "Verhindert das verschieben und das ändern der Größe des Fensters.")
-SafeAddString(SI_VOTANSMINIMAP_ZOOM, "Zoom")
-SafeAddString(SI_VOTANSMINIMAP_ZOOM_TOOLTIP, "Zoom relativ zu nativen Auflösung der Karte.")
-SafeAddString(SI_VOTANSMINIMAP_MOUNTED_ZOOM, "Zoomfaktor beim Reiten")
-SafeAddString(SI_VOTANSMINIMAP_MOUNTED_ZOOM_TOOLTIP, "Relativer Zoomfaktor zum aktuellen Zoom. Der Wert 1 läßt den aktuellen Zoom.")
-SafeAddString(SI_VOTANSMINIMAP_SUB_ZONE_ZOOM, "Teilgebiet Zoom")
-SafeAddString(SI_VOTANSMINIMAP_SUB_ZONE_ZOOM_TOOLTIP, "Zoom relativ zu nativen Auflösung der Karte für Teilgebiete.")
-SafeAddString(SI_VOTANSMINIMAP_DUNGEON_ZOOM, "Dungeon Zoom")
-SafeAddString(SI_VOTANSMINIMAP_DUNGEON_ZOOM_TOOLTIP, "Zoom relativ zu nativen Auflösung der Karte für Dungeons.")
-SafeAddString(SI_VOTANSMINIMAP_BG_ZOOM, "Schlachtfeld Zoom")
-SafeAddString(SI_VOTANSMINIMAP_BG_ZOOM_TOOLTIP, "Zoom relativ zu nativen Auflösung der Karte für Schlachtfelder.")
-SafeAddString(SI_VOTANSMINIMAP_UNIT_PINS_MINIMUM_SIZE, "Unit Pins Mindestgröße")
-SafeAddString(SI_VOTANSMINIMAP_UNIT_PINS_MINIMUM_SIZE_TOOLTIP, "Unit Pins werden nicht unterhalb dieses Faktors skaliert.")
-SafeAddString(SI_VOTANSMINIMAP_SHOW_MAP, "Mini Map anzeigen")
-SafeAddString(SI_VOTANSMINIMAP_SHOW_MAP_TOOLTIP, "Mini Map anzeigen. Zentralschalter.")
-SafeAddString(SI_VOTANSMINIMAP_SHOW_HUD, "Im HUD anzeigen")
-SafeAddString(SI_VOTANSMINIMAP_SHOW_HUD_TOOLTIP, "Anzeigen während ihr in der Welt unterwegs seit.")
-SafeAddString(SI_VOTANSMINIMAP_SHOW_LOOTING, "Während des Lootens anzeigen.")
-SafeAddString(SI_VOTANSMINIMAP_SHOW_LOOTING_TOOLTIP, "Weniger häufiges aus- und einblenden.")
-SafeAddString(SI_VOTANSMINIMAP_ZOOM_TO_PLAYER, "Weltkarte zum Spieler zoomen")
-SafeAddString(SI_VOTANSMINIMAP_ZOOM_TO_PLAYER_TOOLTIP, "Zeigt die Weltkarte entweder ganz raus- oder ganz reingezoomt.")
-SafeAddString(SI_VOTANSMINIMAP_SHOW_MOUNTED, "Beim Reiten anzeigen")
-SafeAddString(SI_VOTANSMINIMAP_SHOW_MOUNTED_TOOLTIP, "Beim sitzen auf dem Reittier anzeigen. Hat Priorität gegenüber im Kampf anzeigen.")
-SafeAddString(SI_VOTANSMINIMAP_SHOW_COMBAT, "Im Kampf anzeigen")
-SafeAddString(SI_VOTANSMINIMAP_SHOW_COMBAT_TOOLTIP, "Während des Kampfes anzeigen.")
-SafeAddString(SI_VOTANSMINIMAP_SHOW_SIEGE, "Während Belagerung anzeigen")
-SafeAddString(SI_VOTANSMINIMAP_SHOW_SIEGE_TOOLTIP, "In der Belagerungsmaschine anzeigen.")
-SafeAddString(SI_VOTANSMINIMAP_KEYBINDINGS_ZOOM, "Zoom-Steuerung")
-SafeAddString(SI_VOTANSMINIMAP_ZOOM_OUT, "Ganz herauszoomen")
-SafeAddString(SI_VOTANSMINIMAP_ZOOM_OUT_TOOLTIP, "Zoomfaktor für die Rauszoomen-Taste.\n(Taste gedrückt halten.)")
-SafeAddString(SI_VOTANSMINIMAP_ZOOM_IN, "Ganz reinzoomen")
-SafeAddString(SI_VOTANSMINIMAP_ZOOM_IN_TOOLTIP, "Zoomfaktor für die Reinzoomen-Taste.\n(Taste gedrückt halten.)")
-SafeAddString(SI_VOTANSMINIMAP_APPEARANCE, "Erscheinungsbild")
-SafeAddString(SI_VOTANSMINIMAP_BORDER_STYLE, "Stil des Rahmens")
-SafeAddString(SI_VOTANSMINIMAP_BORDER_OPACITY, "Deckkraft des Rahmens")
-SafeAddString(SI_VOTANSMINIMAP_TITLE_FONT, "Titel Schriftart")
-SafeAddString(SI_VOTANSMINIMAP_TITLE_FONT_SIZE, "Titel Schriftgröße")
-SafeAddString(SI_VOTANSMINIMAP_TITLE_COLOR, "Titel Farbe")
-SafeAddString(SI_VOTANSMINIMAP_TITLE_POSITION, "Titel Position")
-SafeAddString(SI_VOTANSMINIMAP_SHOW_FULL_TITLE, "Vollständigen Titel anzeigen")
-SafeAddString(SI_VOTANSMINIMAP_SHOW_FULL_TITLE_TOOLTIP, "Zeigt den vollständigen Titel an. Das beinhaltet den Kampagnenname und Schwierigkeitsgrad, selbst wenn der Text für das Minimap Fenster zu lang sein könnte.")
-SafeAddString(SI_VOTANSMINIMAP_SHOW_CLOCK, "Uhr anzeigen")
-SafeAddString(SI_VOTANSMINIMAP_SHOW_CLOCK_TOOLTIP, "Zeigt in der Mini Map die Uhrzeit an.")
-SafeAddString(SI_VOTANSMINIMAP_SHOW_VIEWANGLE, "Zeige Sichtfeld")
-SafeAddString(SI_VOTANSMINIMAP_SHOW_VIEWANGLE_TOOLTIP, "Zeigt das Sichtfeld des Spielers auf der Weltkarte und Minimap an.")
-SafeAddString(SI_VOTANSMINIMAP_TIME_FORMAT, "Zeitformat")
-SafeAddString(SI_VOTANSMINIMAP_SHOW_CLOCK0, "Aus")
-SafeAddString(SI_VOTANSMINIMAP_SHOW_CLOCK1, "Reale Zeit")
-SafeAddString(SI_VOTANSMINIMAP_SHOW_CLOCK2, "In-Game Zeit")
-SafeAddString(SI_VOTANSMINIMAP_SHOW_CLOCK3, "Reale & In-Game Zeit")
-SafeAddString(SI_VOTANSMINIMAP_ZONE_CHANGE_ALERT, "Gebietswechselmeldung")
-SafeAddString(SI_VOTANSMINIMAP_SHOW_COMPASS, "Kompass ein-/ausblenden")
-SafeAddString(SI_VOTANSMINIMAP_SHOW_COMPASS_TOOLTIP, "Kompass ein- oder ausblenden, wenn die Mini Map angezeigt wird oder unverändert lassen und andere Addons das Anscheinungsbild ändern lassen.")
-SafeAddString(SI_VOTANSMINIMAP_FRAMEDROP_DEBUG, "Framedrop Debug")
-SafeAddString(SI_VOTANSMINIMAP_SHOW_FREEZE_WARNING, "Freeze Warnung anzeigen")
-SafeAddString(SI_VOTANSMINIMAP_SHOW_FREEZE_WARNING_TOOLTIP, "Zeigt eine Warnung wenn eine Aktion die Frame-Zeit für 60fps überschreitet.")
-SafeAddString(SI_VOTANSMINIMAP_SHOW_CAMERA_HEADING, "Kamera Richtung anzeigen")
-SafeAddString(SI_VOTANSMINIMAP_SHOW_CAMERA_HEADING_TOOLTIP, "Zeigt die Richtung der Kamera auf der Weltkarte und der Mini Map an.")
-SafeAddString(SI_VOTANSMINIMAP_CAMERA_HEADING_ANGLE, "Marker Winkel")
-SafeAddString(SI_VOTANSMINIMAP_CAMERA_HEADING_ANGLE_TOOLTIP, "Der Winkel der Markierungslinie.")
-SafeAddString(SI_VOTANSMINIMAP_SHOW_ON_TOP, "Im Vordergrund anzeigen")
-SafeAddString(SI_VOTANSMINIMAP_SHOW_ON_TOP_TOOLTIP, "Die MiniMap über andere Elemente legen.")
+    SI_VOTANSMINIMAP_WORLD_MAP_TWEAKS = "Weltkarten Optimierungen",
+    SI_VOTANSMINIMAP_WORLD_MAP_TWEAKS_TOOLTIP = "Aktiviert Optimierungen zur zeitlichen CPU-Lastverteilung.",
+    SI_VOTANSMINIMAP_MINI_MAP = "Mini Map",
+    SI_VOTANSMINIMAP_MINI_MAP_TOOLTIP = "Aktiviert das Mini Map Feature der eingebauten Karte.",
+    SI_VOTANSMINIMAP_APPLY_BUTTON = "Anwenden",
+    SI_VOTANSMINIMAP_LOCK_POSITION = "Position & Größe fixieren",
+    SI_VOTANSMINIMAP_LOCK_POSITION_TOOLTIP = "Verhindert das verschieben und das ändern der Größe des Fensters.",
+    SI_VOTANSMINIMAP_ZOOM = "Zoom",
+    SI_VOTANSMINIMAP_ZOOM_TOOLTIP = "Zoom relativ zu nativen Auflösung der Karte.",
+    SI_VOTANSMINIMAP_MOUNTED_ZOOM = "Zoomfaktor beim Reiten",
+    SI_VOTANSMINIMAP_MOUNTED_ZOOM_TOOLTIP = "Relativer Zoomfaktor zum aktuellen Zoom. Der Wert 1 läßt den aktuellen Zoom.",
+    SI_VOTANSMINIMAP_SUB_ZONE_ZOOM = "Teilgebiet Zoom",
+    SI_VOTANSMINIMAP_SUB_ZONE_ZOOM_TOOLTIP = "Zoom relativ zu nativen Auflösung der Karte für Teilgebiete.",
+    SI_VOTANSMINIMAP_DUNGEON_ZOOM = "Dungeon Zoom",
+    SI_VOTANSMINIMAP_DUNGEON_ZOOM_TOOLTIP = "Zoom relativ zu nativen Auflösung der Karte für Dungeons.",
+    SI_VOTANSMINIMAP_BG_ZOOM = "Schlachtfeld Zoom",
+    SI_VOTANSMINIMAP_BG_ZOOM_TOOLTIP = "Zoom relativ zu nativen Auflösung der Karte für Schlachtfelder.",
+    SI_VOTANSMINIMAP_UNIT_PINS_MINIMUM_SIZE = "Unit Pins Mindestgröße",
+    SI_VOTANSMINIMAP_UNIT_PINS_MINIMUM_SIZE_TOOLTIP = "Unit Pins werden nicht unterhalb dieses Faktors skaliert.",
+    SI_VOTANSMINIMAP_SHOW_MAP = "Mini Map anzeigen",
+    SI_VOTANSMINIMAP_SHOW_MAP_TOOLTIP = "Mini Map anzeigen. Zentralschalter.",
+    SI_VOTANSMINIMAP_SHOW_HUD = "Im HUD anzeigen",
+    SI_VOTANSMINIMAP_SHOW_HUD_TOOLTIP = "Anzeigen während ihr in der Welt unterwegs seit.",
+    SI_VOTANSMINIMAP_SHOW_LOOTING = "Während des Lootens anzeigen.",
+    SI_VOTANSMINIMAP_SHOW_LOOTING_TOOLTIP = "Weniger häufiges aus- und einblenden.",
+    SI_VOTANSMINIMAP_ZOOM_TO_PLAYER = "Weltkarte zum Spieler zoomen",
+    SI_VOTANSMINIMAP_ZOOM_TO_PLAYER_TOOLTIP = "Zeigt die Weltkarte entweder ganz raus- oder ganz reingezoomt.",
+    SI_VOTANSMINIMAP_SHOW_MOUNTED = "Beim Reiten anzeigen",
+    SI_VOTANSMINIMAP_SHOW_MOUNTED_TOOLTIP = "Beim sitzen auf dem Reittier anzeigen. Hat Priorität gegenüber im Kampf anzeigen.",
+    SI_VOTANSMINIMAP_SHOW_COMBAT = "Im Kampf anzeigen",
+    SI_VOTANSMINIMAP_SHOW_COMBAT_TOOLTIP = "Während des Kampfes anzeigen.",
+    SI_VOTANSMINIMAP_SHOW_SIEGE = "Während Belagerung anzeigen",
+    SI_VOTANSMINIMAP_SHOW_SIEGE_TOOLTIP = "In der Belagerungsmaschine anzeigen.",
+    SI_VOTANSMINIMAP_KEYBINDINGS_ZOOM = "Zoom-Steuerung",
+    SI_VOTANSMINIMAP_ZOOM_OUT = "Ganz herauszoomen",
+    SI_VOTANSMINIMAP_ZOOM_OUT_TOOLTIP = "Zoomfaktor für die Rauszoomen-Taste.\n(Taste gedrückt halten.)",
+    SI_VOTANSMINIMAP_ZOOM_IN = "Ganz reinzoomen",
+    SI_VOTANSMINIMAP_ZOOM_IN_TOOLTIP = "Zoomfaktor für die Reinzoomen-Taste.\n(Taste gedrückt halten.)",
+    SI_VOTANSMINIMAP_APPEARANCE = "Erscheinungsbild",
+    SI_VOTANSMINIMAP_BORDER_STYLE = "Stil des Rahmens",
+    SI_VOTANSMINIMAP_BORDER_OPACITY = "Deckkraft des Rahmens",
+    SI_VOTANSMINIMAP_TITLE_FONT = "Titel Schriftart",
+    SI_VOTANSMINIMAP_TITLE_FONT_SIZE = "Titel Schriftgröße",
+    SI_VOTANSMINIMAP_TITLE_COLOR = "Titel Farbe",
+    SI_VOTANSMINIMAP_TITLE_POSITION = "Titel Position",
+    SI_VOTANSMINIMAP_SHOW_FULL_TITLE = "Vollständigen Titel anzeigen",
+    SI_VOTANSMINIMAP_SHOW_FULL_TITLE_TOOLTIP = "Zeigt den vollständigen Titel an. Das beinhaltet den Kampagnenname und Schwierigkeitsgrad, selbst wenn der Text für das Minimap Fenster zu lang sein könnte.",
+    SI_VOTANSMINIMAP_SHOW_CLOCK = "Uhr anzeigen",
+    SI_VOTANSMINIMAP_SHOW_CLOCK_TOOLTIP = "Zeigt in der Mini Map die Uhrzeit an.",
+    SI_VOTANSMINIMAP_SHOW_VIEWANGLE = "Zeige Sichtfeld",
+    SI_VOTANSMINIMAP_SHOW_VIEWANGLE_TOOLTIP = "Zeigt das Sichtfeld des Spielers auf der Weltkarte und Minimap an.",
+    SI_VOTANSMINIMAP_TIME_FORMAT = "Zeitformat",
+    SI_VOTANSMINIMAP_SHOW_CLOCK0 = "Aus",
+    SI_VOTANSMINIMAP_SHOW_CLOCK1 = "Reale Zeit",
+    SI_VOTANSMINIMAP_SHOW_CLOCK2 = "In-Game Zeit",
+    SI_VOTANSMINIMAP_SHOW_CLOCK3 = "Reale & In-Game Zeit",
+    SI_VOTANSMINIMAP_ZONE_CHANGE_ALERT = "Gebietswechselmeldung",
+    SI_VOTANSMINIMAP_SHOW_COMPASS = "Kompass ein-/ausblenden",
+    SI_VOTANSMINIMAP_SHOW_COMPASS_TOOLTIP = "Kompass ein- oder ausblenden, wenn die Mini Map angezeigt wird oder unverändert lassen und andere Addons das Anscheinungsbild ändern lassen.",
+    SI_VOTANSMINIMAP_FRAMEDROP_DEBUG = "Framedrop Debug",
+    SI_VOTANSMINIMAP_SHOW_FREEZE_WARNING = "Freeze Warnung anzeigen",
+    SI_VOTANSMINIMAP_SHOW_FREEZE_WARNING_TOOLTIP = "Zeigt eine Warnung wenn eine Aktion die Frame-Zeit für 60fps überschreitet.",
+    SI_VOTANSMINIMAP_SHOW_CAMERA_HEADING = "Kamera Richtung anzeigen",
+    SI_VOTANSMINIMAP_SHOW_CAMERA_HEADING_TOOLTIP = "Zeigt die Richtung der Kamera auf der Weltkarte und der Mini Map an.",
+    SI_VOTANSMINIMAP_CAMERA_HEADING_ANGLE = "Marker Winkel",
+    SI_VOTANSMINIMAP_CAMERA_HEADING_ANGLE_TOOLTIP = "Der Winkel der Markierungslinie.",
+    SI_VOTANSMINIMAP_SHOW_ON_TOP = "Im Vordergrund anzeigen",
+    SI_VOTANSMINIMAP_SHOW_ON_TOP_TOOLTIP = "Die MiniMap über andere Elemente legen.",
 
-SafeAddString(SI_VOTANSMINIMAP_ZONEALERTMODE_ALWAYS, "Immer")
-SafeAddString(SI_VOTANSMINIMAP_ZONEALERTMODE_MAP_HIDDEN, "Mini Map ausgeblendet")
-SafeAddString(SI_VOTANSMINIMAP_ZONEALERTMODE_NEVER, "Nie")
-SafeAddString(SI_VOTANSMINIMAP_COMPASSMODE_UNTOUCHED, "Unverändert")
-SafeAddString(SI_VOTANSMINIMAP_COMPASSMODE_HIDDEN, "Ausgeblendet")
-SafeAddString(SI_VOTANSMINIMAP_COMPASSMODE_SHOWN, "Eingeblendet")
+    SI_VOTANSMINIMAP_ZONEALERTMODE_ALWAYS = "Immer",
+    SI_VOTANSMINIMAP_ZONEALERTMODE_MAP_HIDDEN = "Mini Map ausgeblendet",
+    SI_VOTANSMINIMAP_ZONEALERTMODE_NEVER = "Nie",
+    SI_VOTANSMINIMAP_COMPASSMODE_UNTOUCHED = "Unverändert",
+    SI_VOTANSMINIMAP_COMPASSMODE_HIDDEN = "Ausgeblendet",
+    SI_VOTANSMINIMAP_COMPASSMODE_SHOWN = "Eingeblendet",
 
-SafeAddString(SI_VOTANSMINIMAP_KEEP_SQUARE, "Quadratisch halten")
-SafeAddString(SI_VOTANSMINIMAP_KEEP_SQUARE_TOOLTIP, "Hält den Bereich der Karte quadratisch. Standardverhalten.")
+    SI_VOTANSMINIMAP_KEEP_SQUARE = "Quadratisch halten",
+    SI_VOTANSMINIMAP_KEEP_SQUARE_TOOLTIP = "Hält den Bereich der Karte quadratisch. Standardverhalten.",
 
-SafeAddString(SI_BINDING_NAME_VOTANS_TOGGLE_MAP_OFFSET_FIX, "Fixierte Minimap Position umschalten")
+    SI_BINDING_NAME_VOTANS_TOGGLE_MAP_OFFSET_FIX = "Fixierte Minimap Position umschalten",
 
-SafeAddString(SI_VOTANSMINIMAP_ASYNC_UPDATE, "Asynchrone Aktualisierung")
-SafeAddString(SI_VOTANSMINIMAP_ASYNC_UPDATE_TOOLTIP, "Ein: Framerate über Aktualisierung.\nAus: Aktualisierung über Framerate.")
+    SI_VOTANSMINIMAP_ASYNC_UPDATE = "Asynchrone Aktualisierung",
+    SI_VOTANSMINIMAP_ASYNC_UPDATE_TOOLTIP = "Ein: Framerate über Aktualisierung.\nAus: Aktualisierung über Framerate.",
 
-SafeAddString(SI_VOTANSMINIMAP_PINSIZE_KEEP_FAST_TRAVEL, "Transitus-Schrein")
-SafeAddString(SI_VOTANSMINIMAP_PINSIZE_KEEPS, "Burgen")
-SafeAddString(SI_VOTANSMINIMAP_PINSIZE_DISTRICTS, "Distrikte")
+    SI_VOTANSMINIMAP_PINSIZE_KEEP_FAST_TRAVEL = "Transitus-Schrein",
+    SI_VOTANSMINIMAP_PINSIZE_KEEPS = "Burgen",
+    SI_VOTANSMINIMAP_PINSIZE_DISTRICTS = "Distrikte",
 
-SafeAddString(SI_VOTANSMINIMAP_SHOW_ALL_TRAVEL_NODES, "Alle Wegschreine anzeigen")
-SafeAddString(SI_VOTANSMINIMAP_SHOW_IN_SETTINGS, "Mini Map jetzt einblenden")
-SafeAddString(SI_VOTANSMINIMAP_GRID_X, "Position - Raster X")
-SafeAddString(SI_VOTANSMINIMAP_GRID_Y, "Position - Raster Y")
-SafeAddString(SI_VOTANSMINIMAP_GRID_W, "Größe - Raster Breite")
-SafeAddString(SI_VOTANSMINIMAP_GRID_H, "Größe - Raster Höhe")
-SafeAddString(SI_VOTANSMINIMAP_GRID_TOOLTIP, "Position und Größe in einem 8x8 Raster. Aber Ihr könnt auch die Maus benutzen um die Position und die Größe zu ändern.")
+    SI_VOTANSMINIMAP_SHOW_ALL_TRAVEL_NODES = "Alle Wegschreine anzeigen",
+    SI_VOTANSMINIMAP_SHOW_IN_SETTINGS = "Mini Map jetzt einblenden",
+    SI_VOTANSMINIMAP_GRID_X = "Position - Raster X",
+    SI_VOTANSMINIMAP_GRID_Y = "Position - Raster Y",
+    SI_VOTANSMINIMAP_GRID_W = "Größe - Raster Breite",
+    SI_VOTANSMINIMAP_GRID_H = "Größe - Raster Höhe",
+    SI_VOTANSMINIMAP_GRID_TOOLTIP = "Position und Größe in einem 8x8 Raster. Aber Ihr könnt auch die Maus benutzen um die Position und die Größe zu ändern.",
+
+}
+
+for stringId, stringValue in pairs(strings) do
+    SafeAddString(_G[stringId], stringValue, 2)
+end
