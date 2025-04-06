@@ -1,9 +1,14 @@
 ## Title: Dungeon Queue 4 Stickerbook
-## Author: tim99 & votan
-## Version: 1.1.2
-## APIVersion: 101036 101037
+## Author: tim99, votan & Antisenil
+## Version: 1.2.4
+## APIVersion: 101043 101044
 ## OptionalDependsOn: pchat
 ## SavedVariables: DungeonQueue4Stickerbook
-## Description: |c000000|u1:800::|u|t96:96:/esoui/art/icons/assistant_banker_01.dds|t|u1:800::.|u|u1:800::.|u|r|c9B30FFQueues for all normal dungeons, where you miss pieces from the stickerbook|r
+## Description: |t72:72:/esoui/art/icons/assistant_banker_01.dds|t|c9B30FFQueues for all normal dungeons, where you |r|u72:0::|u|c9B30FFmiss pieces from the stickerbook.|r
+
+
+
+DQ4S_data.lua
+
 
 DungeonQueue4Stickerbook.lua
