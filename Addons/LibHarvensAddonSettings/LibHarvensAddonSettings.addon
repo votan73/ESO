@@ -1,5 +1,5 @@
 ; This Add-on is not created by, affiliated with or sponsored by ZeniMax
-; Media Inc. or its affiliates. The Elder Scrolls® and related logos are
+; Media Inc. or its affiliates. The Elder Scrollsï¿½ and related logos are
 ; registered trademarks or trademarks of ZeniMax Media Inc. in the United
 ; States and/or other countries. All rights reserved.
 
@@ -7,7 +7,7 @@
 ## Author: Harven, Votan
 ## AddOnVersion: 20001
 ## Version: 2.0.1
-## APIVersion: 101044 101045
+## APIVersion: 101045 101046
 ## IsLibrary: true
 ## Description: With this addon you can create and add your addon settings to the common settings page. The settings page can be found in Settings->Addons menu.
 ## OptionalDependsOn: LibAddonMenu-2.0>=38
