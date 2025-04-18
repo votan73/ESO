@@ -9,7 +9,7 @@ local function UpdateControls()
 end
 
 function addon:InitPinLevels()
-	local LibHarvensAddonSettings = LibHarvensAddonSettings or LibStub("LibHarvensAddonSettings-1.0")
+	local LibHarvensAddonSettings = LibHarvensAddonSettings
 	if not LibHarvensAddonSettings then return end
 
 	local settings = LibHarvensAddonSettings:AddAddon("Votan's Mini Map Pin Levels")

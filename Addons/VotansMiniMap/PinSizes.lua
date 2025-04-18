@@ -13,7 +13,7 @@ end
 local pinScales, pinSizes
 
 function addon:InitPinSizes()
-	local LibHarvensAddonSettings = LibHarvensAddonSettings or LibStub("LibHarvensAddonSettings-1.0")
+	local LibHarvensAddonSettings = LibHarvensAddonSettings
 
 	local settings = LibHarvensAddonSettings:AddAddon("Votan's Mini Map Pin Sizes")
 	if not settings then return end
