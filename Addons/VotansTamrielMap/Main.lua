@@ -372,6 +372,12 @@
 			cosmic = true,
 			blobX = 0.1367,
 			blobY = 0.5579
+		},
+		-- [53] =
+		{
+			-- "Sonnenwende",
+			alliance = 999,
+			poi = 592
 		}
 	},
 	color = {
@@ -436,7 +442,7 @@ function addon:InitSettings()
 	end
 	addon.settingsControls = settings
 	settings.allowDefaults = true
-	settings.version = "1.2.3"
+	settings.version = "1.2.4"
 	settings.website = "https://www.esoui.com/downloads/info2672-VotansTamrielMap.html"
 
 	-- settings:AddSetting {
@@ -630,7 +636,7 @@ function addon:GetNoColor(location)
 end
 
 function addon:GetBaseGameColor(location)
-	return location and (location.index <= 27 or location.index == 30) and self.baseGameColor or self.dlcGameColor
+	return location and (location.index < 27 or location.index == 30) and self.baseGameColor or self.dlcGameColor
 end
 
 function addon:RenderMap(isTamriel)
