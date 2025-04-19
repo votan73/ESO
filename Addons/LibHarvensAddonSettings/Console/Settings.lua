@@ -120,7 +120,7 @@ local updateControlFunctions = {
 	end,
 	[LibHarvensAddonSettings.ST_BUTTON] = function(self, control)
 		control:SetHidden(false)
-		control:GetNamedChild("Name"):SetText(self:GetValueOrCallback(self.labelText))
+		control:GetNamedChild("Name"):SetText(self:GetValueOrCallback(self.labelText) or self:GetValueOrCallback(self.buttonText))
 		--click handled in keystrip
 	end,
 	[LibHarvensAddonSettings.ST_EDIT] = function(self, control)
