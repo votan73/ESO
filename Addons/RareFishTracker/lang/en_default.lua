@@ -54,3 +54,10 @@ ZO_CreateStringId("SI_RARE_FISH_TRACKER_BIGGER_FONT_TOOLTIP", "Use one category 
 ZO_CreateStringId("SI_RARE_FISH_TRACKER_RELOADUI", "Requires to reload UI")
 ZO_CreateStringId("SI_RARE_FISH_TRACKER_ALLOW_PER_CHAR", "Track per character")
 ZO_CreateStringId("SI_RARE_FISH_TRACKER_ALLOW_PER_CHAR_TOOLTIP", "Tracks fishes per character.\nAllows you to restart tracking with \"/rftzone clear\".\nOr to take over account-wide state with \"/rftzone\".")
+
+ZO_CreateStringId("SI_RARE_FISH_TRACKER_SHOW_IN_SETTINGS", "Show window now")
+ZO_CreateStringId("SI_RARE_FISH_TRACKER_GRID_X", "Position - Grid X (HUD)")
+ZO_CreateStringId("SI_RARE_FISH_TRACKER_GRID_Y", "Position - Grid Y (HUD)")
+ZO_CreateStringId("SI_RARE_FISH_TRACKER_GRID_X_WORLD", "Position - Grid X (World Map)")
+ZO_CreateStringId("SI_RARE_FISH_TRACKER_GRID_Y_WORLD", "Position - Grid Y (World Map)")
+ZO_CreateStringId("SI_RARE_FISH_TRACKER_GRID_TOOLTIP", "Position in an 8x8 grid.")

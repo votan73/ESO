@@ -25,7 +25,7 @@ function RFT:RestorePosition()
 	local settings = self.settings
 
 	local tx, ty, tr, tb
-	if WORLD_MAP_SCENE:IsShowing() then
+	if RFT.IsShowingWorldMap() then
 		tx, ty, tr, tb = settings.x_world, settings.y_world, settings.right_world, settings.bottom_world
 	else
 		tx, ty, tr, tb = settings.x, settings.y, settings.right, settings.bottom
@@ -102,6 +102,16 @@ function RFT.ShowTooltip(resultButton, state)
 		ItemTooltip:SetLink(itemLink)
 	else
 		ClearTooltip(ItemTooltip)
+	end
+end
+
+if IsConsoleUI() then
+	function RFT.IsShowingWorldMap()
+		return GAMEPAD_WORLD_MAP_SCENE:IsShowing() or (LibHarvensAddonSettings.scene and LibHarvensAddonSettings.scene:IsShowing() and RFT.moveForWorldMap)
+	end
+else
+	function RFT.IsShowingWorldMap()
+		return WORLD_MAP_SCENE:IsShowing()
 	end
 end
 
@@ -189,7 +199,7 @@ function RFT.MakeWindow()
 			return
 		end
 		local settings = RFT.settings
-		if WORLD_MAP_SCENE:IsShowing() then
+		if RFT.IsShowingWorldMap() then
 			settings.x_world, settings.y_world, settings.right_world, settings.bottom_world = GetPosition()
 			SetPosition(settings.x_world, settings.y_world, settings.right_world, settings.bottom_world)
 		else
@@ -205,7 +215,7 @@ function RFT.MakeWindow()
 	rft.slide = rft.slideAmin:GetFirstAnimation()
 	local function OnAnimStop()
 		local settings = RFT.settings
-		if WORLD_MAP_SCENE:IsShowing() then
+		if RFT.IsShowingWorldMap() then
 			SetPosition(settings.x_world, settings.y_world, settings.right_world, settings.bottom_world)
 		else
 			SetPosition(settings.x, settings.y, settings.right, settings.bottom)
@@ -365,7 +375,7 @@ function RFT.MakeWindow()
 	RARE_FISH_TRACKER_FRAGMENT = ZO_HUDFadeSceneFragment:New(rft, 500, 0)
 	RARE_FISH_TRACKER_FRAGMENT:SetConditional(
 		function()
-			if WORLD_MAP_SCENE:IsShowing() then
+			if RFT.IsShowingWorldMap() then
 				if RFT.numFishes == nil or RFT.isAutoRefresh and RFT.numFishes == 0 then
 					return false
 				end
@@ -388,7 +398,8 @@ function RFT.MakeWindow()
 			end
 		end
 	)
-	WORLD_MAP_SCENE:RegisterCallback(
+	local mapScene = IsConsoleUI() and GAMEPAD_WORLD_MAP_SCENE or WORLD_MAP_SCENE
+	mapScene:RegisterCallback(
 		"StateChange",
 		function(oldState, newState)
 			-- If window is visible in both scenes, the state does not change => RestorePosition only
@@ -444,7 +455,7 @@ function RFT.MakeWindow()
 	HUD_SCENE:AddFragment(RARE_FISH_TRACKER_FRAGMENT)
 	HUD_UI_SCENE:AddFragment(RARE_FISH_TRACKER_FRAGMENT)
 	LOOT_SCENE:AddFragment(RARE_FISH_TRACKER_FRAGMENT)
-	WORLD_MAP_SCENE:AddFragment(RARE_FISH_TRACKER_FRAGMENT)
+	mapScene:AddFragment(RARE_FISH_TRACKER_FRAGMENT)
 
 	RFT.MakeOrders()
 
@@ -463,189 +474,219 @@ function RFT.MakeWindow()
 	RFT.ESOColors = colors
 end
 
-function RFT.PopulateWindowForAchievement(achievement)
-	local account = RFT.account
+do
+	local bigFont
+	local normalFont
 
-	local disp = account.highlight == "Caught" or false
-	local numFishes = NonContiguousCount(RFT.progress[achievement])
-
-	local numCaught = 0
-	if numFishes > 0 then
-		local smallFont = account.biggerFont and "ZoFontWinT2" or "ZoFontGameSmall"
-		local symbolSize = account.biggerFont and 40 or 32
-		local itemSize = symbolSize + 8
-		local backSize = itemSize + 8
-
-		-- 0 = default fish order/quality
-		local fishorder = RFT.orders[achievement] or RFT.orders[0]
-		local fishquality = RFT.quality[achievement] or RFT.quality[0]
-		local function AddColumn(index, fishName, icon)
-			local caught = RFT.progress[achievement][fishName] == 1
-			if caught then
-				numCaught = numCaught + 1
-			end
-			-- WHY does lua not have an xor operator?!?!
-			local normal = ((caught or disp) and not (caught and disp))
-			local alpha = normal and account.captionAlphaNormal or account.captionAlphaHighlighted
-			if alpha == 0 then
-				return
-			end
-
-			alpha = alpha / 100
-
-			local colorType = (fishquality[index] - ITEM_FUNCTIONAL_QUALITY_MAGIC) * 2 + 1
-			local color = normal and RFT.Colors[colorType] or RFT.Colors[colorType + 1]
-			local r, g, b = color:UnpackRGB()
-
-			local item = fishorder[index]:AcquireObject()
-
-			item:SetResizeToFitDescendents(false)
-			item.itemId = RFT.achievementToItem[achievement][index]
-			item.itemLink = nil
-			item:SetMouseEnabled(item.itemId ~= nil)
-			item.label:SetText("")
-			item.icon:SetTexture("")
-			item:SetDimensions(0, 0)
-
-			if account.useSymbols then
-				item.backdrop:SetColor(r, g, b, alpha * 0.7)
-				item:SetAnchor(TOP, nil, TOP, 0, item.index * itemSize - 18)
-				item.icon:SetDimensions(symbolSize, symbolSize)
-				item.icon:SetTexture(icon)
-				item.icon:SetAlpha(alpha)
-				item.label:SetHidden(true)
-				item.backdrop:SetDimensions(backSize, backSize)
-				item.backdrop:SetHidden(false)
-				item.icon:SetHidden(false)
-			else
-				item.label:SetFont(smallFont)
-				item.label:SetColor(r, g, b, alpha)
-				item.label:SetText(ZO_CachedStrFormat(SI_TOOLTIP_ITEM_NAME, fishName))
-				item:SetAnchor(TOP, nil, TOP, 0, item.index * (item.label:GetHeight() + 5))
-				item.label:SetHidden(false)
-				item.backdrop:SetHidden(true)
-				item.icon:SetHidden(true)
-			end
-			item:SetResizeToFitDescendents(true)
-			item:SetHidden(false)
-		end
-		local fishes, icons = RFT.fishnames[achievement], RFT.fishIcons[achievement]
-		for index, fishName in ipairs(fishes) do
-			if (fishquality[index] == ITEM_FUNCTIONAL_QUALITY_ARCANE) then
-				AddColumn(index, fishName, icons[index])
-			end
-		end
-		for index, fishName in ipairs(fishes) do
-			if (fishquality[index] == ITEM_FUNCTIONAL_QUALITY_MAGIC) then
-				AddColumn(index, fishName, icons[index])
-			end
-		end
-		for index, fishName in ipairs(fishes) do
-			if (fishquality[index] == ITEM_FUNCTIONAL_QUALITY_ARTIFACT) then
-				AddColumn(index, fishName, icons[index])
-			end
-		end
+	if IsConsoleUI() then
+		bigFont = "ZoFontGamepad22"
+		normalFont = "ZoFontGamepad20"
 	else
-		-- sub zones like dungeons
-		numFishes = 0
-	end
-	return numCaught, numFishes
-end
-
-function RFT.PopulateWindow(zone, achievements)
-	local zoneIndex = GetZoneIndex(zone)
-	if zoneIndex <= 1 then
-		return 0, 0
+		bigFont = "ZoFontWinT2"
+		normalFont = "ZoFontGameSmall"
 	end
 
-	local account = RFT.account
+	function RFT.PopulateWindowForAchievement(achievement)
+		local account = RFT.account
 
-	local rft = RFT.window
-	if account.showzone then
-		rft.zone:SetText(ZO_CachedStrFormat(SI_ZONE_NAME, GetZoneNameByIndex(zoneIndex)))
-		rft.zone:SetHidden(false)
-	else
-		rft.zone:SetText("")
-		rft.zone:SetHidden(true)
-	end
-	local mediumFont = account.biggerFont and "ZoFontWinT1" or "ZoFontWinT2"
-	rft.zone:SetFont(mediumFont)
+		local disp = account.highlight == "Caught" or false
+		local numFishes = NonContiguousCount(RFT.progress[achievement])
 
-	rft.column1:ReleaseAllObjects()
-	rft.column2:ReleaseAllObjects()
-	rft.column3:ReleaseAllObjects()
-	rft.column4:ReleaseAllObjects()
+		local numCaught = 0
+		if numFishes > 0 then
+			local smallFont = account.biggerFont and bigFont or normalFont
+			local symbolSize = account.biggerFont and 40 or 32
+			local itemSize = symbolSize + 8
+			local backSize = itemSize + 8
 
-	local title, head
-	if account.useDefaultColors then
-		RFT.Colors = RFT.ESOColors
-		title = RFT.ESODefault
-		head = RFT.ESOHighlight
-	else
-		RFT.Colors = RFT.KatKat42Colors
-		title = RFT.KatKat42Default
-		head = RFT.KatKat42Highlight
-	end
-	local r, g, b = title:UnpackRGB()
-	rft.title:SetColor(r, g, b)
-	rft.zone:SetColor(r, g, b)
+			-- 0 = default fish order/quality
+			local fishorder = RFT.orders[achievement] or RFT.orders[0]
+			local fishquality = RFT.quality[achievement] or RFT.quality[0]
+			local function AddColumn(index, fishName, icon)
+				local caught = RFT.progress[achievement][fishName] == 1
+				if caught then
+					numCaught = numCaught + 1
+				end
+				-- WHY does lua not have an xor operator?!?!
+				local normal = ((caught or disp) and not (caught and disp))
+				local alpha = normal and account.captionAlphaNormal or account.captionAlphaHighlighted
+				if alpha == 0 then
+					return
+				end
 
-	local r, g, b = head:UnpackRGB()
-	rft.entries.ocean.label:SetColor(r, g, b)
-	rft.entries.lake.label:SetColor(r, g, b)
-	rft.entries.river.label:SetColor(r, g, b)
-	rft.entries.foul.label:SetColor(r, g, b)
+				alpha = alpha / 100
 
-	local numCaught, numFishes = 0, 0
-	if achievements ~= 0 then
-		local caught, fishes
-		for i = 1, #achievements do
-			caught, fishes = RFT.PopulateWindowForAchievement(achievements[i])
-			numCaught, numFishes = numCaught + caught, numFishes + fishes
-		end
+				local colorType = (fishquality[index] - ITEM_FUNCTIONAL_QUALITY_MAGIC) * 2 + 1
+				local color = normal and RFT.Colors[colorType] or RFT.Colors[colorType + 1]
+				local r, g, b = color:UnpackRGB()
 
-		local types = RFT.types[zone] or RFT.types[0]
-		local column, waterType
-		for i = 1, #RFT.columns do
-			column, waterType = RFT.columns[i], types[i]
-			local hidden = waterType == nil or rft.labelPools[i]:GetActiveObjectCount() == 0
-			if hidden then
-				column.label:SetText("")
-				column:SetWidth(0)
-			else
-				column.label:SetFont(mediumFont)
+				local item = fishorder[index]:AcquireObject()
+
+				item:SetResizeToFitDescendents(false)
+				item.itemId = RFT.achievementToItem[achievement][index]
+				item.itemLink = nil
+				item:SetMouseEnabled(item.itemId ~= nil)
+				item.label:SetText("")
+				item.icon:SetTexture("")
+				item:SetDimensions(0, 0)
+
 				if account.useSymbols then
-					column.label:SetText(RFT.typeSymbols[waterType])
+					item.backdrop:SetColor(r, g, b, alpha * 0.7)
+					item:SetAnchor(TOP, nil, TOP, 0, item.index * itemSize - 18)
+					item.icon:SetDimensions(symbolSize, symbolSize)
+					item.icon:SetTexture(icon)
+					item.icon:SetAlpha(alpha)
+					item.label:SetHidden(true)
+					item.backdrop:SetDimensions(backSize, backSize)
+					item.backdrop:SetHidden(false)
+					item.icon:SetHidden(false)
 				else
-					column.label:SetText(GetString(waterType))
+					item.label:SetFont(smallFont)
+					item.label:SetColor(r, g, b, alpha)
+					item.label:SetText(ZO_CachedStrFormat(SI_TOOLTIP_ITEM_NAME, fishName))
+					item:SetAnchor(TOP, nil, TOP, 0, item.index * (item.label:GetHeight() + 5))
+					item.label:SetHidden(false)
+					item.backdrop:SetHidden(true)
+					item.icon:SetHidden(true)
+				end
+				item:SetResizeToFitDescendents(true)
+				item:SetHidden(false)
+			end
+			local fishes, icons = RFT.fishnames[achievement], RFT.fishIcons[achievement]
+			for index, fishName in ipairs(fishes) do
+				if (fishquality[index] == ITEM_FUNCTIONAL_QUALITY_ARCANE) then
+					AddColumn(index, fishName, icons[index])
 				end
 			end
-			column:SetHidden(hidden)
+			for index, fishName in ipairs(fishes) do
+				if (fishquality[index] == ITEM_FUNCTIONAL_QUALITY_MAGIC) then
+					AddColumn(index, fishName, icons[index])
+				end
+			end
+			for index, fishName in ipairs(fishes) do
+				if (fishquality[index] == ITEM_FUNCTIONAL_QUALITY_ARTIFACT) then
+					AddColumn(index, fishName, icons[index])
+				end
+			end
+		else
+			-- sub zones like dungeons
+			numFishes = 0
 		end
+		return numCaught, numFishes
+	end
+end
+
+do
+	local bigFont
+	local normalFont
+
+	if IsConsoleUI() then
+		bigFont = "ZoFontGamepad27"
+		normalFont = "ZoFontGamepad22"
 	else
-		for i = 1, #RFT.columns do
-			RFT.columns[i]:SetHidden(true)
+		bigFont = "ZoFontWinT1"
+		normalFont = "ZoFontWinT2"
+	end
+
+	function RFT.PopulateWindow(zone, achievements)
+		local zoneIndex = GetZoneIndex(zone)
+		if zoneIndex <= 1 then
+			return 0, 0
 		end
-	end
 
-	RFT.window.bgtex:SetHidden(not account.showMunge)
-	if account.showMunge then
-		rft.bg:SetEdgeTexture("EsoUI/Art/ChatWindow/chat_BG_edge.dds", 256, 128, 16)
-		rft.bg:SetCenterTexture("EsoUI/Art/ChatWindow/chat_BG_center.dds")
-	else
-		rft.bg:SetEdgeTexture(nil, 2, 2, 16)
-		rft.bg:SetCenterTexture(nil)
-	end
-	rft.title:SetHidden(not account.showtitle)
+		local account = RFT.account
 
-	if account.showtitle then
-		rft.title:SetFont(account.biggerFont and "ZoFontWinH3SoftShadowThin" or "ZoFontWinT1")
-		rft.zone:SetAnchor(TOP, rft.title, BOTTOM, 0, 5)
-	else
-		rft.zone:SetAnchor(TOP, rft, TOP, 0, 5)
-	end
+		local rft = RFT.window
+		if account.showzone then
+			rft.zone:SetText(ZO_CachedStrFormat(SI_ZONE_NAME, GetZoneNameByIndex(zoneIndex)))
+			rft.zone:SetHidden(false)
+		else
+			rft.zone:SetText("")
+			rft.zone:SetHidden(true)
+		end
+		local mediumFont = account.biggerFont and bigFont or normalFont
+		rft.zone:SetFont(mediumFont)
 
-	return numCaught, numFishes
+		rft.column1:ReleaseAllObjects()
+		rft.column2:ReleaseAllObjects()
+		rft.column3:ReleaseAllObjects()
+		rft.column4:ReleaseAllObjects()
+
+		local title, head
+		if account.useDefaultColors then
+			RFT.Colors = RFT.ESOColors
+			title = RFT.ESODefault
+			head = RFT.ESOHighlight
+		else
+			RFT.Colors = RFT.KatKat42Colors
+			title = RFT.KatKat42Default
+			head = RFT.KatKat42Highlight
+		end
+		local r, g, b = title:UnpackRGB()
+		rft.title:SetColor(r, g, b)
+		rft.zone:SetColor(r, g, b)
+
+		local r, g, b = head:UnpackRGB()
+		rft.entries.ocean.label:SetColor(r, g, b)
+		rft.entries.lake.label:SetColor(r, g, b)
+		rft.entries.river.label:SetColor(r, g, b)
+		rft.entries.foul.label:SetColor(r, g, b)
+
+		local numCaught, numFishes = 0, 0
+		if achievements ~= 0 then
+			local caught, fishes
+			for i = 1, #achievements do
+				caught, fishes = RFT.PopulateWindowForAchievement(achievements[i])
+				numCaught, numFishes = numCaught + caught, numFishes + fishes
+			end
+
+			local types = RFT.types[zone] or RFT.types[0]
+			local column, waterType
+			for i = 1, #RFT.columns do
+				column, waterType = RFT.columns[i], types[i]
+				local hidden = waterType == nil or rft.labelPools[i]:GetActiveObjectCount() == 0
+				if hidden then
+					column.label:SetText("")
+					column:SetWidth(0)
+				else
+					column.label:SetFont(mediumFont)
+					if account.useSymbols then
+						column.label:SetText(RFT.typeSymbols[waterType])
+					else
+						column.label:SetText(GetString(waterType))
+					end
+				end
+				column:SetHidden(hidden)
+			end
+		else
+			for i = 1, #RFT.columns do
+				RFT.columns[i]:SetHidden(true)
+			end
+		end
+
+		RFT.window.bgtex:SetHidden(not account.showMunge)
+		if account.showMunge then
+			rft.bg:SetEdgeTexture("EsoUI/Art/ChatWindow/chat_BG_edge.dds", 256, 128, 16)
+			rft.bg:SetCenterTexture("EsoUI/Art/ChatWindow/chat_BG_center.dds")
+		else
+			rft.bg:SetEdgeTexture(nil, 2, 2, 16)
+			rft.bg:SetCenterTexture(nil)
+		end
+		rft.title:SetHidden(not account.showtitle)
+
+		if account.showtitle then
+			if IsConsoleUI() then
+				rft.title:SetFont(account.biggerFont and "ZoFontGamepadBold27" or "ZoFontGamepadBold22")
+			else
+				rft.title:SetFont(account.biggerFont and "ZoFontWinH3SoftShadowThin" or "ZoFontWinT1")
+			end
+			rft.zone:SetAnchor(TOP, rft.title, BOTTOM, 0, 5)
+		else
+			rft.zone:SetAnchor(TOP, rft, TOP, 0, 5)
+		end
+
+		return numCaught, numFishes
+	end
 end
 
 function RFT.ToggleWindow()
@@ -662,7 +703,7 @@ function RFT.ToggleWindow()
 		RFT.RefreshWindow()
 	end
 	--if not RFT.account.autoShowHide or not RFT.isAutoRefresh then
-	if WORLD_MAP_SCENE:IsShowing() then
+	if RFT.IsShowingWorldMap() then
 		RFT.settings.shown_world = ishidden
 	else
 		RFT.settings.shown = ishidden
