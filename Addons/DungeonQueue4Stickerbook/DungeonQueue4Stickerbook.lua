@@ -7,34 +7,33 @@ ttq = {
 	firstCall = true,
 	complSets = false,
 	complQust = false,
-	col_tim99 = ZO_ColorDef:New("9b30ff")
-}
+	col_tim99 = ZO_ColorDef:New("9b30ff"),
+	}
 ttq.svCharDef = {
 	autoqueue = true,
 }
 ----------------------------------------------------------------------------------------------------
 --need the copies as quest and set checks empty their tables 
-function deepcopy(orig)
+function ttq.deepcopy(orig)
     local orig_type = type(orig)
     local copy
     if orig_type == 'table' then
         copy = {}
         for orig_key, orig_value in next, orig, nil do
-            copy[deepcopy(orig_key)] = deepcopy(orig_value)
+            copy[ttq.deepcopy(orig_key)] = ttq.deepcopy(orig_value)
         end
-        setmetatable(copy, deepcopy(getmetatable(orig)))
+        setmetatable(copy, ttq.deepcopy(getmetatable(orig)))
     else -- number, string, boolean, etc
         copy = orig
     end
     return copy
 end
 
-local UndauntedPledges = deepcopy(ttq_DungeonData)
-local UndauntedDLCPledges = deepcopy(ttq_DungeonData)
-local DungeonQuest = deepcopy(ttq_DungeonData)
-local DungeonSets = deepcopy(ttq_DungeonData)
-local DungeonSetsVet = deepcopy(ttq_DungeonData)
-
+local UndauntedPledges = ttq.deepcopy(ttq_DungeonData)
+local UndauntedDLCPledges = ttq.deepcopy(ttq_DungeonData)
+local DungeonQuest = ttq.deepcopy(ttq_DungeonData)
+local DungeonSets = ttq.deepcopy(ttq_DungeonData)
+local DungeonSetsVet = ttq.deepcopy(ttq_DungeonData)
 ----------------------------------------------------------------------------------------------------
 function ttq:GetTextColor()
 	local b, c, d, e = self.normalColor:UnpackRGBA()
@@ -48,19 +47,24 @@ end
 ----------------------------------------------------------------------------------------------------
 function ttq.checkCompletedSets()
 	for i, v in pairs(DungeonSets) do
+		local HelmetID = v["helmet"]
 		local numSetsDone = 0
-		for j = 1, #v.sets do
-			local itemSetCollectionData = ITEM_SET_COLLECTIONS_DATA_MANAGER:GetItemSetCollectionData(v.sets[j])
-			if itemSetCollectionData then
-				local numUnlockedPieces, numPieces = itemSetCollectionData:GetNumUnlockedPieces(), itemSetCollectionData:GetNumPieces()
-				if numUnlockedPieces == numPieces then
-					numSetsDone = numSetsDone + 1
+		if HelmetID == nil then
+			for j = 1, #v.sets do
+				local itemSetCollectionData = ITEM_SET_COLLECTIONS_DATA_MANAGER:GetItemSetCollectionData(v.sets[j])
+				if itemSetCollectionData then
+					local numUnlockedPieces, numPieces = itemSetCollectionData:GetNumUnlockedPieces(), itemSetCollectionData:GetNumPieces()
+					if numUnlockedPieces == numPieces then
+						numSetsDone = numSetsDone + 1
+					end
+				else
+					numSetsDone = numSetsDone + 1 -- does not exist yet
 				end
-			else
-				numSetsDone = numSetsDone + 1 -- does not exist yet
 			end
-		end
-		if numSetsDone == #v.sets then
+			if numSetsDone == #v.sets then
+				DungeonSets[i] = nil
+			end
+		elseif HelmetID ~= nil then
 			DungeonSets[i] = nil
 		end
 	end
@@ -87,6 +91,8 @@ function ttq.checkCompletedSets()
 			if numSetsDone == HelmetID then
 				DungeonSetsVet[i] = nil
 			end
+		elseif HelmetID == nil then
+			DungeonSetsVet[i] = nil
 		end
 	end
 	local next = next
@@ -99,7 +105,11 @@ end
 function ttq.checkCompletedQuests()
 	for i, v in pairs(DungeonQuest) do
 		local QstID = v["quest"]
-		if GetCompletedQuestInfo(QstID) ~= "" then
+		if v["helmet"] == nil then
+			if GetCompletedQuestInfo(QstID) ~= "" then
+				DungeonQuest[i] = nil
+			end
+		elseif v["helmet"] ~= nil then
 			DungeonQuest[i] = nil
 		end
 	end
@@ -216,14 +226,14 @@ function ttq.createQueueButton()
 		local activities = {}
 		for DngID, DngTbl in pairs(pledges) do
 			local questId = DngTbl["pledge"]
-			local dngmode = DngTbl["mode"]
+			local dngmode = DngTbl["helmet"] -- nil = normal , value = true = veteran
 			local dngdlc = DngTbl["dlc"]
 			if HasQuest(questId) then
 				local findName = GetQuestName(questId)
 				for i = 1, MAX_JOURNAL_QUESTS do
 					if IsValidQuestIndex(i) then
 						local questName, _, _, activeStepType = GetJournalQuestInfo(i)
-						if activeStepType == 1 and questName == findName and difficulty == dngmode and dlc == dngdlc then
+						if activeStepType == 1 and questName == findName and dlc == dngdlc and ( difficulty == dngmode or difficulty) then
 							activities[DngID] = true
 						end
 					end
@@ -236,7 +246,7 @@ function ttq.createQueueButton()
 		local filterName = string.format("%s   My Pledges Normal", icon)
 		local entry = comboBox:CreateItemEntry(filterName, OnFiltersChanged)
 		entry.filterValue = function()
-			ttq.markAndQueueNormalInis(QuestsToActivity(UndauntedPledges, "n", false))
+			ttq.markAndQueueNormalInis(QuestsToActivity(UndauntedPledges, nil, false))
 		end
 		comboBox:AddItem(entry)
 	end
@@ -244,7 +254,7 @@ function ttq.createQueueButton()
 		local filterName = string.format("%s   My Pledges Vet", icon)
 		local entry = comboBox:CreateItemEntry(filterName, OnFiltersChanged)
 		entry.filterValue = function()
-			ttq.markAndQueueVetInis(QuestsToActivity(UndauntedPledges, "v", false))
+			ttq.markAndQueueVetInis(QuestsToActivity(UndauntedPledges, true, false))
 		end
 		comboBox:AddItem(entry)
 	end
@@ -252,7 +262,7 @@ function ttq.createQueueButton()
 		local filterName = string.format("%s   My DLC Pledges Normal", icon)
 		local entry = comboBox:CreateItemEntry(filterName, OnFiltersChanged)
 		entry.filterValue = function()
-			ttq.markAndQueueNormalInis(QuestsToActivity(UndauntedDLCPledges, "n", true))
+			ttq.markAndQueueNormalInis(QuestsToActivity(UndauntedDLCPledges, nil, true))
 		end
 		comboBox:AddItem(entry)
 	end
@@ -260,7 +270,7 @@ function ttq.createQueueButton()
 		local filterName = string.format("%s   My DLC Pledges Vet", icon)
 		local entry = comboBox:CreateItemEntry(filterName, OnFiltersChanged)
 		entry.filterValue = function()
-			ttq.markAndQueueVetInis(QuestsToActivity(UndauntedDLCPledges, "v", true))
+			ttq.markAndQueueVetInis(QuestsToActivity(UndauntedDLCPledges, true, true))
 		end
 		comboBox:AddItem(entry)
 	end
@@ -367,19 +377,18 @@ function ttq.addonLoaded(event, addonName)
 	SLASH_COMMANDS["/tq"] = function(a)
 		if a == nil or a == "" or a == " " then
 			CHAT_SYSTEM:AddMessage(string.format("|c666666[%s]|r |c9B30FF[TimSetQueue]  Usage-Help:|r", GetTimeString()))
-			CHAT_SYSTEM:AddMessage(string.format("|c9B30FF  1)|r   |cFFFFFF/tq miss|r |c666666= Prints all missing Dungeons|r"))
+			CHAT_SYSTEM:AddMessage(string.format("|c9B30FF  1)|r   |cFFFFFF/tq miss|r |c666666= Prints all Dungeons with missing sets|r"))
 			CHAT_SYSTEM:AddMessage(string.format("|c9B30FF  2)|r   |cFFFFFF/tq all|r |c666666= Prints all Dungeons|r"))
 			CHAT_SYSTEM:AddMessage(string.format("|c9B30FF  3)|r   |cFFFFFF/tq auto|r |c666666= Toggle auto-queue after marking. now:|r |c9B30FF%s|r", tostring(ttq.svChar.autoqueue)))
-			CHAT_SYSTEM:AddMessage(string.format("|c9B30FF  5)|r   |cFFFFFF/tq check|r |c666666= Recalculates the missing sets|r"))
+			CHAT_SYSTEM:AddMessage(string.format("|c9B30FF  4)|r   |cFFFFFF/tq check|r |c666666= Recalculates the missing sets|r"))
+			CHAT_SYSTEM:AddMessage(string.format("|c9B30FF  5)|r   |cFFFFFF/tq quest|r |c666666= Recalculates the missing quests|r"))
 			CHAT_SYSTEM:AddMessage(string.format("|c9B30FF  6)|r   |cFFFFFF/tq|r itemLINK |c666666= if|r |cFFFFFFitemLink|r |c666666is a from a valid set, it prints the setId|r"))
 		elseif a == "miss" then
 			CHAT_SYSTEM:AddMessage(string.format("|c666666[%s]|r |c9B30FF[TimSetQueue]  Missing Sets from:|r", GetTimeString()))
 			local b = 0
 			for c, d in pairs(DungeonSets) do
-				if d["helmet"] == nil then
-					b = b + 1
-					CHAT_SYSTEM:AddMessage(string.format("|c9B30FF  %s)|r   %s", b, GetActivityName(c)))
-				end
+				b = b + 1
+				CHAT_SYSTEM:AddMessage(string.format("|c9B30FF  %s)|r   %s", b, GetActivityName(c)))
 			end
 		elseif a == "all" then
 			CHAT_SYSTEM:AddMessage(string.format("|c666666[%s]|r |c9B30FF[TimSetQueue]  All Dungeons:|r (%s)", GetTimeString(), GetNumActivitiesByType(LFG_ACTIVITY_DUNGEON)))
