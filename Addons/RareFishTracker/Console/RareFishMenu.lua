@@ -19,20 +19,173 @@ function RFT.MakeMenu()
 	settings.version = "1.42.6"
 	settings.website = "http://www.esoui.com/downloads/info665-RareFishTracker.html"
 
-	local options = {
+	local wasMapAdded
+	local locationSettings
+	local function updateLocationSettings()
+		local last = nil
+		for i = 1, #locationSettings do
+			last = locationSettings[i]:UpdateControl(last)
+		end
+		-- RFT.window:SetDrawLayer(DL_BACKGROUND)
+		-- RFT.window:SetDrawLevel(0)
+	end
+	local scene
+	local function addMap()
+		if wasMapAdded then
+			return
+		end
+		scene = SCENE_MANAGER:GetCurrentScene()
+		scene:AddFragment(RARE_FISH_TRACKER_FRAGMENT)
+		wasMapAdded = true
+		RARE_FISH_TRACKER_FRAGMENT:Refresh()
+	end
+	local function addonSelected(_, addonSettings)
+		local addMap = addonSettings == settings
+		if not addMap and wasMapAdded then
+			scene:RemoveFragment(RARE_FISH_TRACKER_FRAGMENT)
+			wasMapAdded = false
+			if settings.selected then
+				updateLocationSettings()
+			end
+			RARE_FISH_TRACKER_FRAGMENT:Refresh()
+		end
+	end
+	CALLBACK_MANAGER:RegisterCallback("LibHarvensAddonSettings_AddonSelected", addonSelected)
+
+	local function getScreenDimensions()
+		local w, h = GuiRoot:GetDimensions()
+		local w, h = w / 8, h / 8
+		local w2, h2 = w * 0.5, h * 0.5
+		locationSettings[2].default = math.floor(w2)
+		locationSettings[2].min = -w2
+		locationSettings[2].max = w2
+		locationSettings[3].default = math.floor(h2)
+		locationSettings[3].min = -h2
+		locationSettings[3].max = h2
+
+		locationSettings[4].default = locationSettings[2].default
+		locationSettings[4].min = locationSettings[2].min
+		locationSettings[4].max = locationSettings[2].max
+		locationSettings[5].default = locationSettings[3].default
+		locationSettings[5].min = locationSettings[3].min
+		locationSettings[5].max = locationSettings[3].max
+		if settings.selected then
+			updateLocationSettings()
+		end
+	end
+	EVENT_MANAGER:RegisterForEvent("RareFishTracker", EVENT_ALL_GUI_SCREENS_RESIZED, getScreenDimensions)
+
+	locationSettings =
+		settings:AddSettings(
 		{
-			type = LibHarvensAddonSettings.ST_CHECKBOX,
-			label = GetString(SI_RARE_FISH_TRACKER_LOCK_POSITION),
-			tooltip = GetString(SI_RARE_FISH_TRACKER_LOCK_POSITION_TOOLTIP),
-			getFunction = function()
-				return account.lockPosition
-			end,
-			setFunction = function(value)
-				account.lockPosition = value
-				RFT.window:SetMouseEnabled(not account.lockPosition)
-			end,
-			default = RFT.accountDefaults.lockPosition
-		},
+			{
+				type = LibHarvensAddonSettings.ST_CHECKBOX,
+				label = GetString(SI_RARE_FISH_TRACKER_SHOW_IN_SETTINGS),
+				default = false,
+				getFunction = function()
+					return wasMapAdded
+				end,
+				setFunction = function(value)
+					if value then
+						addMap()
+					else
+						addonSelected()
+					end
+				end
+			},
+			{
+				type = LibHarvensAddonSettings.ST_SLIDER,
+				label = GetString(SI_RARE_FISH_TRACKER_GRID_X),
+				tooltip = GetString(SI_RARE_FISH_TRACKER_GRID_TOOLTIP),
+				default = 0,
+				min = -100000,
+				max = 100000,
+				step = 1,
+				getFunction = function()
+					return math.floor((set.x - GuiRoot:GetWidth() * 0.5) / 8)
+				end,
+				setFunction = function(value)
+					set.x = value * 8 + GuiRoot:GetWidth() * 0.5
+					set.right = set.x + RFT.window:GetWidth()
+					RFT.moveForWorldMap = false
+					RFT:RestorePosition()
+					updateLocationSettings()
+				end
+			},
+			{
+				type = LibHarvensAddonSettings.ST_SLIDER,
+				label = GetString(SI_RARE_FISH_TRACKER_GRID_Y),
+				tooltip = GetString(SI_RARE_FISH_TRACKER_GRID_TOOLTIP),
+				default = 0,
+				min = -100000,
+				max = 100000,
+				step = 1,
+				getFunction = function()
+					return math.floor((set.y - GuiRoot:GetHeight() * 0.5) / 8)
+				end,
+				setFunction = function(value)
+					set.y = value * 8 + GuiRoot:GetHeight() * 0.5
+					set.bottom = set.y + RFT.window:GetHeight()
+					RFT.moveForWorldMap = false
+					RFT:RestorePosition()
+					updateLocationSettings()
+				end
+			},
+			{
+				type = LibHarvensAddonSettings.ST_SLIDER,
+				label = GetString(SI_RARE_FISH_TRACKER_GRID_X_WORLD),
+				tooltip = GetString(SI_RARE_FISH_TRACKER_GRID_TOOLTIP),
+				default = 0,
+				min = -100000,
+				max = 100000,
+				step = 1,
+				getFunction = function()
+					return math.floor((set.x_world - GuiRoot:GetWidth() * 0.5) / 8)
+				end,
+				setFunction = function(value)
+					set.x_world = value * 8 + GuiRoot:GetWidth() * 0.5
+					set.right_world = set.x_world + RFT.window:GetWidth()
+					RFT.moveForWorldMap = true
+					RFT:RestorePosition()
+					updateLocationSettings()
+				end
+			},
+			{
+				type = LibHarvensAddonSettings.ST_SLIDER,
+				label = GetString(SI_RARE_FISH_TRACKER_GRID_Y_WORLD),
+				tooltip = GetString(SI_RARE_FISH_TRACKER_GRID_TOOLTIP),
+				default = 0,
+				min = -100000,
+				max = 100000,
+				step = 1,
+				getFunction = function()
+					return math.floor((set.y_world - GuiRoot:GetHeight() * 0.5) / 8)
+				end,
+				setFunction = function(value)
+					set.y_world = value * 8 + GuiRoot:GetHeight() * 0.5
+					set.bottom_world = set.y_world + RFT.window:GetHeight()
+					RFT.moveForWorldMap = true
+					RFT:RestorePosition()
+					updateLocationSettings()
+				end
+			}
+		}
+	)
+
+	local options = {
+		-- {
+		-- 	type = LibHarvensAddonSettings.ST_CHECKBOX,
+		-- 	label = GetString(SI_RARE_FISH_TRACKER_LOCK_POSITION),
+		-- 	tooltip = GetString(SI_RARE_FISH_TRACKER_LOCK_POSITION_TOOLTIP),
+		-- 	getFunction = function()
+		-- 		return account.lockPosition
+		-- 	end,
+		-- 	setFunction = function(value)
+		-- 		account.lockPosition = value
+		-- 		RFT.window:SetMouseEnabled(not account.lockPosition)
+		-- 	end,
+		-- 	default = RFT.accountDefaults.lockPosition
+		-- },
 		{
 			type = LibHarvensAddonSettings.ST_SLIDER,
 			label = GetString(SI_RARE_FISH_TRACKER_WINDOW_BACKGROUND_ALPHA),
@@ -260,160 +413,7 @@ function RFT.MakeMenu()
 		}
 	}
 
-	local prevSetting = settings:AddSettings(options)
-	prevSetting = prevSetting[#prevSetting] -- get the last from the list
+	settings:AddSettings(options)
 
-	local wasMapAdded
-	local locationSettings
-	local function updateLocationSettings()
-		local last = prevSetting.control
-		for i = 1, #locationSettings do
-			last = locationSettings[i]:UpdateControl(last)
-		end
-		-- RFT.window:SetDrawLayer(DL_BACKGROUND)
-		-- RFT.window:SetDrawLevel(0)
-	end
-	local scene
-	local function addMap()
-		if wasMapAdded then
-			return
-		end
-		scene = SCENE_MANAGER:GetCurrentScene()
-		scene:AddFragment(RARE_FISH_TRACKER_FRAGMENT)
-		wasMapAdded = true
-		RARE_FISH_TRACKER_FRAGMENT:Refresh()
-	end
-	local function addonSelected(_, addonSettings)
-		local addMap = addonSettings == settings
-		if not addMap and wasMapAdded then
-			scene:RemoveFragment(RARE_FISH_TRACKER_FRAGMENT)
-			wasMapAdded = false
-			if settings.selected then
-				updateLocationSettings()
-			end
-			RARE_FISH_TRACKER_FRAGMENT:Refresh()
-		end
-	end
-	CALLBACK_MANAGER:RegisterCallback("LibHarvensAddonSettings_AddonSelected", addonSelected)
-
-	local function getScreenDimensions()
-		local w, h = GuiRoot:GetDimensions()
-		local w, h = w / 8, h / 8
-		local w2, h2 = w * 0.5, h * 0.5
-		locationSettings[2].default = math.floor(w2)
-		locationSettings[2].min = -w2
-		locationSettings[2].max = w2
-		locationSettings[3].default = math.floor(h2)
-		locationSettings[3].min = -h2
-		locationSettings[3].max = h2
-
-		locationSettings[4].default = locationSettings[2].default
-		locationSettings[4].min = locationSettings[2].min
-		locationSettings[4].max = locationSettings[2].max
-		locationSettings[5].default = locationSettings[3].default
-		locationSettings[5].min = locationSettings[3].min
-		locationSettings[5].max = locationSettings[3].max
-		if settings.selected then
-			updateLocationSettings()
-		end
-	end
-	EVENT_MANAGER:RegisterForEvent("RareFishTracker", EVENT_ALL_GUI_SCREENS_RESIZED, getScreenDimensions)
-
-	locationSettings =
-		settings:AddSettings(
-		{
-			{
-				type = LibHarvensAddonSettings.ST_CHECKBOX,
-				label = GetString(SI_RARE_FISH_TRACKER_SHOW_IN_SETTINGS),
-				default = false,
-				getFunction = function()
-					return wasMapAdded
-				end,
-				setFunction = function(value)
-					if value then
-						addMap()
-					else
-						addonSelected()
-					end
-				end
-			},
-			{
-				type = LibHarvensAddonSettings.ST_SLIDER,
-				label = GetString(SI_RARE_FISH_TRACKER_GRID_X),
-				tooltip = GetString(SI_RARE_FISH_TRACKER_GRID_TOOLTIP),
-				default = 0,
-				min = -100000,
-				max = 100000,
-				step = 1,
-				getFunction = function()
-					return math.floor((set.x - GuiRoot:GetWidth() * 0.5) / 8)
-				end,
-				setFunction = function(value)
-					set.x = value * 8 + GuiRoot:GetWidth() * 0.5
-					set.right = set.x + RFT.window:GetWidth()
-					RFT.moveForWorldMap = false
-					RFT:RestorePosition()
-					updateLocationSettings()
-				end
-			},
-			{
-				type = LibHarvensAddonSettings.ST_SLIDER,
-				label = GetString(SI_RARE_FISH_TRACKER_GRID_Y),
-				tooltip = GetString(SI_RARE_FISH_TRACKER_GRID_TOOLTIP),
-				default = 0,
-				min = -100000,
-				max = 100000,
-				step = 1,
-				getFunction = function()
-					return math.floor((set.y - GuiRoot:GetHeight() * 0.5) / 8)
-				end,
-				setFunction = function(value)
-					set.y = value * 8 + GuiRoot:GetHeight() * 0.5
-					set.bottom = set.y + RFT.window:GetHeight()
-					RFT.moveForWorldMap = false
-					RFT:RestorePosition()
-					updateLocationSettings()
-				end
-			},
-			{
-				type = LibHarvensAddonSettings.ST_SLIDER,
-				label = GetString(SI_RARE_FISH_TRACKER_GRID_X),
-				tooltip = GetString(SI_RARE_FISH_TRACKER_GRID_TOOLTIP),
-				default = 0,
-				min = -100000,
-				max = 100000,
-				step = 1,
-				getFunction = function()
-					return math.floor((set.x_world - GuiRoot:GetWidth() * 0.5) / 8)
-				end,
-				setFunction = function(value)
-					set.x_world = value * 8 + GuiRoot:GetWidth() * 0.5
-					set.right_world = set.x_world + RFT.window:GetWidth()
-					RFT.moveForWorldMap = true
-					RFT:RestorePosition()
-					updateLocationSettings()
-				end
-			},
-			{
-				type = LibHarvensAddonSettings.ST_SLIDER,
-				label = GetString(SI_RARE_FISH_TRACKER_GRID_Y),
-				tooltip = GetString(SI_RARE_FISH_TRACKER_GRID_TOOLTIP),
-				default = 0,
-				min = -100000,
-				max = 100000,
-				step = 1,
-				getFunction = function()
-					return math.floor((set.y_world - GuiRoot:GetHeight() * 0.5) / 8)
-				end,
-				setFunction = function(value)
-					set.y_world = value * 8 + GuiRoot:GetHeight() * 0.5
-					set.bottom_world = set.y_world + RFT.window:GetHeight()
-					RFT.moveForWorldMap = true
-					RFT:RestorePosition()
-					updateLocationSettings()
-				end
-			}
-		}
-	)
 	getScreenDimensions()
 end
