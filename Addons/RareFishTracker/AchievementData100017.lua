@@ -86,6 +86,7 @@ RFT.zoneToAchievement = {
 	[1414] = {3636},
 	-- Westauen
 	[1443] = {3948},
+	-- Solstice
 	[1502] = {4404}
 }
 
