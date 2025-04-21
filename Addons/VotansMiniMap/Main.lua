@@ -641,7 +641,7 @@ function addon:InitMiniMap()
 	self.clockInGame = control
 	control:SetFont(isConsoleUI and "ZoFontGamepadBold20" or "ZoFontWindowSubtitle")
 	control:SetDimensionConstraints(66, 32, 0, 0)
-	control:SetAnchor(BOTTOMLEFT, self.clockRealTime, BOTTOMRIGHT, 6, -2)
+	control:SetAnchor(BOTTOMLEFT, self.clockRealTime, BOTTOMRIGHT, 6, -3)
 	control:SetVerticalAlignment(BOTTOM)
 
 	self.cameraAngleRad = 0
