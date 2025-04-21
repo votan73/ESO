@@ -444,6 +444,21 @@ function RFT.MakeOrders()
 			RFT.window.column3,
 			RFT.window.column3,
 			RFT.window.column3,
+		},
+		[4404] = {
+			-- Sonnenwende
+			RFT.window.column1,
+			RFT.window.column1,
+			RFT.window.column1,
+			RFT.window.column1,
+			RFT.window.column2,
+			RFT.window.column2,
+			RFT.window.column2,
+			RFT.window.column2,
+			RFT.window.column3,
+			RFT.window.column3,
+			RFT.window.column3,
+			RFT.window.column3,
 		}
 	}
 	RFT.quality = {
@@ -741,6 +756,21 @@ function RFT.MakeOrders()
 			ITEM_FUNCTIONAL_QUALITY_MAGIC,
 			ITEM_FUNCTIONAL_QUALITY_MAGIC,
 			ITEM_FUNCTIONAL_QUALITY_ARCANE,
+		},
+		[4404] = {
+			-- Sonnenwende
+			ITEM_FUNCTIONAL_QUALITY_MAGIC,
+			ITEM_FUNCTIONAL_QUALITY_MAGIC,
+			ITEM_FUNCTIONAL_QUALITY_MAGIC,
+			ITEM_FUNCTIONAL_QUALITY_ARCANE,
+			ITEM_FUNCTIONAL_QUALITY_MAGIC,
+			ITEM_FUNCTIONAL_QUALITY_MAGIC,
+			ITEM_FUNCTIONAL_QUALITY_MAGIC,
+			ITEM_FUNCTIONAL_QUALITY_ARCANE,
+			ITEM_FUNCTIONAL_QUALITY_MAGIC,
+			ITEM_FUNCTIONAL_QUALITY_MAGIC,
+			ITEM_FUNCTIONAL_QUALITY_MAGIC,
+			ITEM_FUNCTIONAL_QUALITY_ARCANE,
 		}
 	}
 	RFT.types = {
@@ -885,6 +915,12 @@ function RFT.MakeOrders()
 			-- Westauen
 			SI_RARE_FISH_TRACKER_TYPE_LAKE,
 			SI_RARE_FISH_TRACKER_TYPE_RIVER,
+			SI_RARE_FISH_TRACKER_TYPE_FOUL
+		},
+		[1502] = {
+			-- Sonnenwende
+			SI_RARE_FISH_TRACKER_TYPE_OCEAN,
+			SI_RARE_FISH_TRACKER_TYPE_LAKE,
 			SI_RARE_FISH_TRACKER_TYPE_FOUL
 		}
 	}

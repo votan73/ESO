@@ -1,9 +1,0 @@
-## APIVersion: 100033 100034
-## Title: |cFFFFBECDG Bank Stacker|r
-## Author: |cFFA500CrazyDutchGuy|r & |cEFEBBEGarkin|r
-## Description: |cEFEBBECrazyDutchGuy's Bank Stacker|r is an addon that automatically moves items from your backpack into your bank, if there is an unfilled stack allready in the bank.
-## Version: 1.91.1
-## SavedVariables: CDGBankStack_SV
-## DependsOn: LibAddonMenu-2.0>=30
-
-CDGBankStack.lua

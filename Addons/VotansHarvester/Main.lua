@@ -358,7 +358,7 @@ local function FindClosest()
 				if cell then
 					cell = cell.cell
 				end
-				pin = pinManager:GetExistingObject(pins[i])
+				pin = pinManager:GetActiveObject(pins[i])
 				if pin then
 					if cell and shown then
 						x, y = gps:GlobalToLocal(cell.x, cell.y)
@@ -453,7 +453,7 @@ do
 	local lastEnabled = true
 	function addon:RefreshTracking()
 		local enabled = self:EnableTracking(not IsUnitInCombat("player"))
-		local pinEnabled = ZO_WorldMap_IsCustomPinEnabled(self.pinTypeId)
+		local pinEnabled = self.pinManager:IsCustomPinEnabled(self.pinTypeId)
 		if pinEnabled ~= enabled then
 			ZO_WorldMap_SetCustomPinEnabled(self.pinTypeId, enabled)
 		end
@@ -583,7 +583,7 @@ do
 	function addon:AddPinType()
 		self.layout = {
 			level = 25,
-			size = 24,
+			size = 12,
 			insetX = 0,
 			insetY = 0,
 			texture = function(pin)
@@ -592,9 +592,9 @@ do
 			tint = self.pinColor
 		}
 
-		ZO_WorldMap_AddCustomPin(self.pinType, LayoutPins, nil, self.layout, creator)
+		self.pinManager:AddCustomPin(self.pinType, LayoutPins, nil, self.layout, creator)
 		self.pinTypeId = _G[self.pinType]
-		ZO_WorldMap_SetCustomPinEnabled(self.pinTypeId, true)
+		self.pinManager:SetCustomPinEnabled(self.pinTypeId, true)
 
 		local contextmenu = {
 			{
@@ -615,8 +615,7 @@ do
 						local pin = pinDatas[i].pin
 						local pinType, tag = pin:GetPinTypeAndTag()
 						if pinType == addon.pinTypeId then
-							d("----", pinDatas[i], "....", tag)
-							return tag:GetText()
+							return self:GetPinText(pin)
 						end
 					end
 				end
@@ -745,7 +744,7 @@ function addon:InitSettings()
 	if not settings then
 		return
 	end
-	settings.version = "1.1.8"
+	settings.version = "1.1.11"
 	addon.settingsControls = settings
 
 	settings:AddSetting {

@@ -1,7 +1,3 @@
-if not IsConsoleUI() then
-	return
-end
-
 local LibHarvensAddonSettings = LibHarvensAddonSettings
 
 local Templates = {
@@ -124,7 +120,7 @@ local updateControlFunctions = {
 	end,
 	[LibHarvensAddonSettings.ST_BUTTON] = function(self, control)
 		control:SetHidden(false)
-		control:GetNamedChild("Name"):SetText(self:GetValueOrCallback(self.labelText))
+		control:GetNamedChild("Name"):SetText(self:GetValueOrCallback(self.labelText) or self:GetValueOrCallback(self.buttonText))
 		--click handled in keystrip
 	end,
 	[LibHarvensAddonSettings.ST_EDIT] = function(self, control)
@@ -154,7 +150,7 @@ local updateControlFunctions = {
 		combobox:SetOnSelectedDataChangedCallback(callback)
 	end,
 	[LibHarvensAddonSettings.ST_LABEL] = function(self, control)
-		local label = control:GetNamedChild("Name")
+		local label = control.label
 		label:SetText(self:GetValueOrCallback(self.labelText))
 		control:SetHeight(label:GetTextHeight())
 	end,
@@ -228,7 +224,7 @@ local cleanControlFunctions = {
 		combobox:SetOnSelectedDataChangedCallback(nil)
 	end,
 	[LibHarvensAddonSettings.ST_LABEL] = function(self)
-		self.control:GetNamedChild("Name"):SetText(nil)
+		self.control.label:SetText(nil)
 	end,
 	[LibHarvensAddonSettings.ST_SECTION] = function(self)
 		self.control:GetNamedChild("Label"):SetText(nil)
@@ -879,16 +875,39 @@ function LibHarvensAddonSettings:CreateControlPools()
 	)
 
 	AddPool(self.ST_BUTTON, "Button")
-	AddPool(self.ST_LABEL, "Label")
+
+	local fonts = {
+		{
+			font = "ZoFontGamepad34",
+			lineLimit = 5
+		},
+		{
+			font = "ZoFontGamepad27",
+			lineLimit = 6,
+		},
+		{
+			font = "ZoFontGamepad22",
+			lineLimit = 7,
+		}
+	}
+	AddPool(
+		self.ST_LABEL,
+		"Label",
+		function(control)
+			local label = control:GetNamedChild("Name")
+			control.label = label
+			ZO_FontAdjustingWrapLabel_OnInitialized(label, fonts, TEXT_WRAP_MODE_ELLIPSIS)
+		end
+	)
 	AddPool(
 		self.ST_SECTION,
 		"SectionLabel",
 		function(control)
 			local label = control:GetNamedChild("Label")
 			control.label = label
-			label:SetFont("ZoFontGamepad34")
 			control:SetWidth(ZO_GAMEPAD_CONTENT_WIDTH)
 			label:SetWidth(ZO_GAMEPAD_CONTENT_WIDTH)
+			ZO_FontAdjustingWrapLabel_OnInitialized(label, fonts, TEXT_WRAP_MODE_ELLIPSIS)
 		end
 	)
 

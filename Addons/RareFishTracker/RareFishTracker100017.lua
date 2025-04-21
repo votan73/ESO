@@ -158,7 +158,7 @@ do
 	end
 
 	function RFT.RefreshWindow()
-		RFT.RefreshWindowForZone(WORLD_MAP_SCENE:IsShowing() and RFT.zone or findZone(getPlayerZoneId()))
+		RFT.RefreshWindowForZone(RFT.IsShowingWorldMap() and RFT.zone or findZone(getPlayerZoneId()))
 	end
 
 	function RFT.GetAchievementsByZoneId(zone)
@@ -174,7 +174,7 @@ do
 		RFT.RefreshWindowForZone(zone)
 	end
 	function RFT.RefreshWindowMapChanged()
-		local zone = findZone(WORLD_MAP_SCENE:IsShowing() and GetZoneId(GetCurrentMapZoneIndex()) or getPlayerZoneId())
+		local zone = findZone(RFT.IsShowingWorldMap() and GetZoneId(GetCurrentMapZoneIndex()) or getPlayerZoneId())
 		RFT.isAutoRefresh = true
 		if RFT.zone == zone then
 			return

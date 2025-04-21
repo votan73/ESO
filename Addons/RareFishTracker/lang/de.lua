@@ -54,3 +54,10 @@ SafeAddString(SI_RARE_FISH_TRACKER_BIGGER_FONT_TOOLTIP, "Erhöht die Schriftgrö
 SafeAddString(SI_RARE_FISH_TRACKER_RELOADUI, "Erfordert Neuladen der UI")
 SafeAddString(SI_RARE_FISH_TRACKER_ALLOW_PER_CHAR, "Track pro Charakter")
 SafeAddString(SI_RARE_FISH_TRACKER_ALLOW_PER_CHAR_TOOLTIP, "Trackt die Fische pro Charakter.\nErlaubt es das Tracking mit \"/rftzone clear\" von vorne zu beginnen.\nOder den kontoweiten Status mit \"/rftzone\" zu übernehmen.")
+
+SafeAddString(SI_RARE_FISH_TRACKER_SHOW_IN_SETTINGS, "Fenster jetzt anzeigen")
+SafeAddString(SI_RARE_FISH_TRACKER_GRID_X, "Position - Raster X (HUD)")
+SafeAddString(SI_RARE_FISH_TRACKER_GRID_Y, "Position - Raster Y (HUD)")
+SafeAddString(SI_RARE_FISH_TRACKER_GRID_X_WORLD, "Position - Raster X (Weltkarte)")
+SafeAddString(SI_RARE_FISH_TRACKER_GRID_Y_WORLD, "Position - Raster Y (Weltkarte)")
+SafeAddString(SI_RARE_FISH_TRACKER_GRID_TOOLTIP, "Position in einem 8x8 Raster.")

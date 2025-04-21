@@ -2,231 +2,38 @@ DungeonQueue4Stickerbook = DungeonQueue4Stickerbook or {}
 local ttq = DungeonQueue4Stickerbook
 ttq = {
 	name = "DungeonQueue4Stickerbook",
-	author = "tim99 & votan",
+	author = "tim99, votan & Antisenil",
 	svChar = {},
 	firstCall = true,
 	complSets = false,
 	complQust = false,
-	col_tim99 = ZO_ColorDef:New("9b30ff")
-}
+	col_tim99 = ZO_ColorDef:New("9b30ff"),
+	}
 ttq.svCharDef = {
-	autoqueue = true
-}
---todo: merge tables
-local DungeonSets = {
-	--ActivityId -> SetId
-	[2] = {sets = {33, 61, 297}}, --Fungal Grotto 1
-	[3] = {sets = {35, 55, 296}}, --Spindleclutch 1
-	[4] = {sets = {110, 197, 295}}, --Banished Cells 1
-	[5] = {sets = {96, 300, 301}}, --Darkshade Caverns 1
-	[6] = {sets = {29, 194, 299}}, --Wayrest Sewers 1
-	[7] = {sets = {28, 155, 298}}, --Elden Hollow 1
-	[8] = {sets = {156, 303, 304}}, --Arx Corinium
-	[9] = {sets = {122, 134, 302}}, --Crypt of Hearts 1
-	[10] = {sets = {158, 159, 160}}, --City of Ash 1
-	[11] = {sets = {53, 103, 307}}, --Direfrost Keep
-	[12] = {sets = {77, 102, 305}}, --Volenfell
-	[13] = {sets = {186, 188, 193}}, --Tempest Island
-	[14] = {sets = {46, 72, 310}}, --Blessed Crucible
-	[15] = {sets = {157, 308, 309}}, --Blackheart Haven
-	[16] = {sets = {19, 71, 123}}, --Selene's Web
-	[17] = {sets = {91, 124, 311}}, --Vaults of Madness
-	[288] = {sets = {184, 185, 198}}, --White-Gold Tower
-	[289] = {sets = {190, 195, 196}}, --Imperial City Prison
-	[293] = {sets = {258, 259, 260}}, --Ruins of Mazzatun
-	[295] = {sets = {261, 262, 263}}, --Cradle of Shadows
-	[324] = {sets = {338, 339, 340}}, --Bloodroot Forge
-	[368] = {sets = {335, 336, 337}}, --Falkreath Hold
-	[420] = {sets = {343, 344, 345}}, --Fang Lair
-	[418] = {sets = {346, 347, 348}}, --Scalecaller Peak
-	[428] = {sets = {399, 400, 401}}, --March of Sacrifices
-	[426] = {sets = {402, 403, 404}}, --Moon Hunter Keep
-	[433] = {sets = {429, 430, 431}}, --Frostvault
-	[435] = {sets = {433, 434, 435}}, --Depths of Malatar
-	[496] = {sets = {455, 456, 457}}, --Lair of Maarselok
-	[494] = {sets = {452, 453, 454}}, --Moongrave Fane
-	[503] = {sets = {471, 472, 473}}, --Icereach
-	[505] = {sets = {474, 475, 476}}, --Unhallowed Grave
-	[507] = {sets = {516, 517, 518}}, --Stone Garden
-	[509] = {sets = {513, 514, 515}}, --Castle Thorn
-	[591] = {sets = {569, 570, 571}}, --Black Drake Villa
-	[593] = {sets = {572, 573, 574}}, --Cauldron
-	[595] = {sets = {606, 607, 605}}, --Red Petal Bastion
-	[597] = {sets = {602, 603, 604}}, --The Dread Cellar
-	[599] = {sets = {621, 619, 620}}, --Korallenhort
-	[601] = {sets = {624, 622, 623}}, --Gram des Schiffsbauers
-	[608] = {sets = {660, 661, 662}}, --Erdwurz-Enklave
-	[610] = {sets = {663, 664, 665}}, --Kentertiefen
-	[613] = {sets = {680, 681, 682}}, --Bal Sunnar
-	[615] = {sets = {684, 685, 686}} --Halle der Schriftmeister
-}
-local DungeonSetsVet = {
-	--ActivityId -> SetId
-	[19] = {sets = {163}}, -- Spindeltiefen I
-	[20] = {sets = {170}}, -- Verbannungszellen I
-	[21] = {sets = {268}}, -- Dunkelschattenkavernen II
-	[23] = {sets = {167}}, -- Eldengrund I
-	[261] = {sets = {168}}, -- Krypta der Herzen I
-	[267] = {sets = {272}}, -- Stadt der Asche II
-	[268] = {sets = {164}}, -- Gefängnis der Kaiserstadt
-	[287] = {sets = {183}}, -- Weißgoldturm
-	[294] = {sets = {256}}, -- Ruinen von Mazzatun
-	[296] = {sets = {257}}, -- Wiege der Schatten
-	[299] = {sets = {162}}, -- Pilzgrotte I
-	[301] = {sets = {265}}, -- Verbannungszellen II
-	[302] = {sets = {269}}, -- Eldengrund II
-	[304] = {sets = {276}}, -- Volenfell
-	[305] = {sets = {271}}, -- Arx Corinium
-	[306] = {sets = {165}}, -- Kanalisation von Wegesruh I
-	[307] = {sets = {270}}, -- Kanalisation von Wegesruh II
-	[309] = {sets = {166}}, -- Dunkelschattenkavernen I
-	[310] = {sets = {169}}, -- Stadt der Asche I
-	[311] = {sets = {275}}, -- Orkaninsel
-	[312] = {sets = {266}}, -- Pilzgrotte II
-	[313] = {sets = {279}}, -- Selenes Netz
-	[314] = {sets = {280}}, -- Kammern des Wahnsinns
-	[315] = {sets = {163}}, -- Spindeltiefen I
-	[318] = {sets = {273}}, -- Krypta der Herzen II
-	[319] = {sets = {274}}, -- Burg Grauenfrost
-	[320] = {sets = {278}}, -- Gesegnete Feuerprobe
-	[321] = {sets = {277}}, -- Schwarzherz-Unterschlupf
-	[325] = {sets = {341}}, -- Blutquellschmiede
-	[369] = {sets = {342}}, -- Falkenring
-	[419] = {sets = {350}}, -- Gipfel der Schuppenruferin
-	[421] = {sets = {349}}, -- Krallenhort
-	[427] = {sets = {398}}, -- Mondjägerfeste
-	[429] = {sets = {397}}, -- Marsch der Aufopferung
-	[434] = {sets = {432}}, -- Frostgewölbe
-	[436] = {sets = {436}}, -- Tiefen von Malatar
-	[495] = {sets = {458}}, -- Mondgrab-Tempelstadt
-	[497] = {sets = {459}}, -- Hort von Maarselok
-	[504] = {sets = {478}}, -- Eiskap
-	[506] = {sets = {479}}, -- Unheiliges Grab
-	[508] = {sets = {534}}, -- Steingarten
-	[510] = {sets = {535}}, -- Kastell Dorn
-	[592] = {sets = {577}}, -- Schwarzdrachenvilla
-	[594] = {sets = {578}}, -- Der Kessel
-	[596] = {sets = {608}}, -- Rotblütenbastion
-	[598] = {sets = {609}}, -- Schreckenskeller
-	[600] = {sets = {632}}, -- Korallenhorst
-	[602] = {sets = {633}}, -- Gram des Schiffbauers
-	[609] = {sets = {666}}, -- Erdwurz-Enklave
-	[611] = {sets = {667}}, -- Kentertiefen
-	[614] = {sets = {683}}, -- Bal Sunnar
-	[616] = {sets = {687}} -- Halle der Schriftmeister
-}
-local DungeonQuest = {
-	-- ActivityId -> QuestId
-	[2] = 3993, --FungalGrottoI
-	[3] = 4054, --SpindleclutchI
-	[4] = 4107, --BanishedCellsI
-	[5] = 4145, --DarkshadeCavernsI
-	[6] = 4246, --WayrestSewersI
-	[7] = 4336, --EldenHollowI
-	[8] = 4202, --ArxCorinium
-	[9] = 4379, --CryptOfHeartsI
-	[10] = 4778, --CityOfAshI
-	[11] = 4346, --DirefrostKeep
-	[12] = 4432, --Volenfell
-	[13] = 4538, --TempestIsland
-	[14] = 4469, --BlessedCrucible
-	[15] = 4589, --BlackheartHaven
-	[16] = 4733, --SelenesWeb
-	[17] = 4822, --VaultsOfMadness
-	[18] = 4303, --FungalGrottoII
-	[22] = 4813, --WayrestSewersII
-	[293] = 5403, --RuinsOfMazzatun
-	[295] = 5702, --CradleOfShadows
-	[288] = 5342, --WhiteGoldTower
-	[289] = 5136, --ImperialCityPrison
-	[300] = 4597, --BanishedCellsII
-	[303] = 4675, --EldenHollowII
-	[308] = 4641, --DarkshadeCavernsII
-	[316] = 4555, --SpindleclutchII
-	[317] = 5113, --CryptOfHeartsII
-	[322] = 5120, --CityOfAshII
-	[324] = 5889, --BloodrootForge
-	[368] = 5891, --FalkreathHold
-	[418] = 6065, --ScalecallerPeak
-	[420] = 6064, --FangLair
-	[426] = 6186, --MoonHunterKeep
-	[428] = 6188, --MarchOfSacrifices
-	[433] = 6249, --Frostvault
-	[435] = 6251, --DepthsOfMalatar
-	[494] = 6349, --MoongraveFane
-	[496] = 6351, --LairOfMaarselok
-	[503] = 6414, --Icereach
-	[505] = 6416, --UnhallowedGrave
-	[507] = 6505, --StoneGarden
-	[509] = 6507, --CastleThorn
-	[591] = 6576, --BlackDrakeVilla
-	[593] = 6578, --Cauldron
-	[595] = 6683, --RedPetalBastion
-	[597] = 6685, --DreadCellar
-	[599] = 6740, --CoralAerie
-	[601] = 6742, --ShipwrightsRegret
-	[608] = 6835, --ErdwurzEnklave
-	[610] = 6837, --Kentertiefen
-	[613] = 6896, -- Bal Sunnar
-	[615] = 7027 -- Scrivener's Hall
-}
-local UndauntedPledges = {
-	[5244] = {n = 4, v = 20}, -- Verbannungszellen I
-	[5246] = {n = 300, v = 301}, -- Verbannungszellen II
-	[5247] = {n = 2, v = 299}, -- Pilzgrotte I
-	[5248] = {n = 18, v = 312}, -- Pilzgrotte II
-	[5260] = {n = 3, v = 315}, -- Spindeltiefen I
-	[5273] = {n = 316, v = 19}, -- Spindeltiefen II
-	[5274] = {n = 5, v = 309}, -- Dunkelschattenkavernen I
-	[5275] = {n = 308, v = 21}, -- Dunkelschattenkavernen II
-	[5276] = {n = 7, v = 23}, -- Eldengrund I
-	[5277] = {n = 303, v = 302}, -- Eldengrund II
-	[5278] = {n = 6, v = 306}, -- Kanalisation von Wegesruh I
-	[5282] = {n = 22, v = 307}, -- Kanalisation von Wegesruh II
-	[5283] = {n = 9, v = 261}, -- Krypta der Herzen I
-	[5284] = {n = 317, v = 318}, -- Krypta der Herzen II
-	[5288] = {n = 8, v = 305}, -- Arx Corinium
-	[5290] = {n = 10, v = 310}, -- Stadt der Asche I
-	[5291] = {n = 11, v = 319}, -- Burg Grauenfrost
-	[5301] = {n = 13, v = 311}, -- Orkaninsel
-	[5303] = {n = 12, v = 304}, -- Volenfell
-	[5305] = {n = 15, v = 321}, -- Schwarzherz-Unterschlupf
-	[5306] = {n = 14, v = 320}, -- Gesegnete Feuerprobe
-	[5307] = {n = 16, v = 313}, -- Selenes Netz
-	[5309] = {n = 17, v = 314}, -- Kammern des Wahnsinns
-	[5381] = {n = 322, v = 267} -- Stadt der Asche II
-}
-local UndauntedDLCPledges = {
-	[5382] = {n = 289, v = 268}, -- Gefängnis der Kaiserstadt
-	[5431] = {n = 288, v = 287}, -- Weißgoldturm
-	[5636] = {n = 293, v = 294}, -- Ruinen von Mazzatun
-	[5780] = {n = 295, v = 296}, -- Wiege der Schatten
-	[6053] = {n = 324, v = 325}, -- Blutquellschmiede
-	[6054] = {n = 368, v = 369}, -- Falkenring
-	[6154] = {n = 418, v = 419}, -- Gipfel der Schuppenruferin
-	[6155] = {n = 420, v = 421}, -- Krallenhort
-	[6187] = {n = 426, v = 427}, -- Mondjägerfeste
-	[6189] = {n = 428, v = 429}, -- Marsch der Aufopferung
-	[6250] = {n = 433, v = 434}, -- Frostgewölbe
-	[6252] = {n = 435, v = 436}, -- Tiefen von Malatar
-	[6350] = {n = 494, v = 495}, -- Mondgrab-Tempelstadt
-	[6352] = {n = 496, v = 497}, -- Hort von Maarselok
-	[6415] = {n = 503, v = 504}, -- Eiskap
-	[6417] = {n = 505, v = 506}, -- Unheiliges Grab
-	[6506] = {n = 507, v = 508}, -- Steingarten
-	[6508] = {n = 509, v = 510}, -- Kastell Dorn
-	[6577] = {n = 591, v = 592}, -- Schwarzdrachenvilla
-	[6579] = {n = 593, v = 594}, -- Kessel
-	[6684] = {n = 595, v = 596}, -- Rotblütenbastion
-	[6686] = {n = 597, v = 598}, -- Schreckenskeller
-	[6741] = {n = 599, v = 600}, -- Korallenhorst
-	[6743] = {n = 601, v = 602}, -- Gram des Schiffbauers
-	[6836] = {n = 608, v = 609}, -- Erdwurz-Enklave
-	[6838] = {n = 610, v = 611}, -- Kentertiefen
-	[6897] = {n = 613, v = 614}, -- Bal Sunnar
-	[7028] = {n = 615, v = 616} -- Halle der Schriftmeister
+	autoqueue = true,
 }
 ----------------------------------------------------------------------------------------------------
+--need the copies as quest and set checks empty their tables 
+function ttq.deepcopy(orig)
+    local orig_type = type(orig)
+    local copy
+    if orig_type == 'table' then
+        copy = {}
+        for orig_key, orig_value in next, orig, nil do
+            copy[ttq.deepcopy(orig_key)] = ttq.deepcopy(orig_value)
+        end
+        setmetatable(copy, ttq.deepcopy(getmetatable(orig)))
+    else -- number, string, boolean, etc
+        copy = orig
+    end
+    return copy
+end
+
+local UndauntedPledges = ttq.deepcopy(ttq_DungeonData)
+local UndauntedDLCPledges = ttq.deepcopy(ttq_DungeonData)
+local DungeonQuest = ttq.deepcopy(ttq_DungeonData)
+local DungeonSets = ttq.deepcopy(ttq_DungeonData)
+local DungeonSetsVet = ttq.deepcopy(ttq_DungeonData)
 ----------------------------------------------------------------------------------------------------
 function ttq:GetTextColor()
 	local b, c, d, e = self.normalColor:UnpackRGBA()
@@ -240,41 +47,51 @@ end
 ----------------------------------------------------------------------------------------------------
 function ttq.checkCompletedSets()
 	for i, v in pairs(DungeonSets) do
+		local HelmetID = v["helmet"]
 		local numSetsDone = 0
-		for j = 1, #v.sets do
-			local itemSetCollectionData = ITEM_SET_COLLECTIONS_DATA_MANAGER:GetItemSetCollectionData(v.sets[j])
-			if itemSetCollectionData then
-				local numUnlockedPieces, numPieces = itemSetCollectionData:GetNumUnlockedPieces(), itemSetCollectionData:GetNumPieces()
-				if numUnlockedPieces == numPieces then
-					numSetsDone = numSetsDone + 1
+		if HelmetID == nil then
+			for j = 1, #v.sets do
+				local itemSetCollectionData = ITEM_SET_COLLECTIONS_DATA_MANAGER:GetItemSetCollectionData(v.sets[j])
+				if itemSetCollectionData then
+					local numUnlockedPieces, numPieces = itemSetCollectionData:GetNumUnlockedPieces(), itemSetCollectionData:GetNumPieces()
+					if numUnlockedPieces == numPieces then
+						numSetsDone = numSetsDone + 1
+					end
+				else
+					numSetsDone = numSetsDone + 1 -- does not exist yet
 				end
-			else
-				numSetsDone = numSetsDone + 1 -- does not exist yet
 			end
-		end
-		if numSetsDone == #v.sets then
+			if numSetsDone == #v.sets then
+				DungeonSets[i] = nil
+			end
+		elseif HelmetID ~= nil then
 			DungeonSets[i] = nil
 		end
 	end
 	for i, v in pairs(DungeonSetsVet) do
+		local HelmetID = v["helmet"]
 		local numSetsDone = 0
-		for j = 1, #v.sets do
-			local itemSetCollectionData = ITEM_SET_COLLECTIONS_DATA_MANAGER:GetItemSetCollectionData(v.sets[j])
-			if itemSetCollectionData then
-				local numUnlockedPieces = 0
-				for _, pieceData in itemSetCollectionData:PieceIterator() do
-					if pieceData:IsUnlocked() and GetItemLinkEquipType(pieceData:GetItemLink()) == EQUIP_TYPE_HEAD then
-						numUnlockedPieces = numUnlockedPieces + 1
+		if HelmetID ~= nil then
+			for j = 1, HelmetID do
+				local itemSetCollectionData = ITEM_SET_COLLECTIONS_DATA_MANAGER:GetItemSetCollectionData(HelmetID)
+				if itemSetCollectionData then
+					local numUnlockedPieces = 0
+					for _, pieceData in itemSetCollectionData:PieceIterator() do
+						if pieceData:IsUnlocked() and GetItemLinkEquipType(pieceData:GetItemLink()) == EQUIP_TYPE_HEAD then
+							numUnlockedPieces = numUnlockedPieces + 1
+						end
 					end
+					if numUnlockedPieces >= 3 then
+						numSetsDone = numSetsDone + 1
+					end
+				else
+					numSetsDone = numSetsDone + 1 -- does not exist yet
 				end
-				if numUnlockedPieces >= 3 then
-					numSetsDone = numSetsDone + 1
-				end
-			else
-				numSetsDone = numSetsDone + 1 -- does not exist yet
 			end
-		end
-		if numSetsDone == #v.sets then
+			if numSetsDone == HelmetID then
+				DungeonSetsVet[i] = nil
+			end
+		elseif HelmetID == nil then
 			DungeonSetsVet[i] = nil
 		end
 	end
@@ -287,7 +104,12 @@ end
 ----------------------------------------------------------------------------------------------------
 function ttq.checkCompletedQuests()
 	for i, v in pairs(DungeonQuest) do
-		if GetCompletedQuestInfo(v) ~= "" then
+		local QstID = v["quest"]
+		if v["helmet"] == nil then
+			if GetCompletedQuestInfo(QstID) ~= "" then
+				DungeonQuest[i] = nil
+			end
+		elseif v["helmet"] ~= nil then
 			DungeonQuest[i] = nil
 		end
 	end
@@ -343,7 +165,7 @@ end
 function ttq.createQueueButton()
 	local icon = zo_iconFormat("/esoui/art/icons/collectible_memento_pumpkincarving.dds", 26, 31)
 
-	local dropdown = CreateControlFromVirtual("TIM99_SearchingForMissing", ZO_SearchingForGroup, "ZO_MultiselectComboBox")
+	local dropdown = CreateControlFromVirtual("TIM99_SearchingForMissing", ZO_SearchingForGroup, "ZO_ComboBox")
 	dropdown:SetDimensions(200, ZO_DungeonFinder_KeyboardFilter:GetHeight())
 	dropdown:ClearAnchors()
 	dropdown:SetAnchor(TOPRIGHT, ZO_DungeonFinder_KeyboardFilter, TOPLEFT, -9, 0)
@@ -356,6 +178,9 @@ function ttq.createQueueButton()
 	comboBox:SetSpacing(4)
 	comboBox:SetNoSelectionText(string.format("%s   Select", icon))
 	comboBox:SetMultiSelectionTextFormatter(string.format("%s   <<1>> <<1[Category/Categories]>>", icon))
+    comboBox.m_enableMultiSelect = true
+    comboBox.m_maxNumSelections = nil
+    comboBox.m_multiSelectItemData = {}
 
 	local inchanged
 	ZO_PreHook(
@@ -396,17 +221,20 @@ function ttq.createQueueButton()
 		entry.filterValue = ttq.markAndQueueVetInisQust
 		comboBox:AddItem(entry)
 	end
-
-	local function QuestsToActivity(pledges, difficulty)
+	
+	local function QuestsToActivity(pledges, difficulty, dlc)
 		local activities = {}
-		for questId, a in pairs(pledges) do
+		for DngID, DngTbl in pairs(pledges) do
+			local questId = DngTbl["pledge"]
+			local dngmode = DngTbl["helmet"] -- nil = normal , value = true = veteran
+			local dngdlc = DngTbl["dlc"]
 			if HasQuest(questId) then
 				local findName = GetQuestName(questId)
 				for i = 1, MAX_JOURNAL_QUESTS do
 					if IsValidQuestIndex(i) then
 						local questName, _, _, activeStepType = GetJournalQuestInfo(i)
-						if activeStepType == 1 and questName == findName then
-							activities[a[difficulty]] = true
+						if activeStepType == 1 and questName == findName and dlc == dngdlc and ( difficulty == dngmode or difficulty) then
+							activities[DngID] = true
 						end
 					end
 				end
@@ -418,7 +246,7 @@ function ttq.createQueueButton()
 		local filterName = string.format("%s   My Pledges Normal", icon)
 		local entry = comboBox:CreateItemEntry(filterName, OnFiltersChanged)
 		entry.filterValue = function()
-			ttq.markAndQueueNormalInis(QuestsToActivity(UndauntedPledges, "n"))
+			ttq.markAndQueueNormalInis(QuestsToActivity(UndauntedPledges, nil, false))
 		end
 		comboBox:AddItem(entry)
 	end
@@ -426,7 +254,7 @@ function ttq.createQueueButton()
 		local filterName = string.format("%s   My Pledges Vet", icon)
 		local entry = comboBox:CreateItemEntry(filterName, OnFiltersChanged)
 		entry.filterValue = function()
-			ttq.markAndQueueVetInis(QuestsToActivity(UndauntedPledges, "v"))
+			ttq.markAndQueueVetInis(QuestsToActivity(UndauntedPledges, true, false))
 		end
 		comboBox:AddItem(entry)
 	end
@@ -434,7 +262,7 @@ function ttq.createQueueButton()
 		local filterName = string.format("%s   My DLC Pledges Normal", icon)
 		local entry = comboBox:CreateItemEntry(filterName, OnFiltersChanged)
 		entry.filterValue = function()
-			ttq.markAndQueueNormalInis(QuestsToActivity(UndauntedDLCPledges, "n"))
+			ttq.markAndQueueNormalInis(QuestsToActivity(UndauntedDLCPledges, nil, true))
 		end
 		comboBox:AddItem(entry)
 	end
@@ -442,12 +270,13 @@ function ttq.createQueueButton()
 		local filterName = string.format("%s   My DLC Pledges Vet", icon)
 		local entry = comboBox:CreateItemEntry(filterName, OnFiltersChanged)
 		entry.filterValue = function()
-			ttq.markAndQueueVetInis(QuestsToActivity(UndauntedDLCPledges, "v"))
+			ttq.markAndQueueVetInis(QuestsToActivity(UndauntedDLCPledges, true, true))
 		end
 		comboBox:AddItem(entry)
 	end
 
 	ttq.comboBox = comboBox
+	
 end
 ----------------------------------------------------------------------------------------------------
 local function fragmentChange(oldState, newState)
@@ -492,10 +321,12 @@ function ttq.playerActivated()
 	ttq.createQueueButton()
 	ttq.checkCompletedSets()
 	ttq.checkCompletedQuests()
+	
 
 	ttq.fragment = DUNGEON_FINDER_KEYBOARD:GetFragment()
 	ttq.fragment:RegisterCallback("StateChange", fragmentChange)
 
+	
 	ZO_PostHook(
 		DUNGEON_FINDER_KEYBOARD.navigationTree.templateInfo.ZO_ActivityFinderTemplateNavigationEntry_Keyboard,
 		"setupFunction",
@@ -522,7 +353,7 @@ function ttq.playerActivated()
 			fragmentChange()
 		end
 	)
-
+	
 	-- ZO_PostHook(ZO_ActivityFinderTemplate_Keyboard, "RefreshJoinQueueButton", function()
 	--	if ZO_DungeonFinder_KeyboardListSectionScrollChildZO_ActivityFinderTemplateNavigationHeader_Keyboard1 and not ZO_DungeonFinder_KeyboardListSectionScrollChildZO_ActivityFinderTemplateNavigationHeader_Keyboard1:IsHidden() then
 	--		TIM99_SearchingForMissing:SetHidden(false)
@@ -540,15 +371,18 @@ function ttq.addonLoaded(event, addonName)
 	EVENT_MANAGER:RegisterForEvent(ttq.name, EVENT_PLAYER_ACTIVATED, ttq.playerActivated)
 
 	ttq.svChar = ZO_SavedVars:NewAccountWide("DungeonQueue4Stickerbook", 1, nil, ttq.svCharDef, GetWorldName())
+	
+	
 
 	SLASH_COMMANDS["/tq"] = function(a)
 		if a == nil or a == "" or a == " " then
 			CHAT_SYSTEM:AddMessage(string.format("|c666666[%s]|r |c9B30FF[TimSetQueue]  Usage-Help:|r", GetTimeString()))
-			CHAT_SYSTEM:AddMessage(string.format("|c9B30FF  1)|r   |cFFFFFF/tq miss|r |c666666= Prints all missing Dungeons|r"))
+			CHAT_SYSTEM:AddMessage(string.format("|c9B30FF  1)|r   |cFFFFFF/tq miss|r |c666666= Prints all Dungeons with missing sets|r"))
 			CHAT_SYSTEM:AddMessage(string.format("|c9B30FF  2)|r   |cFFFFFF/tq all|r |c666666= Prints all Dungeons|r"))
 			CHAT_SYSTEM:AddMessage(string.format("|c9B30FF  3)|r   |cFFFFFF/tq auto|r |c666666= Toggle auto-queue after marking. now:|r |c9B30FF%s|r", tostring(ttq.svChar.autoqueue)))
 			CHAT_SYSTEM:AddMessage(string.format("|c9B30FF  4)|r   |cFFFFFF/tq check|r |c666666= Recalculates the missing sets|r"))
-			CHAT_SYSTEM:AddMessage(string.format("|c9B30FF  5)|r   |cFFFFFF/tq|r itemLINK |c666666= if|r |cFFFFFFitemLink|r |c666666is a from a valid set, it prints the setId|r"))
+			CHAT_SYSTEM:AddMessage(string.format("|c9B30FF  5)|r   |cFFFFFF/tq quest|r |c666666= Recalculates the missing quests|r"))
+			CHAT_SYSTEM:AddMessage(string.format("|c9B30FF  6)|r   |cFFFFFF/tq|r itemLINK |c666666= if|r |cFFFFFFitemLink|r |c666666is a from a valid set, it prints the setId|r"))
 		elseif a == "miss" then
 			CHAT_SYSTEM:AddMessage(string.format("|c666666[%s]|r |c9B30FF[TimSetQueue]  Missing Sets from:|r", GetTimeString()))
 			local b = 0

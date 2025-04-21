@@ -628,19 +628,20 @@ function addon:InitMiniMap()
 	WORLD_MAP_FRAGMENT.alwaysAnimate = true
 	WORLD_MAP_FRAGMENT.duration = 0
 
-	ZO_WorldMap:SetClampedToScreenInsets(4, 29, -4, -40)
+	ZO_WorldMap:SetClampedToScreenInsets(3, 29, -3, -40)
 
+	local isConsoleUI = IsConsoleUI()
 	control = CreateControl("$(parent)ClockRealTime", self.background, CT_LABEL)
 	self.clockRealTime = control
-	control:SetFont("ZoFontWindowTitle")
+	control:SetFont(isConsoleUI and "ZoFontGamepadBold34" or "ZoFontWindowTitle")
 	control:SetDimensionConstraints(66, 37, 0, 0)
 	control:SetAnchor(BOTTOMLEFT, nil, BOTTOMLEFT, 14, -4)
 
 	control = CreateControl("$(parent)ClockInGame", self.background, CT_LABEL)
 	self.clockInGame = control
-	control:SetFont("ZoFontWindowSubtitle")
+	control:SetFont(isConsoleUI and "ZoFontGamepadBold20" or "ZoFontWindowSubtitle")
 	control:SetDimensionConstraints(66, 32, 0, 0)
-	control:SetAnchor(BOTTOMLEFT, self.clockRealTime, BOTTOMRIGHT, 6, -2)
+	control:SetAnchor(BOTTOMLEFT, self.clockRealTime, BOTTOMRIGHT, 6, -3)
 	control:SetVerticalAlignment(BOTTOM)
 
 	self.cameraAngleRad = 0

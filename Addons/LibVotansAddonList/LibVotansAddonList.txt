@@ -1,10 +1,10 @@
 ## Title: Votan's Addon List
 ## Author: votan
 ## Description: Alternative Addon List Design
-## APIVersion: 101042 101043
-## AddOnVersion: 10904
+## APIVersion: 101045 101046
+## AddOnVersion: 11000
 ## IsLibrary: false
-## Version: 1.9.4
+## Version: 1.10.0
 ## OptionalDependsOn: AddonSelector AddonCategory
 
 ## This Add-On is not created by, affiliated with or sponsored by ZeniMax Media Inc. or its affiliates. The Elder Scrolls® and related logos are registered trademarks or trademarks of ZeniMax Media Inc. in the United States and/or other countries. All rights reserved.
@@ -12,4 +12,5 @@
 lang/strings.lua
 lang/$(language).lua
 
-Main.lua
+PC/Main.lua
+Console/Main.lua

@@ -1450,10 +1450,13 @@ local function AddFilter()
 	function ZO_WorldMapFilterPanel_Shared.SetPinFilter(...)
 		local current, mapPinGroup, shown = ...
 		if mapPinGroup == data.pinTypeId then
-			data.player.showPins[panelToFilter[current]] = shown
-			if not gps:IsMeasuring() and panelToFilter[current] == currentFilter then
-				data.pinManager:SetCustomPinEnabled(data.pinTypeId, shown)
-				data:RefreshPins()
+			local filter = panelToFilter[current]
+			if filter then
+				data.player.showPins[filter] = shown
+				if not gps:IsMeasuring() and filter == currentFilter then
+					data.pinManager:SetCustomPinEnabled(data.pinTypeId, shown)
+					data:RefreshPins()
+				end
 			end
 		else
 			return orgSetPinFilter(...)
@@ -1608,7 +1611,7 @@ function data:RefreshPinOfLure(lure, x, y)
 	if pin then
 		x, y = gps:GlobalToLocal(x, y)
 		if x then
-			pin.normalizedX, pin.normalizedY = x, y
+			pin:SetLocation(x, y)
 			local _, tag = pin:GetPinTypeAndTag()
 			if tag then
 				tag.x, tag.y = x, y
@@ -2512,523 +2515,930 @@ local function ApplyTypeToSlot()
 	lureLast = nil
 end
 
-function data:InitSettings()
-	local LAM2 = LibAddonMenu2
+local sounds = {
+	"",
+	"NEW_NOTIFICATION",
+	"GROUP_REQUEST_DECLINED",
+	"DEFER_NOTIFICATION",
+	"NEW_MAIL",
+	"MAIL_SENT",
+	"ACHIEVEMENT_AWARDED",
+	"QUEST_ACCEPTED",
+	"QUEST_ABANDONED",
+	"QUEST_COMPLETED",
+	"QUEST_STEP_FAILED",
+	"QUEST_FOCUSED",
+	"OBJECTIVE_ACCEPTED",
+	"OBJECTIVE_COMPLETED",
+	"OBJECTIVE_DISCOVERED",
+	"INVENTORY_ITEM_JUNKED",
+	"INVENTORY_ITEM_UNJUNKED",
+	"COLLECTIBLE_UNLOCKED",
+	"JUSTICE_STATE_CHANGED",
+	"JUSTICE_NOW_KOS",
+	"JUSTICE_NO_LONGER_KOS",
+	"JUSTICE_GOLD_REMOVED",
+	"JUSTICE_ITEM_REMOVED",
+	"JUSTICE_PICKPOCKET_BONUS",
+	"JUSTICE_PICKPOCKET_FAILED",
+	"GROUP_JOIN",
+	"GROUP_LEAVE",
+	"GROUP_DISBAND",
+	"TELVAR_GAINED",
+	"TELVAR_LOST",
+	"RAID_TRIAL_COMPLETED",
+	"RAID_TRIAL_FAILED"
+}
+local soundNames = {
+	GetString(SI_FISHERMAN_SETTING_REEL_IN_NO_SOUND),
+	"New",
+	"Group Request Declined",
+	"Defer",
+	"New Mail",
+	"Mail Sent",
+	"Achievement Awarded",
+	"Quest Accepted",
+	"Quest Abandoned",
+	"Quest Completed",
+	"Quest Step Failed",
+	"Quest Focused",
+	"Objective Accepted",
+	"Objective Completed",
+	"Objective Discovered",
+	"Inventory Item Junked",
+	"Inventory Item Unjunked",
+	"Collectible Unlocked",
+	"Justice State Changed",
+	"Justice Now KOS",
+	"Justice No Longer KOS",
+	"Justice Gold Removed",
+	"Justice Item Removed",
+	"Justice Pickpocket Bonus",
+	"Justice Pickpocket Failed",
+	"Group Join",
+	"Group Leave",
+	"Group Disband",
+	"Telvar Gained",
+	"Telvar Lost",
+	"Raid Trial Completed",
+	"Raid Trial Failed"
+}
 
-	local panelData = {
-		type = "panel",
-		name = data.title,
-		displayName = data.title,
-		author = "votan",
-		version = "1.16.1",
-		-- slashCommand = "",
-		-- registerForRefresh = true,
-		registerForDefaults = true,
-		website = "http://www.esoui.com/downloads/info918-VotansFisherman.html"
-	}
-	LAM2:RegisterAddonPanel(data.name, panelData)
+if IsConsoleUI() then
+	function data:InitSettings()
+		local LibHarvensAddonSettings = LibHarvensAddonSettings
 
-	local optionsTable = {
-		{
-			type = "slider",
-			name = GetString(SI_FISHERMAN_SETTING_PIN_LEVEL),
-			min = 3,
-			max = 100,
-			step = 1,
-			getFunc = function()
-				return data.settings.pinLevel
-			end,
-			setFunc = function(value)
-				data.settings.pinLevel = value
-				self.layout.level = value
-				data:RefreshPins()
-			end,
-			default = 30
-		},
-		{
-			type = "slider",
-			name = GetString(SI_FISHERMAN_SETTING_PIN_SIZE),
-			min = 8,
-			max = 128,
-			step = 1,
-			getFunc = function()
-				return data.settings.pinSize
-			end,
-			setFunc = function(value)
-				self.settings.pinSize = value
-				self.layout.size = value
-				data:RefreshPins()
-			end,
-			default = 32
+		local settings = LibHarvensAddonSettings:AddAddon(data.title)
+		if not settings then
+			return
+		end
+
+		settings.author = "votan"
+		settings.version = "1.16.2"
+		settings.website = "http://www.esoui.com/downloads/info918-VotansFisherman.html"
+
+		local optionsTable = {
+			{
+				type = LibHarvensAddonSettings.ST_SLIDER,
+				label = GetString(SI_FISHERMAN_SETTING_PIN_LEVEL),
+				min = 3,
+				max = 100,
+				step = 1,
+				getFunction = function()
+					return data.settings.pinLevel
+				end,
+				setFunction = function(value)
+					data.settings.pinLevel = value
+					self.layout.level = value
+					data:RefreshPins()
+				end,
+				default = 30
+			},
+			{
+				type = LibHarvensAddonSettings.ST_SLIDER,
+				label = GetString(SI_FISHERMAN_SETTING_PIN_SIZE),
+				min = 8,
+				max = 128,
+				step = 1,
+				getFunction = function()
+					return data.settings.pinSize
+				end,
+				setFunction = function(value)
+					self.settings.pinSize = value
+					self.layout.size = value
+					data:RefreshPins()
+				end,
+				default = 32
+			}
 		}
-	}
 
-	for i = 1, #data.LureColors do
-		optionsTable[#optionsTable + 1] = {
-			type = "colorpicker",
-			name = GetString("SI_FISHERMAN_INTERACT", i),
-			width = "half",
-			getFunc = function()
-				return data.LureColors[i]:UnpackRGB()
-			end,
-			setFunc = function(newR, newG, newB, newA)
-				self.LureColors[i] = ZO_ColorDef:New(newR, newG, newB, 1)
-				self.settings.lureColors[i] = self.LureColors[i]:ToHex()
-				self:RefreshPins()
-			end,
-			default = data.LureColorDefaults[i]
-		}
-		local choices = {}
-		local tooltips = {}
-		local choicesToName = {}
-		local nameToChoices = self.iconNameToPath[i]
-		if not RFT then
-			nameToChoices["Rare Fish Tracker"] = nil
-		end
-		for name, path in pairs(nameToChoices) do
-			tooltips[#tooltips + 1] = name
-			choicesToName[path] = name
-		end
-		table.sort(tooltips)
-		for i, name in ipairs(tooltips) do
-			choices[i] = nameToChoices[name]
-		end
-		optionsTable[#optionsTable + 1] = {
-			type = "iconpicker",
-			name = "",
-			choices = choices,
-			getFunc = function()
-				return nameToChoices[self.settings.pinIcon[i]] or nameToChoices["default"]
-			end,
-			setFunc = function(value)
-				local name = choicesToName[value]
-				if self.settings.pinIcon[i] ~= name then
-					self.settings.pinIcon[i] = name
+		for i = 1, #data.LureColors do
+			optionsTable[#optionsTable + 1] = {
+				type = LibHarvensAddonSettings.ST_COLOR,
+				label = GetString("SI_FISHERMAN_INTERACT", i),
+				getFunction = function()
+					return data.LureColors[i]:UnpackRGB()
+				end,
+				setFunction = function(newR, newG, newB, newA)
+					self.LureColors[i] = ZO_ColorDef:New(newR, newG, newB, 1)
+					self.settings.lureColors[i] = self.LureColors[i]:ToHex()
 					self:RefreshPins()
-				end
-			end,
-			choicesTooltips = tooltips,
-			width = "half",
-			default = "default"
-		}
-	end
-
-	optionsTable[#optionsTable + 1] = {
-		type = "checkbox",
-		name = GetString(SI_FISHERMAN_SETTING_SHOW_LOOT_HUD),
-		tooltip = "",
-		getFunc = function()
-			return data.settings.showLootOnHUD
-		end,
-		setFunc = function(value)
-			self.settings.showLootOnHUD = value
-			lastAction = ""
-		end,
-		default = true
-	}
-
-	optionsTable[#optionsTable + 1] = {
-		type = "checkbox",
-		name = GetString(SI_FISHERMAN_SETTING_SHOW_LOOT_MAP),
-		tooltip = "",
-		getFunc = function()
-			return data.settings.showLootOnMap
-		end,
-		setFunc = function(value)
-			self.settings.showLootOnMap = value
-			lastAction = ""
-		end,
-		default = true
-	}
-
-	optionsTable[#optionsTable + 1] = {
-		type = "checkbox",
-		name = GetString(SI_FISHERMAN_SETTING_SHOW_DEFAULT_LOOT),
-		tooltip = "",
-		getFunc = function()
-			return data.settings.showDefaultLoot
-		end,
-		setFunc = function(value)
-			self.settings.showDefaultLoot = value
-			lastAction = ""
-		end,
-		default = true
-	}
-
-	optionsTable[#optionsTable + 1] = {
-		type = "header",
-		name = GetString(SI_FISHERMAN_SETTING_REEL_IN)
-	}
-
-	optionsTable[#optionsTable + 1] = {
-		type = "checkbox",
-		name = GetString(SI_FISHERMAN_SETTING_SHOW_REEL_IN),
-		getFunc = function()
-			return data.settings.showReelIn
-		end,
-		setFunc = function(value)
-			self.settings.showReelIn = value
-		end,
-		default = true
-	}
-
-	do
-		local choices = {}
-		for name in pairs(data.reelInAnims) do
-			choices[#choices + 1] = name
-		end
-		table.sort(choices)
-		optionsTable[#optionsTable + 1] = {
-			type = "dropdown",
-			name = GetString(SI_FISHERMAN_SETTING_REEL_IN_ANIM),
-			choices = choices,
-			getFunc = function()
-				return data.settings.notificationAnim
-			end,
-			setFunc = function(value)
-				data.settings.notificationAnim = value
-				data:SetReelInAnim(value)
-			end,
-			width = "full",
-			-- or "half" (optional)
-			default = choices[1]
-		}
-	end
-	do
-		local sounds = {
-			"",
-			"NEW_NOTIFICATION",
-			"GROUP_REQUEST_DECLINED",
-			"DEFER_NOTIFICATION",
-			"NEW_MAIL",
-			"MAIL_SENT",
-			"ACHIEVEMENT_AWARDED",
-			"QUEST_ACCEPTED",
-			"QUEST_ABANDONED",
-			"QUEST_COMPLETED",
-			"QUEST_STEP_FAILED",
-			"QUEST_FOCUSED",
-			"OBJECTIVE_ACCEPTED",
-			"OBJECTIVE_COMPLETED",
-			"OBJECTIVE_DISCOVERED",
-			"INVENTORY_ITEM_JUNKED",
-			"INVENTORY_ITEM_UNJUNKED",
-			"COLLECTIBLE_UNLOCKED",
-			"JUSTICE_STATE_CHANGED",
-			"JUSTICE_NOW_KOS",
-			"JUSTICE_NO_LONGER_KOS",
-			"JUSTICE_GOLD_REMOVED",
-			"JUSTICE_ITEM_REMOVED",
-			"JUSTICE_PICKPOCKET_BONUS",
-			"JUSTICE_PICKPOCKET_FAILED",
-			"GROUP_JOIN",
-			"GROUP_LEAVE",
-			"GROUP_DISBAND",
-			"TELVAR_GAINED",
-			"TELVAR_LOST",
-			"RAID_TRIAL_COMPLETED",
-			"RAID_TRIAL_FAILED"
-		}
-		local choices = {
-			GetString(SI_FISHERMAN_SETTING_REEL_IN_NO_SOUND),
-			"New",
-			"Group Request Declined",
-			"Defer",
-			"New Mail",
-			"Mail Sent",
-			"Achievement Awarded",
-			"Quest Accepted",
-			"Quest Abandoned",
-			"Quest Completed",
-			"Quest Step Failed",
-			"Quest Focused",
-			"Objective Accepted",
-			"Objective Completed",
-			"Objective Discovered",
-			"Inventory Item Junked",
-			"Inventory Item Unjunked",
-			"Collectible Unlocked",
-			"Justice State Changed",
-			"Justice Now KOS",
-			"Justice No Longer KOS",
-			"Justice Gold Removed",
-			"Justice Item Removed",
-			"Justice Pickpocket Bonus",
-			"Justice Pickpocket Failed",
-			"Group Join",
-			"Group Leave",
-			"Group Disband",
-			"Telvar Gained",
-			"Telvar Lost",
-			"Raid Trial Completed",
-			"Raid Trial Failed"
-		}
-		optionsTable[#optionsTable + 1] = {
-			type = "dropdown",
-			name = GetString(SI_FISHERMAN_SETTING_REEL_IN_SOUND),
-			choices = choices,
-			getFunc = function()
-				local sound = data.settings.notificationSound
-				for i = 1, #sounds do
-					if sounds[i] == sound then
-						return choices[i]
+				end,
+				default = data.LureColorDefaults[i]
+			}
+			local tooltips = {}
+			local nameToChoices = self.iconNameToPath[i]
+			if not RFT then
+				nameToChoices["Rare Fish Tracker"] = nil
+			end
+			for name, path in pairs(nameToChoices) do
+				tooltips[#tooltips + 1] = name
+			end
+			table.sort(tooltips)
+			local items = {}
+			for i = 1, #tooltips do
+				items[i] = {name = zo_iconFormatInheritColor(nameToChoices[tooltips[i]], "100%", "100%"), data = tooltips[i]}
+			end
+			optionsTable[#optionsTable + 1] = {
+				type = LibHarvensAddonSettings.ST_DROPDOWN,
+				label = "",
+				items = items,
+				getFunction = function()
+					return zo_iconFormatInheritColor(nameToChoices[self.settings.pinIcon[i]] or nameToChoices["default"], "100%", "100%")
+				end,
+				setFunction = function(combobox, value, item)
+					local name = item.data
+					if self.settings.pinIcon[i] ~= name then
+						self.settings.pinIcon[i] = name
+						self:RefreshPins()
 					end
-				end
-				return choices[1]
+				end,
+				default = "default"
+			}
+		end
+
+		optionsTable[#optionsTable + 1] = {
+			type = LibHarvensAddonSettings.ST_CHECKBOX,
+			label = GetString(SI_FISHERMAN_SETTING_SHOW_LOOT_HUD),
+			tooltip = "",
+			getFunction = function()
+				return data.settings.showLootOnHUD
 			end,
-			setFunc = function(value)
-				for i = 2, #choices do
-					if choices[i] == value then
-						data.settings.notificationSound = sounds[i]
+			setFunction = function(value)
+				self.settings.showLootOnHUD = value
+				lastAction = ""
+			end,
+			default = true
+		}
+
+		optionsTable[#optionsTable + 1] = {
+			type = LibHarvensAddonSettings.ST_CHECKBOX,
+			label = GetString(SI_FISHERMAN_SETTING_SHOW_LOOT_MAP),
+			tooltip = "",
+			getFunction = function()
+				return data.settings.showLootOnMap
+			end,
+			setFunction = function(value)
+				self.settings.showLootOnMap = value
+				lastAction = ""
+			end,
+			default = true
+		}
+
+		optionsTable[#optionsTable + 1] = {
+			type = LibHarvensAddonSettings.ST_CHECKBOX,
+			label = GetString(SI_FISHERMAN_SETTING_SHOW_DEFAULT_LOOT),
+			tooltip = "",
+			getFunction = function()
+				return data.settings.showDefaultLoot
+			end,
+			setFunction = function(value)
+				self.settings.showDefaultLoot = value
+				lastAction = ""
+			end,
+			default = true
+		}
+
+		optionsTable[#optionsTable + 1] = {
+			type = LibHarvensAddonSettings.ST_SECTION,
+			label = GetString(SI_FISHERMAN_SETTING_REEL_IN)
+		}
+
+		optionsTable[#optionsTable + 1] = {
+			type = LibHarvensAddonSettings.ST_CHECKBOX,
+			label = GetString(SI_FISHERMAN_SETTING_SHOW_REEL_IN),
+			getFunction = function()
+				return data.settings.showReelIn
+			end,
+			setFunction = function(value)
+				self.settings.showReelIn = value
+			end,
+			default = true
+		}
+
+		do
+			local choices = {}
+			for name in pairs(data.reelInAnims) do
+				choices[#choices + 1] = name
+			end
+			table.sort(choices)
+			local items = {}
+			for i = 1, #choices do
+				items[i] = {name = choices[i], data = choices[i]}
+			end
+			optionsTable[#optionsTable + 1] = {
+				type = LibHarvensAddonSettings.ST_DROPDOWN,
+				label = GetString(SI_FISHERMAN_SETTING_REEL_IN_ANIM),
+				items = items,
+				getFunction = function()
+					return data.settings.notificationAnim
+				end,
+				setFunction = function(combobox, value, item)
+					data.settings.notificationAnim = value
+					data:SetReelInAnim(value)
+				end,
+				default = choices[1]
+			}
+		end
+		do
+			local items = {}
+			for i = 1, #sounds do
+				items[#items + 1] = {name = soundNames[i], data = sounds[i]}
+			end
+			optionsTable[#optionsTable + 1] = {
+				type = LibHarvensAddonSettings.ST_DROPDOWN,
+				label = GetString(SI_FISHERMAN_SETTING_REEL_IN_SOUND),
+				items = items,
+				getFunction = function()
+					local sound = data.settings.notificationSound
+					for i = 1, #sounds do
+						if sounds[i] == sound then
+							return soundNames[i]
+						end
+					end
+					return soundNames[1]
+				end,
+				setFunction = function(combobox, name, item)
+					if item.data then
+						data.settings.notificationSound = item.data
 						PlaySound(SOUNDS[data.settings.notificationSound])
 						return
 					end
-				end
-				data.settings.notificationSound = nil
-			end,
-			width = "full",
-			-- or "half" (optional)
-			default = choices[1]
-		}
-	end
-
-	optionsTable[#optionsTable + 1] = {
-		type = "colorpicker",
-		name = GetString(SI_FISHERMAN_SETTING_REEL_IN_COLOR),
-		getFunc = function()
-			return data.reelInColor:UnpackRGB()
-		end,
-		setFunc = function(newR, newG, newB, newA)
-			data.reelInColor = ZO_ColorDef:New(newR, newG, newB, 1)
-			data.settings.reelInColor = data.reelInColor:ToHex()
-		end,
-		default = data.reelInColorDefault
-	}
-
-	optionsTable[#optionsTable + 1] = {
-		type = "slider",
-		name = GetString(SI_FISHERMAN_SETTING_REEL_IN_SIZE),
-		min = 25,
-		max = 400,
-		step = 5,
-		getFunc = function()
-			return math.floor(data.settings.reelInSize * 100)
-		end,
-		setFunc = function(value)
-			data.settings.reelInSize = value / 100
-			data:SetReelInAnim(data.settings.notificationAnim)
-		end,
-		default = 1
-	}
-
-	optionsTable[#optionsTable + 1] = {
-		type = "checkbox",
-		name = GetString(SI_FISHERMAN_SETTING_REEL_IN_RETURN),
-		tooltip = GetString(SI_FISHERMAN_SETTING_REEL_IN_RETURN_TOOLTIP),
-		getFunc = function()
-			return self.settings.autoReturnInteraction
-		end,
-		setFunc = function(value)
-			self.settings.autoReturnInteraction = value
-		end,
-		default = false
-	}
-	optionsTable[#optionsTable + 1] = {
-		type = "checkbox",
-		name = GetString(SI_FISHERMAN_SETTING_AUTO_SWITCH_BAIT),
-		tooltip = GetString(SI_FISHERMAN_SETTING_AUTO_SWITCH_BAIT_TOOLTIP),
-		getFunc = function()
-			return self.settings.autoSwitchBait
-		end,
-		setFunc = function(value)
-			self.settings.autoSwitchBait = value
-		end,
-		default = false
-	}
-	optionsTable[#optionsTable + 1] = {
-		type = "checkbox",
-		name = " |u12:0::|u" .. GetString(SI_FISHERMAN_SETTING_PREFER_BETTER_BAIT),
-		tooltip = GetString(SI_FISHERMAN_SETTING_PREFER_BETTER_BAIT_TOOLTIP),
-		getFunc = function()
-			return self.settings.preferBetterBait
-		end,
-		setFunc = function(value)
-			self.settings.preferBetterBait = value
-			ApplyTypeToSlot()
-		end,
-		default = false
-	}
-
-	optionsTable[#optionsTable + 1] = {
-		type = "header",
-		name = GetString(SI_FISHERMAN_SETTING_EXTRAS)
-	}
-
-	optionsTable[#optionsTable + 1] = {
-		type = "checkbox",
-		name = GetString(SI_FISHERMAN_SETTING_SHOW_HIDE_RFT),
-		tooltip = "",
-		getFunc = function()
-			return self.settings.autoHideRFT
-		end,
-		setFunc = function(value)
-			self.settings.autoHideRFT = value
-			if value and RFT and RFT.window then
-				RFT.window:SetHidden(true)
-			end
-		end,
-		default = true,
-		disabled = function()
-			return not (RFT and RFT.window)
+					data.settings.notificationSound = nil
+				end,
+				default = soundNames[1]
+			}
 		end
-	}
-	optionsTable[#optionsTable + 1] = {
-		type = "checkbox",
-		name = GetString(SI_FISHERMAN_SETTING_PIN_SHOW_CONTEXTMENU),
-		tooltip = "",
-		getFunc = function()
-			return self.settings.showContextMenu
-		end,
-		setFunc = function(value)
-			self.settings.showContextMenu = value
-		end,
-		default = false
-	}
-	optionsTable[#optionsTable + 1] = {
-		type = "checkbox",
-		name = GetString(SI_FISHERMAN_SETTING_PIN_SHOW_TOOLTIP),
-		tooltip = "",
-		getFunc = function()
-			return self.settings.showTooltip
-		end,
-		setFunc = function(value)
-			self.settings.showTooltip = value
-			self.tooltip.tooltip = value and 1 or 0
-		end,
-		default = false
-	}
-	optionsTable[#optionsTable + 1] = {
-		type = "checkbox",
-		name = GetString(SI_FISHERMAN_SETTING_PIN_SHOW_DEBUG),
-		tooltip = "",
-		getFunc = function()
-			return data.settings.showDebug or false
-		end,
-		setFunc = function(value)
-			self.settings.showDebug = value
-			lastAction = ""
-		end,
-		default = false
-	}
 
-	optionsTable[#optionsTable + 1] = {
-		type = "submenu",
-		name = GetString(SI_FISHERMAN_SETTING_DATA_RESTART),
-		controls = {
+		optionsTable[#optionsTable + 1] = {
+			type = LibHarvensAddonSettings.ST_COLOR,
+			label = GetString(SI_FISHERMAN_SETTING_REEL_IN_COLOR),
+			getFunction = function()
+				return data.reelInColor:UnpackRGB()
+			end,
+			setFunction = function(newR, newG, newB, newA)
+				data.reelInColor = ZO_ColorDef:New(newR, newG, newB, 1)
+				data.settings.reelInColor = data.reelInColor:ToHex()
+			end,
+			default = data.reelInColorDefault
+		}
+
+		optionsTable[#optionsTable + 1] = {
+			type = LibHarvensAddonSettings.ST_SLIDER,
+			label = GetString(SI_FISHERMAN_SETTING_REEL_IN_SIZE),
+			min = 25,
+			max = 400,
+			step = 5,
+			getFunction = function()
+				return math.floor(data.settings.reelInSize * 100)
+			end,
+			setFunction = function(value)
+				data.settings.reelInSize = value / 100
+				data:SetReelInAnim(data.settings.notificationAnim)
+			end,
+			default = 1
+		}
+
+		optionsTable[#optionsTable + 1] = {
+			type = LibHarvensAddonSettings.ST_CHECKBOX,
+			label = GetString(SI_FISHERMAN_SETTING_REEL_IN_RETURN),
+			tooltip = GetString(SI_FISHERMAN_SETTING_REEL_IN_RETURN_TOOLTIP),
+			getFunction = function()
+				return self.settings.autoReturnInteraction
+			end,
+			setFunction = function(value)
+				self.settings.autoReturnInteraction = value
+			end,
+			default = false
+		}
+		optionsTable[#optionsTable + 1] = {
+			type = LibHarvensAddonSettings.ST_CHECKBOX,
+			label = GetString(SI_FISHERMAN_SETTING_AUTO_SWITCH_BAIT),
+			tooltip = GetString(SI_FISHERMAN_SETTING_AUTO_SWITCH_BAIT_TOOLTIP),
+			getFunction = function()
+				return self.settings.autoSwitchBait
+			end,
+			setFunction = function(value)
+				self.settings.autoSwitchBait = value
+			end,
+			default = false
+		}
+		optionsTable[#optionsTable + 1] = {
+			type = LibHarvensAddonSettings.ST_CHECKBOX,
+			label = " |u12:0::|u" .. GetString(SI_FISHERMAN_SETTING_PREFER_BETTER_BAIT),
+			tooltip = GetString(SI_FISHERMAN_SETTING_PREFER_BETTER_BAIT_TOOLTIP),
+			getFunction = function()
+				return self.settings.preferBetterBait
+			end,
+			setFunction = function(value)
+				self.settings.preferBetterBait = value
+				ApplyTypeToSlot()
+			end,
+			default = false
+		}
+
+		optionsTable[#optionsTable + 1] = {
+			type = LibHarvensAddonSettings.ST_SECTION,
+			label = GetString(SI_FISHERMAN_SETTING_EXTRAS)
+		}
+
+		optionsTable[#optionsTable + 1] = {
+			type = LibHarvensAddonSettings.ST_CHECKBOX,
+			label = GetString(SI_FISHERMAN_SETTING_SHOW_HIDE_RFT),
+			tooltip = "",
+			getFunction = function()
+				return self.settings.autoHideRFT
+			end,
+			setFunction = function(value)
+				self.settings.autoHideRFT = value
+				if value and RFT and RFT.window then
+					RFT.window:SetHidden(true)
+				end
+			end,
+			default = true,
+			disabled = function()
+				return not (RFT and RFT.window)
+			end
+		}
+		optionsTable[#optionsTable + 1] = {
+			type = LibHarvensAddonSettings.ST_CHECKBOX,
+			label = GetString(SI_FISHERMAN_SETTING_PIN_SHOW_CONTEXTMENU),
+			tooltip = "",
+			getFunction = function()
+				return self.settings.showContextMenu
+			end,
+			setFunction = function(value)
+				self.settings.showContextMenu = value
+			end,
+			default = false
+		}
+		optionsTable[#optionsTable + 1] = {
+			type = LibHarvensAddonSettings.ST_CHECKBOX,
+			label = GetString(SI_FISHERMAN_SETTING_PIN_SHOW_TOOLTIP),
+			tooltip = "",
+			getFunction = function()
+				return self.settings.showTooltip
+			end,
+			setFunction = function(value)
+				self.settings.showTooltip = value
+				self.tooltip.tooltip = value and 1 or 0
+			end,
+			default = false
+		}
+		optionsTable[#optionsTable + 1] = {
+			type = LibHarvensAddonSettings.ST_CHECKBOX,
+			label = GetString(SI_FISHERMAN_SETTING_PIN_SHOW_DEBUG),
+			tooltip = "",
+			getFunction = function()
+				return data.settings.showDebug or false
+			end,
+			setFunction = function(value)
+				self.settings.showDebug = value
+				lastAction = ""
+			end,
+			default = false
+		}
+
+		optionsTable[#optionsTable + 1] = {
+			type = LibHarvensAddonSettings.ST_BUTTON,
+			buttonText = GetString(SI_FISHERMAN_SETTING_DATA_RESTART),
+			tooltip = zo_strformat("<<1>> <<2>>", GetString(SI_FISHERMAN_SETTING_DATA_RESTART_HINT), GetString(SI_FISHERMAN_SETTING_DATA_RESTART_HINT2)),
+			clickHandler = RestartMeasurementNearby
+		}
+
+		optionsTable[#optionsTable + 1] = {
+			type = LibHarvensAddonSettings.ST_BUTTON,
+			buttonText = GetString(SI_FISHERMAN_SETTING_DATA_CAUGHT_LIST),
+			tooltip = GetString(SI_FISHERMAN_SETTING_DATA_CAUGHT_LIST_HINT),
+			clickHandler = ClearNearbyCaughtLists
+		}
+
+		optionsTable[#optionsTable + 1] = {
+			type = LibHarvensAddonSettings.ST_SECTION,
+			label = GetString(SI_FISHERMAN_SETTING_DATA_MERGE)
+		}
+		optionsTable[#optionsTable + 1] = {
+			type = LibHarvensAddonSettings.ST_LABEL,
+			text = GetString(SI_FISHERMAN_SETTING_DATA_MERGE_HINT)
+		}
+		optionsTable[#optionsTable + 1] = {
+			type = LibHarvensAddonSettings.ST_BUTTON,
+			buttonText = GetString(SI_FISHERMAN_SETTING_DATA_MERGE_BUTTON_VERY_CLOSE),
+			tooltip = GetString(SI_FISHERMAN_SETTING_DATA_MERGE_VERY_CLOSE),
+			func = function()
+				MergeFishingHoles(0.25)
+			end
+		}
+		optionsTable[#optionsTable + 1] = {
+			type = LibHarvensAddonSettings.ST_BUTTON,
+			buttonText = GetString(SI_FISHERMAN_SETTING_DATA_MERGE_BUTTON_CLOSE),
+			tooltip = GetString(SI_FISHERMAN_SETTING_DATA_MERGE_CLOSE),
+			clickHandler = function()
+				MergeFishingHoles(0.5)
+			end
+		}
+		optionsTable[#optionsTable + 1] = {
+			type = LibHarvensAddonSettings.ST_BUTTON,
+			buttonText = GetString(SI_FISHERMAN_SETTING_DATA_MERGE_BUTTON_NEAR),
+			tooltip = GetString(SI_FISHERMAN_SETTING_DATA_MERGE_NEAR),
+			clickHandler = function()
+				MergeFishingHoles(1)
+			end
+		}
+		optionsTable[#optionsTable + 1] = {
+			type = LibHarvensAddonSettings.ST_BUTTON,
+			buttonText = GetString(SI_FISHERMAN_SETTING_DATA_MERGE_BUTTON_RANGE),
+			tooltip = GetString(SI_FISHERMAN_SETTING_DATA_MERGE_RANGE),
+			LibHarvensAddonSettings = function()
+				MergeFishingHoles(1.25)
+			end
+		}
+
+		optionsTable[#optionsTable + 1] = {
+			type = LibHarvensAddonSettings.ST_SECTION,
+			label = ZO_ERROR_COLOR:Colorize(GetString(SI_FISHERMAN_SETTING_DATA_ERASE))
+		}
+		optionsTable[#optionsTable + 1] = {
+			type = LibHarvensAddonSettings.ST_BUTTON,
+			buttonText = GetString(SI_FISHERMAN_SETTING_DATA_ERASE_BUTTON),
+			tooltip = GetString(SI_FISHERMAN_SETTING_DATA_ERASE_HINT),
+			clickHandler = EraseNearbyFishingHoles,
+			isDangerous = true,
+			warning = GetString(SI_FISHERMAN_SETTING_DATA_ERASE_TOOLTIP)
+		}
+
+		settings:AddSettings(optionsTable)
+	end
+else
+	function data:InitSettings()
+		local LAM2 = LibAddonMenu2
+
+		local panelData = {
+			type = "panel",
+			name = data.title,
+			displayName = data.title,
+			author = "votan",
+			version = "1.16.2",
+			-- slashCommand = "",
+			-- registerForRefresh = true,
+			registerForDefaults = true,
+			website = "http://www.esoui.com/downloads/info918-VotansFisherman.html"
+		}
+		LAM2:RegisterAddonPanel(data.name, panelData)
+
+		local optionsTable = {
 			{
-				type = "description",
-				text = GetString(SI_FISHERMAN_SETTING_DATA_RESTART_HINT),
-				width = "full"
+				type = "slider",
+				name = GetString(SI_FISHERMAN_SETTING_PIN_LEVEL),
+				min = 3,
+				max = 100,
+				step = 1,
+				getFunc = function()
+					return data.settings.pinLevel
+				end,
+				setFunc = function(value)
+					data.settings.pinLevel = value
+					self.layout.level = value
+					data:RefreshPins()
+				end,
+				default = 30
 			},
 			{
-				type = "description",
-				text = GetString(SI_FISHERMAN_SETTING_DATA_RESTART_HINT2),
-				width = "full"
-			},
-			{
-				type = "button",
-				name = GetString(SI_FISHERMAN_SETTING_DATA_RESTART_BUTTON),
-				tooltip = GetString(SI_FISHERMAN_SETTING_DATA_RESTART_TOOLTIP),
-				func = RestartMeasurementNearby,
-				width = "half"
+				type = "slider",
+				name = GetString(SI_FISHERMAN_SETTING_PIN_SIZE),
+				min = 8,
+				max = 128,
+				step = 1,
+				getFunc = function()
+					return data.settings.pinSize
+				end,
+				setFunc = function(value)
+					self.settings.pinSize = value
+					self.layout.size = value
+					data:RefreshPins()
+				end,
+				default = 32
 			}
 		}
-	}
-	optionsTable[#optionsTable + 1] = {
-		type = "submenu",
-		name = GetString(SI_FISHERMAN_SETTING_DATA_CAUGHT_LIST),
-		controls = {
-			{
-				type = "description",
-				text = GetString(SI_FISHERMAN_SETTING_DATA_CAUGHT_LIST_HINT),
-				width = "full"
-			},
-			{
-				type = "button",
-				name = GetString(SI_FISHERMAN_SETTING_DATA_CAUGHT_LIST_BUTTON),
-				tooltip = GetString(SI_FISHERMAN_SETTING_DATA_CAUGHT_LIST_TOOLTIP),
-				func = ClearNearbyCaughtLists,
-				width = "half"
-			}
-		}
-	}
-	optionsTable[#optionsTable + 1] = {
-		type = "submenu",
-		name = GetString(SI_FISHERMAN_SETTING_DATA_MERGE),
-		controls = {
-			{
-				type = "description",
-				text = GetString(SI_FISHERMAN_SETTING_DATA_MERGE_HINT),
-				width = "full"
-			},
-			{
-				type = "button",
-				name = GetString(SI_FISHERMAN_SETTING_DATA_MERGE_BUTTON_VERY_CLOSE),
-				tooltip = GetString(SI_FISHERMAN_SETTING_DATA_MERGE_VERY_CLOSE),
-				func = function()
-					MergeFishingHoles(0.25)
-				end,
-				width = "half"
-			},
-			{
-				type = "button",
-				name = GetString(SI_FISHERMAN_SETTING_DATA_MERGE_BUTTON_CLOSE),
-				tooltip = GetString(SI_FISHERMAN_SETTING_DATA_MERGE_CLOSE),
-				func = function()
-					MergeFishingHoles(0.5)
-				end,
-				width = "half"
-			},
-			{
-				type = "button",
-				name = GetString(SI_FISHERMAN_SETTING_DATA_MERGE_BUTTON_NEAR),
-				tooltip = GetString(SI_FISHERMAN_SETTING_DATA_MERGE_NEAR),
-				func = function()
-					MergeFishingHoles(1)
-				end,
-				width = "half"
-			},
-			{
-				type = "button",
-				name = GetString(SI_FISHERMAN_SETTING_DATA_MERGE_BUTTON_RANGE),
-				tooltip = GetString(SI_FISHERMAN_SETTING_DATA_MERGE_RANGE),
-				func = function()
-					MergeFishingHoles(1.25)
-				end,
-				width = "half"
-			}
-		}
-	}
-	optionsTable[#optionsTable + 1] = {
-		type = "submenu",
-		name = ZO_ERROR_COLOR:Colorize(GetString(SI_FISHERMAN_SETTING_DATA_ERASE)),
-		controls = {
-			{
-				type = "description",
-				text = GetString(SI_FISHERMAN_SETTING_DATA_ERASE_HINT),
-				width = "full"
-			},
-			{
-				type = "button",
-				name = GetString(SI_FISHERMAN_SETTING_DATA_ERASE_BUTTON),
-				func = EraseNearbyFishingHoles,
+
+		for i = 1, #data.LureColors do
+			optionsTable[#optionsTable + 1] = {
+				type = "colorpicker",
+				name = GetString("SI_FISHERMAN_INTERACT", i),
 				width = "half",
-				isDangerous = true,
-				warning = GetString(SI_FISHERMAN_SETTING_DATA_ERASE_TOOLTIP)
+				getFunc = function()
+					return data.LureColors[i]:UnpackRGB()
+				end,
+				setFunc = function(newR, newG, newB, newA)
+					self.LureColors[i] = ZO_ColorDef:New(newR, newG, newB, 1)
+					self.settings.lureColors[i] = self.LureColors[i]:ToHex()
+					self:RefreshPins()
+				end,
+				default = data.LureColorDefaults[i]
+			}
+			local choices = {}
+			local tooltips = {}
+			local choicesToName = {}
+			local nameToChoices = self.iconNameToPath[i]
+			if not RFT then
+				nameToChoices["Rare Fish Tracker"] = nil
+			end
+			for name, path in pairs(nameToChoices) do
+				tooltips[#tooltips + 1] = name
+				choicesToName[path] = name
+			end
+			table.sort(tooltips)
+			for i, name in ipairs(tooltips) do
+				choices[i] = nameToChoices[name]
+			end
+			optionsTable[#optionsTable + 1] = {
+				type = "iconpicker",
+				name = "",
+				choices = choices,
+				getFunc = function()
+					return nameToChoices[self.settings.pinIcon[i]] or nameToChoices["default"]
+				end,
+				setFunc = function(value)
+					local name = choicesToName[value]
+					if self.settings.pinIcon[i] ~= name then
+						self.settings.pinIcon[i] = name
+						self:RefreshPins()
+					end
+				end,
+				choicesTooltips = tooltips,
+				width = "half",
+				default = "default"
+			}
+		end
+
+		optionsTable[#optionsTable + 1] = {
+			type = "checkbox",
+			name = GetString(SI_FISHERMAN_SETTING_SHOW_LOOT_HUD),
+			tooltip = "",
+			getFunc = function()
+				return data.settings.showLootOnHUD
+			end,
+			setFunc = function(value)
+				self.settings.showLootOnHUD = value
+				lastAction = ""
+			end,
+			default = true
+		}
+
+		optionsTable[#optionsTable + 1] = {
+			type = "checkbox",
+			name = GetString(SI_FISHERMAN_SETTING_SHOW_LOOT_MAP),
+			tooltip = "",
+			getFunc = function()
+				return data.settings.showLootOnMap
+			end,
+			setFunc = function(value)
+				self.settings.showLootOnMap = value
+				lastAction = ""
+			end,
+			default = true
+		}
+
+		optionsTable[#optionsTable + 1] = {
+			type = "checkbox",
+			name = GetString(SI_FISHERMAN_SETTING_SHOW_DEFAULT_LOOT),
+			tooltip = "",
+			getFunc = function()
+				return data.settings.showDefaultLoot
+			end,
+			setFunc = function(value)
+				self.settings.showDefaultLoot = value
+				lastAction = ""
+			end,
+			default = true
+		}
+
+		optionsTable[#optionsTable + 1] = {
+			type = "header",
+			name = GetString(SI_FISHERMAN_SETTING_REEL_IN)
+		}
+
+		optionsTable[#optionsTable + 1] = {
+			type = "checkbox",
+			name = GetString(SI_FISHERMAN_SETTING_SHOW_REEL_IN),
+			getFunc = function()
+				return data.settings.showReelIn
+			end,
+			setFunc = function(value)
+				self.settings.showReelIn = value
+			end,
+			default = true
+		}
+
+		do
+			local choices = {}
+			for name in pairs(data.reelInAnims) do
+				choices[#choices + 1] = name
+			end
+			table.sort(choices)
+			optionsTable[#optionsTable + 1] = {
+				type = "dropdown",
+				name = GetString(SI_FISHERMAN_SETTING_REEL_IN_ANIM),
+				choices = choices,
+				getFunc = function()
+					return data.settings.notificationAnim
+				end,
+				setFunc = function(value)
+					data.settings.notificationAnim = value
+					data:SetReelInAnim(value)
+				end,
+				width = "full",
+				-- or "half" (optional)
+				default = choices[1]
+			}
+		end
+		do
+			optionsTable[#optionsTable + 1] = {
+				type = "dropdown",
+				name = GetString(SI_FISHERMAN_SETTING_REEL_IN_SOUND),
+				choices = soundNames,
+				getFunc = function()
+					local sound = data.settings.notificationSound
+					for i = 1, #sounds do
+						if sounds[i] == sound then
+							return soundNames[i]
+						end
+					end
+					return soundNames[1]
+				end,
+				setFunc = function(value)
+					for i = 2, #soundNames do
+						if soundNames[i] == value then
+							data.settings.notificationSound = sounds[i]
+							PlaySound(SOUNDS[data.settings.notificationSound])
+							return
+						end
+					end
+					data.settings.notificationSound = nil
+				end,
+				width = "full",
+				default = soundNames[1]
+			}
+		end
+
+		optionsTable[#optionsTable + 1] = {
+			type = "colorpicker",
+			name = GetString(SI_FISHERMAN_SETTING_REEL_IN_COLOR),
+			getFunc = function()
+				return data.reelInColor:UnpackRGB()
+			end,
+			setFunc = function(newR, newG, newB, newA)
+				data.reelInColor = ZO_ColorDef:New(newR, newG, newB, 1)
+				data.settings.reelInColor = data.reelInColor:ToHex()
+			end,
+			default = data.reelInColorDefault
+		}
+
+		optionsTable[#optionsTable + 1] = {
+			type = "slider",
+			name = GetString(SI_FISHERMAN_SETTING_REEL_IN_SIZE),
+			min = 25,
+			max = 400,
+			step = 5,
+			getFunc = function()
+				return math.floor(data.settings.reelInSize * 100)
+			end,
+			setFunc = function(value)
+				data.settings.reelInSize = value / 100
+				data:SetReelInAnim(data.settings.notificationAnim)
+			end,
+			default = 1
+		}
+
+		optionsTable[#optionsTable + 1] = {
+			type = "checkbox",
+			name = GetString(SI_FISHERMAN_SETTING_REEL_IN_RETURN),
+			tooltip = GetString(SI_FISHERMAN_SETTING_REEL_IN_RETURN_TOOLTIP),
+			getFunc = function()
+				return self.settings.autoReturnInteraction
+			end,
+			setFunc = function(value)
+				self.settings.autoReturnInteraction = value
+			end,
+			default = false
+		}
+		optionsTable[#optionsTable + 1] = {
+			type = "checkbox",
+			name = GetString(SI_FISHERMAN_SETTING_AUTO_SWITCH_BAIT),
+			tooltip = GetString(SI_FISHERMAN_SETTING_AUTO_SWITCH_BAIT_TOOLTIP),
+			getFunc = function()
+				return self.settings.autoSwitchBait
+			end,
+			setFunc = function(value)
+				self.settings.autoSwitchBait = value
+			end,
+			default = false
+		}
+		optionsTable[#optionsTable + 1] = {
+			type = "checkbox",
+			name = " |u12:0::|u" .. GetString(SI_FISHERMAN_SETTING_PREFER_BETTER_BAIT),
+			tooltip = GetString(SI_FISHERMAN_SETTING_PREFER_BETTER_BAIT_TOOLTIP),
+			getFunc = function()
+				return self.settings.preferBetterBait
+			end,
+			setFunc = function(value)
+				self.settings.preferBetterBait = value
+				ApplyTypeToSlot()
+			end,
+			default = false
+		}
+
+		optionsTable[#optionsTable + 1] = {
+			type = "header",
+			name = GetString(SI_FISHERMAN_SETTING_EXTRAS)
+		}
+
+		optionsTable[#optionsTable + 1] = {
+			type = "checkbox",
+			name = GetString(SI_FISHERMAN_SETTING_SHOW_HIDE_RFT),
+			tooltip = "",
+			getFunc = function()
+				return self.settings.autoHideRFT
+			end,
+			setFunc = function(value)
+				self.settings.autoHideRFT = value
+				if value and RFT and RFT.window then
+					RFT.window:SetHidden(true)
+				end
+			end,
+			default = true,
+			disabled = function()
+				return not (RFT and RFT.window)
+			end
+		}
+		optionsTable[#optionsTable + 1] = {
+			type = "checkbox",
+			name = GetString(SI_FISHERMAN_SETTING_PIN_SHOW_CONTEXTMENU),
+			tooltip = "",
+			getFunc = function()
+				return self.settings.showContextMenu
+			end,
+			setFunc = function(value)
+				self.settings.showContextMenu = value
+			end,
+			default = false
+		}
+		optionsTable[#optionsTable + 1] = {
+			type = "checkbox",
+			name = GetString(SI_FISHERMAN_SETTING_PIN_SHOW_TOOLTIP),
+			tooltip = "",
+			getFunc = function()
+				return self.settings.showTooltip
+			end,
+			setFunc = function(value)
+				self.settings.showTooltip = value
+				self.tooltip.tooltip = value and 1 or 0
+			end,
+			default = false
+		}
+		optionsTable[#optionsTable + 1] = {
+			type = "checkbox",
+			name = GetString(SI_FISHERMAN_SETTING_PIN_SHOW_DEBUG),
+			tooltip = "",
+			getFunc = function()
+				return data.settings.showDebug or false
+			end,
+			setFunc = function(value)
+				self.settings.showDebug = value
+				lastAction = ""
+			end,
+			default = false
+		}
+
+		optionsTable[#optionsTable + 1] = {
+			type = "submenu",
+			name = GetString(SI_FISHERMAN_SETTING_DATA_RESTART),
+			controls = {
+				{
+					type = "description",
+					text = GetString(SI_FISHERMAN_SETTING_DATA_RESTART_HINT),
+					width = "full"
+				},
+				{
+					type = "description",
+					text = GetString(SI_FISHERMAN_SETTING_DATA_RESTART_HINT2),
+					width = "full"
+				},
+				{
+					type = "button",
+					name = GetString(SI_FISHERMAN_SETTING_DATA_RESTART_BUTTON),
+					tooltip = GetString(SI_FISHERMAN_SETTING_DATA_RESTART_TOOLTIP),
+					func = RestartMeasurementNearby,
+					width = "half"
+				}
 			}
 		}
-	}
-	LAM2:RegisterOptionControls(data.name, optionsTable)
+		optionsTable[#optionsTable + 1] = {
+			type = "submenu",
+			name = GetString(SI_FISHERMAN_SETTING_DATA_CAUGHT_LIST),
+			controls = {
+				{
+					type = "description",
+					text = GetString(SI_FISHERMAN_SETTING_DATA_CAUGHT_LIST_HINT),
+					width = "full"
+				},
+				{
+					type = "button",
+					name = GetString(SI_FISHERMAN_SETTING_DATA_CAUGHT_LIST_BUTTON),
+					tooltip = GetString(SI_FISHERMAN_SETTING_DATA_CAUGHT_LIST_TOOLTIP),
+					func = ClearNearbyCaughtLists,
+					width = "half"
+				}
+			}
+		}
+		optionsTable[#optionsTable + 1] = {
+			type = "submenu",
+			name = GetString(SI_FISHERMAN_SETTING_DATA_MERGE),
+			controls = {
+				{
+					type = "description",
+					text = GetString(SI_FISHERMAN_SETTING_DATA_MERGE_HINT),
+					width = "full"
+				},
+				{
+					type = "button",
+					name = GetString(SI_FISHERMAN_SETTING_DATA_MERGE_BUTTON_VERY_CLOSE),
+					tooltip = GetString(SI_FISHERMAN_SETTING_DATA_MERGE_VERY_CLOSE),
+					func = function()
+						MergeFishingHoles(0.25)
+					end,
+					width = "half"
+				},
+				{
+					type = "button",
+					name = GetString(SI_FISHERMAN_SETTING_DATA_MERGE_BUTTON_CLOSE),
+					tooltip = GetString(SI_FISHERMAN_SETTING_DATA_MERGE_CLOSE),
+					func = function()
+						MergeFishingHoles(0.5)
+					end,
+					width = "half"
+				},
+				{
+					type = "button",
+					name = GetString(SI_FISHERMAN_SETTING_DATA_MERGE_BUTTON_NEAR),
+					tooltip = GetString(SI_FISHERMAN_SETTING_DATA_MERGE_NEAR),
+					func = function()
+						MergeFishingHoles(1)
+					end,
+					width = "half"
+				},
+				{
+					type = "button",
+					name = GetString(SI_FISHERMAN_SETTING_DATA_MERGE_BUTTON_RANGE),
+					tooltip = GetString(SI_FISHERMAN_SETTING_DATA_MERGE_RANGE),
+					func = function()
+						MergeFishingHoles(1.25)
+					end,
+					width = "half"
+				}
+			}
+		}
+		optionsTable[#optionsTable + 1] = {
+			type = "submenu",
+			name = ZO_ERROR_COLOR:Colorize(GetString(SI_FISHERMAN_SETTING_DATA_ERASE)),
+			controls = {
+				{
+					type = "description",
+					text = GetString(SI_FISHERMAN_SETTING_DATA_ERASE_HINT),
+					width = "full"
+				},
+				{
+					type = "button",
+					name = GetString(SI_FISHERMAN_SETTING_DATA_ERASE_BUTTON),
+					func = EraseNearbyFishingHoles,
+					width = "half",
+					isDangerous = true,
+					warning = GetString(SI_FISHERMAN_SETTING_DATA_ERASE_TOOLTIP)
+				}
+			}
+		}
+		LAM2:RegisterOptionControls(data.name, optionsTable)
+	end
 end
 
 local function Initialize()
