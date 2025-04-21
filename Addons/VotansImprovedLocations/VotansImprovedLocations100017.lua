@@ -351,6 +351,11 @@
 		{
 			-- "Augvea",
 			alliance = 999
+		},
+		-- [52] =
+		{
+			-- "Solstice",
+			alliance = 999
 		}
 	},
 	tresureMap = {},
@@ -1280,7 +1285,7 @@ function addon:InitSettings()
 end
 
 function addon:PostInitSettings(optionsTable)
-	local LAM2 = LibAddonMenu2 or LibStub("LibAddonMenu-2.0")
+	local LAM2 = LibAddonMenu2
 	local panelData = {
 		type = "panel",
 		name = "Improved Locations",
