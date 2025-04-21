@@ -16,6 +16,9 @@ $lines = Get-Content -Path $manifest
 $ver = ""
 $compatible = ""
 $dependency = ""
+
+$newLines = @()
+
 foreach($line in $lines) {
     if ($line.StartsWith("## Title: ", "OrdinalIgnoreCase")) {
         $Title = $line.Substring(10).Trim()
@@ -35,8 +38,8 @@ foreach($line in $lines) {
             }
         }
     }
-    if ($line.StartsWith("## PCDependsOn: ", "OrdinalIgnoreCase")) {
-        $dependency = $line.Substring(16).Trim().Split(" ")
+    if ($line.StartsWith("## ConsoleDependsOn: ", "OrdinalIgnoreCase")) {
+        $dependency = $line.Substring(21).Trim().Split(" ")
         for ($i = 0; $i -lt $dependency.Length; $i++) {
             $d = $dependency[$i]
             if ($d.Contains('>=')) {
@@ -44,6 +47,9 @@ foreach($line in $lines) {
             }
         }
     }
+
+    if ($line.StartsWith("PC\") -or $line.StartsWith("PC/") -or $line.StartsWith("Keyboard\") -or $line.StartsWith("Keyboard/")) { continue }
+    $newLines += $line
 }
 
 $targetPath = [System.IO.Path]::Combine($PSScriptRoot,$targetName)
@@ -51,10 +57,18 @@ Remove-Item -Path $targetPath -Recurse -ErrorAction SilentlyContinue
 Remove-Item -Path ($targetPath + "_v$ver.zip") -ErrorAction SilentlyContinue
 
 Copy-Item -Recurse $Path $targetPath
+
 if ($Title -ne "ESO Profiler") {
     Remove-Item -Path ([System.IO.Path]::Combine($targetPath, "*")) -Recurse -Include "*.png","*.pdn" -Force
 }
 Remove-Item -Path ([System.IO.Path]::Combine($targetPath, "*")) -Recurse -Include "Thumbs.db" -Force
+Remove-Item -Path ([System.IO.Path]::Combine($targetPath, "*.md")) -Recurse -Force -ErrorAction SilentlyContinue
+Remove-Item -Path ([System.IO.Path]::Combine($targetPath, "$targetName.txt")) -Recurse -Force -ErrorAction SilentlyContinue
+
+Set-Content -Path ([System.IO.Path]::Combine($targetPath, "$targetName.addon")) -Value $newLines
+
+Remove-Item -Path ([System.IO.Path]::Combine($targetPath, "PC")) -Recurse -Force -ErrorAction SilentlyContinue
+Remove-Item -Path ([System.IO.Path]::Combine($targetPath, "Keyboard")) -Recurse -Force -ErrorAction SilentlyContinue
 
 foreach($file in [System.IO.Directory]::GetFiles($targetPath, "Lib*.txt", "AllDirectories")) {
     if ([System.IO.Path]::GetFileName($file) -eq [System.IO.Path]::GetFileName($manifest)) { continue }
@@ -71,6 +85,8 @@ $Filename = ($targetPath + "_v$ver.zip")
 Remove-Item -Path $targetPath -Recurse
 
 if (!$Upload) { return }
+
+return
 
 $Filename = Get-Item -Path $Filename
 

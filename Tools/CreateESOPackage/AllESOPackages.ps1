@@ -91,7 +91,10 @@ foreach($Path in [System.IO.Directory]::GetDirectories($Path)){
         Write-Host -ForegroundColor Yellow "Skipped blacklisted $targetName"
         continue
     }
-    $manifest = [System.IO.Path]::Combine($Path,$targetName+".txt")
+    $manifest = [System.IO.Path]::Combine($Path,$targetName+".addon")
+    if (![System.IO.File]::Exists($manifest)) {
+        $manifest = [System.IO.Path]::Combine($Path,$targetName+".txt")
+    }
     if (![System.IO.File]::Exists($manifest)) { continue }
 
     $lines = Get-Content -Path $manifest
@@ -206,7 +209,7 @@ foreach($Path in [System.IO.Directory]::GetDirectories($Path)){
         continue
     }
     if (!$Upload) {
-        Write-Host -ForegroundColor Cyan "Would upload $targetName"
+        Write-Host -ForegroundColor Cyan "<= Would upload $targetName =>"
         continue
     }
 
@@ -275,8 +278,8 @@ foreach($Path in [System.IO.Directory]::GetDirectories($Path)){
     $data.version = $ver
     $data.title = $details.title
     $list = @()
-    if ($compatible -ccontains "101043") { $list+="10.1.0" }
-    if ($compatible -ccontains "101044") { $list+="10.2.0" }
+    if ($compatible -ccontains "101045") { $list+="10.3.5" }
+    if ($compatible -ccontains "101046") { $list+="11.0.0" }
     if ($list.Length -lt 2) {
         Write-Host -ForegroundColor Red "Manifest or script not up-to-date. " + $data.title
         continue
