@@ -352,7 +352,7 @@
 			-- "Augvea",
 			alliance = 999
 		},
-		-- [52] =
+		-- [53] =
 		{
 			-- "Solstice",
 			alliance = 999
