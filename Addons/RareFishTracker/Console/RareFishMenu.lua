@@ -30,6 +30,15 @@ function RFT.MakeMenu()
 		-- RFT.window:SetDrawLevel(0)
 	end
 	local scene
+
+	local function sceneStateChanged(oldState, newState)
+		if newState == SCENE_HIDDEN then
+			RFT.moveForWorldMap = nil
+			RARE_FISH_TRACKER_FRAGMENT:Refresh()
+			RFT:RestorePosition()
+		end
+	end
+
 	local function addMap()
 		if wasMapAdded then
 			return
@@ -38,6 +47,7 @@ function RFT.MakeMenu()
 		scene:AddFragment(RARE_FISH_TRACKER_FRAGMENT)
 		wasMapAdded = true
 		RARE_FISH_TRACKER_FRAGMENT:Refresh()
+		scene:RegisterCallback("StateChange", sceneStateChanged)
 	end
 	local function addonSelected(_, addonSettings)
 		local addMap = addonSettings == settings
@@ -47,6 +57,7 @@ function RFT.MakeMenu()
 			if settings.selected then
 				updateLocationSettings()
 			end
+			scene:UnregisterCallback("StateChange", sceneStateChanged)
 			RARE_FISH_TRACKER_FRAGMENT:Refresh()
 		end
 	end
@@ -56,17 +67,17 @@ function RFT.MakeMenu()
 		local w, h = GuiRoot:GetDimensions()
 		local w, h = w / 8, h / 8
 		local w2, h2 = w * 0.5, h * 0.5
-		locationSettings[2].default = math.floor(w2)
+		locationSettings[2].default = math.floor(w2 * 0.5)
 		locationSettings[2].min = -w2
 		locationSettings[2].max = w2
-		locationSettings[3].default = math.floor(h2)
+		locationSettings[3].default = math.floor(h2 * 0.5)
 		locationSettings[3].min = -h2
 		locationSettings[3].max = h2
 
 		locationSettings[4].default = locationSettings[2].default
 		locationSettings[4].min = locationSettings[2].min
 		locationSettings[4].max = locationSettings[2].max
-		locationSettings[5].default = locationSettings[3].default
+		locationSettings[5].default = locationSettings[3].default * 2 / 3
 		locationSettings[5].min = locationSettings[3].min
 		locationSettings[5].max = locationSettings[3].max
 		if settings.selected then
