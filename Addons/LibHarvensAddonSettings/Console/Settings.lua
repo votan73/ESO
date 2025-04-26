@@ -495,7 +495,7 @@ function Settings_ParametricList:InitializeKeybindStripDescriptors()
 			name = GetString(SI_OPTIONS_DEFAULTS),
 			keybind = "UI_SHORTCUT_SECONDARY",
 			visible = function()
-				return currentSettings and currentSettings.hasDefaults
+				return currentSettings and currentSettings.hasDefaults and currentSettings.allowDefaults
 			end,
 			callback = function()
 				ZO_Dialogs_ShowGamepadDialog("LibHarvensAddonSettings_Defaults")
@@ -883,11 +883,11 @@ function LibHarvensAddonSettings:CreateControlPools()
 		},
 		{
 			font = "ZoFontGamepad27",
-			lineLimit = 6,
+			lineLimit = 6
 		},
 		{
 			font = "ZoFontGamepad22",
-			lineLimit = 7,
+			lineLimit = 7
 		}
 	}
 	AddPool(
@@ -919,7 +919,7 @@ function LibHarvensAddonSettings:CreateAddonList()
 end
 
 local function OptionsWindowFragmentStateChange(oldState, newState)
-	if newState ~= SCENE_FRAGMENT_SHOWING or LibHarvensAddonSettings.initialized then
+	if newState ~= SCENE_SHOWING or LibHarvensAddonSettings.initialized then
 		return
 	end
 

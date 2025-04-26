@@ -3,7 +3,7 @@ if LibHarvensAddonSettings then
 end
 
 LibHarvensAddonSettings = {}
-LibHarvensAddonSettings.version = 20001
+LibHarvensAddonSettings.version = 20002
 local LibHarvensAddonSettings = LibHarvensAddonSettings
 
 -----
@@ -103,7 +103,8 @@ function AddonSettingsControl:ResetToDefaults()
 		self:SetValue(self.default)
 		if self.control then
 			local itemIndex = 1
-			for i = 1, #self.items do
+			local items = self:GetValueOrCallback(self.items)
+			for i = 1, #items do
 				if self.items[i].name == self.default then
 					itemIndex = i
 					break
