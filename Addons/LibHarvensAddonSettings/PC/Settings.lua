@@ -88,6 +88,18 @@ local changeControlStateFunctions = {
 		local color = control:GetNamedChild("ColorSection")
 		color:SetMouseEnabled(state)
 		color:SetAlpha(GetAlphaFromState(state))
+	end,
+	[LibHarvensAddonSettings.ST_ICONPICKER] = function(control, state)
+		SetNameControlState(control, state)
+		local checkBox = control.checkBox
+		if state == false then
+			ZO_CheckButton_Disable(checkBox)
+		else
+			ZO_CheckButton_Enable(checkBox)
+		end
+		local alpha = GetAlphaFromState(state)
+		control.button:SetAlpha(alpha)
+		control:SetHidden(false)
 	end
 }
 
@@ -172,6 +184,18 @@ local updateControlFunctions = {
 		self.control:GetNamedChild("Color"):SetColor(self.getFunction())
 		return self.control
 	end,
+	[LibHarvensAddonSettings.ST_ICONPICKER] = function(self, lastControl)
+		self:SetAnchor(lastControl)
+		self.control:GetNamedChild("Name"):SetText(self:GetValueOrCallback(self.labelText))
+		local value = self.getFunction() or 1
+		local items = self:GetValueOrCallback(self.items)
+		self.control:SetValue(items[value])
+		local function OnIconPickerClicked()
+			HarvensAddonSettingsIconPickerDialog.setting = self
+			ZO_Dialogs_ShowDialog("LibHarvensAddonSettingsIconPicker")
+		end
+		self.control.checkBox:SetHandler("OnClicked", OnIconPickerClicked)
+	end
 }
 
 local createControlFunctions = {
@@ -271,6 +295,11 @@ local createControlFunctions = {
 		end)
 		return self.control
 	end,
+	[LibHarvensAddonSettings.ST_ICONPICKER] = function(self, lastControl)
+		self.control, self.controlKey = LibHarvensAddonSettings.iconpickerPool:AcquireObject()
+		self.control.data = self.control.data or ZO_Object:New(self)
+		updateControlFunctions[LibHarvensAddonSettings.ST_ICONPICKER](self, lastControl)
+	end
 }
 
 local cleanControlFunctions = {
@@ -312,6 +341,11 @@ local cleanControlFunctions = {
 		self.control:GetNamedChild("ColorSection"):SetHandler("OnMouseUp", nil)
 		LibHarvensAddonSettings.colorPool:ReleaseObject(self.controlKey)
 	end,
+	[LibHarvensAddonSettings.ST_ICONPICKER] = function(self)
+		self.control.iconControl:SetTexture(nil)
+		self.control.checkBox:SetHandler("OnClicked", nil)
+		LibHarvensAddonSettings.iconpickerPool:ReleaseObject(self.controlKey)
+	end
 }
 
 local setupControlFunctions = {
@@ -379,6 +413,15 @@ local setupControlFunctions = {
 		self.default = params.default
 		self.disable = params.disable
 	end,
+	[LibHarvensAddonSettings.ST_ICONPICKER] = function(self, params)
+		self.items = params.items
+		self.labelText = params.label
+		self.tooltipText = params.tooltip
+		self.setFunction = params.setFunction
+		self.getFunction = params.getFunction
+		self.default = params.default
+		self.disable = params.disable
+	end
 }
 
 -----
@@ -642,6 +685,20 @@ local function LabelPoolCreateLabel(pool)
 	return control, id
 end
 
+local function IconPickerPoolCreate(pool)
+	local control, id = PoolCreateControlBase("HarvensAddonSettingsIconPicker", pool)
+	local button = WINDOW_MANAGER:CreateControlFromVirtual("$(parent)Button", control, "ZO_GuildRank_RankIconPickerIcon_Keyboard_Control")
+	control:SetHeight(button:GetHeight())
+	button:SetAnchor(LEFT, control, RIGHT, -208, 0)
+	control.button = button
+	control.checkBox = button:GetNamedChild("IconContainerFrame")
+	control.iconControl = button:GetNamedChild("IconContainerIcon")
+	function control:SetValue(value)
+		self.iconControl:SetTexture(value)
+	end
+	return control, id
+end
+
 local function OptionsWindowFragmentStateChangeRefresh(oldState, newState)
 	if newState == SCENE_FRAGMENT_HIDING then
 		needUpdate = true
@@ -762,11 +819,70 @@ function LibHarvensAddonSettings:CreateControlPools()
 			end
 		end
 	)
+
+	self.iconpickerPool = ZO_ObjectPool:New(IconPickerPoolCreate, ZO_ObjectPool_DefaultResetControl)
+	local dialog = HarvensAddonSettingsIconPickerDialog
+	dialog.iconPickerGridListControl = dialog:GetNamedChild("IconPickerContainerPanel")
+	dialog.iconPicker = ZO_GridScrollList_Keyboard:New(dialog.iconPickerGridListControl)
+	local function iconPickerEntrySetup(control, item)
+		local iconContainer = control:GetNamedChild("IconContainer")
+		local checkButton = iconContainer:GetNamedChild("Frame")
+
+		local isCurrent = item.index == item.data.getFunction()
+
+		local function OnClick()
+			item.data:setFunction(control, item.index, item.icon)
+			item.data.control:SetValue(item.icon)
+		end
+
+		iconContainer:GetNamedChild("Icon"):SetTexture(item.icon)
+		ZO_CheckButton_SetCheckState(checkButton, isCurrent)
+		ZO_CheckButton_SetToggleFunction(checkButton, OnClick)
+	end
+	dialog.iconPicker:AddEntryTemplate("ZO_GuildRank_RankIconPickerIcon_Keyboard_Control", 60, 60, iconPickerEntrySetup, nil, nil, 0, 0)
+
+	ZO_Dialogs_RegisterCustomDialog(
+		"LibHarvensAddonSettingsIconPicker",
+		{
+			title = {
+				text = function()
+					local data = dialog.setting
+					return data:GetValueOrCallback(data.labelText)
+				end
+			},
+			mainText = {
+				text = ""
+			},
+			setup = function()
+				dialog.iconPicker:ClearGridList()
+
+				local data = dialog.setting
+				local items = data:GetValueOrCallback(data.items)
+				for i = 1, #items do
+					local item = {
+						index = i,
+						icon = items[i],
+						data = data
+					}
+					dialog.iconPicker:AddEntry(item, "ZO_GuildRank_RankIconPickerIcon_Keyboard_Control")
+				end
+
+				dialog.iconPicker:CommitGridList()
+			end,
+			customControl = dialog,
+			buttons = {
+				[1] = {
+					control = dialog:GetNamedChild("Close"),
+					text = SI_DIALOG_CLOSE
+				}
+			}
+		}
+	)
 end
 
 function LibHarvensAddonSettings:CreateAddonList()
 	table.sort(LibHarvensAddonSettings.addons, function(el1, el2)
-		return el1.name < el2.name
+			return el1.name < el2.name
 	end)
 
 	local control, template

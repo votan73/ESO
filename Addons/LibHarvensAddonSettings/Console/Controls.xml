@@ -21,5 +21,6 @@
         </Control>
       </Controls>
     </Control>
+    <Control name="LibHarvensAddonSettingsGamepadIconPicker" inherits="ZO_GamepadHorizontalListRow" virtual="true" />
   </Controls>
 </GuiXml>

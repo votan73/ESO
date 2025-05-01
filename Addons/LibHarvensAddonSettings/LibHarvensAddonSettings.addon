@@ -13,6 +13,7 @@
 ## OptionalDependsOn: LibAddonMenu-2.0>=38
 
 Main.lua
+PC\Controls.xml
 PC\Settings.lua
 
 Console\Controls.xml
