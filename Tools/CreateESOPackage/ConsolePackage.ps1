@@ -12,6 +12,8 @@ if (![System.IO.File]::Exists($manifest)) {
 }
 if (![System.IO.File]::Exists($manifest)) { return }
 
+Remove-Item -Path $targetPath -Recurse
+
 $lines = Get-Content -Path $manifest
 $ver = ""
 $compatible = ""
@@ -39,7 +41,7 @@ foreach($line in $lines) {
         }
     }
     if ($line.StartsWith("## ConsoleDependsOn: ", "OrdinalIgnoreCase")) {
-        $dependency = $line.Substring(21).Trim().Split(" ")
+        $dependency += $line.Substring(21).Trim().Split(" ")
         for ($i = 0; $i -lt $dependency.Length; $i++) {
             $d = $dependency[$i]
             if ($d.Contains('>=')) {
@@ -49,6 +51,8 @@ foreach($line in $lines) {
     }
 
     if ($line.StartsWith("PC\") -or $line.StartsWith("PC/") -or $line.StartsWith("Keyboard\") -or $line.StartsWith("Keyboard/")) { continue }
+    if ($line -eq "Bindings.xml") { continue }
+
     $newLines += $line
 }
 
@@ -63,7 +67,8 @@ if ($Title -ne "ESO Profiler") {
 }
 Remove-Item -Path ([System.IO.Path]::Combine($targetPath, "*")) -Recurse -Include "Thumbs.db" -Force
 Remove-Item -Path ([System.IO.Path]::Combine($targetPath, "*.md")) -Recurse -Force -ErrorAction SilentlyContinue
-Remove-Item -Path ([System.IO.Path]::Combine($targetPath, "$targetName.txt")) -Recurse -Force -ErrorAction SilentlyContinue
+Remove-Item -Path ([System.IO.Path]::Combine($targetPath, "Bindings.xml")) -Force -ErrorAction SilentlyContinue
+Remove-Item -Path ([System.IO.Path]::Combine($targetPath, "$targetName.txt")) -Force -ErrorAction SilentlyContinue
 
 Set-Content -Path ([System.IO.Path]::Combine($targetPath, "$targetName.addon")) -Value $newLines
 
@@ -79,10 +84,12 @@ foreach($file in [System.IO.Directory]::GetFiles($targetPath, "Lib*.txt", "AllDi
     }
 }
 
-$Filename = ($targetPath + "_v$ver.zip")
-&"C:\Program Files\7-Zip\7z.exe" a -tzip -r $Filename $targetPath
+#$Filename = ($targetPath + "_v$ver.zip")
+#&"C:\Program Files\7-Zip\7z.exe" a -tzip -r $Filename $targetPath
 
-Remove-Item -Path $targetPath -Recurse
+#Remove-Item -Path $targetPath -Recurse
+
+$dependency
 
 if (!$Upload) { return }
 
