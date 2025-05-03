@@ -12,6 +12,7 @@ if (![System.IO.File]::Exists($manifest)) {
 }
 if (![System.IO.File]::Exists($manifest)) { return }
 
+$targetPath = [System.IO.Path]::Combine($PSScriptRoot,$targetName)
 Remove-Item -Path $targetPath -Recurse
 
 $lines = Get-Content -Path $manifest
@@ -56,7 +57,6 @@ foreach($line in $lines) {
     $newLines += $line
 }
 
-$targetPath = [System.IO.Path]::Combine($PSScriptRoot,$targetName)
 Remove-Item -Path $targetPath -Recurse -ErrorAction SilentlyContinue
 Remove-Item -Path ($targetPath + "_v$ver.zip") -ErrorAction SilentlyContinue
 
