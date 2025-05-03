@@ -126,20 +126,20 @@ function RFT.MakeMenu()
 			end,
 			default = RFT.accountDefaults.highlight
 		},
-		{
-			type = "checkbox",
-			name = GetString(SI_RARE_FISH_TRACKER_AUTO_SHOW_HIDE_HUD),
-			tooltip = GetString(SI_RARE_FISH_TRACKER_AUTO_SHOW_HIDE_HUD_TOOLTIP),
-			getFunc = function()
-				return account.autoShowHide
-			end,
-			setFunc = function(value)
-				account.autoShowHide = value
-				RFT.RefreshWindow()
-			end,
-			width = "half",
-			default = RFT.accountDefaults.autoShowHide
-		},
+		-- {
+		-- 	type = "checkbox",
+		-- 	name = GetString(SI_RARE_FISH_TRACKER_AUTO_SHOW_HIDE_HUD),
+		-- 	tooltip = GetString(SI_RARE_FISH_TRACKER_AUTO_SHOW_HIDE_HUD_TOOLTIP),
+		-- 	getFunc = function()
+		-- 		return account.autoShowHide
+		-- 	end,
+		-- 	setFunc = function(value)
+		-- 		account.autoShowHide = value
+		-- 		RFT.RefreshWindow()
+		-- 	end,
+		-- 	width = "half",
+		-- 	default = RFT.accountDefaults.autoShowHide
+		-- },
 		{
 			type = "checkbox",
 			name = GetString(SI_RARE_FISH_TRACKER_ALLOW_PER_CHAR),

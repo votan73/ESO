@@ -387,13 +387,6 @@ function RFT.MakeWindow()
 				if RFT.isFishing then
 					return true
 				end
-				if RFT.isAutoRefresh and RFT.account.autoShowHide then
-					local zoneId = findZone(getPlayerZoneId())
-					if lastZoneId ~= zoneId then
-						lastZoneId = zoneId
-						RFT.settings.shown = (RFT.numFishes or 0) > 0 and not (RFT.numCaught == RFT.numFishes)
-					end
-				end
 				return RFT.settings.shown
 			end
 		end
@@ -696,18 +689,16 @@ function RFT.ToggleWindow()
 	end
 
 	local ishidden = RFT.window:IsHidden()
-	local shouldBeHidden = RFT.numFishes == RFT.numCaught
-	RFT.isAutoRefresh = not (RFT.account.autoShowHide and shouldBeHidden == ishidden)
+	RFT.isAutoRefresh = false
 	-- refresh the window if we're about to show it
 	if ishidden then
 		RFT.RefreshWindow()
 	end
-	--if not RFT.account.autoShowHide or not RFT.isAutoRefresh then
 	if RFT.IsShowingWorldMap() then
 		RFT.settings.shown_world = ishidden
 	else
 		RFT.settings.shown = ishidden
 	end
-	--end
+
 	RARE_FISH_TRACKER_FRAGMENT:Refresh(500, 500)
 end

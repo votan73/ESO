@@ -284,19 +284,19 @@ function RFT.MakeMenu()
 			end,
 			default = RFT.accountDefaults.highlight
 		},
-		{
-			type = LibHarvensAddonSettings.ST_CHECKBOX,
-			label = GetString(SI_RARE_FISH_TRACKER_AUTO_SHOW_HIDE_HUD),
-			tooltip = GetString(SI_RARE_FISH_TRACKER_AUTO_SHOW_HIDE_HUD_TOOLTIP),
-			getFunction = function()
-				return account.autoShowHide
-			end,
-			setFunction = function(value)
-				account.autoShowHide = value
-				RFT.RefreshWindow()
-			end,
-			default = RFT.accountDefaults.autoShowHide
-		},
+		-- {
+		-- 	type = LibHarvensAddonSettings.ST_CHECKBOX,
+		-- 	label = GetString(SI_RARE_FISH_TRACKER_AUTO_SHOW_HIDE_HUD),
+		-- 	tooltip = GetString(SI_RARE_FISH_TRACKER_AUTO_SHOW_HIDE_HUD_TOOLTIP),
+		-- 	getFunction = function()
+		-- 		return account.autoShowHide
+		-- 	end,
+		-- 	setFunction = function(value)
+		-- 		account.autoShowHide = value
+		-- 		RFT.RefreshWindow()
+		-- 	end,
+		-- 	default = RFT.accountDefaults.autoShowHide
+		-- },
 		{
 			type = LibHarvensAddonSettings.ST_CHECKBOX,
 			label = GetString(SI_RARE_FISH_TRACKER_ALLOW_PER_CHAR),
