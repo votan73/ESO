@@ -2481,6 +2481,10 @@ function data:AddPinType()
 
 	ZO_CreateStringId("SI_MAPFILTER" .. self.pinTypeId, data.title)
 
+	if IsConsoleUI() then
+		return
+	end
+
 	local contextmenu = {
 		{
 			name = function(pin)
@@ -2646,28 +2650,33 @@ if IsConsoleUI() then
 				end,
 				default = data.LureColorDefaults[i]
 			}
-			local tooltips = {}
+			local names = {}
 			local nameToChoices = self.iconNameToPath[i]
 			if not RFT then
 				nameToChoices["Rare Fish Tracker"] = nil
 			end
-			for name, path in pairs(nameToChoices) do
-				tooltips[#tooltips + 1] = name
+			for name in pairs(nameToChoices) do
+				names[#names + 1] = name
 			end
-			table.sort(tooltips)
 			local items = {}
-			for i = 1, #tooltips do
-				items[i] = {name = zo_iconFormatInheritColor(nameToChoices[tooltips[i]], "100%", "100%"), data = tooltips[i]}
+			for t = 1, #names do
+				items[t] = nameToChoices[names[t]]
 			end
 			optionsTable[#optionsTable + 1] = {
-				type = LibHarvensAddonSettings.ST_DROPDOWN,
+				type = LibHarvensAddonSettings.ST_ICONPICKER,
 				label = "",
 				items = items,
 				getFunction = function()
-					return zo_iconFormatInheritColor(nameToChoices[self.settings.pinIcon[i]] or nameToChoices["default"], "100%", "100%")
+					local name = self.settings.pinIcon[i]
+					for t = 1, #names do
+						if names[t] == name then
+							return t
+						end
+					end
+					return 1
 				end,
-				setFunction = function(combobox, value, item)
-					local name = item.data
+				setFunction = function(combobox, index, item)
+					local name = names[index]
 					if self.settings.pinIcon[i] ~= name then
 						self.settings.pinIcon[i] = name
 						self:RefreshPins()
@@ -2880,18 +2889,20 @@ if IsConsoleUI() then
 				return not (RFT and RFT.window)
 			end
 		}
-		optionsTable[#optionsTable + 1] = {
-			type = LibHarvensAddonSettings.ST_CHECKBOX,
-			label = GetString(SI_FISHERMAN_SETTING_PIN_SHOW_CONTEXTMENU),
-			tooltip = "",
-			getFunction = function()
-				return self.settings.showContextMenu
-			end,
-			setFunction = function(value)
-				self.settings.showContextMenu = value
-			end,
-			default = false
-		}
+		if not IsConsoleUI() then
+			optionsTable[#optionsTable + 1] = {
+				type = LibHarvensAddonSettings.ST_CHECKBOX,
+				label = GetString(SI_FISHERMAN_SETTING_PIN_SHOW_CONTEXTMENU),
+				tooltip = "",
+				getFunction = function()
+					return self.settings.showContextMenu
+				end,
+				setFunction = function(value)
+					self.settings.showContextMenu = value
+				end,
+				default = false
+			}
+		end
 		optionsTable[#optionsTable + 1] = {
 			type = LibHarvensAddonSettings.ST_CHECKBOX,
 			label = GetString(SI_FISHERMAN_SETTING_PIN_SHOW_TOOLTIP),

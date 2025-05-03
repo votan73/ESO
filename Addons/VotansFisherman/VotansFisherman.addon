@@ -3,13 +3,13 @@
 ## Description: Remembers fishing hole type and shows bait information. Powered by LibGPS.
 ## Version: 1.16.2
 ## APIVersion: 101045 101046
-## DependsOn: LibCustomMenu>=681 LibMapPing>=900 LibGPS>=66 LibAsync>=20302
+## DependsOn: LibMapPing>=900 LibGPS>=66 LibAsync>=20302
 ## OptionalDependsOn: RareFishTracker MiniMap WaypointIt
-## PCDependsOn: LibAddonMenu-2.0>=38
+## PCDependsOn: LibCustomMenu>=681 LibAddonMenu-2.0>=38
 ## ConsoleDependsOn: LibHarvensAddonSettings>=20000
 ## SavedVariables: VotansFisherman_Data
 
-## This Add-On is not created by, affiliated with or sponsored by ZeniMax Media Inc. or its affiliates. The Elder Scrolls® and related logos are registered trademarks or trademarks of ZeniMax Media Inc. in the United States and/or other countries. All rights reserved.
+## This Add-On is not created by, affiliated with or sponsored by ZeniMax Media Inc. or its affiliates. The Elder ScrollsÂ® and related logos are registered trademarks or trademarks of ZeniMax Media Inc. in the United States and/or other countries. All rights reserved.
 
 lang\strings.lua
 lang\$(language).lua
