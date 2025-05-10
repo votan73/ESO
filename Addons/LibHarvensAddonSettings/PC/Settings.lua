@@ -106,7 +106,7 @@ local changeControlStateFunctions = {
 local updateControlFunctions = {
 	[LibHarvensAddonSettings.ST_CHECKBOX] = function(self, lastControl)
 		self:SetAnchor(lastControl)
-		self.control:GetNamedChild("Name"):SetText(self:GetValueOrCallback(self.labelText))
+		self.control:GetNamedChild("Name"):SetText(self:GetString(self:GetValueOrCallback(self.labelText)))
 
 		if self.getFunction() then
 			ZO_CheckButton_SetChecked(self.control:GetNamedChild("Checkbox"))
@@ -118,14 +118,14 @@ local updateControlFunctions = {
 	end,
 	[LibHarvensAddonSettings.ST_SLIDER] = function(self, lastControl)
 		self:SetAnchor(lastControl)
-		self.control:GetNamedChild("Name"):SetText(self:GetValueOrCallback(self.labelText))
+		self.control:GetNamedChild("Name"):SetText(self:GetString(self:GetValueOrCallback(self.labelText)))
 		local slider = self.control.slider
 		slider:SetMinMax(self.min, self.max)
 		slider:SetValue(self.getFunction())
 		local label = slider.label or self.control:GetNamedChild("ValueLabel")
 		local value = self.getFunction() or "0"
 		if self.unit and #self.unit > 0 then
-			label:SetText(value .. self:GetValueOrCallback(self.unit))
+			label:SetText(value .. self:GetString(self:GetValueOrCallback(self.unit)))
 		else
 			label:SetText(value)
 		end
@@ -135,14 +135,14 @@ local updateControlFunctions = {
 	[LibHarvensAddonSettings.ST_BUTTON] = function(self, lastControl)
 		self.control:SetHidden(false)
 		self:SetAnchor(lastControl)
-		self.control:GetNamedChild("Name"):SetText(self:GetValueOrCallback(self.labelText))
+		self.control:GetNamedChild("Name"):SetText(self:GetString(self:GetValueOrCallback(self.labelText)))
 		local button = self.control:GetNamedChild("Button")
-		button:SetText(self:GetValueOrCallback(self.buttonText))
+		button:SetText(self:GetString(self:GetValueOrCallback(self.buttonText)))
 	end,
 	[LibHarvensAddonSettings.ST_EDIT] = function(self, lastControl)
 		self.control:SetHidden(false)
 		self:SetAnchor(lastControl)
-		self.control:GetNamedChild("Name"):SetText(self:GetValueOrCallback(self.labelText))
+		self.control:GetNamedChild("Name"):SetText(self:GetString(self:GetValueOrCallback(self.labelText)))
 		local editControl = self.control:GetNamedChild("EditBackdrop"):GetNamedChild("Edit")
 		editControl:SetTextType(self.textType or TEXT_TYPE_ALL)
 		editControl:SetMaxInputChars(self.maxInputChars or MAX_HELP_DESCRIPTION_BODY)
@@ -151,7 +151,7 @@ local updateControlFunctions = {
 	end,
 	[LibHarvensAddonSettings.ST_DROPDOWN] = function(self, lastControl)
 		self:SetAnchor(lastControl)
-		self.control:GetNamedChild("Name"):SetText(self:GetValueOrCallback(self.labelText))
+		self.control:GetNamedChild("Name"):SetText(self:GetString(self:GetValueOrCallback(self.labelText)))
 		local combobox = self.control:GetDropDown()
 		combobox:ClearItems()
 		local itemEntry
@@ -168,25 +168,25 @@ local updateControlFunctions = {
 		self.control:SetHidden(false)
 		self:SetAnchor(lastControl)
 		local label = self.control:GetNamedChild("Name")
-		label:SetText(self:GetValueOrCallback(self.labelText))
+		label:SetText(self:GetString(self:GetValueOrCallback(self.labelText)))
 		self.control:SetHeight(label:GetTextHeight())
 	end,
 	[LibHarvensAddonSettings.ST_SECTION] = function(self, lastControl)
 		self:SetAnchor(lastControl)
 		local label = self.control:GetNamedChild("Label")
-		label:SetText(self:GetValueOrCallback(self.labelText))
+		label:SetText(self:GetString(self:GetValueOrCallback(self.labelText)))
 		self.control:SetHeight(label:GetTextHeight() + 4)
 	end,
 	[LibHarvensAddonSettings.ST_COLOR] = function(self, lastControl)
 		self:SetAnchor(lastControl)
 		local label = self.control:GetNamedChild("Name")
-		label:SetText(self:GetValueOrCallback(self.labelText))
+		label:SetText(self:GetString(self:GetValueOrCallback(self.labelText)))
 		self.control:GetNamedChild("Color"):SetColor(self.getFunction())
 		return self.control
 	end,
 	[LibHarvensAddonSettings.ST_ICONPICKER] = function(self, lastControl)
 		self:SetAnchor(lastControl)
-		self.control:GetNamedChild("Name"):SetText(self:GetValueOrCallback(self.labelText))
+		self.control:GetNamedChild("Name"):SetText(self:GetString(self:GetValueOrCallback(self.labelText)))
 		local value = self.getFunction() or 1
 		local items = self:GetValueOrCallback(self.items)
 		self.control:SetValue(items[value])
@@ -227,7 +227,7 @@ local createControlFunctions = {
 		slider:SetHandler("OnValueChanged", function(control, value)
 				local formattedValue = tonumber(string.format(self.format, value))
 				if self.unit and #self.unit > 0 then
-					control.label:SetText(formattedValue .. self:GetValueOrCallback(self.unit))
+					control.label:SetText(formattedValue .. self:GetString(self:GetValueOrCallback(self.unit)))
 				else
 					control.label:SetText(formattedValue)
 				end
@@ -847,7 +847,7 @@ function LibHarvensAddonSettings:CreateControlPools()
 			title = {
 				text = function()
 					local data = dialog.setting
-					return data:GetValueOrCallback(data.labelText)
+					return self:GetString(data:GetValueOrCallback(data.labelText))
 				end
 			},
 			mainText = {
