@@ -86,7 +86,7 @@ lib.keybindStripDescriptorMore = {
 	alignment = KEYBIND_STRIP_ALIGN_RIGHT,
 	{
 		keybind = "UI_SHORTCUT_INPUT_RIGHT",
-		name = "More",
+		name = GetString(SI_LIB_CONSOLE_DIALOGS_MORE),
 		callback = callback,
 		visible = function()
 			return true
@@ -232,7 +232,7 @@ end
 ---- Init ----
 
 function lib:Initialize()
-	local dialog = self:Create("Select")
+	local dialog = self:Create(GetString(SI_LIB_CONSOLE_DIALOGS_TITLE))
 	lib.dialog = dialog
 	local keybindStripDescriptors = {}
 	for _, keybind in ipairs(lib.keybinds) do
