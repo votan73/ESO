@@ -991,9 +991,9 @@ function LibHarvensAddonSettings:CreateControlPools()
 			function control:GetDropDown()
 				return self.horizontalListObject
 			end
-			function control:SetValue(data)
+			function control:SetValue(index)
 				local combobox = self:GetDropDown()
-				combobox:SetSelectedIndex(combobox:FindIndexFromData({index = data}, combobox.equalityFunction), false, false)
+				combobox:SetSelectedIndex(combobox:FindIndexFromData({index = index}, combobox.equalityFunction), false, false)
 			end
 		end
 	)

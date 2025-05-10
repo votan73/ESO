@@ -188,8 +188,8 @@ local updateControlFunctions = {
 		self:SetAnchor(lastControl)
 		self.control:GetNamedChild("Name"):SetText(self:GetString(self:GetValueOrCallback(self.labelText)))
 		local value = self.getFunction() or 1
-		local items = self:GetValueOrCallback(self.items)
-		self.control:SetValue(items[value])
+		self.control.items = self:GetValueOrCallback(self.items)
+		self.control:SetValue(value)
 		local function OnIconPickerClicked()
 			HarvensAddonSettingsIconPickerDialog.setting = self
 			ZO_Dialogs_ShowDialog("LibHarvensAddonSettingsIconPicker")
@@ -344,6 +344,7 @@ local cleanControlFunctions = {
 	[LibHarvensAddonSettings.ST_ICONPICKER] = function(self)
 		self.control.iconControl:SetTexture(nil)
 		self.control.checkBox:SetHandler("OnClicked", nil)
+		self.control.items = nil
 		LibHarvensAddonSettings.iconpickerPool:ReleaseObject(self.controlKey)
 	end
 }
@@ -693,8 +694,8 @@ local function IconPickerPoolCreate(pool)
 	control.button = button
 	control.checkBox = button:GetNamedChild("IconContainerFrame")
 	control.iconControl = button:GetNamedChild("IconContainerIcon")
-	function control:SetValue(value)
-		self.iconControl:SetTexture(value)
+	function control:SetValue(index)
+		self.iconControl:SetTexture(control.items and control.items[index])
 	end
 	return control, id
 end
@@ -831,8 +832,8 @@ function LibHarvensAddonSettings:CreateControlPools()
 		local isCurrent = item.index == item.data.getFunction()
 
 		local function OnClick()
-			item.data:setFunction(control, item.index, item.icon)
-			item.data.control:SetValue(item.icon)
+			item.data.setFunction(control, item.index, item.icon)
+			item.data.control:SetValue(item.index)
 		end
 
 		iconContainer:GetNamedChild("Icon"):SetTexture(item.icon)
@@ -847,7 +848,7 @@ function LibHarvensAddonSettings:CreateControlPools()
 			title = {
 				text = function()
 					local data = dialog.setting
-					return self:GetString(data:GetValueOrCallback(data.labelText))
+					return data:GetString(data:GetValueOrCallback(data.labelText))
 				end
 			},
 			mainText = {
