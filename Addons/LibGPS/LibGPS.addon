@@ -1,0 +1,27 @@
+; SPDX-FileCopyrightText: 2025 sirinsidiator
+;
+; SPDX-License-Identifier: Artistic-2.0
+;
+; This Add-on is not created by, affiliated with or sponsored by ZeniMax Media Inc. or its affiliates. 
+; The Elder Scrolls® and related logos are registered trademarks or trademarks of ZeniMax Media Inc. in the United States and/or other countries. 
+; All rights reserved
+;
+; You can read the full terms at https://account.elderscrollsonline.com/add-on-terms
+
+## Title: LibGPS
+## Author: sirinsidiator & votan
+## Contributors: Shinni
+## Version: 3.3.3
+## AddOnVersion: 73
+## APIVersion: 101045 101046
+## IsLibrary: true
+## DependsOn: LibMapPing>=900 LibDebugLogger>=196 LibChatMessage>=100
+
+StartUp.lua
+Measurement.lua
+WorldSize.lua
+MapStack.lua
+MapAdapter.lua
+TamrielOMeter.lua
+api.lua
+compatibility.lua

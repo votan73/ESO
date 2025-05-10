@@ -1,6 +1,6 @@
--- LibGPS3 & its files © sirinsidiator                          --
--- Distributed under The Artistic License 2.0 (see LICENSE)     --
-------------------------------------------------------------------
+-- SPDX-FileCopyrightText: 2025 sirinsidiator
+--
+-- SPDX-License-Identifier: Artistic-2.0
 
 local lib = LibGPS3
 local internal = lib.internal
@@ -230,11 +230,11 @@ local function getCurrentWorldSize(self, notMeasuring)
         local range
         if measurement.scaleX < 0.002 then
             -- for small (sub-)zones
-            range = 2475 -- 3500 world units
+            range = 707 -- 1000 world units
             logger:Debug("3500 units")
         elseif measurement.scaleX < 0.02 then
             -- for mid-sized (sub-)zones
-            range = 707 -- 1000 world units
+            range = 2475 -- 3500 world units
             logger:Debug("1000 units")
         else
             -- for all other zones

@@ -1,6 +1,6 @@
--- LibGPS3 & its files © sirinsidiator                          --
--- Distributed under The Artistic License 2.0 (see LICENSE)     --
-------------------------------------------------------------------
+-- SPDX-FileCopyrightText: 2025 sirinsidiator
+--
+-- SPDX-License-Identifier: Artistic-2.0
 
 local LIB_IDENTIFIER = "LibGPS3"
 local VERSION = 5
