@@ -64,7 +64,7 @@ lib.keybinds = {
 
 lib.registeredScenes = {}
 
-function lib:GetRegister()
+function lib:GetRegistry()
 	local scene = sm:GetCurrentScene()
 	return self.registeredScenes[scene]
 end
@@ -77,51 +77,28 @@ local function getValue(name, buttonInfo)
 	return value
 end
 
-local function getName()
-	local register = lib:GetRegister()
-	if #register == 1 then
-		return getValue("name", register[1])
-	else
-		return "More"
-	end
-end
-
 local function callback()
-	local register = lib:GetRegister()
-	if #register == 1 then
-		register[1]:callback()
-	else
-		lib:ShowSelectionDialog(register)
-	end
-end
-local function visible()
-	local register = lib:GetRegister()
-	if register then
-		if #register == 1 then
-			return getValue("visible", register[1])
-		else
-			return true
-		end
-	else
-		return false
-	end
+	local registry = lib:GetRegistry()
+	lib:ShowSelectionDialog(registry)
 end
 
 lib.keybindStripDescriptorMore = {
 	alignment = KEYBIND_STRIP_ALIGN_RIGHT,
 	{
 		keybind = "UI_SHORTCUT_INPUT_RIGHT",
-		name = getName,
+		name = "More",
 		callback = callback,
-		visible = visible,
+		visible = function()
+			return true
+		end,
 		--sound = SOUNDS.GAMEPAD_MENU_FORWARD
 		order = -100000
 	}
 }
 
-function lib:ShowSelectionDialog(register)
+function lib:ShowSelectionDialog(registry)
 	local dialog = self.dialog
-	if dialog.register ~= register then
+	if dialog.registry ~= registry then
 		dialog:Clear()
 		for _, buttonInfo in ipairs(lib.additionalKeybinds) do
 			local button = {
@@ -133,7 +110,7 @@ function lib:ShowSelectionDialog(register)
 			}
 			dialog:AddSetting(button)
 		end
-		dialog.register = register
+		dialog.registry = registry
 	end
 	dialog:Show()
 end
@@ -162,25 +139,22 @@ function lib:AssignKeybinds()
 		usedKeybinds["UI_SHORTCUT_INPUT_RIGHT"] = true
 	end
 
-	local register = self:GetRegister()
+	local registry = self:GetRegistry()
 	table.sort(
-		register,
+		registry,
 		function(a, b)
 			return (a.order or 1000) < (b.order or 1000)
 		end
 	)
 	local usedKeybindsCount = NonContiguousCount(usedKeybinds)
-	df("usedKeybindsCount %i", usedKeybindsCount)
-	local maxButtons = math.min(#register, #lib.keybinds - usedKeybindsCount, 7 - visibleButtons)
-	df("maxButtons %i", maxButtons)
+	local maxButtons = math.min(#registry, #lib.keybinds - usedKeybindsCount, 7 - visibleButtons)
 	local index = 1
-	if maxButtons <= 1 and #register > 1 then
-	else
+	if maxButtons > 1 or #registry == 1 then
 		for i = 1, #lib.keybinds do
 			local keybind = lib.keybinds[i]
 			if not usedKeybinds[keybind] then
 				local descriptor = lib.keybindStripDescriptors[i]
-				local buttonInfo = register[index]
+				local buttonInfo = registry[index]
 				local button = descriptor[1]
 				descriptor.alignment = buttonInfo.alignment or KEYBIND_STRIP_ALIGN_RIGHT
 				button.name = function()
@@ -203,10 +177,10 @@ function lib:AssignKeybinds()
 			end
 		end
 	end
-	if #register > maxButtons then
+	if #registry >= index then
 		lib.additionalKeybinds = {}
-		for i = index, #register do
-			lib.additionalKeybinds[#lib.additionalKeybinds + 1] = register[i]
+		for i = index, #registry do
+			lib.additionalKeybinds[#lib.additionalKeybinds + 1] = registry[i]
 		end
 		for i = #lib.keybinds, 1, -1 do
 			local keybind = lib.keybinds[i]
@@ -216,7 +190,7 @@ function lib:AssignKeybinds()
 				return
 			end
 		end
-		d("No keybind available!")
+		error("No keybind available!")
 	end
 end
 
@@ -235,10 +209,10 @@ function lib:RegisterKeybind(sceneOrName, buttonInfo)
 	if type(sceneOrName) == "string" then
 		sceneOrName = sm:GetScene(sceneOrName)
 	end
-	local register = self.registeredScenes[sceneOrName]
-	if not register then
-		register = {}
-		self.registeredScenes[sceneOrName] = register
+	local registry = self.registeredScenes[sceneOrName]
+	if not registry then
+		registry = {}
+		self.registeredScenes[sceneOrName] = registry
 		sceneOrName:RegisterCallback(
 			"StateChange",
 			function(...)
@@ -246,7 +220,7 @@ function lib:RegisterKeybind(sceneOrName, buttonInfo)
 			end
 		)
 	end
-	register[#register + 1] = buttonInfo
+	registry[#registry + 1] = buttonInfo
 end
 
 function lib:Close()
