@@ -22,6 +22,7 @@ $dependency = ""
 
 $newLines = @()
 
+$dependency = @()
 foreach($line in $lines) {
     if ($line.StartsWith("## Title: ", "OrdinalIgnoreCase")) {
         $Title = $line.Substring(10).Trim()
@@ -33,22 +34,24 @@ foreach($line in $lines) {
         $compatible = $line.Substring(15).Trim().Split(" ")
     }
     if ($line.StartsWith("## DependsOn: ", "OrdinalIgnoreCase")) {
-        $dependency = $line.Substring(14).Trim().Split(" ")
-        for ($i = 0; $i -lt $dependency.Length; $i++) {
-            $d = $dependency[$i]
+        $dependency2 = $line.Substring(14).Trim().Split(" ")
+        for ($i = 0; $i -lt $dependency2.Length; $i++) {
+            $d = $dependency2[$i]
             if ($d.Contains('>=')) {
-                $dependency[$i] = $d.Substring(0, $d.IndexOf('>'))
+                $dependency2[$i] = $d.Substring(0, $d.IndexOf('>'))
             }
         }
+        $dependency += $dependency2
     }
     if ($line.StartsWith("## ConsoleDependsOn: ", "OrdinalIgnoreCase")) {
-        $dependency += $line.Substring(21).Trim().Split(" ")
-        for ($i = 0; $i -lt $dependency.Length; $i++) {
-            $d = $dependency[$i]
+        $dependency2 = $line.Substring(21).Trim().Split(" ")
+        for ($i = 0; $i -lt $dependency2.Length; $i++) {
+            $d = $dependency2[$i]
             if ($d.Contains('>=')) {
-                $dependency[$i] = $d.Substring(0, $d.IndexOf('>'))
+                $dependency2[$i] = $d.Substring(0, $d.IndexOf('>'))
             }
         }
+        $dependency += $dependency2
     }
 
     if ($line.StartsWith("PC\") -or $line.StartsWith("PC/") -or $line.StartsWith("Keyboard\") -or $line.StartsWith("Keyboard/")) { continue }
