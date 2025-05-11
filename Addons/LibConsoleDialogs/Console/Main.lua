@@ -104,6 +104,7 @@ function lib:ShowSelectionDialog(registry)
 			local button = {
 				type = LibHarvensAddonSettings.ST_BUTTON,
 				label = getValue("name", buttonInfo),
+				tooltip = getValue("tooltip", buttonInfo),
 				clickHandler = function()
 					buttonInfo:callback()
 				end
@@ -224,7 +225,7 @@ function lib:RegisterKeybind(sceneOrName, buttonInfo)
 end
 
 function lib:Close()
-	if LibHarvensAddonSettings.scene and LibHarvensAddonSettings.scene:IsShowing() then
+	if LibHarvensAddonSettings.scene and LibHarvensAddonSettings.scene:IsShowing() and self.dialog.selected then
 		sm:HideCurrentScene()
 	end
 end
