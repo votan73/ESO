@@ -3,6 +3,10 @@ local lib = {name = "LibConsoleDialogs"}
 local em = GetEventManager()
 local sm = SCENE_MANAGER
 
+local internal = {}
+
+lib.internal = internal
+
 -----------------------------
 local dialogSettings = LibHarvensAddonSettings.AddonSettings:Subclass()
 
@@ -30,19 +34,45 @@ function dialogSettings:Show()
 	return self:Select()
 end
 
-function lib:Create(name)
+--------- Public API -----------
+
+function lib:Create(title)
 	local options = {
 		allowDefaults = false,
 		allowRefresh = true
 	}
-	local dialog = dialogSettings:New(name, options)
-	dialog.headerData = {titleText = name}
+	local dialog = dialogSettings:New(title, options)
+	dialog.headerData = {titleText = title}
 	return dialog
 end
 
--------------------------------
+function lib:RegisterKeybind(sceneOrName, buttonInfo)
+	if type(sceneOrName) == "string" then
+		sceneOrName = sm:GetScene(sceneOrName)
+	end
+	local registry = internal.registeredScenes[sceneOrName]
+	if not registry then
+		registry = {}
+		internal.registeredScenes[sceneOrName] = registry
+		sceneOrName:RegisterCallback(
+			"StateChange",
+			function(...)
+				internal:OnStateChange(...)
+			end
+		)
+	end
+	registry[#registry + 1] = buttonInfo
+end
 
-lib.keybinds = {
+function lib:Close()
+	if LibHarvensAddonSettings.scene and LibHarvensAddonSettings.scene:IsShowing() and internal.dialog.selected then
+		sm:HideCurrentScene()
+	end
+end
+
+----------- Internal -------------
+
+internal.keybinds = {
 	"UI_SHORTCUT_PRIMARY",
 	"UI_SHORTCUT_SECONDARY",
 	"UI_SHORTCUT_TERTIARY",
@@ -62,9 +92,9 @@ lib.keybinds = {
 	"UI_SHORTCUT_INPUT_RIGHT"
 }
 
-lib.registeredScenes = {}
+internal.registeredScenes = {}
 
-function lib:GetRegistry()
+function internal:GetRegistry()
 	local scene = sm:GetCurrentScene()
 	return self.registeredScenes[scene]
 end
@@ -78,11 +108,11 @@ local function getValue(name, buttonInfo)
 end
 
 local function callback()
-	local registry = lib:GetRegistry()
-	lib:ShowSelectionDialog(registry)
+	local registry = internal:GetRegistry()
+	internal:ShowSelectionDialog(registry)
 end
 
-lib.keybindStripDescriptorMore = {
+internal.keybindStripDescriptorMore = {
 	alignment = KEYBIND_STRIP_ALIGN_RIGHT,
 	{
 		keybind = "UI_SHORTCUT_INPUT_RIGHT",
@@ -96,11 +126,11 @@ lib.keybindStripDescriptorMore = {
 	}
 }
 
-function lib:ShowSelectionDialog(registry)
+function internal:ShowSelectionDialog(registry)
 	local dialog = self.dialog
 	if dialog.registry ~= registry then
 		dialog:Clear()
-		for _, buttonInfo in ipairs(lib.additionalKeybinds) do
+		for _, buttonInfo in ipairs(self.additionalKeybinds) do
 			local button = {
 				type = LibHarvensAddonSettings.ST_BUTTON,
 				label = getValue("name", buttonInfo),
@@ -116,7 +146,7 @@ function lib:ShowSelectionDialog(registry)
 	dialog:Show()
 end
 
-function lib:AssignKeybinds()
+function internal:AssignKeybinds()
 	local usedKeybinds = {}
 	local visibleButtons = 0
 	for _, descriptor in pairs(KEYBIND_STRIP.keybindGroups) do
@@ -148,13 +178,13 @@ function lib:AssignKeybinds()
 		end
 	)
 	local usedKeybindsCount = NonContiguousCount(usedKeybinds)
-	local maxButtons = math.min(#registry, #lib.keybinds - usedKeybindsCount, 7 - visibleButtons)
+	local maxButtons = math.min(#registry, #self.keybinds - usedKeybindsCount, 7 - visibleButtons)
 	local index = 1
 	if maxButtons > 1 or #registry == 1 then
-		for i = 1, #lib.keybinds do
-			local keybind = lib.keybinds[i]
+		for i = 1, #self.keybinds do
+			local keybind = self.keybinds[i]
 			if not usedKeybinds[keybind] then
-				local descriptor = lib.keybindStripDescriptors[i]
+				local descriptor = self.keybindStripDescriptors[i]
 				local buttonInfo = registry[index]
 				local button = descriptor[1]
 				descriptor.alignment = buttonInfo.alignment or KEYBIND_STRIP_ALIGN_RIGHT
@@ -179,12 +209,12 @@ function lib:AssignKeybinds()
 		end
 	end
 	if #registry >= index then
-		lib.additionalKeybinds = {}
+		self.additionalKeybinds = {}
 		for i = index, #registry do
-			lib.additionalKeybinds[#lib.additionalKeybinds + 1] = registry[i]
+			self.additionalKeybinds[#self.additionalKeybinds + 1] = registry[i]
 		end
-		for i = #lib.keybinds, 1, -1 do
-			local keybind = lib.keybinds[i]
+		for i = #self.keybinds, 1, -1 do
+			local keybind = self.keybinds[i]
 			if not usedKeybinds[keybind] then
 				self.keybindStripDescriptorMore[1].keybind = keybind
 				KEYBIND_STRIP:AddKeybindButtonGroup(self.keybindStripDescriptorMore)
@@ -195,48 +225,25 @@ function lib:AssignKeybinds()
 	end
 end
 
-function lib:OnStateChange(oldState, newState)
+function internal:OnStateChange(oldState, newState)
 	if newState == SCENE_SHOWN then -- Add late
 		self:AssignKeybinds()
 	elseif newState == SCENE_HIDING then -- Remove early
-		for _, descriptor in ipairs(lib.keybindStripDescriptors) do
+		for _, descriptor in ipairs(self.keybindStripDescriptors) do
 			KEYBIND_STRIP:RemoveKeybindButtonGroup(descriptor)
 		end
 		KEYBIND_STRIP:RemoveKeybindButtonGroup(self.keybindStripDescriptorMore)
 	end
 end
 
-function lib:RegisterKeybind(sceneOrName, buttonInfo)
-	if type(sceneOrName) == "string" then
-		sceneOrName = sm:GetScene(sceneOrName)
-	end
-	local registry = self.registeredScenes[sceneOrName]
-	if not registry then
-		registry = {}
-		self.registeredScenes[sceneOrName] = registry
-		sceneOrName:RegisterCallback(
-			"StateChange",
-			function(...)
-				lib:OnStateChange(...)
-			end
-		)
-	end
-	registry[#registry + 1] = buttonInfo
-end
-
-function lib:Close()
-	if LibHarvensAddonSettings.scene and LibHarvensAddonSettings.scene:IsShowing() and self.dialog.selected then
-		sm:HideCurrentScene()
-	end
-end
-
 ---- Init ----
 
-function lib:Initialize()
-	local dialog = self:Create(GetString(SI_LIB_CONSOLE_DIALOGS_TITLE))
-	lib.dialog = dialog
+function internal:Initialize()
+	-- Use own logic to create a keybind overflow dialog
+	local dialog = lib:Create(GetString(SI_LIB_CONSOLE_DIALOGS_TITLE))
+	self.dialog = dialog
 	local keybindStripDescriptors = {}
-	for _, keybind in ipairs(lib.keybinds) do
+	for _, keybind in ipairs(self.keybinds) do
 		keybindStripDescriptors[#keybindStripDescriptors + 1] = {
 			alignment = KEYBIND_STRIP_ALIGN_RIGHT,
 			{
@@ -245,7 +252,7 @@ function lib:Initialize()
 			}
 		}
 	end
-	lib.keybindStripDescriptors = keybindStripDescriptors
+	self.keybindStripDescriptors = keybindStripDescriptors
 end
 
 local function OnAddonLoaded(event, name)
@@ -253,9 +260,9 @@ local function OnAddonLoaded(event, name)
 		return
 	end
 	em:UnregisterForEvent(lib.name, EVENT_ADD_ON_LOADED)
-	lib:Initialize()
+	internal:Initialize()
 end
 
 em:RegisterForEvent(lib.name, EVENT_ADD_ON_LOADED, OnAddonLoaded)
 
-LibConsoleDialog = lib
+LibConsoleDialogs = lib
