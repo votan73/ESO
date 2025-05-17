@@ -1,9 +1,10 @@
 ## Title: WaypointIt
-## APIVersion: 101039 101040
-## DependsOn: LibAddonMenu-2.0>=34 LibWorldMapInfoTab LibMapPing>=1200 LibGPS>=69
+## APIVersion: 101045 101046
+## DependsOn: LibAddonMenu-2.0>=38 LibMapPing>=1200 LibGPS>=69
+## PCDependsOn: LibWorldMapInfoTab
 ## OptionalDependsOn: LibDebugLogger Destinations MapPins QuestMap SimpleSkyshards
 ## SavedVariables: WaypointItSavedVars
-## Version: 1.14.9
+## Version: 1.14.10
 ## Author: Circonian & votan
 ## Description: Circonians WaypointIt
 
@@ -12,8 +13,9 @@ lang/$(language).lua
 
 core/WaypointIt.lua
 core/WaypointIt_FilterData.lua
-xml/Bindings.xml
+xml/PC/Bindings.xml
 xml/WaypointIt_MapIt.xml
+xml/PC/WaypointIt_MapIt.xml
 settings/WaypointIt_Settings.lua
 
 

@@ -6,7 +6,7 @@ WaypointIt = {}
 
 local WaypointIt = WaypointIt
 local ADDON_NAME = "WaypointIt"
-local CODE_VERSION = "1.14.9"
+local CODE_VERSION = "1.14.10"
 -- Holds the requested taskID
 local CURRENT_TASK
 local ROW_TYPE_ID = 1
@@ -528,8 +528,12 @@ function WaypointIt:ForceAssist(journalQuestIndex)
 		suspendAssistState = true
 		if QUEST_JOURNAL_MANAGER:GetFocusedQuestIndex() ~= journalQuestIndex then
 			GetQuestTracker():ForceAssist(journalQuestIndex)
-			QUEST_JOURNAL_KEYBOARD:FocusQuestWithIndex(journalQuestIndex)
-			QUEST_JOURNAL_GAMEPAD:FocusQuestWithIndex(journalQuestIndex)
+			if QUEST_JOURNAL_KEYBOARD then
+				QUEST_JOURNAL_KEYBOARD:FocusQuestWithIndex(journalQuestIndex)
+			end
+			if QUEST_JOURNAL_GAMEPAD then
+				QUEST_JOURNAL_GAMEPAD:FocusQuestWithIndex(journalQuestIndex)
+			end
 		end
 		suspendAssistState = false
 	end
@@ -1070,17 +1074,19 @@ function WaypointIt:Initialize()
 	-----------------------------------------------------
 	-- Initialize handler for default to waypoint window option
 	-----------------------------------------------------
-	WORLD_MAP_INFO_FRAGMENT:RegisterCallback(
-		"StateChange",
-		function(oldState, newState)
-			if newState == SCENE_FRAGMENT_SHOWING then
-				self:SetupMenuBar()
-				if self.sv["DEFAULTTO_WAYPOINT_WIN"] and WORLD_MAP_MANAGER:GetMode() == MAP_MODE_LARGE_CUSTOM then
-					WORLD_MAP_INFO:SelectTab(SI_BINDING_NAME_WAYPOINTIT)
+	if WORLD_MAP_INFO_FRAGMENT then
+		WORLD_MAP_INFO_FRAGMENT:RegisterCallback(
+			"StateChange",
+			function(oldState, newState)
+				if newState == SCENE_FRAGMENT_SHOWING then
+					self:SetupMenuBar()
+					if self.sv["DEFAULTTO_WAYPOINT_WIN"] and WORLD_MAP_MANAGER:GetMode() == MAP_MODE_LARGE_CUSTOM then
+						WORLD_MAP_INFO:SelectTab(SI_BINDING_NAME_WAYPOINTIT)
+					end
 				end
 			end
-		end
-	)
+		)
+	end
 
 	-----------------------------------------------------
 	-- Intercept Pin Manager
@@ -1111,6 +1117,9 @@ function WaypointIt:Initialize()
 
 	-- Initialize Updates for waypoint & arrow, reinstates waypoint updates
 	-- between reloadUI's
+	if not IsConsoleUI() then
+		self:CreateWaypointsList()
+	end
 	-- create WaypointIt Window
 	self:CreateWaypointsWindow()
 	-- Setup MenuBars & fragments
@@ -3202,6 +3211,10 @@ function WaypointIt:HookCreatePins()
 		return OrigRemovePins(pinManager, lookupType, majorIndex, keyIndex, ...)
 	end
 
+	if IsConsoleUI() then
+		return
+	end
+
 	self.delayProcessing = true
 	self.isListDirty = true
 	WORLD_MAP_INFO_FRAGMENT:RegisterCallback(
@@ -3245,8 +3258,8 @@ function WaypointIt:UpdateButtons(menuBar, tabFilters)
 	ZO_MenuBar_SelectDescriptor(menuBar, descriptor, true, false)
 end
 
--- Creates the actual waypoint window
-function WaypointIt:CreateWaypointsWindow()
+-- Creates the waypoint list
+function WaypointIt:CreateWaypointsList()
 	local BUTTON_HEIGHT = 50
 	local scrollList = self.scrollList
 	-- Dummy category, gets overridden when the menuBar is shown
@@ -3298,7 +3311,10 @@ function WaypointIt:CreateWaypointsWindow()
 	end
 
 	ZO_ScrollList_AddDataType(self.scrollList, ROW_TYPE_ID, "WayPointButton", BUTTON_HEIGHT, setupDataRow)
+end
 
+-- Creates the actual waypoint window
+function WaypointIt:CreateWaypointsWindow()
 	-- This one does not need to be added to the WORLD_MAP_INFO UI scene.
 	-- It gets automatically shown/hidden when you press buttons on the menu bar
 	self.FRAGMENT_WINDOW = ZO_FadeSceneFragment:New(self.waypointWin, false, 0)
