@@ -129,12 +129,16 @@ internal.keybindStripDescriptorMore = {
 function internal:ShowSelectionDialog(registry)
 	local dialog = self.dialog
 	if dialog.registry ~= registry then
+		dialog.selected = false
 		dialog:Clear()
 		for _, buttonInfo in ipairs(self.additionalKeybinds) do
 			local button = {
 				type = LibHarvensAddonSettings.ST_BUTTON,
 				label = getValue("name", buttonInfo),
 				tooltip = getValue("tooltip", buttonInfo),
+				disable = function()
+					return getValue("enabled", buttonInfo) == false
+				end,
 				clickHandler = function()
 					buttonInfo:callback()
 				end
@@ -211,7 +215,13 @@ function internal:AssignKeybinds()
 	if #registry >= index then
 		self.additionalKeybinds = {}
 		for i = index, #registry do
-			self.additionalKeybinds[#self.additionalKeybinds + 1] = registry[i]
+			local buttonInfo = registry[i]
+			if getValue("visible", buttonInfo) then
+				self.additionalKeybinds[#self.additionalKeybinds + 1] = buttonInfo
+			end
+		end
+		if #self.additionalKeybinds == 0 then
+			return
 		end
 		for i = #self.keybinds, 1, -1 do
 			local keybind = self.keybinds[i]
