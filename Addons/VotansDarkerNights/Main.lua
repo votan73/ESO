@@ -157,7 +157,7 @@ local function ToggleNight()
 end
 
 function addon:InitSettings()
-	local LibHarvensAddonSettings = LibHarvensAddonSettings or LibStub("LibHarvensAddonSettings-1.0")
+	local LibHarvensAddonSettings = LibHarvensAddonSettings
 
 	local settings = LibHarvensAddonSettings:AddAddon("Votan's Darker Nights")
 	if not settings then
@@ -165,7 +165,7 @@ function addon:InitSettings()
 	end
 	addon.settingsControls = settings
 	settings.allowDefaults = true
-	settings.version = "1.1.0"
+	settings.version = "1.1.1"
 	settings.website = "http://www.esoui.com/downloads/info1558-VotansDarkerNights.html"
 
 	settings:AddSetting {
