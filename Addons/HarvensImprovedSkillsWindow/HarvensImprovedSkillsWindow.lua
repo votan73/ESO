@@ -283,12 +283,16 @@ function HarvensImprovedSkillsWindow:Initialize()
 
 	local RefreshSkillInfoOrg = SKILLS_WINDOW.RefreshSkillLineInfo
 	SKILLS_WINDOW.RefreshSkillLineInfo = function(self, ...)
+		local skillLineData = self:GetSelectedSkillLineData()
+		if not skillLineData or skillLineData.isSubclassingNode or not skillLineData.GetSkillTypeData then
+			return RefreshSkillInfoOrg(self, ...)
+		end
+
 		local ctrl = self.skillInfo.xpBar:GetControl()
 		if not ctrl.label then
 			createLabel(ctrl)
 		end
 
-		local skillLineData = self:GetSelectedSkillLineData()
 		local skillType = skillLineData:GetSkillTypeData():GetSkillType()
 		local skillIndex = skillLineData:GetSkillLineIndex()
 		local lastXP, nextXP, currentXP = skillLineData:GetRankXPValues()
