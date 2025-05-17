@@ -17,7 +17,7 @@ if ($Compiler -ne $null) {
 $luac = $luac.FullName
 
 $languages = "en", "fr", "de", "es", "pl", "pt", "ru", "it", "br", "zh", "jp"
-$APIVersion = "101034", "101035"
+$APIVersion = "101045", "101046"
 
 $UTF8BOM = [System.Text.Encoding]::UTF8.GetPreamble()
 $win1252 = [System.Text.Encoding]::GetEncoding(1252)
@@ -205,6 +205,7 @@ function validateManifest {
 }
 
 $manifests = $addonsFolder.GetFiles("*.txt", "AllDirectories")
+$manifests += $addonsFolder.GetFiles("*.addon", "AllDirectories")
 
 validateManifest -manifests @($manifests | Where-Object {
     $folder = $_.Directory.FullName

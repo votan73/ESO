@@ -13,7 +13,7 @@ if (![System.IO.File]::Exists($manifest)) {
 if (![System.IO.File]::Exists($manifest)) { return }
 
 $targetPath = [System.IO.Path]::Combine($PSScriptRoot,$targetName)
-Remove-Item -Path $targetPath -Recurse
+Remove-Item -Path $targetPath -Recurse | Out-Null
 
 $lines = Get-Content -Path $manifest
 $ver = ""
