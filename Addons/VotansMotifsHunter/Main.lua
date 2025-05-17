@@ -10,13 +10,30 @@ do
 	local lines = {}
 	local text = {}
 	local ZO_ERROR_COLOR = ZO_ERROR_COLOR
-	local MAGIC_COLOR = ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, ITEM_QUALITY_MAGIC))
+	local MAGIC_COLOR = ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, ITEM_FUNCTIONAL_QUALITY_MAGIC))
 	local ZO_DEFAULT_DISABLED_COLOR = ZO_DEFAULT_DISABLED_COLOR
 
 	function addon:GetMotifInfoText(itemLink)
+		local itemType, specialized = GetItemLinkItemType(itemLink)
+		if itemType ~= ITEMTYPE_RACIAL_STYLE_MOTIF then
+			return
+		end
+
+		local motifs = self.settings.motifs
 		local itemId = GetItemID(itemLink)
-		local knownBy = self.settings.motifs[itemId]
+		local knownBy = motifs[itemId]
+		if not knownBy then
+			knownBy = {}
+			motifs[itemId] = knownBy
+		end
+		if IsItemLinkBookKnown(itemLink) then
+			knownBy[charId] = 1
+		end
+
 		local scannedChars = self.settings.scannedChars
+		if IsConsoleUI() then
+			scannedChars[charId] = 1
+		end
 		if knownBy then
 			ZO_ClearNumericallyIndexedTable(lines)
 			ZO_ClearNumericallyIndexedTable(text)
@@ -100,18 +117,19 @@ local function ReturnItemLink(itemLink)
 end
 
 local function HookBagTips()
-	TooltipHook(ItemTooltip, "SetBagItem", GetItemLink)
-	TooltipHook(ItemTooltip, "SetTradeItem", GetTradeItemLink)
-	TooltipHook(ItemTooltip, "SetBuybackItem", GetBuybackItemLink)
-	TooltipHook(ItemTooltip, "SetStoreItem", GetStoreItemLink)
-	TooltipHook(ItemTooltip, "SetAttachedMailItem", GetAttachedItemLink)
-	TooltipHook(ItemTooltip, "SetLootItem", GetLootItemLink)
-	TooltipHook(ItemTooltip, "SetTradingHouseItem", GetTradingHouseSearchResultItemLink)
-	TooltipHook(ItemTooltip, "SetTradingHouseListing", GetTradingHouseListingItemLink)
-	TooltipHook(ItemTooltip, "SetLink", ReturnItemLink)
+	if not IsConsoleUI() then
+		TooltipHook(ItemTooltip, "SetBagItem", GetItemLink)
+		TooltipHook(ItemTooltip, "SetTradeItem", GetTradeItemLink)
+		TooltipHook(ItemTooltip, "SetBuybackItem", GetBuybackItemLink)
+		TooltipHook(ItemTooltip, "SetStoreItem", GetStoreItemLink)
+		TooltipHook(ItemTooltip, "SetAttachedMailItem", GetAttachedItemLink)
+		TooltipHook(ItemTooltip, "SetLootItem", GetLootItemLink)
+		TooltipHook(ItemTooltip, "SetTradingHouseItem", GetTradingHouseSearchResultItemLink)
+		TooltipHook(ItemTooltip, "SetTradingHouseListing", GetTradingHouseListingItemLink)
+		TooltipHook(ItemTooltip, "SetLink", ReturnItemLink)
 
-	TooltipHook(PopupTooltip, "SetLink", ReturnItemLink)
-
+		TooltipHook(PopupTooltip, "SetLink", ReturnItemLink)
+	end
 	TooltipHook_Gamepad(GAMEPAD_TOOLTIPS:GetTooltip(GAMEPAD_LEFT_TOOLTIP), "LayoutItem", ReturnItemLink)
 	TooltipHook_Gamepad(GAMEPAD_TOOLTIPS:GetTooltip(GAMEPAD_RIGHT_TOOLTIP), "LayoutItem", ReturnItemLink)
 	TooltipHook_Gamepad(GAMEPAD_TOOLTIPS:GetTooltip(GAMEPAD_MOVABLE_TOOLTIP), "LayoutItem", ReturnItemLink)
@@ -126,69 +144,77 @@ local function ScanMotifs()
 	local debugstart = GetGameTimeMilliseconds()
 	local format, createLink = zo_strformat, string.format
 
-	local identifier = "VOTANS_MOTIFSHUNTER_SCAN"
 	local itemId = 16424
 	local maxItemId = itemId
-	local GetFrameTimeMilliseconds, GetGameTimeMilliseconds = GetFrameTimeMilliseconds, GetGameTimeMilliseconds
+	local task = LibAsync:Create(addon.name)
 
 	local function Scan()
 		local start = GetFrameTimeMilliseconds()
-		local spendTime = 12
-		while (GetGameTimeMilliseconds() - start) <= spendTime do
-			if itemId <= maxItemId then
-				local itemLink = createLink("|H1:item:%i:4:1:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h", itemId)
-				local itemType, specialized = GetItemLinkItemType(itemLink)
-				if itemType == ITEMTYPE_RACIAL_STYLE_MOTIF then
-					local list = motifs[itemId]
-					if not list then
-						list = {}
-						motifs[itemId] = list
+		task:While(
+			function()
+				return itemId <= maxItemId
+			end
+		):Do(
+			function()
+				if itemId <= maxItemId then
+					local itemLink = createLink("|H1:item:%i:4:1:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h", itemId)
+					local itemType, specialized = GetItemLinkItemType(itemLink)
+					if itemType == ITEMTYPE_RACIAL_STYLE_MOTIF then
+						local list = motifs[itemId]
+						if not list then
+							list = {}
+							motifs[itemId] = list
+						end
+						if IsItemLinkBookKnown(itemLink) then
+							list[charId] = 1
+						end
 					end
-					if IsItemLinkBookKnown(itemLink) then
-						list[charId] = 1
+					if itemType ~= ITEMTYPE_NONE then
+						maxItemId = itemId + 10000
 					end
+					itemId = itemId + 1
 				end
-				if itemType ~= ITEMTYPE_NONE then
-					maxItemId = itemId + 10000
-				end
-				itemId = itemId + 1
-			else
-				em:UnregisterForUpdate(identifier)
-				em:RegisterForEvent(addon.name, EVENT_STYLE_LEARNED, ScanMotifs)
-				CENTER_SCREEN_ANNOUNCE:AddMessage(0, CSA_CATECORY_SMALL_TEXT, SOUNDS.QUEST_OBJECTIVE_INCREMENT, string.format("Votan's Motifs Hunter initial scan done: %i full style and chapter motif books", NonContiguousCount(motifs)))
+			end
+		):Then(
+			function()
+				local messageParams = CENTER_SCREEN_ANNOUNCE:CreateMessageParams(CSA_CATEGORY_MAJOR_TEXT, SOUNDS.NONE)
+				messageParams:SetText(string.format("Votan's Motifs Hunter initial scan done:\n%i full style and chapter motif books", NonContiguousCount(motifs)))
+				messageParams:SetLifespanMS(5000)
+				CENTER_SCREEN_ANNOUNCE:AddMessageWithParams(messageParams)
 				addon.debugTime = GetGameTimeMilliseconds() - debugstart
 				addon.settings.scannedChars[charId] = 1
 				VotansMotifsHunter_Data.lastScanVersion = GetAPIVersion()
 				addon.maxItemId = maxItemId - 10000
-				return
 			end
-		end
+		)
 	end
 	local function Update()
-		local start = GetFrameTimeMilliseconds()
-		local spendTime = 12
-		while (GetGameTimeMilliseconds() - start) < spendTime do
-			if motifs[itemId] then
-				local itemLink = createLink("|H1:item:%i:4:1:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h", itemId)
-				if IsItemLinkBookKnown(itemLink) then
-					motifs[itemId][charId] = 1
-				end
-				itemId = next(addon.settings.motifs, itemId)
-			else
-				addon.settings.scannedChars[charId] = true
-				em:UnregisterForUpdate(identifier)
-				em:RegisterForEvent(addon.name, EVENT_STYLE_LEARNED, ScanMotifs)
-				return
+		task:While(
+			function()
+				return itemId ~= nil
 			end
-		end
+		):Do(
+			function()
+				if motifs[itemId] then
+					local itemLink = createLink("|H1:item:%i:4:1:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h", itemId)
+					if IsItemLinkBookKnown(itemLink) then
+						motifs[itemId][charId] = 1
+					end
+					itemId = next(addon.settings.motifs, itemId)
+				end
+			end
+		):Then(
+			function()
+				addon.settings.scannedChars[charId] = true
+			end
+		)
 	end
-	em:UnregisterForUpdate(identifier)
 	em:UnregisterForEvent(addon.name, EVENT_STYLE_LEARNED)
 	if VotansMotifsHunter_Data.lastScanVersion ~= GetAPIVersion() then
-		em:RegisterForUpdate(identifier, 50, Scan)
+		task:Cancel():Call(Scan)
 	else
 		itemId = next(addon.settings.motifs)
-		em:RegisterForUpdate(identifier, 50, Update)
+		task:Cancel():Call(Update)
 	end
 end
 
@@ -218,7 +244,9 @@ do
 		addon.charToName = charToName
 
 		HookBagTips()
-		ScanMotifs()
+		if not IsConsoleUI() then
+			ScanMotifs()
+		end
 	end
 
 	em:RegisterForEvent(addon.name, EVENT_ADD_ON_LOADED, OnAddOnLoaded)
