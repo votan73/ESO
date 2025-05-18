@@ -13,6 +13,7 @@ lang/$(language).lua
 
 core/WaypointIt.lua
 core/WaypointIt_FilterData.lua
+core/PC/WorldMap.lua
 xml/PC/Bindings.xml
 xml/WaypointIt_MapIt.xml
 xml/PC/WaypointIt_MapIt.xml

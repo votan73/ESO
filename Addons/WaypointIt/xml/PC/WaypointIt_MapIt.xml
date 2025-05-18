@@ -1,0 +1,103 @@
+<!-- Level then Layer then Tier (lowest to highest prescendence -->
+<GuiXml>
+	<!-- This is for the reticle -->
+	<Controls>
+		<!-- This is the rowControl for the zo_scrollList -->
+		<Control name="WayPointButton" virtual="true" clampedToScreen="false" mouseEnabled="true" movable="false" hidden="false" layer="2" level="0" tier="0" allowBringToTop="true" alpha="1" >
+			<Dimensions x="300" y="50" />
+			<OnMouseEnter>
+				WAYPOINTIT:MouseRowEnter(self)
+			</OnMouseEnter>
+			<OnMouseExit>
+				WAYPOINTIT:MouseRowExit(self)
+			</OnMouseExit>
+			<OnMouseDown>
+				WAYPOINTIT:SetWaypointByRowControl(self)
+			</OnMouseDown>
+
+			<Controls>
+				<Texture name="$(parent)Highlight" textureFile="EsoUI/Art/Miscellaneous/listItem_highlight.dds" alpha="0"  layer="2" level="2" tier="2">
+					<AnchorFill />
+					<TextureCoords left="0" right="1" top="0" bottom=".625" />
+				</Texture>
+
+				<Backdrop name="$(parent)TextureBG" inherits="ZO_DefaultBackdrop" alpha="1" layer="0" level="0" tier="0" >
+					<Dimensions x="50" y="50" />
+					<Anchor point="TOPLEFT" relativeTo="$(parent)" relativePoint="TOPLEFT" offsetX="0" offsetY="0"/>
+				</Backdrop>
+
+				<Texture name="$(parent)Texture" resizeToFitFile="false" inhertis="CT_TEXTURE" hidden="false" alpha="1" layer="2" level="0" tier="0" >
+					<Dimensions x="50" y="50" />
+					<Anchor point="CENTER" relativeTo="$(parent)TextureBG" relativePoint="CENTER" offsetX="0" offsetY="0"/>
+				</Texture>
+
+				<Label name="$(parent)NameLabel" font="ZoFontWinH5" color="ffffff" wrapMode="ELLIPSIS" text="" verticalAlignment="CENTER" horizontalAlignment="LEFT" alpha="1" layer="2" level="0" tier="0" >
+					<Dimensions x="300" y="50" />
+					<Anchor point="TOPLEFT" relativeTo="$(parent)TextureBG" relativePoint="TOPRIGHT" offsetX="0" offsetY="0"/>
+					<Anchor point="BOTTOMRIGHT" relativeTo="$(parent)" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="0"/>
+				</Label>
+
+				<Label name="$(parent)LevelLabel" font="ZoFontWinH5" color="FFA500" wrapMode="ELLIPSIS" text="" verticalAlignment="CENTER" horizontalAlignment="LEFT" alpha="1" layer="2" level="1" tier="0" >
+					<Dimensions x="30" y="25" />
+					<Anchor point="TOPLEFT" relativeTo="$(parent)TextureBG" relativePoint="TOPLEFT" offsetX="5" offsetY="5"/>
+				</Label>
+			</Controls>
+		</Control>
+
+		<!-- This is the window containing the zo_scrollList -->
+		<TopLevelControl name="WaypointItWin" clampedToScreen="true" mouseEnabled="true" movable="false" hidden="true" inherits="ZO_WorldMapInfoContent">
+			<Controls>
+				<Control name="$(parent)MainMenuBar" inherits="ZO_MenuBarTemplate">
+					<Anchor point="TOPLEFT" relativeTo="$(parent)" relativePoint="TOPLEFT" offsetX="0" offsetY="0"/>
+					<OnInitialized>
+						ZO_MenuBar_OnInitialized(self)
+						local barData = { buttonPadding = 0, normalSize = 40, downSize = 64, animationDuration = DEFAULT_SCENE_TRANSITION_TIME, buttonTemplate = "WaypointItButtonTemplateWithToolTips" }
+						ZO_MenuBar_SetData(self, barData)
+					</OnInitialized>
+				</Control>
+				<Control name="$(parent)SubMenuBar" inherits="ZO_MenuBarTemplate">
+					<Anchor point="TOPLEFT" relativeTo="$(parent)MainMenuBar" relativePoint="BOTTOMLEFT" offsetY="10"/>
+					<OnInitialized>
+						ZO_MenuBar_OnInitialized(self)
+						local barData = { buttonPadding = 0, normalSize = 50, downSize = 64, animationDuration = DEFAULT_SCENE_TRANSITION_TIME, buttonTemplate = "WaypointItButtonTemplateWithToolTips" }
+						ZO_MenuBar_SetData(self, barData)
+					</OnInitialized>
+				</Control>
+				<Control name="$(parent)ScrollList" inherits="ZO_ScrollList" >
+					<Anchor point="TOPLEFT" relativeTo="$(parent)SubMenuBar" relativePoint="BOTTOMLEFT" offsetY="10"/>
+					<Anchor point="BOTTOMRIGHT" relativeTo="$(parent)" offsetY="0"/>
+				</Control>
+			</Controls>
+		</TopLevelControl>
+
+		<Button name="WaypointItButtonTemplateWithToolTips" inherits="ZO_MenuBarButtonTemplate1" virtual="true" >
+			<Dimensions x="32" y="32" />
+			<DimensionConstraints minX="32" minY="32" maxX="32" maxY="32" />
+			<OnMouseEnter>
+				WaypointIt_OnMouseEnter(self)
+				ZO_MenuBarButtonTemplateWithTooltip_OnMouseEnter(self)
+			</OnMouseEnter>
+
+			<OnMouseExit>
+				WaypointIt_OnMouseExit(self)
+				ZO_MenuBarButtonTemplateWithTooltip_OnMouseExit(self)
+			</OnMouseExit>
+
+			<OnMouseUp>
+				ZO_MenuBarButtonTemplate_OnMouseUp(self, button, upInside)
+			</OnMouseUp>
+
+			<Controls>
+				<Texture name="$(parent)HighlightTexture" level="1" hidden="true" textureFile="esoui/art/actionbar/actionbar_mouseover.dds" excludeFromResizeToFitExtents="true" >
+					<Anchor point="TOPLEFT" relativeTo="$(parent)" relativePoint="TOPLEFT" offsetX="-6" offsetY="-6" />
+					<Anchor point="BOTTOMRIGHT" relativeTo="$(parent)" relativePoint="BOTTOMRIGHT" offsetX="6" offsetY="6" />
+				</Texture>
+
+				<Texture name="$(parent)PressedTexture" level="2" hidden="true" textureFile="esoui/art/actionbar/actionslot_toggledon.dds" excludeFromResizeToFitExtents="true" >
+					<Anchor point="TOPLEFT" relativeTo="$(parent)" relativePoint="TOPLEFT" offsetX="-2" offsetY="-2" />
+					<Anchor point="BOTTOMRIGHT" relativeTo="$(parent)" relativePoint="BOTTOMRIGHT" offsetX="2" offsetY="2" />
+				</Texture>
+			</Controls>
+		</Button>
+	</Controls>
+</GuiXml>
