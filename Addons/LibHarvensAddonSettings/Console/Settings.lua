@@ -612,7 +612,7 @@ local function OptionsWindowFragmentStateChangeRefresh(oldState, newState)
 	elseif newState == SCENE_FRAGMENT_SHOWING then
 		if needUpdate and currentSettings ~= nil then
 			LibHarvensAddonSettings:RefreshAddonSettings()
-		elseif #LibHarvensAddonSettings.addons == 1 then
+		elseif currentSettings == nil and #LibHarvensAddonSettings.addons == 1 then
 			LibHarvensAddonSettings:SelectFirstAddon()
 		end
 		if currentSettings then
