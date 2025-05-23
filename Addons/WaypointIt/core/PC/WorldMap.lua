@@ -20,20 +20,20 @@ local IMPERIAL_CITY_TOOLTIP = ZO_ImperialCityTooltip
 
 -- Creates the actual waypoint window
 function WaypointIt:CreateWaypointsWindow()
-    -----------------------------------------------------
-    -- Initialize handler for default to waypoint window option
-    -----------------------------------------------------
-    WORLD_MAP_INFO_FRAGMENT:RegisterCallback(
-        "StateChange",
-        function(oldState, newState)
-            if newState == SCENE_FRAGMENT_SHOWING then
-                self:SetupMenuBar()
-                if self.sv["DEFAULTTO_WAYPOINT_WIN"] and WORLD_MAP_MANAGER:GetMode() == MAP_MODE_LARGE_CUSTOM then
-                    WORLD_MAP_INFO:SelectTab(SI_BINDING_NAME_WAYPOINTIT)
-                end
-            end
-        end
-    )
+	-----------------------------------------------------
+	-- Initialize handler for default to waypoint window option
+	-----------------------------------------------------
+	WORLD_MAP_INFO_FRAGMENT:RegisterCallback(
+		"StateChange",
+		function(oldState, newState)
+			if newState == SCENE_FRAGMENT_SHOWING then
+				self:SetupMenuBar()
+				if self.sv["DEFAULTTO_WAYPOINT_WIN"] and WORLD_MAP_MANAGER:GetMode() == MAP_MODE_LARGE_CUSTOM then
+					WORLD_MAP_INFO:SelectTab(SI_BINDING_NAME_WAYPOINTIT)
+				end
+			end
+		end
+	)
 
 	-----------------------------------------------------
 	-- Create String Bindings
@@ -44,90 +44,90 @@ function WaypointIt:CreateWaypointsWindow()
 	ZO_CreateStringId("SI_BINDING_NAME_WAYPOINTIT_TOGGLE_SETTING_NEXT_QUEST", self.color.darkOrange .. "Toggle next quest setting|r " .. self.color.magenta .. "- Set a hotkey to toggle the setting 'Automark Next Quest Waypoint'.")
 	-----------------------------------------------------
 
-    -- This one does not need to be added to the WORLD_MAP_INFO UI scene.
-    -- It gets automatically shown/hidden when you press buttons on the menu bar
-    self.FRAGMENT_WINDOW = ZO_FadeSceneFragment:New(self.waypointWin, false, 0)
+	-- This one does not need to be added to the WORLD_MAP_INFO UI scene.
+	-- It gets automatically shown/hidden when you press buttons on the menu bar
+	self.FRAGMENT_WINDOW = ZO_FadeSceneFragment:New(self.waypointWin, false, 0)
 
-    local function hasEntries()
-        local scrollList = self.scrollList
-        local dataList = ZO_ScrollList_GetDataList(scrollList)
-        return #dataList > 0
-    end
-    self.keybindButtonGroupMap = {
-        alignment = KEYBIND_STRIP_ALIGN_RIGHT,
-        {
-            name = GetString(SI_BINDING_NAME_WAYPOINTIT_TOGGLE_SORT),
-            keybind = "WAYPOINTIT_TOGGLE_SORT",
-            enabled = hasEntries,
-            order = 100,
-            callback = function()
-                self:ToggleCurrentSort()
-                PlaySound(SOUNDS.DEFAULT_CLICK)
-            end
-        },
-        {
-            name = GetString(SI_BINDING_NAME_WAYPOINTIT_ADD_FOLLOW),
-            keybind = "WAYPOINTIT_ADD_FOLLOW",
-            enabled = hasEntries,
-            order = 100,
-            visible = function()
-                return ZO_MenuBar_GetSelectedDescriptor(self.c_MainMenuBar) == 5
-            end,
-            callback = function()
-                self:FollowCurrentCustomPins()
-                PlaySound(SOUNDS.DEFAULT_CLICK)
-            end
-        }
-    }
+	local function hasEntries()
+		local scrollList = self.scrollList
+		local dataList = ZO_ScrollList_GetDataList(scrollList)
+		return #dataList > 0
+	end
+	self.keybindButtonGroupMap = {
+		alignment = KEYBIND_STRIP_ALIGN_RIGHT,
+		{
+			name = GetString(SI_BINDING_NAME_WAYPOINTIT_TOGGLE_SORT),
+			keybind = "WAYPOINTIT_TOGGLE_SORT",
+			enabled = hasEntries,
+			order = 100,
+			callback = function()
+				self:ToggleCurrentSort()
+				PlaySound(SOUNDS.DEFAULT_CLICK)
+			end
+		},
+		{
+			name = GetString(SI_BINDING_NAME_WAYPOINTIT_ADD_FOLLOW),
+			keybind = "WAYPOINTIT_ADD_FOLLOW",
+			enabled = hasEntries,
+			order = 100,
+			visible = function()
+				return ZO_MenuBar_GetSelectedDescriptor(self.c_MainMenuBar) == 5
+			end,
+			callback = function()
+				self:FollowCurrentCustomPins()
+				PlaySound(SOUNDS.DEFAULT_CLICK)
+			end
+		}
+	}
 
-    do
-        local lastMainMainBarBtnDescriptor, lastSubBarBtnDescriptor
-        local function backupDescriptor()
-            if not lastMainMainBarBtnDescriptor then
-                lastMainMainBarBtnDescriptor, lastSubBarBtnDescriptor = ZO_MenuBar_GetSelectedDescriptor(self.c_MainMenuBar), ZO_MenuBar_GetSelectedDescriptor(self.c_SubMenuBar)
-            end
-        end
-        local function windowStateChange(oldState, newState)
-            if newState == SCENE_FRAGMENT_SHOWN then
-                PushActionLayerByName(GetString(SI_KEYBINDINGS_CATEGORY_WAYPOINTIT))
-                KEYBIND_STRIP:AddKeybindButtonGroup(self.keybindButtonGroupMap)
-            elseif newState == SCENE_HIDING then
-                KEYBIND_STRIP:RemoveKeybindButtonGroup(self.keybindButtonGroupMap)
-                RemoveActionLayerByName(GetString(SI_KEYBINDINGS_CATEGORY_WAYPOINTIT))
-            end
-            -- After its shown update the current POI's & Locations
-            -- MapPins take a few ms to update once the map is shown
-            if newState == SCENE_FRAGMENT_SHOWN then
-                local mapMode = WORLD_MAP_MANAGER:GetMode()
-                if mapMode == MAP_MODE_FAST_TRAVEL then
-                    backupDescriptor()
-                    self:SelectMainBarBtnDescriptor(1)
-                    self:SelectSubBarBtnDescriptor(1)
-                    self:DelayedUpdateAll()
-                elseif mapMode == MAP_MODE_KEEP_TRAVEL then
-                    backupDescriptor()
-                    self:SelectMainBarBtnDescriptor(1)
-                    self:SelectSubBarBtnDescriptor(2)
-                    self:DelayedUpdateAll()
-                elseif lastMainMainBarBtnDescriptor then
-                    -- Selected button was changed, update filter info
-                    self:SelectMainBarBtnDescriptor(lastMainMainBarBtnDescriptor)
-                    if not self.c_SubMenuBar:IsHidden() then
-                        self:SelectSubBarBtnDescriptor(lastSubBarBtnDescriptor)
-                    end
-                    lastMainMainBarBtnDescriptor, lastSubBarBtnDescriptor = nil, nil
-                    self:DelayedUpdateAll()
-                end
-            end
-        end
+	do
+		local lastMainMainBarBtnDescriptor, lastSubBarBtnDescriptor
+		local function backupDescriptor()
+			if not lastMainMainBarBtnDescriptor then
+				lastMainMainBarBtnDescriptor, lastSubBarBtnDescriptor = ZO_MenuBar_GetSelectedDescriptor(self.c_MainMenuBar), ZO_MenuBar_GetSelectedDescriptor(self.c_SubMenuBar)
+			end
+		end
+		local function windowStateChange(oldState, newState)
+			if newState == SCENE_FRAGMENT_SHOWN then
+				PushActionLayerByName(GetString(SI_KEYBINDINGS_CATEGORY_WAYPOINTIT))
+				KEYBIND_STRIP:AddKeybindButtonGroup(self.keybindButtonGroupMap)
+			elseif newState == SCENE_HIDING then
+				KEYBIND_STRIP:RemoveKeybindButtonGroup(self.keybindButtonGroupMap)
+				RemoveActionLayerByName(GetString(SI_KEYBINDINGS_CATEGORY_WAYPOINTIT))
+			end
+			-- After its shown update the current POI's & Locations
+			-- MapPins take a few ms to update once the map is shown
+			if newState == SCENE_FRAGMENT_SHOWN then
+				local mapMode = WORLD_MAP_MANAGER:GetMode()
+				if mapMode == MAP_MODE_FAST_TRAVEL then
+					backupDescriptor()
+					self:SelectMainBarBtnDescriptor(1)
+					self:SelectSubBarBtnDescriptor(1)
+					self:DelayedUpdateAll()
+				elseif mapMode == MAP_MODE_KEEP_TRAVEL then
+					backupDescriptor()
+					self:SelectMainBarBtnDescriptor(1)
+					self:SelectSubBarBtnDescriptor(2)
+					self:DelayedUpdateAll()
+				elseif lastMainMainBarBtnDescriptor then
+					-- Selected button was changed, update filter info
+					self:SelectMainBarBtnDescriptor(lastMainMainBarBtnDescriptor)
+					if not self.c_SubMenuBar:IsHidden() then
+						self:SelectSubBarBtnDescriptor(lastSubBarBtnDescriptor)
+					end
+					lastMainMainBarBtnDescriptor, lastSubBarBtnDescriptor = nil, nil
+					self:DelayedUpdateAll()
+				end
+			end
+		end
 
-        self.FRAGMENT_WINDOW:RegisterCallback("StateChange", windowStateChange)
-    end
+		self.FRAGMENT_WINDOW:RegisterCallback("StateChange", windowStateChange)
+	end
 
 	self.delayProcessing = true
 	self.isListDirty = true
 
-    WORLD_MAP_INFO_FRAGMENT:RegisterCallback(
+	WORLD_MAP_INFO_FRAGMENT:RegisterCallback(
 		"StateChange",
 		function(oldState, newState)
 			self.delayProcessing = newState ~= SCENE_FRAGMENT_SHOWN
@@ -148,6 +148,10 @@ end
 
 -- Creates the waypoint list
 function WaypointIt:CreateWaypointsList()
+	self.waypointWin = WaypointItWin
+	self.waypointWinBg = WaypointItWinBg
+	self.scrollList = WaypointItWinScrollList
+
 	local BUTTON_HEIGHT = 50
 	local scrollList = self.scrollList
 	-- Dummy category, gets overridden when the menuBar is shown
@@ -202,9 +206,9 @@ function WaypointIt:CreateWaypointsList()
 end
 
 function WaypointIt:RefreshIfVisible()
-    if self.FRAGMENT_WINDOW:IsShowing() then
-        ZO_ScrollList_RefreshVisible(self.scrollList)
-    end
+	if self.FRAGMENT_WINDOW:IsShowing() then
+		ZO_ScrollList_RefreshVisible(self.scrollList)
+	end
 end
 
 function WaypointIt:ShowCategoryId(iCategoryId, subFilterId)
@@ -241,10 +245,10 @@ function WaypointIt:SortListByDistance()
 	table.sort(
 		dataList,
 		function(bvalue1, bvalue2)
-			if bvalue1.data.distance < bvalue2.data.distance then
-				return true
-			elseif bvalue1.data.distance == bvalue2.data.distance then
+			if bvalue1.data.distance == bvalue2.data.distance then
 				return bvalue1.data.name < bvalue2.data.name
+			elseif bvalue1.data.distance < bvalue2.data.distance then
+				return true
 			end
 			return false
 		end
@@ -663,39 +667,6 @@ local function GetTooltip(mode)
 	end
 end
 
-function WaypointIt:IsLocCurrentWaypoint(data)
-	local currentWaypoint = self.sv.currentWaypoint
-	if not (currentWaypoint and data) then
-		return false
-	end
-
-	if currentWaypoint.name ~= data.name then
-		return false
-	end
-	if currentWaypoint.lookupType ~= data.lookupType then
-		return false
-	end
-	if currentWaypoint.majorIndex ~= data.majorIndex then
-		return false
-	end
-
-	local dKeyIndex = data.keyIndex
-	local wpKeyIndex = currentWaypoint.keyIndex
-	local isDataKeyIndexTable = type(dKeyIndex) == "table"
-	local isCurrentWaypointKeyIndexTable = type(wpKeyIndex) == "table"
-	if isDataKeyIndexTable and isCurrentWaypointKeyIndexTable then
-		if wpKeyIndex[1] ~= dKeyIndex[1] or wpKeyIndex[2] ~= dKeyIndex[2] or wpKeyIndex[3] ~= dKeyIndex[3] then
-			return false
-		end
-	elseif isDataKeyIndexTable ~= isCurrentWaypointKeyIndexTable then
-		return false
-	elseif currentWaypoint.keyIndex ~= data.keyIndex then
-		return false
-	end
-
-	return true
-end
-
 -- Highlight row function for scrollList
 function WaypointIt:HideRowHighlight(rowControl, hidden)
 	local highlight = rowControl:GetNamedChild("Highlight")
@@ -810,97 +781,7 @@ end
 -- Called when the user clicks a rowControl in the scrollList
 function WaypointIt:SetWaypointByRowControl(rowControl)
 	local data = ZO_ScrollList_GetData(rowControl)
-	local m_Pin = data.m_Pin
-
-	-- Make sure you update the location first
-	m_Pin:UpdateLocation()
-
-	--[[ Groups are handled differently. They do not set waypoints, they run a different RegisterUpdate and only update the directional arrow (inside the reticle) on updates. It is completely separate from everything else. Other waypoints & directional arrow (outside the reticle, for waypoints) is separate.
-	--]]
-	if m_Pin:IsGroup() then
-		local unitTag = m_Pin:GetUnitTag()
-		local unitName = GetUnitName(unitTag)
-		local followingUnit = self.followingUnit
-
-		-- if already following this group member, shut it off
-		if followingUnit and followingUnit.unitTag == unitTag and followingUnit.name == unitName then
-			-- remove the unit tag, were no longer following them.
-			self.followingUnit = nil
-			self:RunGroupWaypointUpdates(false)
-		else
-			-- set the unitTag so we know who were following
-			self.followingUnit = {["unitTag"] = unitTag, ["name"] = unitName}
-			self:RunGroupWaypointUpdates(true, m_Pin)
-
-			local scrollList = self.scrollList
-			ZO_ScrollList_RefreshVisible(scrollList)
-		end
-		-- don't set a waypoint
-		return
-	end
-
-	--[[
-	if m_Pin:IsAvARespawn() then
-		-- I can't find any way to get the KeepId from the AvARespawnId/pin
-	end
-	--]]
-	if m_Pin:IsForwardCamp() then
-		-- if their dead then respawn there
-		-- teleport them & return, else proceed & set a waypoint
-		if IsUnitDead("player") then
-			RespawnAtForwardCamp(m_Pin:GetForwardCampIndex())
-			return
-		end
-	end
-	-- Why didn't I use m_Pin:IsFastTravelKeep() ?? Speed ??
-	if data.fastTravelKeepPin then
-		-- they can never set a waypoint to this pinType
-		-- Only seen when dead, so don't need to check if player is dead
-		local keepId = m_Pin:GetKeepId()
-		TravelToKeep(keepId)
-		return
-	end
-	if data.lookupType == "fastTravelWayshrine" then
-		if WORLD_MAP_MANAGER:GetMode() == MAP_MODE_FAST_TRAVEL then
-			ZO_Dialogs_ReleaseDialog("FAST_TRAVEL_CONFIRM")
-			ZO_Dialogs_ReleaseDialog("RECALL_CONFIRM")
-			local name = select(2, GetFastTravelNodeInfo(data.nodeIndex))
-			ZO_Dialogs_ShowPlatformDialog("FAST_TRAVEL_CONFIRM", {nodeIndex = data.nodeIndex}, {mainTextParams = {data.name}})
-			return
-		end
-	end
-
-	-- if already have a waypoint here, shut it off
-	if self:IsLocCurrentWaypoint(data) then
-		ZO_WorldMap_RemovePlayerWaypoint() -- Baertram, 2022-03-03, Fix WorldMap removal of waypoint so that the keybind will allow to add a new one (instead of remove a non existing)
-		--RemovePlayerWaypoint()
-		-- do nothing else
-		return
-	end
-
-	if m_Pin:IsQuest() then
-		local questIndex = m_Pin:GetQuestIndex()
-		self:ForceAssist(questIndex)
-		self:PrintNextStepText(questIndex)
-	end
-
-	local normX, normY = m_Pin:GetNormalizedPosition()
-	self:CancelCurrentTask()
-	CURRENT_TASK = nil
-	if self:IsWaypointOutsideOfRemovalDistance(normX, normY) then
-		-- If a waypoint is set, save so we can compare it later to keep the scrollList row selection highlight turned on.
-		-- Changed: See nextWaypoint definition for reason.
-		-- self.sv.currentWaypoint = {name = data.name, lookupType = data.lookupType, majorIndex = data.majorIndex, keyIndex = data.keyIndex, setBy = "rowClick"}
-		nextWaypoint = {name = data.name, lookupType = data.lookupType, majorIndex = data.majorIndex, keyIndex = data.keyIndex, setBy = "rowClick"}
-
-		self:SetWaypoint(gps:LocalToGlobal(normX, normY))
-	elseif self.sv["WAYPOINT_DISTANCE_WARNING"] then
-		dw(string.format("%s%s", self.color.magenta, "Waypoint is within the waypoint removal distance. The waypoint will not be set."))
-		db("Waypoint is within the waypoint removal distance. The waypoint will not be set.")
-		if lastWaypointBy == "autoQuest" then
-			ZO_WorldMap_RemovePlayerWaypoint() -- Baertram, 2022-03-03, Fix WorldMap removal of waypoint so that the keybind will allow to add a new one (instead of remove a non existing)
-		end
-	end
+	return self:SetWaypointByData(data)
 end
 
 local function SetupButton(button, id, pool)

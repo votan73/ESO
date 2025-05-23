@@ -2,6 +2,7 @@
 ## APIVersion: 101045 101046
 ## DependsOn: LibAddonMenu-2.0>=38 LibMapPing>=1200 LibGPS>=69
 ## PCDependsOn: LibWorldMapInfoTab
+## ConsoleDependsOn: LibConsoleDialogs
 ## OptionalDependsOn: LibDebugLogger Destinations MapPins QuestMap SimpleSkyshards
 ## SavedVariables: WaypointItSavedVars
 ## Version: 1.14.10
@@ -14,10 +15,8 @@ lang/$(language).lua
 core/WaypointIt.lua
 core/WaypointIt_FilterData.lua
 core/PC/WorldMap.lua
+core/Console/WorldMap.lua
 xml/PC/Bindings.xml
 xml/WaypointIt_MapIt.xml
 xml/PC/WaypointIt_MapIt.xml
 settings/WaypointIt_Settings.lua
-
-
-

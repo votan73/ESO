@@ -137,6 +137,134 @@ end
 local function GetCurrentZoneId()
 	return GetCurrentMapId()
 end
+
+function WaypointIt:SetWaypointByData(data)
+	local m_Pin = data.m_Pin
+
+	-- Make sure you update the location first
+	m_Pin:UpdateLocation()
+
+	--[[ Groups are handled differently. They do not set waypoints, they run a different RegisterUpdate and only update the directional arrow (inside the reticle) on updates. It is completely separate from everything else. Other waypoints & directional arrow (outside the reticle, for waypoints) is separate.
+	--]]
+	if m_Pin:IsGroup() then
+		local unitTag = m_Pin:GetUnitTag()
+		local unitName = GetUnitName(unitTag)
+		local followingUnit = self.followingUnit
+
+		-- if already following this group member, shut it off
+		if followingUnit and followingUnit.unitTag == unitTag and followingUnit.name == unitName then
+			-- remove the unit tag, were no longer following them.
+			self.followingUnit = nil
+			self:RunGroupWaypointUpdates(false)
+		else
+			-- set the unitTag so we know who were following
+			self.followingUnit = {["unitTag"] = unitTag, ["name"] = unitName}
+			self:RunGroupWaypointUpdates(true, m_Pin)
+
+			local scrollList = self.scrollList
+			ZO_ScrollList_RefreshVisible(scrollList)
+		end
+		-- don't set a waypoint
+		return
+	end
+
+	--[[
+	if m_Pin:IsAvARespawn() then
+		-- I can't find any way to get the KeepId from the AvARespawnId/pin
+	end
+	--]]
+	if m_Pin:IsForwardCamp() then
+		-- if their dead then respawn there
+		-- teleport them & return, else proceed & set a waypoint
+		if IsUnitDead("player") then
+			RespawnAtForwardCamp(m_Pin:GetForwardCampIndex())
+			return
+		end
+	end
+	-- Why didn't I use m_Pin:IsFastTravelKeep() ?? Speed ??
+	if data.fastTravelKeepPin then
+		-- they can never set a waypoint to this pinType
+		-- Only seen when dead, so don't need to check if player is dead
+		local keepId = m_Pin:GetKeepId()
+		TravelToKeep(keepId)
+		return
+	end
+	if data.lookupType == "fastTravelWayshrine" then
+		if WORLD_MAP_MANAGER:GetMode() == MAP_MODE_FAST_TRAVEL then
+			ZO_Dialogs_ReleaseDialog("FAST_TRAVEL_CONFIRM")
+			ZO_Dialogs_ReleaseDialog("RECALL_CONFIRM")
+			local name = select(2, GetFastTravelNodeInfo(data.nodeIndex))
+			ZO_Dialogs_ShowPlatformDialog("FAST_TRAVEL_CONFIRM", {nodeIndex = data.nodeIndex}, {mainTextParams = {data.name}})
+			return
+		end
+	end
+
+	-- if already have a waypoint here, shut it off
+	if self:IsLocCurrentWaypoint(data) then
+		ZO_WorldMap_RemovePlayerWaypoint() -- Baertram, 2022-03-03, Fix WorldMap removal of waypoint so that the keybind will allow to add a new one (instead of remove a non existing)
+		--RemovePlayerWaypoint()
+		-- do nothing else
+		return
+	end
+
+	if m_Pin:IsQuest() then
+		local questIndex = m_Pin:GetQuestIndex()
+		self:ForceAssist(questIndex)
+		self:PrintNextStepText(questIndex)
+	end
+
+	local normX, normY = m_Pin:GetNormalizedPosition()
+	self:CancelCurrentTask()
+	CURRENT_TASK = nil
+	if self:IsWaypointOutsideOfRemovalDistance(normX, normY) then
+		-- If a waypoint is set, save so we can compare it later to keep the scrollList row selection highlight turned on.
+		-- Changed: See nextWaypoint definition for reason.
+		-- self.sv.currentWaypoint = {name = data.name, lookupType = data.lookupType, majorIndex = data.majorIndex, keyIndex = data.keyIndex, setBy = "rowClick"}
+		nextWaypoint = {name = data.name, lookupType = data.lookupType, majorIndex = data.majorIndex, keyIndex = data.keyIndex, setBy = "rowClick"}
+
+		self:SetWaypoint(gps:LocalToGlobal(normX, normY))
+	elseif self.sv["WAYPOINT_DISTANCE_WARNING"] then
+		dw(string.format("%s%s", self.color.magenta, "Waypoint is within the waypoint removal distance. The waypoint will not be set."))
+		db("Waypoint is within the waypoint removal distance. The waypoint will not be set.")
+		if lastWaypointBy == "autoQuest" then
+			ZO_WorldMap_RemovePlayerWaypoint() -- Baertram, 2022-03-03, Fix WorldMap removal of waypoint so that the keybind will allow to add a new one (instead of remove a non existing)
+		end
+	end
+end
+
+function WaypointIt:IsLocCurrentWaypoint(data)
+	local currentWaypoint = self.sv.currentWaypoint
+	if not (currentWaypoint and data) then
+		return false
+	end
+
+	if currentWaypoint.name ~= data.name then
+		return false
+	end
+	if currentWaypoint.lookupType ~= data.lookupType then
+		return false
+	end
+	if currentWaypoint.majorIndex ~= data.majorIndex then
+		return false
+	end
+
+	local dKeyIndex = data.keyIndex
+	local wpKeyIndex = currentWaypoint.keyIndex
+	local isDataKeyIndexTable = type(dKeyIndex) == "table"
+	local isCurrentWaypointKeyIndexTable = type(wpKeyIndex) == "table"
+	if isDataKeyIndexTable and isCurrentWaypointKeyIndexTable then
+		if wpKeyIndex[1] ~= dKeyIndex[1] or wpKeyIndex[2] ~= dKeyIndex[2] or wpKeyIndex[3] ~= dKeyIndex[3] then
+			return false
+		end
+	elseif isDataKeyIndexTable ~= isCurrentWaypointKeyIndexTable then
+		return false
+	elseif currentWaypoint.keyIndex ~= data.keyIndex then
+		return false
+	end
+
+	return true
+end
+
 -------------------------------------------------
 -----------   Event Callbacks   -----------------
 -------------------------------------------------
@@ -1077,18 +1205,14 @@ function WaypointIt:Initialize()
 	self.reticleTexture = WaypointItReticleTexture
 	self.reticleGroupWin = WaypointItGroupReticle
 	self.reticleGroupTexture = WaypointItGroupReticleTexture
-	self.waypointWin = WaypointItWin
-	self.waypointWinBg = WaypointItWinBg
-	self.scrollList = WaypointItWinScrollList
 	-----------------------------------------------------
 
 	-- Initialize Updates for waypoint & arrow, reinstates waypoint updates
 	-- between reloadUI's
-	if not IsConsoleUI() then
-		self:CreateWaypointsList()
-		-- create WaypointIt Window
-		self:CreateWaypointsWindow()
-	end
+	self:CreateWaypointsList()
+	-- create WaypointIt Window
+	self:CreateWaypointsWindow()
+
 	self:CreateDirectionArrow()
 	self:HookCreatePins()
 
