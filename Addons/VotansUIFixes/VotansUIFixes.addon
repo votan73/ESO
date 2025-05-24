@@ -15,4 +15,4 @@ lang/$(language).lua
 PC\Main.lua
 Main.lua
 
-Bindings.xml
+PC\Bindings.xml
