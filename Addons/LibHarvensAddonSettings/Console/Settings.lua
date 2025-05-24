@@ -418,6 +418,21 @@ function LibHarvensAddonSettings.AddonSettings:UpdateControls()
 	needUpdate = false
 end
 
+function LibHarvensAddonSettings.AddonSettings:RefreshSelection()
+	local list = LibHarvensAddonSettings.list
+	if #self.settings > 0 then
+		list:SetSelectedIndexWithoutAnimation(
+			list:FindFirstIndexByEval(
+				function(data)
+					return data == self.lastSelectedRow
+				end
+			) or list:CalculateFirstSelectableIndex(),
+			true,
+			false
+		)
+	end
+end
+
 ----- end -----
 
 function LibHarvensAddonSettings:RefreshAddonSettings()
@@ -616,18 +631,7 @@ local function OptionsWindowFragmentStateChangeRefresh(oldState, newState)
 			LibHarvensAddonSettings:SelectFirstAddon()
 		end
 		if currentSettings then
-			local list = LibHarvensAddonSettings.list
-			if #currentSettings.settings > 0 then
-				list:SetSelectedIndexWithoutAnimation(
-					list:FindFirstIndexByEval(
-						function(data)
-							return data == currentSettings.lastSelectedRow
-						end
-					) or list:CalculateFirstSelectableIndex(),
-					true,
-					false
-				)
-			end
+			currentSettings:RefreshSelection()
 		end
 	end
 end
