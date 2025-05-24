@@ -27,7 +27,11 @@ function dialogSettings:Select()
 
 	ZO_GamepadGenericHeader_RefreshData(LibHarvensAddonSettings.scrollList.header, self.headerData)
 
-	sm:Push(LibHarvensAddonSettings.scene:GetName())
+	if LibHarvensAddonSettings.scene:IsShowing() then
+		self:RefreshSelection()
+	else
+		sm:Push(LibHarvensAddonSettings.scene:GetName())
+	end
 end
 
 function dialogSettings:Show()
