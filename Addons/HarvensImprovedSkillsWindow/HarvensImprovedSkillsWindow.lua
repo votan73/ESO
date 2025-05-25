@@ -1,3 +1,7 @@
+if IsConsoleUI() then
+	return
+end
+
 local HarvensImprovedSkillsWindow = {}
 
 -- Utility Functions
@@ -32,8 +36,9 @@ local function FindLineMaxRank(skillType, skillIndex)
 	return 0
 end
 
+local SET_TO_FULL_SIZE = true
 local function AddInfo(tooltip, progressionData, skillRank)
-	if not tooltip or not progressionData then
+	if not tooltip or not progressionData or not progressionData.GetCurrentRank then
 		return
 	end
 	local rank = progressionData:GetCurrentRank()
