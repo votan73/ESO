@@ -107,7 +107,7 @@ end
 
 if IsConsoleUI() then
 	function RFT.IsShowingWorldMap()
-		return GAMEPAD_WORLD_MAP_SCENE:IsShowing() or (LibHarvensAddonSettings.scene and LibHarvensAddonSettings.scene:IsShowing() and RFT.moveForWorldMap ~= nil)
+		return GAMEPAD_WORLD_MAP_SCENE:IsShowing() or (LibHarvensAddonSettings.scene and LibHarvensAddonSettings.scene:IsShowing() and RFT.moveForWorldMap == true)
 	end
 else
 	function RFT.IsShowingWorldMap()
@@ -375,6 +375,9 @@ function RFT.MakeWindow()
 	RARE_FISH_TRACKER_FRAGMENT = ZO_HUDFadeSceneFragment:New(rft, 500, 0)
 	RARE_FISH_TRACKER_FRAGMENT:SetConditional(
 		function()
+			if RFT.wasMapAdded and LibHarvensAddonSettings.scene and LibHarvensAddonSettings.scene:IsShowing() then
+				return true
+			end
 			if RFT.IsShowingWorldMap() then
 				if RFT.numFishes == nil or RFT.isAutoRefresh and RFT.numFishes == 0 then
 					return false

@@ -19,7 +19,6 @@ function RFT.MakeMenu()
 	settings.version = "1.42.6"
 	settings.website = "http://www.esoui.com/downloads/info665-RareFishTracker.html"
 
-	local wasMapAdded
 	local locationSettings
 	local function updateLocationSettings()
 		local last = nil
@@ -40,21 +39,20 @@ function RFT.MakeMenu()
 	end
 
 	local function addMap()
-		if wasMapAdded then
+		if RFT.wasMapAdded then
 			return
 		end
 		scene = SCENE_MANAGER:GetCurrentScene()
 		scene:AddFragment(RARE_FISH_TRACKER_FRAGMENT)
-		wasMapAdded = true
-		RFT.moveForWorldMap = false
+		RFT.wasMapAdded = true
 		RARE_FISH_TRACKER_FRAGMENT:Refresh()
 		scene:RegisterCallback("StateChange", sceneStateChanged)
 	end
 	local function addonSelected(_, addonSettings)
 		local addMap = addonSettings == settings
-		if not addMap and wasMapAdded then
+		if not addMap and RFT.wasMapAdded then
 			scene:RemoveFragment(RARE_FISH_TRACKER_FRAGMENT)
-			wasMapAdded = false
+			RFT.wasMapAdded = false
 			if settings.selected then
 				updateLocationSettings()
 			end
@@ -95,7 +93,7 @@ function RFT.MakeMenu()
 				label = GetString(SI_RARE_FISH_TRACKER_SHOW_IN_SETTINGS),
 				default = false,
 				getFunction = function()
-					return wasMapAdded
+					return RFT.wasMapAdded
 				end,
 				setFunction = function(value)
 					if value then
