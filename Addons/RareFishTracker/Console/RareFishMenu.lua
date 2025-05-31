@@ -46,6 +46,7 @@ function RFT.MakeMenu()
 		scene = SCENE_MANAGER:GetCurrentScene()
 		scene:AddFragment(RARE_FISH_TRACKER_FRAGMENT)
 		wasMapAdded = true
+		RFT.moveForWorldMap = false
 		RARE_FISH_TRACKER_FRAGMENT:Refresh()
 		scene:RegisterCallback("StateChange", sceneStateChanged)
 	end

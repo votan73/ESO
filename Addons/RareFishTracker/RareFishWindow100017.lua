@@ -107,7 +107,7 @@ end
 
 if IsConsoleUI() then
 	function RFT.IsShowingWorldMap()
-		return GAMEPAD_WORLD_MAP_SCENE:IsShowing() or (LibHarvensAddonSettings.scene and LibHarvensAddonSettings.scene:IsShowing() and RFT.moveForWorldMap)
+		return GAMEPAD_WORLD_MAP_SCENE:IsShowing() or (LibHarvensAddonSettings.scene and LibHarvensAddonSettings.scene:IsShowing() and RFT.moveForWorldMap ~= nil)
 	end
 else
 	function RFT.IsShowingWorldMap()
