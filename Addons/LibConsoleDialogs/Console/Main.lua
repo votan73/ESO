@@ -12,13 +12,7 @@ local dialogSettings = LibHarvensAddonSettings.AddonSettings:Subclass()
 
 local orgSelect = dialogSettings.Select
 function dialogSettings:Select()
-	if not LibHarvensAddonSettings.initialized then
-		LibHarvensAddonSettings:Initialize()
-	end
-	if #LibHarvensAddonSettings.addons == 0 and LibHarvensAddonSettings.scene == nil then
-		LibHarvensAddonSettings:CreateAddonSettingsPanel()
-		LibHarvensAddonSettings:CreateControlPools()
-	end
+	LibHarvensAddonSettings:Initialize()
 	if self.container == nil then
 		self.container = LibHarvensAddonSettings.container
 		self:InitHandlers()
@@ -188,7 +182,7 @@ function internal:AssignKeybinds()
 	local usedKeybindsCount = NonContiguousCount(usedKeybinds)
 	local maxButtons = math.min(#registry, #self.keybinds - usedKeybindsCount, 7 - visibleButtons)
 	local index = 1
-	if maxButtons > 1 or #registry == 1 then
+	if maxButtons > 1 or #registry == maxButtons then
 		for i = 1, #self.keybinds do
 			local keybind = self.keybinds[i]
 			if not usedKeybinds[keybind] then
@@ -227,7 +221,12 @@ function internal:AssignKeybinds()
 		if #self.additionalKeybinds == 0 then
 			return
 		end
-		for i = #self.keybinds, 1, -1 do
+		if not usedKeybinds["UI_SHORTCUT_INPUT_RIGHT"] then
+			self.keybindStripDescriptorMore[1].keybind = "UI_SHORTCUT_INPUT_RIGHT"
+			KEYBIND_STRIP:AddKeybindButtonGroup(self.keybindStripDescriptorMore)
+			return
+		end
+		for i = 1, #self.keybinds do
 			local keybind = self.keybinds[i]
 			if not usedKeybinds[keybind] then
 				self.keybindStripDescriptorMore[1].keybind = keybind
