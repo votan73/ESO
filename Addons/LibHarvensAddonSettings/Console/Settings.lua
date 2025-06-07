@@ -682,8 +682,8 @@ function LibHarvensAddonSettings:CreateAddonSettingsPanel()
 	end
 
 	local subItems = {}
-	for i = 1, #LibHarvensAddonSettings.addons do
-		local addon = LibHarvensAddonSettings.addons[i]
+	for i = 1, #self.addons do
+		local addon = self.addons[i]
 		addon.control = self.container
 		addon:InitHandlers()
 
@@ -710,7 +710,9 @@ function LibHarvensAddonSettings:CreateAddonSettingsPanel()
 
 				SCENE_MANAGER:Push("LibHarvensAddonSettingsScene")
 			end,
-			enabled = true
+			enabled = function()
+				return #self.addons > 0
+			end
 		}
 	end
 	table.sort(
@@ -720,24 +722,26 @@ function LibHarvensAddonSettings:CreateAddonSettingsPanel()
 		end
 	)
 
-	local title = GetString(SI_GAME_MENU_ADDONS)
-	if LibAddonMenu2 and LibAddonMenu2.panelId then
-		title = title .. " 2"
-	end
-	table.insert(
-		ZO_MENU_ENTRIES,
-		insertPosition,
-		CreateEntry(
-			"LibHarvensAddonSettings",
-			{
-				customTemplate = "ZO_GamepadMenuEntryTemplateWithArrow",
-				name = title,
-				icon = "/esoui/art/options/gamepad/gp_options_addons.dds",
-				subMenu = subItems
-			}
+	if #self.addons > 0 then
+		local title = GetString(SI_GAME_MENU_ADDONS)
+		if LibAddonMenu2 and LibAddonMenu2.panelId then
+			title = title .. " 2"
+		end
+		table.insert(
+			ZO_MENU_ENTRIES,
+			insertPosition,
+			CreateEntry(
+				"LibHarvensAddonSettings",
+				{
+					customTemplate = "ZO_GamepadMenuEntryTemplateWithArrow",
+					name = title,
+					icon = "/esoui/art/options/gamepad/gp_options_addons.dds",
+					subMenu = subItems
+				}
+			)
 		)
-	)
-	MAIN_MENU_GAMEPAD:RefreshMainList()
+		MAIN_MENU_GAMEPAD:RefreshMainList()
+	end
 
 	local control = WINDOW_MANAGER:CreateControlFromVirtual("LibHarvensAddonSettingsList", GuiRoot, "LibHarvensAddonSettingsGamepadTopLevel")
 
@@ -1010,7 +1014,7 @@ function LibHarvensAddonSettings:CreateAddonList()
 end
 
 local function OptionsWindowFragmentStateChange(oldState, newState)
-	if newState ~= SCENE_SHOWING or LibHarvensAddonSettings.initialized then
+	if newState ~= SCENE_SHOWING then
 		return
 	end
 

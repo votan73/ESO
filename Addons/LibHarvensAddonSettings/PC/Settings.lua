@@ -906,7 +906,7 @@ function LibHarvensAddonSettings:CreateAddonList()
 end
 
 local function OptionsWindowFragmentStateChange(oldState, newState)
-	if newState ~= SCENE_SHOWING or LibHarvensAddonSettings.initialized then
+	if newState ~= SCENE_SHOWING then
 		return
 	end
 
