@@ -37,8 +37,7 @@ When we set a waypoint, we will temporarily store the new wp data here, until th
 then in the onPingAdded we will transfer this wp data to waypointIt.sv.currentWaypoint and
 wipe out nextWaypoint.
 --]]
-local nextWaypoint
-local lastWaypointBy, lastZoneId
+local lastZoneId
 local suspendAssistState = true
 local lastMarkQuest = 0
 local pingSuspendCount = 0
@@ -220,13 +219,13 @@ function WaypointIt:SetWaypointByData(data)
 		-- If a waypoint is set, save so we can compare it later to keep the scrollList row selection highlight turned on.
 		-- Changed: See nextWaypoint definition for reason.
 		-- self.sv.currentWaypoint = {name = data.name, lookupType = data.lookupType, majorIndex = data.majorIndex, keyIndex = data.keyIndex, setBy = "rowClick"}
-		nextWaypoint = {name = data.name, lookupType = data.lookupType, majorIndex = data.majorIndex, keyIndex = data.keyIndex, setBy = "rowClick"}
+		self.nextWaypoint = {name = data.name, lookupType = data.lookupType, majorIndex = data.majorIndex, keyIndex = data.keyIndex, setBy = "rowClick"}
 
 		self:SetWaypoint(gps:LocalToGlobal(normX, normY))
 	elseif self.sv["WAYPOINT_DISTANCE_WARNING"] then
 		dw(string.format("%s%s", self.color.magenta, "Waypoint is within the waypoint removal distance. The waypoint will not be set."))
 		db("Waypoint is within the waypoint removal distance. The waypoint will not be set.")
-		if lastWaypointBy == "autoQuest" then
+		if self.lastWaypointBy == "autoQuest" then
 			ZO_WorldMap_RemovePlayerWaypoint() -- Baertram, 2022-03-03, Fix WorldMap removal of waypoint so that the keybind will allow to add a new one (instead of remove a non existing)
 		end
 	end
@@ -302,7 +301,7 @@ function WaypointIt:SetupEvents()
 	em:RegisterForEvent(self.name, EVENT_GROUP_UPDATE, OnGroupUpdate)
 
 	local function OnPlayerActivatedQuest()
-		if not lastWaypointBy or lastWaypointBy == "autoQuest" then
+		if not self.lastWaypointBy or self.lastWaypointBy == "autoQuest" then
 			self:RefreshQuestWaypoint()
 		end
 	end
@@ -548,18 +547,18 @@ function WaypointIt:SetupEvents()
 			-- local waypoint = WAYPOINTIT.sv.currentWaypoint
 			-- nextWaypoint can be nil if the wp was set manually or by some other addon
 			-- This is ok
-			local waypoint = nextWaypoint
+			local waypoint = self.nextWaypoint
 			self.sv.currentWaypoint = waypoint
-			nextWaypoint = nil
+			self.nextWaypoint = nil
 
 			local setBy = waypoint and waypoint.setBy or "rowClick"
 			if waypoint and waypoint.lookupType then
 				LMP:UnmutePing(MAP_PIN_TYPE_PLAYER_WAYPOINT, pinId)
 			end
 
-			lastWaypointBy, lastZoneId = setBy, GetCurrentZoneId()
+			self.lastWaypointBy, lastZoneId = setBy, GetCurrentZoneId()
 
-			db("waypoint set: mode %s", lastWaypointBy or "nil")
+			db("waypoint set: mode %s", self.lastWaypointBy or "nil")
 			if (waypoint and setBy == "rowClick") then
 				if self.sv["WAYPOINT_MESSAGES_USER_DEFINED"] then
 					CENTER_SCREEN_ANNOUNCE:AddMessage(0, CSA_CATEGORY_SMALL_TEXT, SOUNDS.ACHIEVEMENT_AWARDED, GetString(SI_WAYPOINTIT_WAYPOINT_SET))
@@ -569,7 +568,7 @@ function WaypointIt:SetupEvents()
 					addChatMessageForScreenReader(SOUNDS.ACHIEVEMENT_AWARDED, GetString(SI_WAYPOINTIT_WAYPOINT_SET))
 				end
 			end
-			self:RunWaypointRemoveUpdates(true, lastWaypointBy == "follow")
+			self:RunWaypointRemoveUpdates(true, self.lastWaypointBy == "follow")
 			self:RunHeadingUpdates(true)
 			self:RefreshIfVisible()
 		elseif (pingEventType == PING_EVENT_REMOVED) and pingTag == pinId then
@@ -577,8 +576,8 @@ function WaypointIt:SetupEvents()
 				self:RunWaypointRemoveUpdates(false)
 				self:RunHeadingUpdates(false)
 				self.sv.currentWaypoint = nil
-				db("waypoint removed %s", lastWaypointBy or "nil")
-				lastWaypointBy = "autoQuest"
+				db("waypoint removed %s", self.lastWaypointBy or "nil")
+				self.lastWaypointBy = "autoQuest"
 				self:RefreshIfVisible()
 			end
 		end
@@ -697,7 +696,7 @@ function WaypointIt:SetupQuestEvents()
 		if not CURRENT_TASK then
 			return
 		end
-		if lastWaypointBy == "rowClick" and lastZoneId == GetCurrentZoneId() then
+		if self.lastWaypointBy == "rowClick" and lastZoneId == GetCurrentZoneId() then
 			return
 		end
 
@@ -713,7 +712,7 @@ function WaypointIt:SetupQuestEvents()
 				["setBy"] 		= "autoQuest"
 			}
 			--]]
-				if (lastWaypointBy ~= "autoQuest") then
+				if (self.lastWaypointBy ~= "autoQuest") then
 					if self.sv["WAYPOINT_MESSAGES_AUTO_QUEST"] then
 						CENTER_SCREEN_ANNOUNCE:AddMessage(0, CSA_CATEGORY_SMALL_TEXT, SOUNDS.ACHIEVEMENT_AWARDED, GetString(SI_WAYPOINTIT_WAYPOINT_SET))
 					end
@@ -723,7 +722,7 @@ function WaypointIt:SetupQuestEvents()
 					end
 				end
 
-				nextWaypoint = {
+				self.nextWaypoint = {
 					["lookupType"] = CURRENT_TASK.lookupType,
 					["majorIndex"] = CURRENT_TASK.majorIndex,
 					["keyIndex"] = CURRENT_TASK.keyIndex,
@@ -746,7 +745,7 @@ function WaypointIt:SetupQuestEvents()
 				dw(fText)
 				db(fText)
 			end
-			if lastWaypointBy == "autoQuest" and self:HasWaypoint() then
+			if self.lastWaypointBy == "autoQuest" and self:HasWaypoint() then
 				ZO_WorldMap_RemovePlayerWaypoint() -- Baertram, 2022-03-03, Fix WorldMap removal of waypoint so that the keybind will allow to add a new one (instead of remove a non existing)
 			end
 		-- CURRENT_TASK = nil
@@ -769,7 +768,7 @@ function WaypointIt:SetupQuestEvents()
 
 		if not foundValidCondition then
 			db("OnQuestComplete: Valid Condition Not Found for quest")
-			if lastWaypointBy == "autoQuest" and self:HasWaypoint() then
+			if self.lastWaypointBy == "autoQuest" and self:HasWaypoint() then
 				ZO_WorldMap_RemovePlayerWaypoint() -- Baertram, 2022-03-03, Fix WorldMap removal of waypoint so that the keybind will allow to add a new one (instead of remove a non existing)
 			end
 			return
@@ -844,8 +843,8 @@ do
 		if hasWaypoint then
 			self:RunWaypointRemoveUpdates(true)
 			self:RunHeadingUpdates(true)
-			if lastWaypointBy ~= "autoQuest" then
-				db("keep waypoint %s", lastWaypointBy or "nil")
+			if self.lastWaypointBy ~= "autoQuest" then
+				db("keep waypoint %s", self.lastWaypointBy or "nil")
 				return
 			end
 		end
@@ -873,7 +872,7 @@ do
 	-- so its mostly the same code, I don't have time though.
 	function WaypointIt:TryAutoMarkNearestQuest()
 		self:CancelCurrentTask()
-		CURRENT_TASK, lastWaypointBy = nil, nil
+		CURRENT_TASK, self.lastWaypointBy = nil, nil
 
 		local considerType = QUEST_ASSIST_CONSIDER_ALL_QUESTS
 
@@ -922,8 +921,8 @@ do
 				CURRENT_TASK = {["taskId"] = taskId, ["lookupType"] = "quest", ["majorIndex"] = journalQuestIndex, ["keyIndex"] = keyIndex, ["name"] = sName}
 				db("Requesting TaskId: %i", taskId)
 				if tasks[taskId] then
-					nextWaypoint = CURRENT_TASK
-					nextWaypoint.setBy = "autoQuest"
+					self.nextWaypoint = CURRENT_TASK
+					self.nextWaypoint.setBy = "autoQuest"
 					lastMarkQuest = GetTimeStamp()
 
 					self:SetWaypoint(unpack(tasks[taskId]))
@@ -966,8 +965,8 @@ do
 			CURRENT_TASK = {["taskId"] = taskId, ["lookupType"] = "quest", ["majorIndex"] = journalQuestIndex, ["keyIndex"] = keyIndex, ["name"] = sName}
 
 			if tasks[taskId] then
-				nextWaypoint = CURRENT_TASK
-				nextWaypoint.setBy = "autoQuest"
+				self.nextWaypoint = CURRENT_TASK
+				self.nextWaypoint.setBy = "autoQuest"
 				lastMarkQuest = GetTimeStamp()
 
 				self:SetWaypoint(unpack(tasks[taskId]))
@@ -1509,7 +1508,7 @@ function WaypointIt:CheckWaypointLoc()
 				addChatMessageForScreenReader(SOUNDS.ACHIEVEMENT_AWARDED, GetString(SI_WAYPOINTIT_WAYPOINT_REACHED))
 			end
 		end
-		if lastWaypointBy ~= "follow" or (lastWaypointBy == "follow" and not self:TryFollowNextCustomPin()) then
+		if self.lastWaypointBy ~= "follow" or (self.lastWaypointBy == "follow" and not self:TryFollowNextCustomPin()) then
 			ZO_WorldMap_RemovePlayerWaypoint() -- Baertram, 2022-03-03, Fix WorldMap removal of waypoint so that the keybind will allow to add a new one (instead of remove a non existing)
 		end
 	end
@@ -1557,7 +1556,7 @@ end
 function WaypointIt:InitRegisterUpdates()
 	CURRENT_TASK = self.sv.currentWaypoint
 	if CURRENT_TASK then
-		lastWaypointBy = CURRENT_TASK.setBy
+		self.lastWaypointBy = CURRENT_TASK.setBy
 	end
 end
 

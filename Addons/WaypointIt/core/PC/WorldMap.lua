@@ -380,7 +380,7 @@ end
 -- Create a copy of the currently shown custom pins are start the follow mode
 function WaypointIt:TryFollowNextCustomPin()
 	self:CancelCurrentTask()
-	CURRENT_TASK, lastWaypointBy = nil, nil
+	CURRENT_TASK, self.lastWaypointBy = nil, nil
 
 	local list = self.followList
 	if #list == 0 then
@@ -396,7 +396,7 @@ function WaypointIt:TryFollowNextCustomPin()
 		end
 		table.remove(list, i)
 		if self:IsWaypointOutsideOfRemovalDistance(gps:GlobalToLocal(data.gx, data.gy)) then
-			nextWaypoint = {setBy = "follow", pinKey = data.pinKey, name = data.name, lookupType = data.lookupType, keyIndex = data.keyIndex, majorIndex = data.majorIndex}
+			self.nextWaypoint = {setBy = "follow", pinKey = data.pinKey, name = data.name, lookupType = data.lookupType, keyIndex = data.keyIndex, majorIndex = data.majorIndex}
 			self:SetWaypoint(data.gx, data.gy)
 			self:RunWaypointRemoveUpdates(true, true)
 			return true
