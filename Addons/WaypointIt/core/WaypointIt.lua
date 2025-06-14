@@ -525,8 +525,6 @@ function WaypointIt:SetupEvents()
 	-- Handled by LibMapPing, see below. em:RegisterForEvent(self.name, EVENT_MAP_PING, OnMapPing)
 	em:RegisterForEvent(self.name, EVENT_PLAYER_ACTIVATED, OnPlayerActivated)
 
-	function self:RefreshIfVisible()
-	end
 	-- Automatically remove waypoints
 	local function OnMapPing(pingEventType, pingType, pingTag, offsetX, offsetY, isOwner)
 		-- Check for libGPS, it sets waypoints to measure the map. We dont want events firing then.
