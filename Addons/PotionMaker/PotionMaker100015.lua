@@ -5,7 +5,7 @@
 
 PotMaker = {
 	name = "PotionMaker",
-	version = "5.10.1",
+	version = "5.10.2",
 	ResultControls = {},
 	PositiveTraitControls = {},
 	NegativeTraitControls = {},
@@ -989,7 +989,7 @@ function PotMaker.Potion:GetQualityColor()
 	if self.qualityColor ~= "" then
 		return self.qualityColor
 	end
-	self.qualityColor = GetItemQualityColor(GetItemLinkQuality(self.itemLink))
+	self.qualityColor = GetItemQualityColor(GetItemLinkFunctionalQuality(self.itemLink))
 	return self.qualityColor
 end
 
@@ -1360,7 +1360,7 @@ function PotMaker.addAllStuffToInventory()
 			iconTraits = {},
 			pack = {}
 		}
-		item.qualityColor = GetItemQualityColor(ITEM_QUALITY_MAGIC)
+		item.qualityColor = GetItemQualityColor(ITEM_FUNCTIONAL_QUALITY_MAGIC)
 		PotMaker.Inventory.reagents[itemId] = item
 	end
 end
@@ -1387,6 +1387,7 @@ function PotMaker.addStuffToInventoryForBag(bagId)
 
 	local function AddReagent(slot)
 		local itemType, slotIndex = slot.itemType, slot.slotIndex
+		SHARED_INVENTORY:CreateOrUpdateSlotData(slot, bagId, slotIndex, false)
 		local icon, stack, meetsUsageRequirement, quality = slot.iconFile, slot.stackCount, slot.meetsUsageRequirement, slot.quality
 		local itemId = GetItemId(bagId, slotIndex)
 		local level = GetItemLevel(bagId, slotIndex)
