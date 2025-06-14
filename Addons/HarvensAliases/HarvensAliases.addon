@@ -4,7 +4,8 @@
 ; States and/or other countries. All rights reserved.
 
 ## Title: Harven's Aliases
-## APIVersion: 100030
+## Version: 1.5.0
+## APIVersion: 101046 101047
 ## SavedVariables: HarvensAliases_SavedVariables
 ## Description: This very simple addon allows you to add an alias to any command. The command do not have to even exist. The addon should be compatible with all addons. Commands: |c00ff00/addalias|r, |c00ff00/delalias|r, |c00ff00/listaliases|r
 
