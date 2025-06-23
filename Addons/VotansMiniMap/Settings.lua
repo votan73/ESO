@@ -99,7 +99,7 @@ function addon:InitSettings()
 	end
 	self.settingsControls = settings
 	settings.allowDefaults = true
-	settings.version = "2.1.4"
+	settings.version = "2.1.5"
 	settings.website = "http://www.esoui.com/downloads/info1399-VotansMiniMap.html"
 
 	settings:AddSetting {
