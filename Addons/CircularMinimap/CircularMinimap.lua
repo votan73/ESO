@@ -1,8 +1,6 @@
 local ADDON_NAME = "CircularMinimap"
 CircularMinimap = {}
 
-LibDAU:VerifyAddon(ADDON_NAME)
-
 CircularMinimap.textures = {
 	["(Circular) Moosetrax Normal Wheel"] = "CircularMinimap/Textures/MNormalWheel.dds",
 	["(Circular) Moosetrax Normal Lense Wheel"] = "CircularMinimap/Textures/MNormalLense1Wheel.dds",
