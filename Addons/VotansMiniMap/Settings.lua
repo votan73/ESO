@@ -417,6 +417,7 @@ function addon:InitSettings()
 			ZO_WorldMap:SetDrawLevel(0)
 		end
 		local scene
+		local inUpdate
 		local function addMap()
 			if self.wasMapAdded then
 				return
@@ -428,6 +429,9 @@ function addon:InitSettings()
 			WORLD_MAP_FRAGMENT:Refresh()
 		end
 		local function addonSelected(_, addonSettings)
+			if inUpdate then
+				return
+			end
 			local addMap = addonSettings == settings
 			if not addMap and self.wasMapAdded then
 				scene:RemoveFragment(WORLD_MAP_FRAGMENT)
@@ -443,6 +447,9 @@ function addon:InitSettings()
 		CALLBACK_MANAGER:RegisterCallback("LAM-RefreshPanel", addonSelected)
 
 		local function getScreenDimensions()
+			if inUpdate then
+				return
+			end
 			local w, h = GuiRoot:GetDimensions()
 			local w, h = w / 8, h / 8
 			local w2, h2 = w * 0.5, h * 0.5
@@ -487,12 +494,17 @@ function addon:InitSettings()
 					max = 100000,
 					step = 1,
 					getFunction = function()
-						return math.floor(select(5, ZO_WorldMap:GetAnchor(0)) / 8)
+						return math.floor(self.account.x / 8)
 					end,
 					setFunction = function(value)
+						if inUpdate then
+							return
+						end
+						inUpdate = true
 						self.account.x = value * 8
 						self:RestorePosition()
 						updateLocationSettings()
+						inUpdate = false
 					end
 				},
 				{
@@ -504,12 +516,17 @@ function addon:InitSettings()
 					max = 100000,
 					step = 1,
 					getFunction = function()
-						return math.floor(select(6, ZO_WorldMap:GetAnchor(0)) / 8)
+						return math.floor(self.account.y / 8)
 					end,
 					setFunction = function(value)
+						if inUpdate then
+							return
+						end
+						inUpdate = true
 						self.account.y = value * 8
 						self:RestorePosition()
 						updateLocationSettings()
+						inUpdate = false
 					end
 				},
 				{
@@ -524,6 +541,10 @@ function addon:InitSettings()
 						return math.floor(ZO_WorldMapScroll:GetWidth() / 8)
 					end,
 					setFunction = function(value)
+						if inUpdate then
+							return
+						end
+						inUpdate = true
 						value = value * 8
 						self.account.width = ZO_WorldMap:GetWidth() - ZO_WorldMapScroll:GetWidth() + value
 						ZO_WorldMapScroll:SetWidth(value)
@@ -533,6 +554,7 @@ function addon:InitSettings()
 						end
 						self:RestorePosition()
 						updateLocationSettings()
+						inUpdate = false
 					end
 				},
 				{
@@ -547,6 +569,10 @@ function addon:InitSettings()
 						return math.floor((addon.modeData.keepSquare and ZO_WorldMapScroll:GetWidth() or ZO_WorldMapScroll:GetHeight()) / 8)
 					end,
 					setFunction = function(value)
+						if inUpdate then
+							return
+						end
+						inUpdate = true
 						value = value * 8
 						self.account.height = ZO_WorldMap:GetHeight() - ZO_WorldMapScroll:GetHeight() + value
 						ZO_WorldMapScroll:SetHeight(value)
@@ -556,6 +582,7 @@ function addon:InitSettings()
 						end
 						self:RestorePosition()
 						updateLocationSettings()
+						inUpdate = false
 					end
 				}
 			}
