@@ -212,12 +212,6 @@ local createControlFunctions = {
 		LibHarvensAddonSettings.list:AddEntry(Templates[self.type], self)
 	end,
 	[LibHarvensAddonSettings.ST_DROPDOWN] = function(self, lastControl)
-		table.sort(
-			self.items,
-			function(leftData, rightData)
-				return leftData.name < rightData.name
-			end
-		)
 		LibHarvensAddonSettings.list:AddEntry(Templates[self.type], self)
 	end,
 	[LibHarvensAddonSettings.ST_LABEL] = function(self, lastControl)
