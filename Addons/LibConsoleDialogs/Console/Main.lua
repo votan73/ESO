@@ -171,6 +171,11 @@ function internal:ShowSelectionDialog(registry)
 end
 
 function internal:AssignKeybinds()
+	local registry = self:GetRegistry()
+	if not registry or #registry == 0 then
+		return
+	end
+
 	local usedKeybinds = {}
 	local visibleButtons = 0
 	for _, descriptor in pairs(KEYBIND_STRIP.keybindGroups) do
@@ -194,7 +199,6 @@ function internal:AssignKeybinds()
 		usedKeybinds["UI_SHORTCUT_INPUT_RIGHT"] = true
 	end
 
-	local registry = self:GetRegistry()
 	table.sort(
 		registry,
 		function(a, b)
