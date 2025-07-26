@@ -10,6 +10,9 @@ lib.internal = internal
 -----------------------------
 local dialogSettings = LibHarvensAddonSettings.AddonSettings:Subclass()
 
+lib.dialogCallStack = {}
+local currentSettings
+
 local orgSelect = dialogSettings.Select
 function dialogSettings:Select()
 	LibHarvensAddonSettings:Initialize()
@@ -17,7 +20,13 @@ function dialogSettings:Select()
 		self.container = LibHarvensAddonSettings.container
 		self:InitHandlers()
 	end
+	if LibHarvensAddonSettings.scene:IsShowing() and currentSettings then
+		lib.dialogCallStack[#lib.dialogCallStack + 1] = currentSettings
+	end
 	orgSelect(self)
+	if self.selected then
+		currentSettings = self
+	end
 
 	ZO_GamepadGenericHeader_RefreshData(LibHarvensAddonSettings.scrollList.header, self.headerData)
 
@@ -30,6 +39,19 @@ end
 
 function dialogSettings:Show()
 	return self:Select()
+end
+
+local orgGoBack = LibHarvensAddonSettings.GoBack
+function LibHarvensAddonSettings:GoBack()
+	if #lib.dialogCallStack > 0 then
+		local index = #lib.dialogCallStack
+		local dialog = lib.dialogCallStack[index]
+		lib.dialogCallStack[index] = nil
+		dialog:Show()
+		lib.dialogCallStack[index] = nil
+	else
+		orgGoBack(self)
+	end
 end
 
 --------- Public API -----------
@@ -153,7 +175,7 @@ function internal:AssignKeybinds()
 	local visibleButtons = 0
 	for _, descriptor in pairs(KEYBIND_STRIP.keybindGroups) do
 		for _, button in ipairs(descriptor) do
-			usedKeybinds[button.keybind] = true
+			usedKeybinds[getValue("keybind", button)] = true
 			if not button.ethereal then
 				visibleButtons = visibleButtons + 1
 			end
@@ -195,7 +217,14 @@ function internal:AssignKeybinds()
 				end
 				button.callback = buttonInfo.callback
 				button.visible = function()
-					return getValue("visible", buttonInfo)
+					local isVisible = getValue("visible", buttonInfo)
+					if not isVisible then
+						local control = KEYBIND_STRIP.keybinds[button.keybind]
+						if control then
+							control:SetHidden(true)
+						end
+					end
+					return isVisible
 				end
 				button.enabled = function()
 					return getValue("enabled", buttonInfo)
@@ -207,6 +236,9 @@ function internal:AssignKeybinds()
 				if index > maxButtons then
 					break
 				end
+			else
+				local descriptor = self.keybindStripDescriptors[i]
+				KEYBIND_STRIP:RemoveKeybindButtonGroup(descriptor)
 			end
 		end
 	end
@@ -238,14 +270,18 @@ function internal:AssignKeybinds()
 	end
 end
 
+function internal:ClearKeybinds()
+	for _, descriptor in ipairs(self.keybindStripDescriptors) do
+		KEYBIND_STRIP:RemoveKeybindButtonGroup(descriptor)
+	end
+	KEYBIND_STRIP:RemoveKeybindButtonGroup(self.keybindStripDescriptorMore)
+end
+
 function internal:OnStateChange(oldState, newState)
 	if newState == SCENE_SHOWN then -- Add late
 		self:AssignKeybinds()
 	elseif newState == SCENE_HIDING then -- Remove early
-		for _, descriptor in ipairs(self.keybindStripDescriptors) do
-			KEYBIND_STRIP:RemoveKeybindButtonGroup(descriptor)
-		end
-		KEYBIND_STRIP:RemoveKeybindButtonGroup(self.keybindStripDescriptorMore)
+		self:ClearKeybinds()
 	end
 end
 
@@ -266,6 +302,14 @@ function internal:Initialize()
 		}
 	end
 	self.keybindStripDescriptors = keybindStripDescriptors
+	SecurePostHook(
+		ZO_ItemSlotActionsController,
+		"RefreshKeybindStrip",
+		function()
+			self:ClearKeybinds()
+			self:AssignKeybinds()
+		end
+	)
 end
 
 local function OnAddonLoaded(event, name)
