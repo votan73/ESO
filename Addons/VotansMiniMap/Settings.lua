@@ -99,7 +99,7 @@ function addon:InitSettings()
 	end
 	self.settingsControls = settings
 	settings.allowDefaults = true
-	settings.version = "2.1.5"
+	settings.version = "2.1.6"
 	settings.website = "http://www.esoui.com/downloads/info1399-VotansMiniMap.html"
 
 	settings:AddSetting {
@@ -112,7 +112,8 @@ function addon:InitSettings()
 		end,
 		setFunction = function(value)
 			self.account.enableTweaks = value
-		end
+		end,
+		disable = IsConsoleUI()
 	}
 	settings:AddSetting {
 		type = LibHarvensAddonSettings.ST_CHECKBOX,

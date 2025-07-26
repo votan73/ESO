@@ -1154,6 +1154,19 @@ function addon:InitMiniMap()
 		ZO_WorldMapTitle:SetText(SetMapTitleCurrentLocation())
 	end
 	do
+		local HEADER_INFO = {
+			nameText = "",
+			descriptionText = "",
+			owner = self,
+			showProgressBar = false
+		}
+		function addon:SetMapHeader()
+			if WORLD_MAP_MANAGER.SetMapHeader and WORLD_MAP_MANAGER:IsInMode(MAP_MODE_VOTANS_MINIMAP) then
+				WORLD_MAP_MANAGER:SetMapHeader(HEADER_INFO)
+			end
+		end
+	end
+	do
 		local function DoIt(orgZO_WorldMap_UpdateMap, skipWorldMapUpdate)
 			CALLBACK_MANAGER:UnregisterCallback("OnWorldMapModeChanged", DoIt, orgZO_WorldMap_UpdateMap, skipWorldMapUpdate)
 
@@ -1211,6 +1224,7 @@ function addon:InitMiniMap()
 				SetMapTitleCurrentLocation()
 			end
 			WORLD_MAP_MANAGER:UpdateFloorAndLevelNavigation()
+			self:SetMapHeader()
 
 			self:StartFollowPlayer()
 		end
@@ -1245,6 +1259,9 @@ function addon:InitMiniMap()
 		end
 		self:UpdateBorder()
 		WORLD_MAP_MANAGER:UpdateFloorAndLevelNavigation()
+		if WORLD_MAP_MANAGER.ClearMapHeader then
+			WORLD_MAP_MANAGER:ClearMapHeader()
+		end
 	end
 
 	do
@@ -1296,12 +1313,13 @@ function addon:InitMiniMap()
 
 	do
 		local function WorldFragmentStateChanged(oldState, newState)
-			if (newState == SCENE_FRAGMENT_SHOWING) then
+			if newState == SCENE_FRAGMENT_SHOWING then
 				if addon.account.showClock then
 					EVENT_MANAGER:RegisterForUpdate("VOTAN_MAP_CLOCK", 5000, addon.ShowClock)
 					addon.ShowClock()
 				end
-			elseif (newState == SCENE_FRAGMENT_HIDING) then
+				self:SetMapHeader()
+			elseif newState == SCENE_FRAGMENT_HIDING then
 				EVENT_MANAGER:UnregisterForUpdate("VOTAN_MAP_CLOCK")
 			end
 			local hidden = not addon.account.showClock
@@ -1599,7 +1617,7 @@ function addon:Initialize()
 		zoomOut = 0.15,
 		zoomIn = 2,
 		zoomToPlayer = false,
-		frameStyle = "ESO",
+		frameStyle = IsConsoleUI() and "Default" or "ESO",
 		borderAlpha = 100,
 		titleFont = "BOLD_FONT",
 		titleFontSize = 16,
@@ -1638,6 +1656,9 @@ function addon:Initialize()
 
 	self.player = ZO_SavedVars:NewCharacterIdSettings("VotansMiniMap_Data", 1, nil, defaults)
 
+	if IsConsoleUI() then
+		self.account.enableTweaks = true
+	end
 	if self.account.enableTweaks then
 		self:InitTweaks()
 	elseif self.account.enableMap then
