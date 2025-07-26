@@ -443,6 +443,10 @@ function LibHarvensAddonSettings:SelectFirstAddon()
 	end
 end
 
+function LibHarvensAddonSettings:GoBack()
+    SCENE_MANAGER:HideCurrentScene()
+end
+
 -----
 -- Settings_ParametricList class
 -----
@@ -565,7 +569,10 @@ function Settings_ParametricList:InitializeKeybindStripDescriptors()
 			end
 		}
 	}
-	ZO_Gamepad_AddBackNavigationKeybindDescriptors(self.keybindStripDescriptor, GAME_NAVIGATION_TYPE_BUTTON)
+	local function OnBack()
+		LibHarvensAddonSettings:GoBack()
+	end
+	ZO_Gamepad_AddBackNavigationKeybindDescriptors(self.keybindStripDescriptor, GAME_NAVIGATION_TYPE_BUTTON, OnBack)
 	LibHarvensAddonSettings.scene:RegisterCallback(
 		"StateChange",
 		function(newState)
