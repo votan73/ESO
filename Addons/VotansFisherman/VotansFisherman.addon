@@ -1,9 +1,9 @@
 ## Title: Votan's Fisherman
 ## Author: votan
 ## Description: Remembers fishing hole type and shows bait information. Powered by LibGPS.
-## Version: 1.16.2
-## APIVersion: 101045 101046
-## DependsOn: LibMapPing>=900 LibGPS>=66 LibAsync>=20302
+## Version: 1.16.3
+## APIVersion: 101046 101047
+## DependsOn: LibMapPing>=900 LibGPS>=73 LibAsync>=20302
 ## OptionalDependsOn: RareFishTracker MiniMap WaypointIt
 ## PCDependsOn: LibCustomMenu>=681 LibAddonMenu-2.0>=38
 ## ConsoleDependsOn: LibHarvensAddonSettings>=20000

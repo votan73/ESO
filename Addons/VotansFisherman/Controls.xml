@@ -2,7 +2,7 @@
   <Controls>
     <Tooltip name="VotansFishermanStats" inherits="ZO_ItemIconTooltip" mouseEnabled="true" movable="true">
       <ResizeToFitPadding width="0" height="57"/>
-      <Dimensions X="450" />
+      <Dimensions x="450" />
       <DimensionConstraints minX="450" maxX="450" />
 
       <Anchor point="CENTER" relativePoint="CENTER" />

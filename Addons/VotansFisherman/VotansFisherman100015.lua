@@ -1465,11 +1465,11 @@ local function AddFilter()
 
 	local function FilterCallback()
 	end
-	local function AddCheckBox(panel, filter)
-		panelToFilter[panel] = filter
-		panel:AddPinFilterCheckBox(data.pinTypeId, FilterCallback, GetString(SI_FISHERMAN))
-	end
 	if WORLD_MAP_FILTERS then
+		local function AddCheckBox(panel, filter)
+			panelToFilter[panel] = filter
+			panel:AddPinFilterCheckBox(data.pinTypeId, FilterCallback)
+		end
 		local self = WORLD_MAP_FILTERS
 		AddCheckBox(self.pvePanel, "pve")
 		AddCheckBox(self.pvpPanel, "pvp")
@@ -1478,6 +1478,14 @@ local function AddFilter()
 		AddCheckBox(self.globalPanel, "global")
 	end
 	if GAMEPAD_WORLD_MAP_FILTERS then
+		local function AddCheckBox(panel, filter)
+			panelToFilter[panel] = filter
+			local orgBuild = panel.PostBuildControls
+			function panel.PostBuildControls(panel)
+				panel:AddPinFilterCheckBox(data.pinTypeId, FilterCallback)
+				return orgBuild(panel)
+			end
+		end
 		local self = GAMEPAD_WORLD_MAP_FILTERS
 		AddCheckBox(self.pvePanel, "pve")
 		AddCheckBox(self.pvpPanel, "pvp")
@@ -1487,7 +1495,7 @@ local function AddFilter()
 	end
 
 	local function OnMapChanged()
-		local filters = (IsInGamepadPreferredMode() and GAMEPAD_WORLD_MAP_FILTERS or WORLD_MAP_FILTERS).currentPanel
+		local filters = ((IsInGamepadPreferredMode() or IsConsoleUI()) and GAMEPAD_WORLD_MAP_FILTERS or WORLD_MAP_FILTERS).currentPanel
 		currentFilter = panelToFilter[filters]
 		if WORLD_MAP_FILTERS then
 			WORLD_MAP_FILTERS.currentPanel:SetPinFilter(data.pinTypeId, data.player.showPins[currentFilter] ~= false)
@@ -2598,7 +2606,7 @@ if IsConsoleUI() then
 		end
 
 		settings.author = "votan"
-		settings.version = "1.16.2"
+		settings.version = "1.16.3"
 		settings.website = "http://www.esoui.com/downloads/info918-VotansFisherman.html"
 
 		local optionsTable = {
@@ -3009,7 +3017,7 @@ else
 			name = data.title,
 			displayName = data.title,
 			author = "votan",
-			version = "1.16.2",
+			version = "1.16.3",
 			-- slashCommand = "",
 			-- registerForRefresh = true,
 			registerForDefaults = true,
