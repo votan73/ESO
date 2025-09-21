@@ -3,7 +3,7 @@
 ; registered trademarks or trademarks of ZeniMax Media Inc. in the United
 ; States and/or other countries. All rights reserved.
 
-## Title: Harven's Subtitle Addon
+## Title: Harven's Subtitles
 ## APIVersion: 101047 101048
 ## Version: 2.0.4
 ## SavedVariables: HarvensSubtitleAddon_SavedVariables
