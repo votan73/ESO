@@ -1161,7 +1161,7 @@ function addon:InitMiniMap()
 			showProgressBar = false
 		}
 		function addon:SetMapHeader()
-			if WORLD_MAP_MANAGER.SetMapHeader and WORLD_MAP_MANAGER:IsInMode(MAP_MODE_VOTANS_MINIMAP) then
+			if WORLD_MAP_MANAGER:IsInMode(MAP_MODE_VOTANS_MINIMAP) then
 				WORLD_MAP_MANAGER:SetMapHeader(HEADER_INFO)
 			end
 		end
@@ -1192,6 +1192,7 @@ function addon:InitMiniMap()
 			self:UpdateBorder()
 			ClearMouseoverText()
 			lastZoom = -1
+			self:SetMapHeader()
 		end
 		function addon:GoMiniMapMode(skipWorldMapUpdate)
 			local orgZO_WorldMap_UpdateMap = ZO_WorldMap_UpdateMap
@@ -1224,7 +1225,6 @@ function addon:InitMiniMap()
 				SetMapTitleCurrentLocation()
 			end
 			WORLD_MAP_MANAGER:UpdateFloorAndLevelNavigation()
-			self:SetMapHeader()
 
 			self:StartFollowPlayer()
 		end
