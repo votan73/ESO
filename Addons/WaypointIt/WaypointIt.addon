@@ -1,5 +1,5 @@
 ## Title: WaypointIt
-## APIVersion: 101045 101046
+## APIVersion: 101047 101048
 ## DependsOn: LibAddonMenu-2.0>=38 LibMapPing>=1200 LibGPS>=69
 ## PCDependsOn: LibWorldMapInfoTab
 ## ConsoleDependsOn: LibConsoleDialogs
