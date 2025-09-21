@@ -1,0 +1,41 @@
+<GuiXml>
+  <Animations>
+    <AnimationTimeline name="SubtitlesAddonFade">
+      <Animations>
+        <AlphaAnimation duration="1000" startAlpha="1" endAlpha="0" />
+      </Animations>
+    </AnimationTimeline>
+  </Animations>
+
+  <Controls>
+    <TopLevelControl name="SubtitleAddon" hidden="true" mouseEnabled="true" clampedToScreen="true" tier="HIGH" layer="BACKGROUND">
+      <Dimensions x="840" y="70"/>
+
+      <OnDragStart>
+        self:SetMovable(true)
+        self:StartMoving()
+      </OnDragStart>
+
+      <OnMouseUp>
+        self:StopMovingOrResizing()
+        self:SetMovable(false)
+      </OnMouseUp>
+
+      <OnInitialized>
+        Harven_SubtitleAddonInitialize(self)
+      </OnInitialized>
+
+      <Controls>
+        <Texture name="$(parent)Bg" textureFile="EsoUI/Art/Tutorial/tutorial_HUD_windowBG.dds">
+          <Anchor point="TOPLEFT" />
+          <Anchor point="BOTTOMRIGHT" />
+          <TextureCoords left="0.0" right="0.83203125" top="0.0" bottom="0.724609375" />
+        </Texture>
+        <Label name="$(parent)Text" font="ZoFontSubtitleText" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_SELECTED" verticalAlignment="CENTER" horizontalAlignment="CENTER" wrapMode="ELLIPSIS">
+          <Dimensions x="760"/>
+          <Anchor point="TOPRIGHT" offsetY="20" offsetX="-40"/>
+        </Label>
+      </Controls>
+    </TopLevelControl>
+  </Controls>
+</GuiXml>
