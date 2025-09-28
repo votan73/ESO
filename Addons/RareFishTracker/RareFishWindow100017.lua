@@ -468,6 +468,20 @@ function RFT.MakeWindow()
 	colors[7] = RFT.KatKat42Colors[7]
 	colors[8] = RFT.KatKat42Colors[8]
 	RFT.ESOColors = colors
+
+	SLASH_COMMANDS["/rftwindow"] = function(arg)
+		if not arg or arg == "" or arg == "toggle" then
+			RFT.ToggleWindow()
+		elseif arg == "show" then
+			if RFT.window:IsHidden() then
+				RFT.ToggleWindow()
+			end
+		elseif arg == "hide" then
+			if not RFT.window:IsHidden() then
+				RFT.ToggleWindow()
+			end
+		end
+	end
 end
 
 do
