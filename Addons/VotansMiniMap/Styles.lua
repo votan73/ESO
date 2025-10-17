@@ -9,7 +9,7 @@ self:AddBorderStyle("Default", "Default", function(settings, background, frame)
 	frame:SetEdgeTexture("/esoui/art/worldmap/worldmap_frame_edge.dds", 128, 16)
 	frame:SetAlpha(1)
 	frame:SetHidden(false)
-end )
+end)
 
 self:AddBorderStyle("ESO", "ESO Style", function(settings, background, frame)
 	local alpha = settings.borderAlpha / 100 or 1
@@ -21,7 +21,7 @@ self:AddBorderStyle("ESO", "ESO Style", function(settings, background, frame)
 	frame:SetEdgeTexture("VotansMiniMap/WorldMapFrame.dds", 128, 16, 32)
 	frame:SetAlpha(1)
 	frame:SetHidden(false)
-end )
+end)
 
 self:AddBorderStyle("Flat", "Flat", function(settings, background, frame)
 	local alpha = settings.borderAlpha / 100 or 1
@@ -30,7 +30,7 @@ self:AddBorderStyle("Flat", "Flat", function(settings, background, frame)
 	background:SetCenterTexture("")
 	background:SetInsets(0, 0, 0, 0)
 	frame:SetHidden(true)
-end )
+end)
 
 self:AddBorderStyle("Gamepad", "Gamepad", function(settings, background, frame)
 	local alpha = settings.borderAlpha / 100 or 1
@@ -41,7 +41,7 @@ self:AddBorderStyle("Gamepad", "Gamepad", function(settings, background, frame)
 	frame:SetEdgeTexture("esoui/art/miscellaneous/gamepad/edgeframegamepadborder.dds", 128, 16)
 	frame:SetAlpha(1)
 	frame:SetHidden(false)
-end )
+end)
 
 self:AddBorderStyle("Modern", "Modern", function(settings, background, frame)
 	local alpha = settings.borderAlpha / 100 or 1
@@ -53,9 +53,9 @@ self:AddBorderStyle("Modern", "Modern", function(settings, background, frame)
 	frame:SetEdgeTexture("", 128, 16)
 	frame:SetAlpha(0)
 	frame:SetHidden(false)
-end , function(settings, background, frame)
+end, function(settings, background, frame)
 	background:SetAnchor(BOTTOMRIGHT, nil, BOTTOMRIGHT, 6, 0)
-end )
+end)
 
 self:AddFont("", "None")
 
