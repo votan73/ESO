@@ -16,20 +16,22 @@ function addon:InitPinSizes()
 	local LibHarvensAddonSettings = LibHarvensAddonSettings
 
 	local settings = LibHarvensAddonSettings:AddAddon("Votan's Mini Map Pin Sizes")
-	if not settings then return end
+	if not settings then
+		return
+	end
 	settingsControls = settings
-	settings.allowDefaults = true;
+	settings.allowDefaults = true
 
-	self.account.pinSizes = self.account.pinSizes or { }
+	self.account.pinSizes = self.account.pinSizes or {}
 	pinSizes = self.account.pinSizes
-	pinScales = { }
+	pinScales = {}
 	self.pinScales = pinScales
 
 	local othersScale = 1
 
 	local orgCalculateScale = self.CalculateScale
 	function self:CalculateScale(pinType)
-		return orgCalculateScale(self) *(pinScales[pinType] or othersScale)
+		return orgCalculateScale(self) * (pinScales[pinType] or othersScale)
 	end
 
 	local function UpdatePin(pinType, pin)
@@ -37,26 +39,32 @@ function addon:InitPinSizes()
 	end
 	local function UpdateDrawLevel(pinType)
 		for _, pin in pairs(addon.pinManager:GetActiveObjects()) do
-			if pinType == pin:GetPinType() then UpdatePin(pinType, pin) end
+			if pinType == pin:GetPinType() then
+				UpdatePin(pinType, pin)
+			end
 		end
 	end
 
 	local function UpdateDrawLevels(pins)
 		for _, pin in pairs(addon.pinManager:GetActiveObjects()) do
 			local pinType = pin:GetPinType()
-			if pins[pinType] then UpdatePin(pinType, pin) end
+			if pins[pinType] then
+				UpdatePin(pinType, pin)
+			end
 		end
 	end
 
 	local function AddPin(pinType, caption, stringId)
 		local pinData = ZO_MapPin.PIN_DATA[pinType]
-		if not pinData then return end
+		if not pinData then
+			return
+		end
 
 		local task = async:Create("VotanPinSize" .. caption)
 		local function updatePinSize()
 			UpdateDrawLevel(pinType)
 		end
-		settings:AddSetting {
+		settings:AddSetting({
 			type = LibHarvensAddonSettings.ST_SLIDER,
 			label = GetString(stringId),
 			min = 2,
@@ -64,24 +72,28 @@ function addon:InitPinSizes()
 			step = 1,
 			default = 100,
 			unit = "%",
-			getFunction = function() return pinSizes[caption] or 100 end,
+			getFunction = function()
+				return pinSizes[caption] or 100
+			end,
 			setFunction = function(value)
 				pinSizes[caption] = value
 				pinScales[pinType] = value * 0.01
 				UpdateControls()
 				task:Cancel():Call(updatePinSize)
 			end,
-		}
-		pinScales[pinType] =(pinSizes[caption] or 100) * 0.01
+		})
+		pinScales[pinType] = (pinSizes[caption] or 100) * 0.01
 	end
 
 	local function AddPins(pins, caption, stringId)
-		if not pins then return end
+		if not pins then
+			return
+		end
 		local task = async:Create("VotanPinSize" .. caption)
 		local function updatePinSize()
 			UpdateDrawLevels(pins)
 		end
-		settings:AddSetting {
+		settings:AddSetting({
 			type = LibHarvensAddonSettings.ST_SLIDER,
 			label = stringId and GetString(stringId) or caption,
 			min = 2,
@@ -89,7 +101,9 @@ function addon:InitPinSizes()
 			step = 1,
 			default = 100,
 			unit = "%",
-			getFunction = function() return pinSizes[caption] or 100 end,
+			getFunction = function()
+				return pinSizes[caption] or 100
+			end,
 			setFunction = function(value)
 				pinSizes[caption] = value
 				local scale = value * 0.01
@@ -99,14 +113,16 @@ function addon:InitPinSizes()
 				UpdateControls()
 				task:Cancel():Call(updatePinSize)
 			end,
-		}
-		local scale =(pinSizes[caption] or 100) * 0.01
+		})
+		local scale = (pinSizes[caption] or 100) * 0.01
 		for pinType in pairs(pins) do
 			pinScales[pinType] = scale
 		end
 	end
 	local function AddCustomPin(pinType, caption)
-		if not pinType then return end
+		if not pinType then
+			return
+		end
 		AddPin(pinType, caption, _G["SI_MAPFILTER" .. pinType])
 	end
 
@@ -124,7 +140,7 @@ function addon:InitPinSizes()
 
 	AddPins(ZO_MapPin.OBJECTIVE_PIN_TYPES, "AvA Objectives", SI_MAPFILTER2)
 	AddPins(ZO_MapPin.KEEP_PIN_TYPES, "Keeps", SI_VOTANSMINIMAP_PINSIZE_KEEPS)
-	AddPins(ZO_MapPin.IMPERIAL_CITY_GATE_TYPES, "Imperial City Gates", SI_MAPFILTER12)
+	-- AddPins(ZO_MapPin.IMPERIAL_CITY_GATE_TYPES, "Imperial City Gates", SI_MAPFILTER12);
 	AddPins(ZO_MapPin.DISTRICT_PIN_TYPES, "Districts", SI_VOTANSMINIMAP_PINSIZE_DISTRICTS)
 	AddPins(ZO_MapPin.KILL_LOCATION_PIN_TYPES, "Kill Locations", SI_MAPFILTER3)
 	AddPins(ZO_MapPin.FORWARD_CAMP_PIN_TYPES, "Forward Camps", SI_TOOLTIP_FORWARD_CAMP)
@@ -132,15 +148,17 @@ function addon:InitPinSizes()
 	-- AddPins(ZO_MapPin.AVA_RESTRICTED_LINK_PIN_TYPES, "AvA Restricted Links")
 
 	if HarvensCustomMapPinsType then
-		AddCustomPin(HarvensCustomMapPinsType, "Harvens Custom Map Pins", "SI_MAPFILTER" .. HarvensCustomMapPinsType)
+		AddPins(HarvensCustomMapPinsType, "Harvens Custom Map Pins", "SI_MAPFILTER" .. HarvensCustomMapPinsType)
 	end
 
 	local function AddAddonPins(mapPins, caption, strId)
-		local pins = { }
+		local pins = {}
 		local name
 		for i = 1, #mapPins do
 			name = mapPins[i]
-			if _G[name] then pins[_G[name]] = true end
+			if _G[name] then
+				pins[_G[name]] = true
+			end
 		end
 		if next(pins) then
 			AddPins(pins, caption, strId)
@@ -218,12 +236,14 @@ function addon:InitPinSizes()
 	local task = async:Create("VotanPinSizeOthers")
 	local function updatePin(_, pin)
 		local pinType = pin:GetPinType()
-		if not pinScales[pinType] then UpdatePin(pinType, pin) end
+		if not pinScales[pinType] then
+			UpdatePin(pinType, pin)
+		end
 	end
-	local function updatePinSize(task)
-		task:For(pairs(addon.pinManager:GetActiveObjects())):Do(updatePin)
+	local function updatePinSize(asyncTask)
+		asyncTask:For(pairs(addon.pinManager:GetActiveObjects())):Do(updatePin)
 	end
-	settings:AddSetting {
+	settings:AddSetting({
 		type = LibHarvensAddonSettings.ST_SLIDER,
 		label = GetString(SI_FURNITURETHEMETYPE1),
 		min = 2,
@@ -231,16 +251,17 @@ function addon:InitPinSizes()
 		step = 1,
 		default = 100,
 		unit = "%",
-		getFunction = function() return pinSizes["Others"] or 100 end,
+		getFunction = function()
+			return pinSizes["Others"] or 100
+		end,
 		setFunction = function(value)
 			pinSizes["Others"] = value
 			othersScale = value * 0.01
 			UpdateControls()
 			task:Cancel():Call(updatePinSize)
 		end,
-	}
-	othersScale =(pinSizes["Others"] or 100) * 0.01
-
+	})
+	othersScale = (pinSizes["Others"] or 100) * 0.01
 end
 
 local function PlayerActivated()
