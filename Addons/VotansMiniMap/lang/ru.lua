@@ -8,7 +8,6 @@ local strings = {
 	SI_BINDING_NAME_VOTANS_TOGGLE_MAP_ZOOM_IN = "Макс. приближение",
 	SI_BINDING_NAME_VOTANS_TOGGLE_MAP_ZOOM_PLUS = "Приблизить",
 	SI_BINDING_NAME_VOTANS_TOGGLE_MAP_ZOOM_MINUS = "Отдалить",
-
 	SI_VOTANSMINIMAP_WORLD_MAP_TWEAKS = "Настройки карты мира",
 	SI_VOTANSMINIMAP_WORLD_MAP_TWEAKS_TOOLTIP = "Включает настройки распределения нагрузки на ЦП с течением времени.",
 	SI_VOTANSMINIMAP_MINI_MAP = "Мини-карта",
@@ -69,25 +68,20 @@ local strings = {
 	SI_VOTANSMINIMAP_SHOW_CAMERA_HEADING_TOOLTIP = "Отслеживает движение камер персонажей на мировой и мини-карте.",
 	SI_VOTANSMINIMAP_CAMERA_HEADING_ANGLE = "Угол метки",
 	SI_VOTANSMINIMAP_CAMERA_HEADING_ANGLE_TOOLTIP = "Угол линии метки.",
-
 	SI_VOTANSMINIMAP_ZONEALERTMODE_ALWAYS = "Всегда",
 	SI_VOTANSMINIMAP_ZONEALERTMODE_MAP_HIDDEN = "Мини-карта скрыта",
 	SI_VOTANSMINIMAP_ZONEALERTMODE_NEVER = "Никогда",
 	SI_VOTANSMINIMAP_COMPASSMODE_UNTOUCHED = "Не трогать",
 	SI_VOTANSMINIMAP_COMPASSMODE_HIDDEN = "Скрыть",
 	SI_VOTANSMINIMAP_COMPASSMODE_SHOWN = "Показать",
-
 	SI_VOTANSMINIMAP_KEEP_SQUARE = "Хранить площадь",
 	SI_VOTANSMINIMAP_KEEP_SQUARE_TOOLTIP = "Сохраняет квадрат зоны на карте. Стандартное поведение.",
-
 	SI_BINDING_NAME_VOTANS_TOGGLE_MAP_OFFSET_FIX = "Показывать фиксированние положение мини-карты",
-
 	SI_VOTANSMINIMAP_ASYNC_UPDATE = "Асинхронное обновление",
 	SI_VOTANSMINIMAP_ASYNC_UPDATE_TOOLTIP = "Вкл: Частота кадров поверх обновлений.\nOff: Обновления поверх частоты кадров.",
-
 	SI_VOTANSMINIMAP_PINSIZE_KEEP_FAST_TRAVEL = "Транзитные святыни",
 	SI_VOTANSMINIMAP_PINSIZE_KEEPS = "Крепости",
-	SI_VOTANSMINIMAP_PINSIZE_DISTRICTS = "Районы",
+	SI_VOTANSMINIMAP_PINSIZE_DISTRICTS = "Районы"
 }
 
 for stringId, stringValue in pairs(strings) do

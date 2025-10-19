@@ -1,10 +1,10 @@
-if VOTANS_MINIMAP then
+﻿if VOTANS_MINIMAP then
 	return
 end
 
 local addon = {
 	name = "VotansMiniMap",
-	isSpecialZoom = false,
+	isSpecialZoom = false
 }
 
 local am = GetAnimationManager()
@@ -20,11 +20,12 @@ do
 	local log = LibDebugLogger and LibDebugLogger(addon.name)
 
 	dbg = log and function(...)
-		log:Debug(...)
-	end or df
+			log:Debug(...)
+		end or df
 end
 
-local function NoOp(...) end
+local function NoOp(...)
+end
 
 local function GetScene()
 	return IsInGamepadPreferredMode() and GAMEPAD_WORLD_MAP_SCENE or WORLD_MAP_SCENE
@@ -59,13 +60,11 @@ function addon:InitTweaks()
 		local task = async:Create("VOTAN_RefreshAllPOIs")
 
 		local zoneIndex
-		local POI_TYPE_GROUP_DUNGEON, POI_TYPE_WAYSHRINE, MAP_PIN_TYPE_POI_SEEN =
-			POI_TYPE_GROUP_DUNGEON, POI_TYPE_WAYSHRINE, MAP_PIN_TYPE_POI_SEEN
+		local POI_TYPE_GROUP_DUNGEON, POI_TYPE_WAYSHRINE, MAP_PIN_TYPE_POI_SEEN = POI_TYPE_GROUP_DUNGEON, POI_TYPE_WAYSHRINE, MAP_PIN_TYPE_POI_SEEN
 
 		local createTag
 		local function DrawPin(poiIndex)
-			local xLoc, zLoc, iconType, icon, isShownInCurrentMap, linkedCollectibleIsLocked, isDiscovered, isNearby =
-				GetPOIMapInfo(zoneIndex, poiIndex)
+			local xLoc, zLoc, iconType, icon, isShownInCurrentMap, linkedCollectibleIsLocked, isDiscovered, isNearby = GetPOIMapInfo(zoneIndex, poiIndex)
 
 			if isShownInCurrentMap and (isDiscovered or isNearby) and ZO_MapPin.POI_PIN_TYPES[iconType] then
 				local poiType = GetPOIType(zoneIndex, poiIndex)
@@ -73,11 +72,7 @@ function addon:InitTweaks()
 				if iconType ~= MAP_PIN_TYPE_POI_SEEN then
 					-- Seen Wayshines are POIs, discovered Wayshrines are handled by AddWayshrines()
 					-- Request was made by design to have houses and dungeons behave like wayshrines.
-					if
-						poiType == POI_TYPE_WAYSHRINE
-						or poiType == POI_TYPE_HOUSE
-						or poiType == POI_TYPE_GROUP_DUNGEON
-					then
+					if poiType == POI_TYPE_WAYSHRINE or poiType == POI_TYPE_HOUSE or poiType == POI_TYPE_GROUP_DUNGEON then
 						return
 					end
 				end
@@ -112,9 +107,11 @@ function addon:InitTweaks()
 			if not ZO_WorldMap_IsPinGroupShown(MAP_FILTER_OBJECTIVES) then
 				return
 			end
-			asyncTask:WaitUntil(ZoomDone):Then(function(innerTask)
-				innerTask:For(1, GetNumPOIs(zoneIndex)):Do(DrawPin)
-			end)
+			asyncTask:WaitUntil(ZoomDone):Then(
+				function(innerTask)
+					innerTask:For(1, GetNumPOIs(zoneIndex)):Do(DrawPin)
+				end
+			)
 		end
 		function ZO_WorldMap_RefreshAllPOIs()
 			createTag = ZO_MapPin.CreatePOIPinTag
@@ -151,8 +148,7 @@ function addon:InitTweaks()
 		local priorityWayshrinesByZone
 
 		local function DrawPin(nodeIndex)
-			local known, name, normalizedX, normalizedY, icon, glowIcon, poiType, isLocatedInCurrentMap, linkedCollectibleIsLocked =
-				GetFastTravelNodeInfo(nodeIndex)
+			local known, name, normalizedX, normalizedY, icon, glowIcon, poiType, isLocatedInCurrentMap, linkedCollectibleIsLocked = GetFastTravelNodeInfo(nodeIndex)
 			local zoneIndex, poiIndex = GetFastTravelNodePOIIndicies(nodeIndex)
 			local instanceType = GetPOIInstanceType(zoneIndex, poiIndex)
 
@@ -167,12 +163,7 @@ function addon:InitTweaks()
 				passesFilter = isShowingDungeons
 			end
 
-			if
-				passesFilter
-				and known
-				and isLocatedInCurrentMap
-				and ZO_WorldMap_IsNormalizedPointInsideMapBounds(normalizedX, normalizedY)
-			then
+			if passesFilter and known and isLocatedInCurrentMap and ZO_WorldMap_IsNormalizedPointInsideMapBounds(normalizedX, normalizedY) then
 				local suppressPin = false
 				if showPriorityFastTravelOnly then
 					if poiType == POI_TYPE_HOUSE then
@@ -195,10 +186,8 @@ function addon:InitTweaks()
 						glowIcon = nil
 					end
 
-					local tag =
-						ZO_MapPin.CreateTravelNetworkPinTag(nodeIndex, icon, glowIcon, linkedCollectibleIsLocked)
-					local pinType = isCurrentLoc and MAP_PIN_TYPE_FAST_TRAVEL_WAYSHRINE_CURRENT_LOC
-						or MAP_PIN_TYPE_FAST_TRAVEL_WAYSHRINE
+					local tag = ZO_MapPin.CreateTravelNetworkPinTag(nodeIndex, icon, glowIcon, linkedCollectibleIsLocked)
+					local pinType = isCurrentLoc and MAP_PIN_TYPE_FAST_TRAVEL_WAYSHRINE_CURRENT_LOC or MAP_PIN_TYPE_FAST_TRAVEL_WAYSHRINE
 					local mapPriority = nil
 					if showPriorityFastTravelOnly and poiType == POI_TYPE_WAYSHRINE then
 						-- Can return nil, which means ignore prioritization rules and always show (designer controlled)
@@ -246,22 +235,27 @@ function addon:InitTweaks()
 				return
 			end
 
-			showPriorityFastTravelOnly = not addon.account.showAllTravelNodes and ShouldMapShowPriorityFastTravelOnly()
-				or false -- This refers to all 4 kinds of fast travel
+			showPriorityFastTravelOnly = not addon.account.showAllTravelNodes and ShouldMapShowPriorityFastTravelOnly() or false -- This refers to all 4 kinds of fast travel
 			priorityWayshrinesByZone = showPriorityFastTravelOnly and {}
 
 			g_fastTravelNodeIndex = ZO_Map_GetFastTravelNode()
-			asyncTask:WaitUntil(ZoomDone):Then(function(innerTask)
-				innerTask:For(1, GetNumFastTravelNodes()):Do(DrawPin)
-			end)
+			asyncTask:WaitUntil(ZoomDone):Then(
+				function(innerTask)
+					innerTask:For(1, GetNumFastTravelNodes()):Do(DrawPin)
+				end
+			)
 			if not showPriorityFastTravelOnly then
 				return
 			end
-			asyncTask:Then(function(innerTask)
-				innerTask:For(pairs(priorityWayshrinesByZone)):Do(function(_, info)
-					addon.pinManager:CreatePin(info.pinType, info.tag, info.normalizedX, info.normalizedY)
-				end)
-			end)
+			asyncTask:Then(
+				function(innerTask)
+					innerTask:For(pairs(priorityWayshrinesByZone)):Do(
+						function(_, info)
+							addon.pinManager:CreatePin(info.pinType, info.tag, info.normalizedX, info.normalizedY)
+						end
+					)
+				end
+			)
 		end
 		function ZO_WorldMap_RefreshWayshrines()
 			running = true
@@ -296,9 +290,11 @@ function addon:InitTweaks()
 		end
 		local function removePins(asyncTask)
 			addon.pinManager:RemovePins("loc")
-			asyncTask:WaitUntil(ZoomDone):Then(function(innerTask)
-				innerTask:For(1, GetNumMapLocations()):Do(DrawPin)
-			end)
+			asyncTask:WaitUntil(ZoomDone):Then(
+				function(innerTask)
+					innerTask:For(1, GetNumMapLocations()):Do(DrawPin)
+				end
+			)
 		end
 		local function delayStart(asyncTask)
 			asyncTask:Call(releaseAllObjects):Then(removePins)
@@ -356,12 +352,7 @@ function addon:InitTweaks()
 					local freezeTime = now - start
 					runTime = now - runTime
 					if freezeTime > 0.016 then
-						dbg(
-							"%s Freeze!!! used %ims, new frametime %ims",
-							pinData.pinTypeString,
-							runTime * 1000,
-							freezeTime * 1000
-						)
+						dbg("%s Freeze!!! used %ims, new frametime %ims", pinData.pinTypeString, runTime * 1000, freezeTime * 1000)
 					end
 				end
 			end
@@ -391,9 +382,11 @@ function addon:InitTweaks()
 					refreshPinType[pinTypeId] = pinData
 				end
 			end
-			task:Cancel():Call(function(asyncTask)
-				asyncTask:For(pairs(refreshPinType)):Do(removePinType):WaitUntil(ZoomDone):Then(startDrawPins)
-			end)
+			task:Cancel():Call(
+				function(asyncTask)
+					asyncTask:For(pairs(refreshPinType)):Do(removePinType):WaitUntil(ZoomDone):Then(startDrawPins)
+				end
+			)
 		end
 	end
 
@@ -413,11 +406,7 @@ function addon:InitTweaks()
 		end
 		local function resizePins(asyncTask)
 			local pinControls = pins:GetActiveObjects()
-			asyncTask
-				:For(pairs(pinControls))
-				:Do(updateLocationAndSize)
-				:For(pairs(pins.customPins))
-				:Do(callResizeCallback)
+			asyncTask:For(pairs(pinControls)):Do(updateLocationAndSize):For(pairs(pins.customPins)):Do(callResizeCallback)
 		end
 		local function updatePlayerPinLevel()
 			local control = addon.pinManager.playerPin:GetControl()
@@ -550,7 +539,7 @@ function addon:InitMiniMap()
 	local scale = 1
 	local limitedScale = 1
 	local blacklistedPins = {}
-	for _, list in pairs({ ZO_MapPin.UNIT_PIN_TYPES }) do
+	for _, list in pairs({ZO_MapPin.UNIT_PIN_TYPES}) do
 		for pinType in pairs(list) do
 			blacklistedPins[pinType] = true
 		end
@@ -584,14 +573,7 @@ function addon:InitMiniMap()
 
 		local account = addonInstance.account
 		if account.showRealTimeClock then
-			addonInstance.clockRealTime:SetText(
-				FormatTimeSeconds(
-					GetSecondsSinceMidnight(),
-					TIME_FORMAT_STYLE_CLOCK_TIME,
-					addonInstance.account.timeFormat,
-					TIME_FORMAT_DIRECTION_NONE
-				)
-			)
+			addonInstance.clockRealTime:SetText(FormatTimeSeconds(GetSecondsSinceMidnight(), TIME_FORMAT_STYLE_CLOCK_TIME, addonInstance.account.timeFormat, TIME_FORMAT_DIRECTION_NONE))
 		else
 			addonInstance.clockRealTime:SetText("")
 		end
@@ -600,14 +582,7 @@ function addon:InitMiniMap()
 			local igSecondsPerDay = 20955
 			local rlTimeStamp = GetTimeStamp()
 			local inGameTime = (rlTimeStamp % igSecondsPerDay) * 86400 / igSecondsPerDay
-			addonInstance.clockInGame:SetText(
-				FormatTimeSeconds(
-					inGameTime,
-					TIME_FORMAT_STYLE_CLOCK_TIME,
-					addonInstance.account.timeFormat,
-					TIME_FORMAT_DIRECTION_NONE
-				)
-			)
+			addonInstance.clockInGame:SetText(FormatTimeSeconds(inGameTime, TIME_FORMAT_STYLE_CLOCK_TIME, addonInstance.account.timeFormat, TIME_FORMAT_DIRECTION_NONE))
 		else
 			addonInstance.clockInGame:SetText("")
 		end
@@ -638,9 +613,12 @@ function addon:InitMiniMap()
 	ZO_WorldMapTitleBarBG:SetColor(0, 0, 0, 0)
 	ZO_WorldMapButtonsBG:SetColor(0, 0, 0, 0)
 	ZO_WorldMapButtonsBG:SetHandler("OnDragStart", ZO_WorldMapTitleBar_OnDragStart)
-	ZO_WorldMapButtonsBG:SetHandler("OnMouseUp", function(control, button, upInside)
-		ZO_WorldMapTitleBar_OnMouseUp(button, upInside)
-	end)
+	ZO_WorldMapButtonsBG:SetHandler(
+		"OnMouseUp",
+		function(control, button, upInside)
+			ZO_WorldMapTitleBar_OnMouseUp(button, upInside)
+		end
+	)
 
 	local wm = GetWindowManager()
 	local control = wm:CreateControl("VotanMiniMapBg", ZO_WorldMap, CT_BACKDROP)
@@ -702,13 +680,7 @@ function addon:InitMiniMap()
 
 		ZO_WorldMap:ClearAnchors()
 		ZO_WorldMap:SetDimensionConstraints(128, 144, UIWidth, UIHeight)
-		ZO_WorldMap:SetAnchor(
-			CENTER,
-			nil,
-			CENTER,
-			self.account.x or (UIWidth / 2 - 304),
-			self.account.y or (UIHeight / 2 - 368)
-		)
+		ZO_WorldMap:SetAnchor(CENTER, nil, CENTER, self.account.x or (UIWidth / 2 - 304), self.account.y or (UIHeight / 2 - 368))
 		ZO_WorldMap:SetDimensions(self.account.width or sv.width or 304, self.account.height or sv.height or 368)
 
 		ZO_WorldMap_OnResizeStop(ZO_WorldMap)
@@ -733,26 +705,30 @@ function addon:InitMiniMap()
 	em:RegisterForEvent(addon.name, EVENT_PLAYER_COMBAT_STATE, StateChanged)
 
 	local lastZoom, lastW, lastH = -1, -1, -1
-	em:RegisterForEvent(addon.name, EVENT_GAMEPAD_PREFERRED_MODE_CHANGED, function()
-		lastZoom, lastW, lastH = -1, -1, -1
-		ZO_WorldMap_InteractKeybindForceHidden(true)
-		self:UpdateVisibility()
-		self:UpdateBorder()
-		if IsInGamepadPreferredMode() then
-			self:RestorePosition()
-			local ZO_MapPanAndZoom = ZO_WorldMap_GetPanAndZoom()
-			NoGamepad(
-				ZO_MapPanAndZoom.SetCurrentNormalizedZoomInternal,
-				ZO_MapPanAndZoom,
-				ZO_MapPanAndZoom.currentNormalizedZoom
-			)
+	em:RegisterForEvent(
+		addon.name,
+		EVENT_GAMEPAD_PREFERRED_MODE_CHANGED,
+		function()
+			lastZoom, lastW, lastH = -1, -1, -1
+			ZO_WorldMap_InteractKeybindForceHidden(true)
+			self:UpdateVisibility()
+			self:UpdateBorder()
+			if IsInGamepadPreferredMode() then
+				self:RestorePosition()
+				local ZO_MapPanAndZoom = ZO_WorldMap_GetPanAndZoom()
+				NoGamepad(ZO_MapPanAndZoom.SetCurrentNormalizedZoomInternal, ZO_MapPanAndZoom, ZO_MapPanAndZoom.currentNormalizedZoom)
+			end
 		end
-	end)
-	em:RegisterForEvent(addon.name, EVENT_SCREEN_RESIZED, function()
-		if IsInGamepadPreferredMode() and not ZO_WorldMap_IsWorldMapShowing() then
-			ZO_WorldMap_UpdateMap()
+	)
+	em:RegisterForEvent(
+		addon.name,
+		EVENT_SCREEN_RESIZED,
+		function()
+			if IsInGamepadPreferredMode() and not ZO_WorldMap_IsWorldMapShowing() then
+				ZO_WorldMap_UpdateMap()
+			end
 		end
-	end)
+	)
 
 	local MoveToPlayer = ZO_WorldMap_PanToPlayer
 	local function AdjustZoom()
@@ -851,13 +827,17 @@ function addon:InitMiniMap()
 		end
 	end
 	local id = self.name .. "WaitForTextureLoaded"
-	em:RegisterForUpdate(id, 0, function()
-		if not ZO_WorldMapContainer1 then
-			return
+	em:RegisterForUpdate(
+		id,
+		0,
+		function()
+			if not ZO_WorldMapContainer1 then
+				return
+			end
+			ZO_PreHookHandler(ZO_WorldMapContainer1, "OnTextureLoaded", WaitForTextureLoaded)
+			em:UnregisterForUpdate(id)
 		end
-		ZO_PreHookHandler(ZO_WorldMapContainer1, "OnTextureLoaded", WaitForTextureLoaded)
-		em:UnregisterForUpdate(id)
-	end)
+	)
 
 	local callbacks
 	local function Callback(index)
@@ -922,8 +902,7 @@ function addon:InitMiniMap()
 		if (currentTime - lastMapUpdate) >= 1 then
 			lastMapUpdate = currentTime
 
-			needChange, oldMapType, mapId =
-				not DoesCurrentMapMatchMapForPlayerLocation(), GetMapType(), GetMapTileTexture()
+			needChange, oldMapType, mapId = not DoesCurrentMapMatchMapForPlayerLocation(), GetMapType(), GetMapTileTexture()
 			needChange = needChange or mapId ~= lastMapId
 			if needChange then
 				SetMapToPlayerLocation()
@@ -1062,11 +1041,7 @@ function addon:InitMiniMap()
 			if WORLD_MAP_MANAGER:IsInMode(MAP_MODE_VOTANS_MINIMAP) then
 				local button, ctrl, alt, shift = ...
 				if button == MOUSE_BUTTON_INDEX_LEFT and not shift and not alt and ctrl then
-					return toggleMapPoint(
-						MAP_PIN_TYPE_PLAYER_WAYPOINT,
-						GetMapPlayerWaypoint,
-						ZO_WorldMap_RemovePlayerWaypoint
-					)
+					return toggleMapPoint(MAP_PIN_TYPE_PLAYER_WAYPOINT, GetMapPlayerWaypoint, ZO_WorldMap_RemovePlayerWaypoint)
 				end
 			end
 			return orgZO_WorldMap_MouseDown(...)
@@ -1078,7 +1053,8 @@ function addon:InitMiniMap()
 			MoveToPlayer = ZO_WorldMap_JumpToPlayer
 		end
 
-		function addon:StopFollowPlayer() end
+		function addon:StopFollowPlayer()
+		end
 
 		local isDirty = false
 		local function RefreshVisibility()
@@ -1151,11 +1127,7 @@ function addon:InitMiniMap()
 					return zoneName
 				end
 			elseif dungeonDifficulty ~= DUNGEON_DIFFICULTY_NONE then
-				zoneName = ZO_CachedStrFormat(
-					SI_WINDOW_TITLE_WORLD_MAP_WITH_DUNGEON_DIFFICULTY,
-					zoneName,
-					GetString("SI_DUNGEONDIFFICULTY", dungeonDifficulty)
-				)
+				zoneName = ZO_CachedStrFormat(SI_WINDOW_TITLE_WORLD_MAP_WITH_DUNGEON_DIFFICULTY, zoneName, GetString("SI_DUNGEONDIFFICULTY", dungeonDifficulty))
 				return zoneName
 			end
 		end
@@ -1253,12 +1225,7 @@ function addon:InitMiniMap()
 						self:RestorePosition()
 						self:UpdateBorder()
 					else
-						CALLBACK_MANAGER:RegisterCallback(
-							"OnWorldMapModeChanged",
-							DoIt,
-							orgZO_WorldMap_UpdateMap,
-							skipWorldMapUpdate
-						)
+						CALLBACK_MANAGER:RegisterCallback("OnWorldMapModeChanged", DoIt, orgZO_WorldMap_UpdateMap, skipWorldMapUpdate)
 						-- ZO_WorldMap_UpdateMap = NoOp
 						-- Needed to cause OnWorldMapModeChanged:
 						EndInteraction(INTERACTION_FAST_TRAVEL_KEEP)
@@ -1312,25 +1279,33 @@ function addon:InitMiniMap()
 		end
 
 		-- Hook SetToMode to update cache when mode changes
-		ZO_PreHook(WORLD_MAP_MANAGER, "SetToMode", function(self, mode)
-			if mode == MAP_MODE_VOTANS_MINIMAP then
-				cachedMapMode = true
-			elseif mode ~= MAP_MODE_VOTANS_MINIMAP and cachedMapMode then
-				cachedMapMode = false
+		ZO_PreHook(
+			WORLD_MAP_MANAGER,
+			"SetToMode",
+			function(self, mode)
+				if mode == MAP_MODE_VOTANS_MINIMAP then
+					cachedMapMode = true
+				elseif mode ~= MAP_MODE_VOTANS_MINIMAP and cachedMapMode then
+					cachedMapMode = false
+				end
 			end
-		end)
+		)
 
 		-- Initialize cache
 		updateCachedMapMode()
 
-		ZO_PreHook(WORLD_MAP_MANAGER, "TryShowSpectacleMapHeader", function(self, ...)
-			--Votan's Minimap uses a dedicated mapmode to show the minimap is used. If we ask for that being active we can detect it's the minimap addon and not the normal worldmap. Other addons like MapPins and Fyrakin hopefully got such dedicated MapModes themselves  !!!
-			if cachedMapMode then
-				WORLD_MAP_MANAGER:ClearMapHeader()
-				return true --supress calling original code
+		ZO_PreHook(
+			WORLD_MAP_MANAGER,
+			"TryShowSpectacleMapHeader",
+			function(self, ...)
+				--Votan's Minimap uses a dedicated mapmode to show the minimap is used. If we ask for that being active we can detect it's the minimap addon and not the normal worldmap. Other addons like MapPins and Fyrakin hopefully got such dedicated MapModes themselves  !!!
+				if cachedMapMode then
+					WORLD_MAP_MANAGER:ClearMapHeader()
+					return true --supress calling original code
+				end
+				return false --call original code
 			end
-			return false --call original code
-		end)
+		)
 	end
 
 	do
@@ -1494,8 +1469,7 @@ function addon:InitMiniMap()
 			local offsetNX, offsetNY = 0.5 + borderSizeN - zoomedNX, 0.5 + borderSizeN - zoomedNY
 
 			if not panZoom.allowPanPastMapEdge then
-				offsetNX, offsetNY =
-					zo_clamp(offsetNX, -borderSizeN, borderSizeN), zo_clamp(offsetNY, -borderSizeN, borderSizeN)
+				offsetNX, offsetNY = zo_clamp(offsetNX, -borderSizeN, borderSizeN), zo_clamp(offsetNY, -borderSizeN, borderSizeN)
 			end
 
 			local units = zo_max(ZO_WorldMapScroll:GetDimensions())
@@ -1576,14 +1550,18 @@ do
 			ApplyTemplateToControl(ZO_WorldMapMapFrame, ZO_GetPlatformTemplate("ZO_WorldMapFrame"))
 		end
 
-		ZO_PreHook(WORLD_MAP_MANAGER, "UpdateFloorAndLevelNavigation", function()
-			if WORLD_MAP_MANAGER:IsInMode(MAP_MODE_VOTANS_MINIMAP) then
-				ZO_WorldMapButtonsFloors_Keyboard:SetHidden(true)
-				ZO_WorldMapButtonsFloors_Gamepad:SetHidden(true)
-				ZO_WorldMapButtonsLevels_Gamepad:SetHidden(true)
-				return true
+		ZO_PreHook(
+			WORLD_MAP_MANAGER,
+			"UpdateFloorAndLevelNavigation",
+			function()
+				if WORLD_MAP_MANAGER:IsInMode(MAP_MODE_VOTANS_MINIMAP) then
+					ZO_WorldMapButtonsFloors_Keyboard:SetHidden(true)
+					ZO_WorldMapButtonsFloors_Gamepad:SetHidden(true)
+					ZO_WorldMapButtonsLevels_Gamepad:SetHidden(true)
+					return true
+				end
 			end
-		end)
+		)
 		function addon:UpdateBorder()
 			local control = self.background
 			local inMiniMap = not GetScene():IsShowing()
@@ -1597,13 +1575,7 @@ do
 						else
 							font, scale = self.account.titleFont, 1
 						end
-						ZO_WorldMapTitle:SetFont(
-							string.format(
-								"%s|%i|soft-shadow-thick",
-								font,
-								math.floor(self.account.titleFontSize * scale)
-							)
-						)
+						ZO_WorldMapTitle:SetFont(string.format("%s|%i|soft-shadow-thick", font, math.floor(self.account.titleFontSize * scale)))
 					end
 				end
 				local item = self:GetFontSizeBySizeName(self.account.titleFontSize)
@@ -1696,7 +1668,7 @@ function addon:Initialize()
 		borderAlpha = 100,
 		titleFont = "BOLD_FONT",
 		titleFontSize = 16,
-		titleColor = { GetInterfaceColor(INTERFACE_COLOR_TYPE_TEXT_COLORS, INTERFACE_TEXT_COLOR_NORMAL) },
+		titleColor = {GetInterfaceColor(INTERFACE_COLOR_TYPE_TEXT_COLORS, INTERFACE_TEXT_COLOR_NORMAL)},
 		showClock = true,
 		showRealTimeClock = true,
 		showInGameClock = true,
@@ -1718,14 +1690,14 @@ function addon:Initialize()
 		showCombat = false,
 		showSiege = false,
 		fixedMaps = {},
-		showAllTravelNodes = false,
+		showAllTravelNodes = false
 	}
 	self.accountDefaults = accountDefaults
 
 	self.account = ZO_SavedVars:NewAccountWide("VotansMiniMap_Data", 1, nil, accountDefaults)
 
 	local defaults = {
-		showMap = true,
+		showMap = true
 	}
 	self.defaults = defaults
 
@@ -1742,9 +1714,7 @@ function addon:Initialize()
 	if self.account.enableMap then
 		self:InitMapSettings()
 
-		self.titleColor = ZO_ColorDef:New(
-			unpack(type(self.account.titleColor) == "table" and self.account.titleColor or accountDefaults.titleColor)
-		)
+		self.titleColor = ZO_ColorDef:New(unpack(type(self.account.titleColor) == "table" and self.account.titleColor or accountDefaults.titleColor))
 		self.titleColor:SetAlpha(1)
 
 		self:InitMiniMap()
@@ -1760,9 +1730,12 @@ function addon:Initialize()
 	end
 end
 
-CALLBACK_MANAGER:RegisterCallback("OnWorldMapSavedVarsReady", function(vars)
-	addon.mapVars = vars
-end)
+CALLBACK_MANAGER:RegisterCallback(
+	"OnWorldMapSavedVarsReady",
+	function(vars)
+		addon.mapVars = vars
+	end
+)
 
 do
 	local function UpdateControls()
@@ -1772,16 +1745,7 @@ do
 	end
 	function addon:ToggleShowMap()
 		self.player.showMap = not self.player.showMap
-		CENTER_SCREEN_ANNOUNCE:AddMessage(
-			EVENT_BROADCAST,
-			CSA_CATEGORY_SMALL_TEXT,
-			nil,
-			string.format(
-				"%s: %s",
-				GetString(SI_VOTANSMINIMAP_SHOW_MAP),
-				GetString(self.player.showMap and SI_CHECK_BUTTON_ON or SI_CHECK_BUTTON_OFF)
-			)
-		)
+		CENTER_SCREEN_ANNOUNCE:AddMessage(EVENT_BROADCAST, CSA_CATEGORY_SMALL_TEXT, nil, string.format("%s: %s", GetString(SI_VOTANSMINIMAP_SHOW_MAP), GetString(self.player.showMap and SI_CHECK_BUTTON_ON or SI_CHECK_BUTTON_OFF)))
 		self:UpdateVisibility()
 		UpdateControls()
 	end
@@ -1817,12 +1781,7 @@ do
 	end
 
 	function addon:StepZoom(add)
-		if
-			WORLD_MAP_MANAGER:GetMode() ~= MAP_MODE_VOTANS_MINIMAP
-			or WORLD_MAP_FRAGMENT:IsHidden()
-			or addon.isSpecialZoom
-			or not self.account[self.zoomMode]
-		then
+		if WORLD_MAP_MANAGER:GetMode() ~= MAP_MODE_VOTANS_MINIMAP or WORLD_MAP_FRAGMENT:IsHidden() or addon.isSpecialZoom or not self.account[self.zoomMode] then
 			PlaySound(SOUNDS.NEGATIVE_CLICK)
 			return
 		end
@@ -1843,9 +1802,7 @@ do
 		if IsInGamepadPreferredMode() then
 			return SCENE_MANAGER:IsShowing("gamepad_worldMap")
 		else
-			return not ZO_WorldMapScroll:IsHidden()
-				and MouseIsOver(ZO_WorldMapScroll)
-				and SCENE_MANAGER:IsShowing("worldMap")
+			return not ZO_WorldMapScroll:IsHidden() and MouseIsOver(ZO_WorldMapScroll) and SCENE_MANAGER:IsShowing("worldMap")
 		end
 	end
 	local function NormalizePreferredMousePositionToMap()
@@ -1871,7 +1828,7 @@ do
 		if isMouseOverMap then
 			local offsetX, offsetY = NormalizePreferredMousePositionToMap()
 			if isNotFixed or distanceSq(offsetX, offsetY, unpack(self.account.fixedMaps[mapId])) > 0.0001 then
-				self.account.fixedMaps[mapId] = { offsetX, offsetY }
+				self.account.fixedMaps[mapId] = {offsetX, offsetY}
 				PlaySound(SOUNDS.MAP_PING)
 			else
 				self.account.fixedMaps[mapId] = nil

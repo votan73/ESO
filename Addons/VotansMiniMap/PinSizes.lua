@@ -64,24 +64,26 @@ function addon:InitPinSizes()
 		local function updatePinSize()
 			UpdateDrawLevel(pinType)
 		end
-		settings:AddSetting({
-			type = LibHarvensAddonSettings.ST_SLIDER,
-			label = GetString(stringId),
-			min = 2,
-			max = 200,
-			step = 1,
-			default = 100,
-			unit = "%",
-			getFunction = function()
-				return pinSizes[caption] or 100
-			end,
-			setFunction = function(value)
-				pinSizes[caption] = value
-				pinScales[pinType] = value * 0.01
-				UpdateControls()
-				task:Cancel():Call(updatePinSize)
-			end,
-		})
+		settings:AddSetting(
+			{
+				type = LibHarvensAddonSettings.ST_SLIDER,
+				label = GetString(stringId),
+				min = 2,
+				max = 200,
+				step = 1,
+				default = 100,
+				unit = "%",
+				getFunction = function()
+					return pinSizes[caption] or 100
+				end,
+				setFunction = function(value)
+					pinSizes[caption] = value
+					pinScales[pinType] = value * 0.01
+					UpdateControls()
+					task:Cancel():Call(updatePinSize)
+				end
+			}
+		)
 		pinScales[pinType] = (pinSizes[caption] or 100) * 0.01
 	end
 
@@ -93,27 +95,29 @@ function addon:InitPinSizes()
 		local function updatePinSize()
 			UpdateDrawLevels(pins)
 		end
-		settings:AddSetting({
-			type = LibHarvensAddonSettings.ST_SLIDER,
-			label = stringId and GetString(stringId) or caption,
-			min = 2,
-			max = 200,
-			step = 1,
-			default = 100,
-			unit = "%",
-			getFunction = function()
-				return pinSizes[caption] or 100
-			end,
-			setFunction = function(value)
-				pinSizes[caption] = value
-				local scale = value * 0.01
-				for pinType in pairs(pins) do
-					pinScales[pinType] = scale
+		settings:AddSetting(
+			{
+				type = LibHarvensAddonSettings.ST_SLIDER,
+				label = stringId and GetString(stringId) or caption,
+				min = 2,
+				max = 200,
+				step = 1,
+				default = 100,
+				unit = "%",
+				getFunction = function()
+					return pinSizes[caption] or 100
+				end,
+				setFunction = function(value)
+					pinSizes[caption] = value
+					local scale = value * 0.01
+					for pinType in pairs(pins) do
+						pinScales[pinType] = scale
+					end
+					UpdateControls()
+					task:Cancel():Call(updatePinSize)
 				end
-				UpdateControls()
-				task:Cancel():Call(updatePinSize)
-			end,
-		})
+			}
+		)
 		local scale = (pinSizes[caption] or 100) * 0.01
 		for pinType in pairs(pins) do
 			pinScales[pinType] = scale
@@ -148,7 +152,7 @@ function addon:InitPinSizes()
 	-- AddPins(ZO_MapPin.AVA_RESTRICTED_LINK_PIN_TYPES, "AvA Restricted Links")
 
 	if HarvensCustomMapPinsType then
-		AddPins(HarvensCustomMapPinsType, "Harvens Custom Map Pins", "SI_MAPFILTER" .. HarvensCustomMapPinsType)
+		AddCustomPin(HarvensCustomMapPinsType, "Harvens Custom Map Pins", "SI_MAPFILTER" .. HarvensCustomMapPinsType)
 	end
 
 	local function AddAddonPins(mapPins, caption, strId)
@@ -171,7 +175,7 @@ function addon:InitPinSizes()
 			"LBooksMapPin_collected",
 			"LBooksMapPin_eidetic",
 			"LBooksMapPin_eideticCollected",
-			"pinType_Lore_books",
+			"pinType_Lore_books"
 		}
 		AddAddonPins(mapPins, "Lore Books", LBOOKS_TITLE)
 	end
@@ -179,7 +183,7 @@ function addon:InitPinSizes()
 	if LostTreasureMapTreasurePin then
 		local mapPins = {
 			"LostTreasureMapTreasurePin",
-			"LostTreasureCompassSurveysPin",
+			"LostTreasureCompassSurveysPin"
 		}
 		AddAddonPins(mapPins, "Lost Treasure")
 	end
@@ -216,7 +220,7 @@ function addon:InitPinSizes()
 			"pinType_Achievement_quests",
 			"pinType_Surreptitiously_Shadowed",
 			"pinType_Swamp_Rescuer",
-			"pinType_Vine-Tongue_Traveler",
+			"pinType_Vine-Tongue_Traveler"
 		}
 		AddAddonPins(mapPins, "Map Pins")
 	end
@@ -226,7 +230,7 @@ function addon:InitPinSizes()
 			"SkySMapPin_unknown",
 			"SkySMapPin_collected",
 			"pinType_Skyshards",
-			"pinType_Skyshards_done",
+			"pinType_Skyshards_done"
 		}
 		AddAddonPins(mapPins, "Sky Shards", SKYS_TITLE)
 	end
@@ -243,24 +247,26 @@ function addon:InitPinSizes()
 	local function updatePinSize(asyncTask)
 		asyncTask:For(pairs(addon.pinManager:GetActiveObjects())):Do(updatePin)
 	end
-	settings:AddSetting({
-		type = LibHarvensAddonSettings.ST_SLIDER,
-		label = GetString(SI_FURNITURETHEMETYPE1),
-		min = 2,
-		max = 200,
-		step = 1,
-		default = 100,
-		unit = "%",
-		getFunction = function()
-			return pinSizes["Others"] or 100
-		end,
-		setFunction = function(value)
-			pinSizes["Others"] = value
-			othersScale = value * 0.01
-			UpdateControls()
-			task:Cancel():Call(updatePinSize)
-		end,
-	})
+	settings:AddSetting(
+		{
+			type = LibHarvensAddonSettings.ST_SLIDER,
+			label = GetString(SI_FURNITURETHEMETYPE1),
+			min = 2,
+			max = 200,
+			step = 1,
+			default = 100,
+			unit = "%",
+			getFunction = function()
+				return pinSizes["Others"] or 100
+			end,
+			setFunction = function(value)
+				pinSizes["Others"] = value
+				othersScale = value * 0.01
+				UpdateControls()
+				task:Cancel():Call(updatePinSize)
+			end
+		}
+	)
 	othersScale = (pinSizes["Others"] or 100) * 0.01
 end
 

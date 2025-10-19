@@ -8,7 +8,6 @@ local strings = {
 	SI_BINDING_NAME_VOTANS_TOGGLE_MAP_ZOOM_IN = "Maximal-Zoom rein",
 	SI_BINDING_NAME_VOTANS_TOGGLE_MAP_ZOOM_PLUS = "Zoom-Schritt rein",
 	SI_BINDING_NAME_VOTANS_TOGGLE_MAP_ZOOM_MINUS = "Zoom-Schritt raus",
-
 	SI_VOTANSMINIMAP_WORLD_MAP_TWEAKS = "Weltkarten Optimierungen",
 	SI_VOTANSMINIMAP_WORLD_MAP_TWEAKS_TOOLTIP = "Aktiviert Optimierungen zur zeitlichen CPU-Lastverteilung.",
 	SI_VOTANSMINIMAP_MINI_MAP = "Mini Map",
@@ -77,33 +76,27 @@ local strings = {
 	SI_VOTANSMINIMAP_CAMERA_HEADING_ANGLE_TOOLTIP = "Der Winkel der Markierungslinie.",
 	SI_VOTANSMINIMAP_SHOW_ON_TOP = "Im Vordergrund anzeigen",
 	SI_VOTANSMINIMAP_SHOW_ON_TOP_TOOLTIP = "Die MiniMap über andere Elemente legen.",
-
 	SI_VOTANSMINIMAP_ZONEALERTMODE_ALWAYS = "Immer",
 	SI_VOTANSMINIMAP_ZONEALERTMODE_MAP_HIDDEN = "Mini Map ausgeblendet",
 	SI_VOTANSMINIMAP_ZONEALERTMODE_NEVER = "Nie",
 	SI_VOTANSMINIMAP_COMPASSMODE_UNTOUCHED = "Unverändert",
 	SI_VOTANSMINIMAP_COMPASSMODE_HIDDEN = "Ausgeblendet",
 	SI_VOTANSMINIMAP_COMPASSMODE_SHOWN = "Eingeblendet",
-
 	SI_VOTANSMINIMAP_KEEP_SQUARE = "Quadratisch halten",
 	SI_VOTANSMINIMAP_KEEP_SQUARE_TOOLTIP = "Hält den Bereich der Karte quadratisch. Standardverhalten.",
-
 	SI_BINDING_NAME_VOTANS_TOGGLE_MAP_OFFSET_FIX = "Fixierte Minimap Position umschalten",
-
 	SI_VOTANSMINIMAP_ASYNC_UPDATE = "Asynchrone Aktualisierung",
 	SI_VOTANSMINIMAP_ASYNC_UPDATE_TOOLTIP = "Ein: Framerate über Aktualisierung.\nAus: Aktualisierung über Framerate.",
-
 	SI_VOTANSMINIMAP_PINSIZE_KEEP_FAST_TRAVEL = "Transitus-Schrein",
 	SI_VOTANSMINIMAP_PINSIZE_KEEPS = "Burgen",
 	SI_VOTANSMINIMAP_PINSIZE_DISTRICTS = "Distrikte",
-
 	SI_VOTANSMINIMAP_SHOW_ALL_TRAVEL_NODES = "Alle Wegschreine anzeigen",
 	SI_VOTANSMINIMAP_SHOW_IN_SETTINGS = "Mini Map jetzt einblenden",
 	SI_VOTANSMINIMAP_GRID_X = "Position - Raster X",
 	SI_VOTANSMINIMAP_GRID_Y = "Position - Raster Y",
 	SI_VOTANSMINIMAP_GRID_W = "Größe - Raster Breite",
 	SI_VOTANSMINIMAP_GRID_H = "Größe - Raster Höhe",
-	SI_VOTANSMINIMAP_GRID_TOOLTIP = "Position und Größe in einem 8x8 Raster. Aber Ihr könnt auch die Maus benutzen um die Position und die Größe zu ändern.",
+	SI_VOTANSMINIMAP_GRID_TOOLTIP = "Position und Größe in einem 8x8 Raster. Aber Ihr könnt auch die Maus benutzen um die Position und die Größe zu ändern."
 }
 
 for stringId, stringValue in pairs(strings) do

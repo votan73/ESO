@@ -8,7 +8,6 @@ local strings = {
 	SI_BINDING_NAME_VOTANS_TOGGLE_MAP_ZOOM_IN = "Zoom maximum",
 	SI_BINDING_NAME_VOTANS_TOGGLE_MAP_ZOOM_PLUS = "Niveau de zoom supérieur",
 	SI_BINDING_NAME_VOTANS_TOGGLE_MAP_ZOOM_MINUS = "Niveau de zoom inférieur",
-
 	SI_VOTANSMINIMAP_WORLD_MAP_TWEAKS = "Optimiser la carte du monde",
 	SI_VOTANSMINIMAP_WORLD_MAP_TWEAKS_TOOLTIP = "Active des optimisations qui répartissent la charge du processeur au fil du temps.",
 	SI_VOTANSMINIMAP_MINI_MAP = "Optimiser la mini-carte",
@@ -73,25 +72,20 @@ local strings = {
 	SI_VOTANSMINIMAP_SHOW_CAMERA_HEADING_TOOLTIP = "Affiche un cône indiquant la vue actuelle de la caméra sur la carte du monde et la mini-carte.",
 	SI_VOTANSMINIMAP_CAMERA_HEADING_ANGLE = "Angle du cône",
 	SI_VOTANSMINIMAP_CAMERA_HEADING_ANGLE_TOOLTIP = "Détermine l'ouverture du cône de vue.",
-
 	SI_VOTANSMINIMAP_ZONEALERTMODE_ALWAYS = "Toujours",
 	SI_VOTANSMINIMAP_ZONEALERTMODE_MAP_HIDDEN = "Mini-carte cachée",
 	SI_VOTANSMINIMAP_ZONEALERTMODE_NEVER = "Jamais",
 	SI_VOTANSMINIMAP_COMPASSMODE_UNTOUCHED = "Ne rien faire",
 	SI_VOTANSMINIMAP_COMPASSMODE_HIDDEN = "Cacher",
 	SI_VOTANSMINIMAP_COMPASSMODE_SHOWN = "Afficher",
-
 	SI_VOTANSMINIMAP_KEEP_SQUARE = "Forcer l'apparence carrée",
 	SI_VOTANSMINIMAP_KEEP_SQUARE_TOOLTIP = "Garde la mini-carte de forme carrée. Apparence par défaut.",
-
 	SI_BINDING_NAME_VOTANS_TOGGLE_MAP_OFFSET_FIX = "Déverrouiller la position",
-
 	SI_VOTANSMINIMAP_ASYNC_UPDATE = "Mise à jour asynchrone",
 	SI_VOTANSMINIMAP_ASYNC_UPDATE_TOOLTIP = "Oui : Fréquence d'images prioritaire sur les mises à jour.\nNon : Mises à jour prioritaire sur la fréquence d'images.",
-
 	SI_VOTANSMINIMAP_PINSIZE_KEEP_FAST_TRAVEL = "Oratoires de Transitus",
 	SI_VOTANSMINIMAP_PINSIZE_KEEPS = "Conserver",
-	SI_VOTANSMINIMAP_PINSIZE_DISTRICTS = "Quartiers",
+	SI_VOTANSMINIMAP_PINSIZE_DISTRICTS = "Quartiers"
 }
 
 for stringId, stringValue in pairs(strings) do

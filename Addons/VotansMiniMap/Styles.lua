@@ -1,61 +1,82 @@
 local self = VOTANS_MINIMAP
 
-self:AddBorderStyle("Default", "Default", function(settings, background, frame)
-	local alpha = settings.borderAlpha / 100 or 1
-	background:SetCenterColor(0, 0, 0, alpha)
-	background:SetEdgeColor(0, 0, 0, 0)
-	background:SetCenterTexture("")
-	background:SetInsets(0, 0, 0, 0)
-	frame:SetEdgeTexture("/esoui/art/worldmap/worldmap_frame_edge.dds", 128, 16)
-	frame:SetAlpha(1)
-	frame:SetHidden(false)
-end)
+self:AddBorderStyle(
+	"Default",
+	"Default",
+	function(settings, background, frame)
+		local alpha = settings.borderAlpha / 100 or 1
+		background:SetCenterColor(0, 0, 0, alpha)
+		background:SetEdgeColor(0, 0, 0, 0)
+		background:SetCenterTexture("")
+		background:SetInsets(0, 0, 0, 0)
+		frame:SetEdgeTexture("/esoui/art/worldmap/worldmap_frame_edge.dds", 128, 16)
+		frame:SetAlpha(1)
+		frame:SetHidden(false)
+	end
+)
 
-self:AddBorderStyle("ESO", "ESO Style", function(settings, background, frame)
-	local alpha = settings.borderAlpha / 100 or 1
-	background:SetCenterColor(0, 0, 0, alpha)
-	background:SetEdgeColor(0, 0, 0, alpha)
-	background:SetEdgeTexture("/esoui/art/chatwindow/chat_bg_edge.dds", 256, 128, 16)
-	background:SetCenterTexture("/esoui/art/chatwindow/chat_bg_center.dds")
-	background:SetInsets(16, 16, -16, -16)
-	frame:SetEdgeTexture("VotansMiniMap/WorldMapFrame.dds", 128, 16, 32)
-	frame:SetAlpha(1)
-	frame:SetHidden(false)
-end)
+self:AddBorderStyle(
+	"ESO",
+	"ESO Style",
+	function(settings, background, frame)
+		local alpha = settings.borderAlpha / 100 or 1
+		background:SetCenterColor(0, 0, 0, alpha)
+		background:SetEdgeColor(0, 0, 0, alpha)
+		background:SetEdgeTexture("/esoui/art/chatwindow/chat_bg_edge.dds", 256, 128, 16)
+		background:SetCenterTexture("/esoui/art/chatwindow/chat_bg_center.dds")
+		background:SetInsets(16, 16, -16, -16)
+		frame:SetEdgeTexture("VotansMiniMap/WorldMapFrame.dds", 128, 16, 32)
+		frame:SetAlpha(1)
+		frame:SetHidden(false)
+	end
+)
 
-self:AddBorderStyle("Flat", "Flat", function(settings, background, frame)
-	local alpha = settings.borderAlpha / 100 or 1
-	background:SetCenterColor(0, 0, 0, alpha)
-	background:SetEdgeColor(0, 0, 0, 0)
-	background:SetCenterTexture("")
-	background:SetInsets(0, 0, 0, 0)
-	frame:SetHidden(true)
-end)
+self:AddBorderStyle(
+	"Flat",
+	"Flat",
+	function(settings, background, frame)
+		local alpha = settings.borderAlpha / 100 or 1
+		background:SetCenterColor(0, 0, 0, alpha)
+		background:SetEdgeColor(0, 0, 0, 0)
+		background:SetCenterTexture("")
+		background:SetInsets(0, 0, 0, 0)
+		frame:SetHidden(true)
+	end
+)
 
-self:AddBorderStyle("Gamepad", "Gamepad", function(settings, background, frame)
-	local alpha = settings.borderAlpha / 100 or 1
-	background:SetCenterColor(0, 0, 0, alpha)
-	background:SetEdgeColor(0, 0, 0, 0)
-	background:SetCenterTexture("")
-	background:SetInsets(0, 0, 0, 0)
-	frame:SetEdgeTexture("esoui/art/miscellaneous/gamepad/edgeframegamepadborder.dds", 128, 16)
-	frame:SetAlpha(1)
-	frame:SetHidden(false)
-end)
+self:AddBorderStyle(
+	"Gamepad",
+	"Gamepad",
+	function(settings, background, frame)
+		local alpha = settings.borderAlpha / 100 or 1
+		background:SetCenterColor(0, 0, 0, alpha)
+		background:SetEdgeColor(0, 0, 0, 0)
+		background:SetCenterTexture("")
+		background:SetInsets(0, 0, 0, 0)
+		frame:SetEdgeTexture("esoui/art/miscellaneous/gamepad/edgeframegamepadborder.dds", 128, 16)
+		frame:SetAlpha(1)
+		frame:SetHidden(false)
+	end
+)
 
-self:AddBorderStyle("Modern", "Modern", function(settings, background, frame)
-	local alpha = settings.borderAlpha / 100 or 1
-	background:SetCenterColor(0.5, 0.5, 0.5, alpha)
-	background:SetEdgeColor(0, 0, 0, 0)
-	background:SetCenterTexture("")
-	background:SetInsets(11, 6, -9, -10)
-	background:SetAnchor(BOTTOMRIGHT, nil, BOTTOMRIGHT, 6, -30)
-	frame:SetEdgeTexture("", 128, 16)
-	frame:SetAlpha(0)
-	frame:SetHidden(false)
-end, function(settings, background, frame)
-	background:SetAnchor(BOTTOMRIGHT, nil, BOTTOMRIGHT, 6, 0)
-end)
+self:AddBorderStyle(
+	"Modern",
+	"Modern",
+	function(settings, background, frame)
+		local alpha = settings.borderAlpha / 100 or 1
+		background:SetCenterColor(0.5, 0.5, 0.5, alpha)
+		background:SetEdgeColor(0, 0, 0, 0)
+		background:SetCenterTexture("")
+		background:SetInsets(11, 6, -9, -10)
+		background:SetAnchor(BOTTOMRIGHT, nil, BOTTOMRIGHT, 6, -30)
+		frame:SetEdgeTexture("", 128, 16)
+		frame:SetAlpha(0)
+		frame:SetHidden(false)
+	end,
+	function(settings, background, frame)
+		background:SetAnchor(BOTTOMRIGHT, nil, BOTTOMRIGHT, 6, 0)
+	end
+)
 
 self:AddFont("", "None")
 

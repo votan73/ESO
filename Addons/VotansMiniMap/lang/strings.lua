@@ -8,7 +8,6 @@ local strings = {
 	SI_BINDING_NAME_VOTANS_TOGGLE_MAP_ZOOM_IN = "Zoom Max In",
 	SI_BINDING_NAME_VOTANS_TOGGLE_MAP_ZOOM_PLUS = "Zoom Step In",
 	SI_BINDING_NAME_VOTANS_TOGGLE_MAP_ZOOM_MINUS = "Zoom Step Out",
-
 	SI_VOTANSMINIMAP_WORLD_MAP_TWEAKS = "World Map Tweaks",
 	SI_VOTANSMINIMAP_WORLD_MAP_TWEAKS_TOOLTIP = "Enable tweaks to spread CPU load over time.",
 	SI_VOTANSMINIMAP_MINI_MAP = "Mini Map",
@@ -76,26 +75,20 @@ local strings = {
 	SI_VOTANSMINIMAP_CAMERA_HEADING_ANGLE_TOOLTIP = "The angle of the marker line.",
 	SI_VOTANSMINIMAP_SHOW_ON_TOP = "Show On Top",
 	SI_VOTANSMINIMAP_SHOW_ON_TOP_TOOLTIP = "Put MiniMap in front of other elements.",
-
 	SI_VOTANSMINIMAP_ZONEALERTMODE_ALWAYS = "Always",
 	SI_VOTANSMINIMAP_ZONEALERTMODE_MAP_HIDDEN = "Mini Map Hidden",
 	SI_VOTANSMINIMAP_ZONEALERTMODE_NEVER = "Never",
 	SI_VOTANSMINIMAP_COMPASSMODE_UNTOUCHED = "Untouched",
 	SI_VOTANSMINIMAP_COMPASSMODE_HIDDEN = "Hidden",
 	SI_VOTANSMINIMAP_COMPASSMODE_SHOWN = "Shown",
-
 	SI_VOTANSMINIMAP_KEEP_SQUARE = "Keep Square",
 	SI_VOTANSMINIMAP_KEEP_SQUARE_TOOLTIP = "Keep the map area square. Default behavior.",
-
 	SI_BINDING_NAME_VOTANS_TOGGLE_MAP_OFFSET_FIX = "Toggle Fixed Mini Map Position",
-
 	SI_VOTANSMINIMAP_ASYNC_UPDATE = "Asynchronous Update",
 	SI_VOTANSMINIMAP_ASYNC_UPDATE_TOOLTIP = "On: Framerate over update.\nOff: Update over framerate.",
-
 	SI_VOTANSMINIMAP_PINSIZE_KEEP_FAST_TRAVEL = "Transitus Shrine",
 	SI_VOTANSMINIMAP_PINSIZE_KEEPS = "Keeps",
 	SI_VOTANSMINIMAP_PINSIZE_DISTRICTS = "Districts",
-
 	SI_VOTANSMINIMAP_SHOW_ALL_TRAVEL_NODES = "Show all way shrines",
 	SI_VOTANSMINIMAP_SHOW_ALL_TRAVEL_NODES_TOOLTIP = "", -- Placeholder
 	SI_VOTANSMINIMAP_SHOW_IN_SETTINGS = "Show mini map now",
@@ -103,7 +96,7 @@ local strings = {
 	SI_VOTANSMINIMAP_GRID_Y = "Position - Grid Y",
 	SI_VOTANSMINIMAP_GRID_W = "Size - Grid Width",
 	SI_VOTANSMINIMAP_GRID_H = "Size - Grid Height",
-	SI_VOTANSMINIMAP_GRID_TOOLTIP = "Position & size in an 8x8 grid. But you can also use the mouse to change position and size.",
+	SI_VOTANSMINIMAP_GRID_TOOLTIP = "Position & size in an 8x8 grid. But you can also use the mouse to change position and size."
 }
 
 for stringId, stringValue in pairs(strings) do
