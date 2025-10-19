@@ -1,32 +1,32 @@
-﻿local addon = VOTANS_MINIMAP
+local addon = VOTANS_MINIMAP
 local async = LibAsync
 
 addon.zoneAlertMode = {
 	Always = "ALWAYS",
 	MiniMapHidden = "MINIMAPHIDDEN",
-	Never = "NEVER"
+	Never = "NEVER",
 }
 addon.compassMode = {
 	Untouched = "UNTOUCHED",
 	Hidden = "HIDDEN",
-	Shown = "SHOWN"
+	Shown = "SHOWN",
 }
 addon.fontFaces = {
-	["MEDIUM_FONT"] = {"$(MEDIUM_FONT)", 1},
-	["BOLD_FONT"] = {"$(BOLD_FONT)", 1},
-	["CHAT_FONT"] = {"$(CHAT_FONT)", 1},
-	["GAMEPAD_LIGHT_FONT"] = {"$(GAMEPAD_LIGHT_FONT)", 1.3},
-	["GAMEPAD_MEDIUM_FONT"] = {"$(GAMEPAD_MEDIUM_FONT)", 1.3},
-	["GAMEPAD_BOLD_FONT"] = {"$(GAMEPAD_BOLD_FONT)", 1.3},
-	["ANTIQUE_FONT"] = {"$(ANTIQUE_FONT)", 1},
-	["HANDWRITTEN_FONT"] = {"$(HANDWRITTEN_FONT)", 0.95},
-	["STONE_TABLET_FONT"] = {"$(STONE_TABLET_FONT)", 0.9}
+	["MEDIUM_FONT"] = { "$(MEDIUM_FONT)", 1 },
+	["BOLD_FONT"] = { "$(BOLD_FONT)", 1 },
+	["CHAT_FONT"] = { "$(CHAT_FONT)", 1 },
+	["GAMEPAD_LIGHT_FONT"] = { "$(GAMEPAD_LIGHT_FONT)", 1.3 },
+	["GAMEPAD_MEDIUM_FONT"] = { "$(GAMEPAD_MEDIUM_FONT)", 1.3 },
+	["GAMEPAD_BOLD_FONT"] = { "$(GAMEPAD_BOLD_FONT)", 1.3 },
+	["ANTIQUE_FONT"] = { "$(ANTIQUE_FONT)", 1 },
+	["HANDWRITTEN_FONT"] = { "$(HANDWRITTEN_FONT)", 0.95 },
+	["STONE_TABLET_FONT"] = { "$(STONE_TABLET_FONT)", 0.9 },
 }
 
 local lookup = {
 	frameStyles = {},
 	fonts = {},
-	fontSizes = {}
+	fontSizes = {},
 }
 
 function addon:GetFontSizeBySizeName(sizeName)
@@ -40,7 +40,7 @@ end
 function addon:AddBorderStyle(name, displayText, setupFunction, resetFunction)
 	lookup.frameStyles[#lookup.frameStyles + 1] = {
 		name = displayText,
-		data = {value = name, setup = setupFunction, reset = resetFunction}
+		data = { value = name, setup = setupFunction, reset = resetFunction },
 	}
 end
 
@@ -52,11 +52,11 @@ function addon:AddFont(font, displayText)
 			self.fontFaces[font] = string.format("$(%s)", font)
 		end
 	end
-	lookup.fonts[#lookup.fonts + 1] = {name = displayText, data = font}
+	lookup.fonts[#lookup.fonts + 1] = { name = displayText, data = font }
 end
 
 function addon:AddFontSize(fontSize, displayText, offsetY)
-	lookup.fontSizes[#lookup.fontSizes + 1] = {name = displayText, data = {size = fontSize, offsetY = offsetY}}
+	lookup.fontSizes[#lookup.fontSizes + 1] = { name = displayText, data = { size = fontSize, offsetY = offsetY } }
 end
 
 function addon:InitMapSettings()
@@ -81,7 +81,7 @@ function addon:InitMapSettings()
 		lookup.nameToFontSize[item.data.size] = item
 	end
 	if type(self.account.titleFontSize) == "string" then
-		CreateFont("VOTAN_MINIMAP_FONT", "$(MEDIUM_FONT)|" .. self.account.titleFontSize)
+		VOTAN_MINIMAP_FONT = CreateFont("VOTAN_MINIMAP_FONT", "$(MEDIUM_FONT)|" .. self.account.titleFontSize)
 		local _, fontSize = VOTAN_MINIMAP_FONT:GetFontInfo()
 		self.account.titleFontSize = fontSize
 	end
@@ -102,7 +102,7 @@ function addon:InitSettings()
 	settings.version = "2.1.8"
 	settings.website = "http://www.esoui.com/downloads/info1399-VotansMiniMap.html"
 
-	settings:AddSetting {
+	settings:AddSetting({
 		type = LibHarvensAddonSettings.ST_CHECKBOX,
 		label = GetString(SI_VOTANSMINIMAP_WORLD_MAP_TWEAKS),
 		tooltip = GetString(SI_VOTANSMINIMAP_WORLD_MAP_TWEAKS_TOOLTIP),
@@ -113,9 +113,9 @@ function addon:InitSettings()
 		setFunction = function(value)
 			self.account.enableTweaks = value
 		end,
-		disable = IsConsoleUI()
-	}
-	settings:AddSetting {
+		disable = IsConsoleUI(),
+	})
+	settings:AddSetting({
 		type = LibHarvensAddonSettings.ST_CHECKBOX,
 		label = GetString(SI_KEYBINDINGS_CATEGORY_VOTANS_MINIMAP),
 		tooltip = GetString(SI_VOTANSMINIMAP_MINI_MAP_TOOLTIP),
@@ -125,28 +125,28 @@ function addon:InitSettings()
 		end,
 		setFunction = function(value)
 			self.account.enableMap = value
-		end
-	}
-	settings:AddSetting {
+		end,
+	})
+	settings:AddSetting({
 		type = LibHarvensAddonSettings.ST_LABEL,
-		label = ""
-	}
-	settings:AddSetting {
+		label = "",
+	})
+	settings:AddSetting({
 		type = LibHarvensAddonSettings.ST_BUTTON,
 		label = "",
 		tooltip = nil,
 		buttonText = GetString(SI_VOTANSMINIMAP_APPLY_BUTTON),
 		clickHandler = function()
 			SLASH_COMMANDS["/reloadui"]()
-		end
-	}
+		end,
+	})
 
 	if self.account.enableMap then
-		settings:AddSetting {
+		settings:AddSetting({
 			type = LibHarvensAddonSettings.ST_LABEL,
-			label = GetString(SI_KEYBINDINGS_CATEGORY_VOTANS_MINIMAP)
-		}
-		settings:AddSetting {
+			label = GetString(SI_KEYBINDINGS_CATEGORY_VOTANS_MINIMAP),
+		})
+		settings:AddSetting({
 			type = LibHarvensAddonSettings.ST_SLIDER,
 			label = GetString(SI_VOTANSMINIMAP_ZOOM),
 			tooltip = GetString(SI_VOTANSMINIMAP_ZOOM_TOOLTIP),
@@ -161,9 +161,9 @@ function addon:InitSettings()
 			end,
 			setFunction = function(value)
 				self.account.zoom = value
-			end
-		}
-		settings:AddSetting {
+			end,
+		})
+		settings:AddSetting({
 			type = LibHarvensAddonSettings.ST_SLIDER,
 			label = GetString(SI_VOTANSMINIMAP_SUB_ZONE_ZOOM),
 			tooltip = GetString(SI_VOTANSMINIMAP_SUB_ZONE_ZOOM_TOOLTIP),
@@ -178,9 +178,9 @@ function addon:InitSettings()
 			end,
 			setFunction = function(value)
 				self.account.subZoneZoom = value
-			end
-		}
-		settings:AddSetting {
+			end,
+		})
+		settings:AddSetting({
 			type = LibHarvensAddonSettings.ST_SLIDER,
 			label = GetString(SI_VOTANSMINIMAP_DUNGEON_ZOOM),
 			tooltip = GetString(SI_VOTANSMINIMAP_DUNGEON_ZOOM_TOOLTIP),
@@ -195,9 +195,9 @@ function addon:InitSettings()
 			end,
 			setFunction = function(value)
 				self.account.dungeonZoom = value
-			end
-		}
-		settings:AddSetting {
+			end,
+		})
+		settings:AddSetting({
 			type = LibHarvensAddonSettings.ST_SLIDER,
 			label = GetString(SI_VOTANSMINIMAP_MOUNTED_ZOOM),
 			tooltip = GetString(SI_VOTANSMINIMAP_MOUNTED_ZOOM_TOOLTIP),
@@ -212,9 +212,9 @@ function addon:InitSettings()
 			end,
 			setFunction = function(value)
 				self.account.mountedZoom = value
-			end
-		}
-		settings:AddSetting {
+			end,
+		})
+		settings:AddSetting({
 			type = LibHarvensAddonSettings.ST_SLIDER,
 			label = GetString(SI_VOTANSMINIMAP_BG_ZOOM),
 			tooltip = GetString(SI_VOTANSMINIMAP_BG_ZOOM_TOOLTIP),
@@ -229,9 +229,9 @@ function addon:InitSettings()
 			end,
 			setFunction = function(value)
 				self.account.battlegroundZoom = value
-			end
-		}
-		settings:AddSetting {
+			end,
+		})
+		settings:AddSetting({
 			type = LibHarvensAddonSettings.ST_SLIDER,
 			label = GetString(SI_VOTANSMINIMAP_UNIT_PINS_MINIMUM_SIZE),
 			tooltip = GetString(SI_VOTANSMINIMAP_UNIT_PINS_MINIMUM_SIZE_TOOLTIP),
@@ -246,9 +246,9 @@ function addon:InitSettings()
 			end,
 			setFunction = function(value)
 				self.account.unitPinScaleLimit = value
-			end
-		}
-		settings:AddSetting {
+			end,
+		})
+		settings:AddSetting({
 			type = LibHarvensAddonSettings.ST_CHECKBOX,
 			label = GetString(SI_VOTANSMINIMAP_SHOW_MAP),
 			tooltip = GetString(SI_VOTANSMINIMAP_SHOW_MAP_TOOLTIP),
@@ -259,9 +259,9 @@ function addon:InitSettings()
 			setFunction = function(value)
 				self.player.showMap = value
 				self:UpdateVisibility()
-			end
-		}
-		settings:AddSetting {
+			end,
+		})
+		settings:AddSetting({
 			type = LibHarvensAddonSettings.ST_CHECKBOX,
 			label = " |u12:0::|u" .. GetString(SI_VOTANSMINIMAP_SHOW_HUD),
 			tooltip = GetString(SI_VOTANSMINIMAP_SHOW_HUD_TOOLTIP),
@@ -272,9 +272,9 @@ function addon:InitSettings()
 			setFunction = function(value)
 				self.account.showHUD = value
 				self:UpdateVisibility()
-			end
-		}
-		settings:AddSetting {
+			end,
+		})
+		settings:AddSetting({
 			type = LibHarvensAddonSettings.ST_CHECKBOX,
 			label = " |u12:0::|u" .. GetString(SI_VOTANSMINIMAP_SHOW_LOOTING),
 			tooltip = GetString(SI_VOTANSMINIMAP_SHOW_LOOTING_TOOLTIP),
@@ -285,9 +285,9 @@ function addon:InitSettings()
 			setFunction = function(value)
 				self.account.showLoot = value
 				self:UpdateVisibility()
-			end
-		}
-		settings:AddSetting {
+			end,
+		})
+		settings:AddSetting({
 			type = LibHarvensAddonSettings.ST_CHECKBOX,
 			label = " |u12:0::|u" .. GetString(SI_VOTANSMINIMAP_SHOW_MOUNTED),
 			tooltip = GetString(SI_VOTANSMINIMAP_SHOW_MOUNTED_TOOLTIP),
@@ -298,9 +298,9 @@ function addon:InitSettings()
 			setFunction = function(value)
 				self.account.showMounted = value
 				self:UpdateVisibility()
-			end
-		}
-		settings:AddSetting {
+			end,
+		})
+		settings:AddSetting({
 			type = LibHarvensAddonSettings.ST_CHECKBOX,
 			label = " |u12:0::|u" .. GetString(SI_VOTANSMINIMAP_SHOW_COMBAT),
 			tooltip = GetString(SI_VOTANSMINIMAP_SHOW_COMBAT_TOOLTIP),
@@ -311,9 +311,9 @@ function addon:InitSettings()
 			setFunction = function(value)
 				self.account.showCombat = value
 				self:UpdateVisibility()
-			end
-		}
-		settings:AddSetting {
+			end,
+		})
+		settings:AddSetting({
 			type = LibHarvensAddonSettings.ST_CHECKBOX,
 			label = " |u12:0::|u" .. GetString(SI_VOTANSMINIMAP_SHOW_SIEGE),
 			tooltip = GetString(SI_VOTANSMINIMAP_SHOW_SIEGE_TOOLTIP),
@@ -324,9 +324,9 @@ function addon:InitSettings()
 			setFunction = function(value)
 				self.account.showSiege = value
 				self:UpdateVisibility()
-			end
-		}
-		settings:AddSetting {
+			end,
+		})
+		settings:AddSetting({
 			type = LibHarvensAddonSettings.ST_CHECKBOX,
 			label = GetString(SI_VOTANSMINIMAP_ASYNC_UPDATE),
 			tooltip = GetString(SI_VOTANSMINIMAP_ASYNC_UPDATE_TOOLTIP),
@@ -336,13 +336,13 @@ function addon:InitSettings()
 			end,
 			setFunction = function(value)
 				self.account.asyncUpdate = value
-			end
-		}
-		settings:AddSetting {
+			end,
+		})
+		settings:AddSetting({
 			type = LibHarvensAddonSettings.ST_SECTION,
-			label = GetString(SI_VOTANSMINIMAP_KEYBINDINGS_ZOOM)
-		}
-		settings:AddSetting {
+			label = GetString(SI_VOTANSMINIMAP_KEYBINDINGS_ZOOM),
+		})
+		settings:AddSetting({
 			type = LibHarvensAddonSettings.ST_CHECKBOX,
 			label = GetString(SI_VOTANSMINIMAP_ZOOM_TO_PLAYER),
 			tooltip = GetString(SI_VOTANSMINIMAP_ZOOM_TO_PLAYER_TOOLTIP),
@@ -352,9 +352,9 @@ function addon:InitSettings()
 			end,
 			setFunction = function(value)
 				self.account.zoomToPlayer = value
-			end
-		}
-		settings:AddSetting {
+			end,
+		})
+		settings:AddSetting({
 			type = LibHarvensAddonSettings.ST_SLIDER,
 			label = GetString(SI_VOTANSMINIMAP_ZOOM_OUT),
 			tooltip = GetString(SI_VOTANSMINIMAP_ZOOM_OUT_TOOLTIP),
@@ -369,9 +369,9 @@ function addon:InitSettings()
 			end,
 			setFunction = function(value)
 				self.account.zoomOut = value
-			end
-		}
-		settings:AddSetting {
+			end,
+		})
+		settings:AddSetting({
 			type = LibHarvensAddonSettings.ST_SLIDER,
 			label = GetString(SI_VOTANSMINIMAP_ZOOM_IN),
 			tooltip = GetString(SI_VOTANSMINIMAP_ZOOM_IN_TOOLTIP),
@@ -386,15 +386,14 @@ function addon:InitSettings()
 			end,
 			setFunction = function(value)
 				self.account.zoomIn = value
-			end
-		}
-		settings:AddSetting {
+			end,
+		})
+		settings:AddSetting({
 			type = LibHarvensAddonSettings.ST_SECTION,
-			label = GetString(SI_VOTANSMINIMAP_APPEARANCE)
-		}
+			label = GetString(SI_VOTANSMINIMAP_APPEARANCE),
+		})
 		-- Always use the last setting before location settings
-		local prevSetting =
-			settings:AddSetting {
+		local prevSetting = settings:AddSetting({
 			type = LibHarvensAddonSettings.ST_CHECKBOX,
 			label = GetString(SI_VOTANSMINIMAP_LOCK_POSITION),
 			tooltip = GetString(SI_VOTANSMINIMAP_LOCK_POSITION_TOOLTIP),
@@ -405,13 +404,14 @@ function addon:InitSettings()
 			setFunction = function(value)
 				self.account.lockWindow = value
 				self:UpdateBorder()
-			end
-		}
+			end,
+		})
 
 		local locationSettings
 		local function updateLocationSettings()
 			local last = prevSetting.control
 			for i = 1, #locationSettings do
+				---@diagnostic disable-next-line: undefined-field
 				last = locationSettings[i]:UpdateControl(last)
 			end
 			ZO_WorldMap:SetDrawLayer(DL_BACKGROUND)
@@ -433,8 +433,8 @@ function addon:InitSettings()
 			if inUpdate then
 				return
 			end
-			local addMap = addonSettings == settings
-			if not addMap and self.wasMapAdded then
+			local _addMap = addonSettings == settings
+			if not _addMap and self.wasMapAdded then
 				scene:RemoveFragment(WORLD_MAP_FRAGMENT)
 				self.wasMapAdded = false
 				self:UpdateBorder()
@@ -452,7 +452,7 @@ function addon:InitSettings()
 				return
 			end
 			local w, h = GuiRoot:GetDimensions()
-			local w, h = w / 8, h / 8
+			w, h = w / 8, h / 8
 			local w2, h2 = w * 0.5, h * 0.5
 			locationSettings[2].default = math.floor(w2 - locationSettings[3].default / 2)
 			locationSettings[2].min = -w2
@@ -468,129 +468,129 @@ function addon:InitSettings()
 		end
 		EVENT_MANAGER:RegisterForEvent(self.name, EVENT_ALL_GUI_SCREENS_RESIZED, getScreenDimensions)
 
-		locationSettings =
-			settings:AddSettings(
+		locationSettings = settings:AddSettings({
 			{
-				{
-					type = LibHarvensAddonSettings.ST_CHECKBOX,
-					label = GetString(SI_VOTANSMINIMAP_SHOW_IN_SETTINGS),
-					default = false,
-					getFunction = function()
-						return self.wasMapAdded
-					end,
-					setFunction = function(value)
-						if value then
-							addMap()
-						else
-							addonSelected()
-						end
+				type = LibHarvensAddonSettings.ST_CHECKBOX,
+				label = GetString(SI_VOTANSMINIMAP_SHOW_IN_SETTINGS),
+				default = false,
+				getFunction = function()
+					return self.wasMapAdded
+				end,
+				setFunction = function(value)
+					if value then
+						addMap()
+					else
+						addonSelected()
 					end
-				},
-				{
-					type = LibHarvensAddonSettings.ST_SLIDER,
-					label = GetString(SI_VOTANSMINIMAP_GRID_X),
-					tooltip = GetString(SI_VOTANSMINIMAP_GRID_TOOLTIP),
-					default = 0,
-					min = -100000,
-					max = 100000,
-					step = 1,
-					getFunction = function()
-						return math.floor(self.account.x / 8)
-					end,
-					setFunction = function(value)
-						if inUpdate then
-							return
-						end
-						inUpdate = true
-						self.account.x = value * 8
-						self:RestorePosition()
-						updateLocationSettings()
-						inUpdate = false
+				end,
+			},
+			{
+				type = LibHarvensAddonSettings.ST_SLIDER,
+				label = GetString(SI_VOTANSMINIMAP_GRID_X),
+				tooltip = GetString(SI_VOTANSMINIMAP_GRID_TOOLTIP),
+				default = 0,
+				min = -100000,
+				max = 100000,
+				step = 1,
+				getFunction = function()
+					return math.floor(self.account.x / 8)
+				end,
+				setFunction = function(value)
+					if inUpdate then
+						return
 					end
-				},
-				{
-					type = LibHarvensAddonSettings.ST_SLIDER,
-					label = GetString(SI_VOTANSMINIMAP_GRID_Y),
-					tooltip = GetString(SI_VOTANSMINIMAP_GRID_TOOLTIP),
-					default = 0,
-					min = -100000,
-					max = 100000,
-					step = 1,
-					getFunction = function()
-						return math.floor(self.account.y / 8)
-					end,
-					setFunction = function(value)
-						if inUpdate then
-							return
-						end
-						inUpdate = true
-						self.account.y = value * 8
-						self:RestorePosition()
-						updateLocationSettings()
-						inUpdate = false
+					inUpdate = true
+					self.account.x = value * 8
+					self:RestorePosition()
+					updateLocationSettings()
+					inUpdate = false
+				end,
+			},
+			{
+				type = LibHarvensAddonSettings.ST_SLIDER,
+				label = GetString(SI_VOTANSMINIMAP_GRID_Y),
+				tooltip = GetString(SI_VOTANSMINIMAP_GRID_TOOLTIP),
+				default = 0,
+				min = -100000,
+				max = 100000,
+				step = 1,
+				getFunction = function()
+					return math.floor(self.account.y / 8)
+				end,
+				setFunction = function(value)
+					if inUpdate then
+						return
 					end
-				},
-				{
-					type = LibHarvensAddonSettings.ST_SLIDER,
-					label = GetString(SI_VOTANSMINIMAP_GRID_W),
-					tooltip = GetString(SI_VOTANSMINIMAP_GRID_TOOLTIP),
-					default = 304 / 8,
-					min = 14,
-					max = 100000,
-					step = 1,
-					getFunction = function()
-						return math.floor(ZO_WorldMapScroll:GetWidth() / 8)
-					end,
-					setFunction = function(value)
-						if inUpdate then
-							return
-						end
-						inUpdate = true
-						value = value * 8
-						self.account.width = ZO_WorldMap:GetWidth() - ZO_WorldMapScroll:GetWidth() + value
-						ZO_WorldMapScroll:SetWidth(value)
-						if addon.modeData.keepSquare then
-							self.account.height = ZO_WorldMap:GetHeight() - ZO_WorldMapScroll:GetHeight() + value
-							ZO_WorldMapScroll:SetHeight(value)
-						end
-						self:RestorePosition()
-						updateLocationSettings()
-						inUpdate = false
+					inUpdate = true
+					self.account.y = value * 8
+					self:RestorePosition()
+					updateLocationSettings()
+					inUpdate = false
+				end,
+			},
+			{
+				type = LibHarvensAddonSettings.ST_SLIDER,
+				label = GetString(SI_VOTANSMINIMAP_GRID_W),
+				tooltip = GetString(SI_VOTANSMINIMAP_GRID_TOOLTIP),
+				default = 304 / 8,
+				min = 14,
+				max = 100000,
+				step = 1,
+				getFunction = function()
+					return math.floor(ZO_WorldMapScroll:GetWidth() / 8)
+				end,
+				setFunction = function(value)
+					if inUpdate then
+						return
 					end
-				},
-				{
-					type = LibHarvensAddonSettings.ST_SLIDER,
-					label = GetString(SI_VOTANSMINIMAP_GRID_H),
-					tooltip = GetString(SI_VOTANSMINIMAP_GRID_TOOLTIP),
-					default = 304 / 8,
-					min = 14,
-					max = 100000,
-					step = 1,
-					getFunction = function()
-						return math.floor((addon.modeData.keepSquare and ZO_WorldMapScroll:GetWidth() or ZO_WorldMapScroll:GetHeight()) / 8)
-					end,
-					setFunction = function(value)
-						if inUpdate then
-							return
-						end
-						inUpdate = true
-						value = value * 8
+					inUpdate = true
+					value = value * 8
+					self.account.width = ZO_WorldMap:GetWidth() - ZO_WorldMapScroll:GetWidth() + value
+					ZO_WorldMapScroll:SetWidth(value)
+					if addon.modeData.keepSquare then
 						self.account.height = ZO_WorldMap:GetHeight() - ZO_WorldMapScroll:GetHeight() + value
 						ZO_WorldMapScroll:SetHeight(value)
-						if addon.modeData.keepSquare then
-							self.account.width = ZO_WorldMap:GetWidth() - ZO_WorldMapScroll:GetWidth() + value
-							ZO_WorldMapScroll:SetWidth(value)
-						end
-						self:RestorePosition()
-						updateLocationSettings()
-						inUpdate = false
 					end
-				}
-			}
-		)
+					self:RestorePosition()
+					updateLocationSettings()
+					inUpdate = false
+				end,
+			},
+			{
+				type = LibHarvensAddonSettings.ST_SLIDER,
+				label = GetString(SI_VOTANSMINIMAP_GRID_H),
+				tooltip = GetString(SI_VOTANSMINIMAP_GRID_TOOLTIP),
+				default = 304 / 8,
+				min = 14,
+				max = 100000,
+				step = 1,
+				getFunction = function()
+					return math.floor(
+						(addon.modeData.keepSquare and ZO_WorldMapScroll:GetWidth() or ZO_WorldMapScroll:GetHeight())
+							/ 8
+					)
+				end,
+				setFunction = function(value)
+					if inUpdate then
+						return
+					end
+					inUpdate = true
+					value = value * 8
+					self.account.height = ZO_WorldMap:GetHeight() - ZO_WorldMapScroll:GetHeight() + value
+					ZO_WorldMapScroll:SetHeight(value)
+					if addon.modeData.keepSquare then
+						self.account.width = ZO_WorldMap:GetWidth() - ZO_WorldMapScroll:GetWidth() + value
+						ZO_WorldMapScroll:SetWidth(value)
+					end
+					self:RestorePosition()
+					updateLocationSettings()
+					inUpdate = false
+				end,
+			},
+		})
 		getScreenDimensions()
 
-		settings:AddSetting {
+		settings:AddSetting({
 			type = LibHarvensAddonSettings.ST_DROPDOWN,
 			label = GetString(SI_VOTANSMINIMAP_BORDER_STYLE),
 			items = lookup.frameStyles,
@@ -607,9 +607,9 @@ function addon:InitSettings()
 					self.account.frameStyle = item.data.value
 					self:UpdateBorder()
 				end
-			end
-		}
-		settings:AddSetting {
+			end,
+		})
+		settings:AddSetting({
 			type = LibHarvensAddonSettings.ST_SLIDER,
 			label = GetString(SI_VOTANSMINIMAP_BORDER_OPACITY),
 			tooltip = GetString(SI_VOTANSMINIMAP_BORDER_OPACITY_TOOLTIP),
@@ -624,9 +624,9 @@ function addon:InitSettings()
 			setFunction = function(value)
 				self.account.borderAlpha = value
 				self:UpdateBorder()
-			end
-		}
-		settings:AddSetting {
+			end,
+		})
+		settings:AddSetting({
 			type = LibHarvensAddonSettings.ST_DROPDOWN,
 			label = GetString(SI_VOTANSMINIMAP_TITLE_FONT),
 			items = lookup.fonts,
@@ -637,9 +637,9 @@ function addon:InitSettings()
 			setFunction = function(combobox, name, item)
 				self.account.titleFont = item.data
 				self:UpdateBorder()
-			end
-		}
-		settings:AddSetting {
+			end,
+		})
+		settings:AddSetting({
 			type = LibHarvensAddonSettings.ST_DROPDOWN,
 			label = GetString(SI_VOTANSMINIMAP_TITLE_FONT_SIZE),
 			items = lookup.fontSizes,
@@ -651,9 +651,9 @@ function addon:InitSettings()
 				self.account.titleFontSize = item.data.size
 				self.lastTitleFont = ""
 				self:UpdateBorder()
-			end
-		}
-		settings:AddSetting {
+			end,
+		})
+		settings:AddSetting({
 			type = LibHarvensAddonSettings.ST_COLOR,
 			label = GetString(SI_VOTANSMINIMAP_TITLE_COLOR),
 			default = self.accountDefaults.titleColor,
@@ -662,16 +662,16 @@ function addon:InitSettings()
 			end,
 			setFunction = function(newR, newG, newB, newA)
 				self.titleColor:SetRGB(newR, newG, newB)
-				self.account.titleColor = {self.titleColor:UnpackRGB()}
+				self.account.titleColor = { self.titleColor:UnpackRGB() }
 				self:UpdateBorder()
-			end
-		}
+			end,
+		})
 		do
 			local items = {
-				{name = "Top", data = true},
-				{name = "Bottom", data = false}
+				{ name = "Top", data = true },
+				{ name = "Bottom", data = false },
 			}
-			settings:AddSetting {
+			settings:AddSetting({
 				type = LibHarvensAddonSettings.ST_DROPDOWN,
 				label = GetString(SI_VOTANSMINIMAP_TITLE_POSITION),
 				items = items,
@@ -682,10 +682,10 @@ function addon:InitSettings()
 				setFunction = function(combobox, name, item)
 					self.account.titleAtTop = item.data
 					self:UpdateBorder()
-				end
-			}
+				end,
+			})
 		end
-		settings:AddSetting {
+		settings:AddSetting({
 			type = LibHarvensAddonSettings.ST_CHECKBOX,
 			label = GetString(SI_VOTANSMINIMAP_SHOW_FULL_TITLE),
 			tooltip = GetString(SI_VOTANSMINIMAP_SHOW_FULL_TITLE_TOOLTIP),
@@ -696,9 +696,9 @@ function addon:InitSettings()
 			setFunction = function(value)
 				self.account.showFullTitle = value
 				ZO_WorldMapTitle:SetText(ZO_WorldMap_GetMapTitle(GetPlayerLocationName(), GetPlayerActiveSubzoneName()))
-			end
-		}
-		settings:AddSetting {
+			end,
+		})
+		settings:AddSetting({
 			type = LibHarvensAddonSettings.ST_CHECKBOX,
 			label = GetString(SI_VOTANSMINIMAP_KEEP_SQUARE),
 			tooltip = GetString(SI_VOTANSMINIMAP_KEEP_SQUARE_TOOLTIP),
@@ -709,20 +709,20 @@ function addon:InitSettings()
 			setFunction = function(value)
 				self.account.keepSquare = value
 				self.modeData.keepSquare = value
-			end
-		}
+			end,
+		})
 		do
 			local Modes = {
-				{name = GetString(SI_VOTANSMINIMAP_SHOW_CLOCK0), data = {false, false}},
-				{name = GetString(SI_VOTANSMINIMAP_SHOW_CLOCK1), data = {true, false}},
-				{name = GetString(SI_VOTANSMINIMAP_SHOW_CLOCK2), data = {false, true}},
-				{name = GetString(SI_VOTANSMINIMAP_SHOW_CLOCK3), data = {true, true}}
+				{ name = GetString(SI_VOTANSMINIMAP_SHOW_CLOCK0), data = { false, false } },
+				{ name = GetString(SI_VOTANSMINIMAP_SHOW_CLOCK1), data = { true, false } },
+				{ name = GetString(SI_VOTANSMINIMAP_SHOW_CLOCK2), data = { false, true } },
+				{ name = GetString(SI_VOTANSMINIMAP_SHOW_CLOCK3), data = { true, true } },
 			}
 			local ModeToData = {}
 			for i = 1, #Modes do
 				ModeToData[i] = Modes[i]
 			end
-			settings:AddSetting {
+			settings:AddSetting({
 				type = LibHarvensAddonSettings.ST_DROPDOWN,
 				label = GetString(SI_VOTANSMINIMAP_SHOW_CLOCK),
 				tooltip = GetString(SI_VOTANSMINIMAP_SHOW_CLOCK_TOOLTIP),
@@ -744,19 +744,19 @@ function addon:InitSettings()
 					account.showInGameClock = item.data[2]
 					account.showClock = account.showRealTimeClock or account.showInGameClock
 					self:UpdateBorder()
-				end
-			}
+				end,
+			})
 		end
 		do
 			local Modes = {
-				{name = "12h", data = TIME_FORMAT_PRECISION_TWELVE_HOUR},
-				{name = "24h", data = TIME_FORMAT_PRECISION_TWENTY_FOUR_HOUR}
+				{ name = "12h", data = TIME_FORMAT_PRECISION_TWELVE_HOUR },
+				{ name = "24h", data = TIME_FORMAT_PRECISION_TWENTY_FOUR_HOUR },
 			}
 			local ModeToData = {}
 			for i = 1, #Modes do
 				ModeToData[Modes[i].data] = Modes[i]
 			end
-			settings:AddSetting {
+			settings:AddSetting({
 				type = LibHarvensAddonSettings.ST_DROPDOWN,
 				label = GetString(SI_VOTANSMINIMAP_TIME_FORMAT),
 				items = Modes,
@@ -766,10 +766,10 @@ function addon:InitSettings()
 				end,
 				setFunction = function(combobox, name, item)
 					self.account.timeFormat = item.data
-				end
-			}
+				end,
+			})
 		end
-		settings:AddSetting {
+		settings:AddSetting({
 			type = LibHarvensAddonSettings.ST_CHECKBOX,
 			label = GetString(SI_VOTANSMINIMAP_SHOW_CAMERA_HEADING),
 			tooltip = GetString(SI_VOTANSMINIMAP_SHOW_CAMERA_HEADING_TOOLTIP),
@@ -788,9 +788,9 @@ function addon:InitSettings()
 					self.cameraAngleRight:SetHidden(not value)
 				end
 				settings:UpdateControls()
-			end
-		}
-		settings:AddSetting {
+			end,
+		})
+		settings:AddSetting({
 			type = LibHarvensAddonSettings.ST_SLIDER,
 			label = " |u12:0::|u" .. GetString(SI_VOTANSMINIMAP_CAMERA_HEADING_ANGLE),
 			tooltip = GetString(SI_VOTANSMINIMAP_CAMERA_HEADING_ANGLE_TOOLTIP),
@@ -808,19 +808,28 @@ function addon:InitSettings()
 			end,
 			disable = function()
 				return not self.account.showCameraAngle
-			end
-		}
+			end,
+		})
 		do
 			local Modes = {
-				{name = GetString(SI_VOTANSMINIMAP_ZONEALERTMODE_ALWAYS), data = self.zoneAlertMode.Always},
-				{name = GetString(SI_VOTANSMINIMAP_ZONEALERTMODE_MAP_HIDDEN), data = self.zoneAlertMode.MiniMapHidden},
-				{name = GetString(SI_VOTANSMINIMAP_ZONEALERTMODE_NEVER), data = self.zoneAlertMode.Never}
+				{
+					name = GetString(SI_VOTANSMINIMAP_ZONEALERTMODE_ALWAYS),
+					data = self.zoneAlertMode.Always,
+				},
+				{
+					name = GetString(SI_VOTANSMINIMAP_ZONEALERTMODE_MAP_HIDDEN),
+					data = self.zoneAlertMode.MiniMapHidden,
+				},
+				{
+					name = GetString(SI_VOTANSMINIMAP_ZONEALERTMODE_NEVER),
+					data = self.zoneAlertMode.Never,
+				},
 			}
 			local ModeToData = {}
 			for i = 1, #Modes do
 				ModeToData[Modes[i].data] = Modes[i]
 			end
-			settings:AddSetting {
+			settings:AddSetting({
 				type = LibHarvensAddonSettings.ST_DROPDOWN,
 				label = GetString(SI_VOTANSMINIMAP_ZONE_CHANGE_ALERT),
 				items = Modes,
@@ -830,20 +839,20 @@ function addon:InitSettings()
 				end,
 				setFunction = function(combobox, name, item)
 					self.account.zoneAlertMode = item.data
-				end
-			}
+				end,
+			})
 		end
 		do
 			local Modes = {
-				{name = GetString(SI_VOTANSMINIMAP_COMPASSMODE_UNTOUCHED), data = self.compassMode.Untouched},
-				{name = GetString(SI_VOTANSMINIMAP_COMPASSMODE_HIDDEN), data = self.compassMode.Hidden},
-				{name = GetString(SI_VOTANSMINIMAP_COMPASSMODE_SHOWN), data = self.compassMode.Shown}
+				{ name = GetString(SI_VOTANSMINIMAP_COMPASSMODE_UNTOUCHED), data = self.compassMode.Untouched },
+				{ name = GetString(SI_VOTANSMINIMAP_COMPASSMODE_HIDDEN), data = self.compassMode.Hidden },
+				{ name = GetString(SI_VOTANSMINIMAP_COMPASSMODE_SHOWN), data = self.compassMode.Shown },
 			}
 			local ModeToData = {}
 			for i = 1, #Modes do
 				ModeToData[Modes[i].data] = Modes[i]
 			end
-			settings:AddSetting {
+			settings:AddSetting({
 				type = LibHarvensAddonSettings.ST_DROPDOWN,
 				label = GetString(SI_VOTANSMINIMAP_SHOW_COMPASS),
 				tooltip = GetString(SI_VOTANSMINIMAP_SHOW_COMPASS_TOOLTIP),
@@ -855,11 +864,11 @@ function addon:InitSettings()
 				setFunction = function(combobox, name, item)
 					self.account.enableCompass = item.data
 					self:UpdateCompass()
-				end
-			}
+				end,
+			})
 		end
 
-		settings:AddSetting {
+		settings:AddSetting({
 			type = LibHarvensAddonSettings.ST_CHECKBOX,
 			label = GetString(SI_VOTANSMINIMAP_SHOW_ON_TOP),
 			tooltip = GetString(SI_VOTANSMINIMAP_SHOW_ON_TOP_TOOLTIP),
@@ -870,10 +879,10 @@ function addon:InitSettings()
 			setFunction = function(value)
 				self.account.showOnTop = value
 				self:UpdateDrawLevel()
-			end
-		}
+			end,
+		})
 
-		settings:AddSetting {
+		settings:AddSetting({
 			type = LibHarvensAddonSettings.ST_CHECKBOX,
 			label = GetString(SI_VOTANSMINIMAP_SHOW_ALL_TRAVEL_NODES),
 			tooltip = GetString(SI_VOTANSMINIMAP_SHOW_ALL_TRAVEL_NODES_TOOLTIP),
@@ -883,14 +892,14 @@ function addon:InitSettings()
 			end,
 			setFunction = function(value)
 				self.account.showAllTravelNodes = value
-			end
-		}
+			end,
+		})
 
-		settings:AddSetting {
+		settings:AddSetting({
 			type = LibHarvensAddonSettings.ST_SECTION,
-			label = GetString(SI_VOTANSMINIMAP_FRAMEDROP_DEBUG)
-		}
-		settings:AddSetting {
+			label = GetString(SI_VOTANSMINIMAP_FRAMEDROP_DEBUG),
+		})
+		settings:AddSetting({
 			type = LibHarvensAddonSettings.ST_CHECKBOX,
 			label = GetString(SI_VOTANSMINIMAP_SHOW_FREEZE_WARNING),
 			tooltip = GetString(SI_VOTANSMINIMAP_SHOW_FREEZE_WARNING_TOOLTIP),
@@ -901,7 +910,7 @@ function addon:InitSettings()
 			setFunction = function(value)
 				self.account.debug = value
 				async:SetDebug(value)
-			end
-		}
+			end,
+		})
 	end
 end

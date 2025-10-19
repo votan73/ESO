@@ -10,12 +10,16 @@ end
 
 function addon:InitPinLevels()
 	local LibHarvensAddonSettings = LibHarvensAddonSettings
-	if not LibHarvensAddonSettings then return end
+	if not LibHarvensAddonSettings then
+		return
+	end
 
 	local settings = LibHarvensAddonSettings:AddAddon("Votan's Mini Map Pin Levels")
-	if not settings then return end
+	if not settings then
+		return
+	end
 	settingsControls = settings
-	settings.allowDefaults = true;
+	settings.allowDefaults = true
 
 	local function UpdatePin(pinType, pin)
 		local control = pin:GetControl()
@@ -35,20 +39,24 @@ function addon:InitPinLevels()
 	end
 	local function UpdateDrawLevel(pinType)
 		for _, pin in pairs(addon.pinManager:GetActiveObjects()) do
-			if pinType == pin:GetPinType() then UpdatePin(pinType, pin) end
+			if pinType == pin:GetPinType() then
+				UpdatePin(pinType, pin)
+			end
 		end
 	end
 
 	local function UpdateDrawLevels(pins)
 		for _, pin in pairs(addon.pinManager:GetActiveObjects()) do
 			local pinType = pin:GetPinType()
-			if pins[pinType] then UpdatePin(pinType, pin) end
+			if pins[pinType] then
+				UpdatePin(pinType, pin)
+			end
 		end
 	end
 
 	local function AddPin(pinType, caption)
 		local pinData = ZO_MapPin.PIN_DATA[pinType]
-		settings:AddSetting {
+		settings:AddSetting({
 			type = LibHarvensAddonSettings.ST_SLIDER,
 			label = caption,
 			min = 2,
@@ -56,14 +64,16 @@ function addon:InitPinLevels()
 			step = 1,
 			default = pinData.level,
 			unit = "",
-			getFunction = function() return pinData.level end,
+			getFunction = function()
+				return pinData.level
+			end,
 			setFunction = function(value)
 				pinData.level = value
 				self.account.pinLevels[pinType] = value
 				UpdateControls()
 				UpdateDrawLevel(pinType)
 			end,
-		}
+		})
 		pinData.level = self.account.pinLevels[pinType] or pinData.level
 		UpdateDrawLevel(pinType)
 	end
@@ -72,7 +82,7 @@ function addon:InitPinLevels()
 		local pinType = next(pins)
 		local first = ZO_MapPin.PIN_DATA[pinType]
 
-		settings:AddSetting {
+		settings:AddSetting({
 			type = LibHarvensAddonSettings.ST_SLIDER,
 			label = caption,
 			min = 2,
@@ -80,26 +90,27 @@ function addon:InitPinLevels()
 			step = 1,
 			default = first.level,
 			unit = "",
-			getFunction = function() return first.level end,
+			getFunction = function()
+				return first.level
+			end,
 			setFunction = function(value)
-				for pinType in pairs(pins) do
-					local pinData = ZO_MapPin.PIN_DATA[pinType]
+				for pinTypeId in pairs(pins) do
+					local pinData = ZO_MapPin.PIN_DATA[pinTypeId]
 					pinData.level = value
-					self.account.pinLevels[pinType] = value
+					self.account.pinLevels[pinTypeId] = value
 				end
 				UpdateControls()
 				UpdateDrawLevels(pins)
 			end,
-		}
-		for pinType in pairs(pins) do
-			local pinData = ZO_MapPin.PIN_DATA[pinType]
+		})
+		for pinTypeId in pairs(pins) do
+			local pinData = ZO_MapPin.PIN_DATA[pinTypeId]
 			if first.level ~= pinData.level then
 				d("ups", caption)
 			end
-			pinData.level = self.account.pinLevels[pinType] or pinData.level
+			pinData.level = self.account.pinLevels[pinTypeId] or pinData.level
 		end
 		UpdateDrawLevels(pins)
-
 	end
 
 	AddPin(MAP_PIN_TYPE_PLAYER, "Player")
@@ -116,11 +127,10 @@ function addon:InitPinLevels()
 
 	--AddPins(ZO_MapPin.AVA_OBJECTIVE_PIN_TYPES, "AvA Objectives")
 	--AddPins(ZO_MapPin.KEEP_PIN_TYPES, "Keeps")
-	AddPins(ZO_MapPin.IMPERIAL_CITY_GATE_TYPES, "Imperial City Gates")
+	--AddPins(ZO_MapPin.IMPERIAL_CITY_GATE_TYPES, "Imperial City Gates");
 	-- AddPins(ZO_MapPin.DISTRICT_PIN_TYPES, "Districts")
 	AddPins(ZO_MapPin.KILL_LOCATION_PIN_TYPES, "Kill Locations")
 	AddPins(ZO_MapPin.FORWARD_CAMP_PIN_TYPES, "Forward Camps")
 	AddPins(ZO_MapPin.AVA_RESPAWN_PIN_TYPES, "Ava Respawn")
 	AddPins(ZO_MapPin.AVA_RESTRICTED_LINK_PIN_TYPES, "AvA Restricted Links")
 end
-
