@@ -1191,12 +1191,20 @@ function addon:InitMiniMap()
 		local HEADER_INFO = {
 			nameText = "",
 			descriptionText = "",
-			owner = self,
-			showProgressBar = false,
+			owner = addon.name,
+			showProgressBar = false
 		}
 		function addon:SetMapHeader()
 			if WORLD_MAP_MANAGER:IsInMode(MAP_MODE_VOTANS_MINIMAP) then
 				WORLD_MAP_MANAGER:SetMapHeader(HEADER_INFO)
+			end
+		end
+		local orgTryShowSpectacleMapHeader = ZO_WorldMapManager.TryShowSpectacleMapHeader
+		function ZO_WorldMapManager.TryShowSpectacleMapHeader(manager)
+			if manager:GetMode() == MAP_MODE_VOTANS_MINIMAP then
+				return
+			else
+				return orgTryShowSpectacleMapHeader(manager)
 			end
 		end
 	end
