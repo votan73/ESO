@@ -1,0 +1,10 @@
+## Title: LibHarvensAddonSettingsDemo
+## Author: Shienar
+## APIVersion: 101048
+## AddOnVersion: 1
+## Version: 1
+## IsLibrary: False
+## ConsoleDependsOn: LibHarvensAddonSettings>=20004
+## SavedVariables: DemoSavedVariables
+
+LibHarvensAddonSettingsDemo.lua
