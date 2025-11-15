@@ -162,7 +162,7 @@ function AddonSettings:SetAnchor(prev)
 	end
 end
 
-function AddonSettings:AddSetting(params, index)
+function AddonSettings:AddSetting(params, index, playAnimation)
 	--Append if invalid or empty index
 	if index == nil or index < 1 then index = #self.settings + 1 end 
 	
@@ -184,32 +184,41 @@ function AddonSettings:AddSetting(params, index)
 	--Update the container height in pc mode
 	if not IsConsoleUI() and self.selected then
 		LibHarvensAddonSettings.container.endHeight = self:GetOverallHeight() + 8
-		LibHarvensAddonSettings.openTimeline:PlayFromStart()
+		--Conditionally show the animation. Useful for simulating submenus
+		if not playAnimation then
+			LibHarvensAddonSettings.openTimeline:PlayInstantlyToEnd()
+		else
+			LibHarvensAddonSettings.openTimeline:PlayFromStart()
+		end
 	end
 
-	return setting
+	return setting, index
 end
 
-function AddonSettings:AddSettings(params, index)
+function AddonSettings:AddSettings(params, index, playAnimation)
+	--It should be possible to set for i = (index or 1), #params + index and let the indexes be
+	--built into the returned table, but that might be less intuitive to iterate through.
 	local ret = {}
+	local indexes = {}
 	for i = 1, #params do
-		ret[i] = self:AddSetting(params[i], index)
-		if index ~= nil and index > 0 then index = index + 1 end --Add them in-order, not reverse order.
+		ret[i], indexes[i] = self:AddSetting(params[i], index, playAnimation)
+		if index ~= nil and index > 0 then index = index + 1 end --Increment the index to add them in-order, not reverse order.
 	end
-	return ret
+	return ret, indexes
 end
 
 --removes up to count settings at index.
 --always refreshes list to ensure proper cleanup.
-function AddonSettings:RemoveSettings(index, count)
+function AddonSettings:RemoveSettings(index, count, playAnimation)
 	--It is important to cleanup before removing from table or else we can get stuck with the controls forever.
 	if self.selected then
 		self:CleanUp()
 	end
+	local removedSettingsList = {}
 	if not count then count = 1 end
 	for i = 1, count do
 		if not self.settings[index] then break end
-		table.remove(self.settings, index)
+		table.insert(removedSettingsList, table.remove(self.settings, index))
 	end
 	--Force immediate page update
 	if self.selected then
@@ -219,30 +228,52 @@ function AddonSettings:RemoveSettings(index, count)
 	--Update the container height in pc mode
 	if not IsConsoleUI() and self.selected then
 		LibHarvensAddonSettings.container.endHeight = self:GetOverallHeight() + 8
-		LibHarvensAddonSettings.openTimeline:PlayFromStart()
+		--Conditionally show the animation. Useful for simulating submenus
+		if not playAnimation then 
+			LibHarvensAddonSettings.openTimeline:PlayInstantlyToEnd()
+		else
+			LibHarvensAddonSettings.openTimeline:PlayFromStart()
+		end
 	end
+
+	return removedSettingsList
 end
 
 --removes all settings
 --always refreshes list to ensure proper cleanup.
-function AddonSettings:RemoveAllSettings()
+function AddonSettings:RemoveAllSettings(playAnimation)
 	if self.selected then
 		self:CleanUp()
 	end
-	self.settings = {}
+	
+	local oldSettingsList = {}
+	while #self.settings > 0 do
+		table.insert(oldSettingsList, table.remove(self.settings, 1))
+	end
 
 	--Update the container height in pc mode
-	if not IsConsoleUI() then
-		LibHarvensAddonSettings.container.endHeight = settings:GetOverallHeight() + 8
-		LibHarvensAddonSettings.openTimeline:PlayFromStart()
+	if not IsConsoleUI() and self.selected then
+		LibHarvensAddonSettings.container.endHeight = self:GetOverallHeight() + 8
+		--Conditionally show the animation. Useful for simulating submenus
+		if not playAnimation then 
+			LibHarvensAddonSettings.openTimeline:PlayInstantlyToEnd()
+		else
+			LibHarvensAddonSettings.openTimeline:PlayFromStart()
+		end
 	end
+
+	return oldSettingsList
 end
 
 --Find the index of the first setting made from these params.
---This uses shallow table comparisons, which feels very unoptimal. Maybe manage & update an index somewhere?
-function AddonSettings:GetIndexOf(params)
-	local setting = AddonSettingsControl:New(self.callbackManager, params.type)
-	setting:SetupControl(params)
+--This uses shallow table comparisons, which feels very unoptimal.
+--If a setting's index position is static, it would be better to use the return value of AddSetting(s)
+function AddonSettings:GetIndexOf(setting, areParams)
+	if areParams then
+		local tempSetting = AddonSettingsControl:New(self.callbackManager, setting.type)
+		tempSetting:SetupControl(setting)
+		setting = tempSetting
+	end
 
 	local isMatch = false
 	for index, tempSetting in pairs(self.settings) do
