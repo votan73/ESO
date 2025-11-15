@@ -162,19 +162,102 @@ function AddonSettings:SetAnchor(prev)
 	end
 end
 
-function AddonSettings:AddSetting(params)
+function AddonSettings:AddSetting(params, index)
+	--Append if invalid or empty index
+	if index == nil or index < 1 then index = #self.settings + 1 end 
+	
+	--Prevent an attempt at cleaning up the new control before it gets created.
+	if self.selected then
+		self:CleanUp()
+	end
+
 	local setting = AddonSettingsControl:New(self.callbackManager, params.type)
-	self.settings[#self.settings + 1] = setting
+	table.insert(self.settings, index, setting)
 	setting:SetupControl(params)
+
+	--Force the settings page to update immediately if currently showing.
+	--The cleanup earlier prevents duplicate controls from being created.
+	if self.selected then
+		self:CreateControls()
+	end
+
+	--Update the container height in pc mode
+	if not IsConsoleUI() and self.selected then
+		LibHarvensAddonSettings.container.endHeight = self:GetOverallHeight() + 8
+		LibHarvensAddonSettings.openTimeline:PlayFromStart()
+	end
+
 	return setting
 end
 
-function AddonSettings:AddSettings(params)
+function AddonSettings:AddSettings(params, index)
 	local ret = {}
 	for i = 1, #params do
-		ret[i] = self:AddSetting(params[i])
+		ret[i] = self:AddSetting(params[i], index)
+		if index ~= nil and index > 0 then index = index + 1 end --Add them in-order, not reverse order.
 	end
 	return ret
+end
+
+--removes up to count settings at index.
+--always refreshes list to ensure proper cleanup.
+function AddonSettings:RemoveSettings(index, count)
+	--It is important to cleanup before removing from table or else we can get stuck with the controls forever.
+	if self.selected then
+		self:CleanUp()
+	end
+	if not count then count = 1 end
+	for i = 1, count do
+		if not self.settings[index] then break end
+		table.remove(self.settings, index)
+	end
+	--Force immediate page update
+	if self.selected then
+		self:CreateControls()
+	end
+
+	--Update the container height in pc mode
+	if not IsConsoleUI() and self.selected then
+		LibHarvensAddonSettings.container.endHeight = self:GetOverallHeight() + 8
+		LibHarvensAddonSettings.openTimeline:PlayFromStart()
+	end
+end
+
+--removes all settings
+--always refreshes list to ensure proper cleanup.
+function AddonSettings:RemoveAllSettings()
+	if self.selected then
+		self:CleanUp()
+	end
+	self.settings = {}
+
+	--Update the container height in pc mode
+	if not IsConsoleUI() then
+		LibHarvensAddonSettings.container.endHeight = settings:GetOverallHeight() + 8
+		LibHarvensAddonSettings.openTimeline:PlayFromStart()
+	end
+end
+
+--Find the index of the first setting made from these params.
+--This uses shallow table comparisons, which feels very unoptimal. Maybe manage & update an index somewhere?
+function AddonSettings:GetIndexOf(params)
+	local setting = AddonSettingsControl:New(self.callbackManager, params.type)
+	setting:SetupControl(params)
+
+	local isMatch = false
+	for index, tempSetting in pairs(self.settings) do
+		isMatch = true
+		for k, v in pairs(tempSetting) do
+			if type(v) ~= "table" and type(v) ~= "userdata" then
+				if setting[k] ~= v then 
+					isMatch = false
+					break
+				end
+			end
+		end
+		if isMatch then return index end
+	end
+	return nil
 end
 
 function AddonSettings:Select()
