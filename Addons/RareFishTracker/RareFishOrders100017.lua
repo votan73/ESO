@@ -413,7 +413,7 @@ function RFT.MakeOrders()
 			RFT.window.column3,
 			RFT.window.column3,
 			RFT.window.column3,
-			RFT.window.column3,
+			RFT.window.column3
 		},
 		[3636] = {
 			-- Telvani-Halbinsel
@@ -428,7 +428,7 @@ function RFT.MakeOrders()
 			RFT.window.column1,
 			RFT.window.column3,
 			RFT.window.column3,
-			RFT.window.column3,
+			RFT.window.column3
 		},
 		[3948] = {
 			-- Westauen
@@ -443,10 +443,10 @@ function RFT.MakeOrders()
 			RFT.window.column3,
 			RFT.window.column3,
 			RFT.window.column3,
-			RFT.window.column3,
+			RFT.window.column3
 		},
 		[4404] = {
-			-- Sonnenwende
+			-- Sonnenwende (West)
 			RFT.window.column1,
 			RFT.window.column1,
 			RFT.window.column1,
@@ -458,10 +458,10 @@ function RFT.MakeOrders()
 			RFT.window.column3,
 			RFT.window.column3,
 			RFT.window.column3,
-			RFT.window.column3,
+			RFT.window.column3
 		},
 		[4460] = {
-			-- Sonnenwende East
+			-- Sonnenwende (Ost)
 			RFT.window.column2,
 			RFT.window.column2,
 			RFT.window.column2,
@@ -725,7 +725,7 @@ function RFT.MakeOrders()
 			ITEM_FUNCTIONAL_QUALITY_ARCANE,
 			ITEM_FUNCTIONAL_QUALITY_MAGIC,
 			ITEM_FUNCTIONAL_QUALITY_MAGIC,
-			ITEM_FUNCTIONAL_QUALITY_ARCANE,
+			ITEM_FUNCTIONAL_QUALITY_ARCANE
 		},
 		[3500] = {
 			-- Galen
@@ -740,7 +740,7 @@ function RFT.MakeOrders()
 			ITEM_FUNCTIONAL_QUALITY_MAGIC,
 			ITEM_FUNCTIONAL_QUALITY_MAGIC,
 			ITEM_FUNCTIONAL_QUALITY_ARCANE,
-			ITEM_FUNCTIONAL_QUALITY_MAGIC,
+			ITEM_FUNCTIONAL_QUALITY_MAGIC
 		},
 		[3636] = {
 			-- Telvani
@@ -755,7 +755,7 @@ function RFT.MakeOrders()
 			ITEM_FUNCTIONAL_QUALITY_ARCANE,
 			ITEM_FUNCTIONAL_QUALITY_MAGIC,
 			ITEM_FUNCTIONAL_QUALITY_MAGIC,
-			ITEM_FUNCTIONAL_QUALITY_ARCANE,
+			ITEM_FUNCTIONAL_QUALITY_ARCANE
 		},
 		[3948] = {
 			-- Westauen
@@ -770,10 +770,10 @@ function RFT.MakeOrders()
 			ITEM_FUNCTIONAL_QUALITY_MAGIC,
 			ITEM_FUNCTIONAL_QUALITY_MAGIC,
 			ITEM_FUNCTIONAL_QUALITY_MAGIC,
-			ITEM_FUNCTIONAL_QUALITY_ARCANE,
+			ITEM_FUNCTIONAL_QUALITY_ARCANE
 		},
 		[4404] = {
-			-- Sonnenwende
+			-- Sonnenwende (West)
 			ITEM_FUNCTIONAL_QUALITY_MAGIC,
 			ITEM_FUNCTIONAL_QUALITY_MAGIC,
 			ITEM_FUNCTIONAL_QUALITY_MAGIC,
@@ -785,22 +785,22 @@ function RFT.MakeOrders()
 			ITEM_FUNCTIONAL_QUALITY_MAGIC,
 			ITEM_FUNCTIONAL_QUALITY_MAGIC,
 			ITEM_FUNCTIONAL_QUALITY_MAGIC,
-			ITEM_FUNCTIONAL_QUALITY_ARCANE,
+			ITEM_FUNCTIONAL_QUALITY_ARCANE
 		},
 		[4460] = {
-		-- Sonnenwende East
-		ITEM_FUNCTIONAL_QUALITY_MAGIC,
-		ITEM_FUNCTIONAL_QUALITY_MAGIC,
-		ITEM_FUNCTIONAL_QUALITY_ARCANE,
-		ITEM_FUNCTIONAL_QUALITY_MAGIC,
-		ITEM_FUNCTIONAL_QUALITY_MAGIC,
-		ITEM_FUNCTIONAL_QUALITY_ARCANE,
-		ITEM_FUNCTIONAL_QUALITY_MAGIC,
-		ITEM_FUNCTIONAL_QUALITY_MAGIC,
-		ITEM_FUNCTIONAL_QUALITY_ARCANE,
-		ITEM_FUNCTIONAL_QUALITY_MAGIC,
-		ITEM_FUNCTIONAL_QUALITY_MAGIC,
-		ITEM_FUNCTIONAL_QUALITY_ARCANE,
+			-- Sonnenwende (Ost)
+			ITEM_FUNCTIONAL_QUALITY_MAGIC,
+			ITEM_FUNCTIONAL_QUALITY_MAGIC,
+			ITEM_FUNCTIONAL_QUALITY_ARCANE,
+			ITEM_FUNCTIONAL_QUALITY_MAGIC,
+			ITEM_FUNCTIONAL_QUALITY_MAGIC,
+			ITEM_FUNCTIONAL_QUALITY_ARCANE,
+			ITEM_FUNCTIONAL_QUALITY_MAGIC,
+			ITEM_FUNCTIONAL_QUALITY_MAGIC,
+			ITEM_FUNCTIONAL_QUALITY_ARCANE,
+			ITEM_FUNCTIONAL_QUALITY_MAGIC,
+			ITEM_FUNCTIONAL_QUALITY_MAGIC,
+			ITEM_FUNCTIONAL_QUALITY_ARCANE
 		}
 	}
 	RFT.types = {
@@ -947,7 +947,7 @@ function RFT.MakeOrders()
 			SI_RARE_FISH_TRACKER_TYPE_RIVER,
 			SI_RARE_FISH_TRACKER_TYPE_FOUL
 		},
-        [1502] = {
+		[1502] = {
 			-- Sonnenwende East
 			SI_RARE_FISH_TRACKER_TYPE_OCEAN,
 			SI_RARE_FISH_TRACKER_TYPE_LAKE,
