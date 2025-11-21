@@ -444,7 +444,7 @@ function LibHarvensAddonSettings:SelectFirstAddon()
 end
 
 function LibHarvensAddonSettings:GoBack()
-    SCENE_MANAGER:HideCurrentScene()
+	SCENE_MANAGER:HideCurrentScene()
 end
 
 -----
