@@ -82,9 +82,9 @@ RFT.zoneToAchievement = {
 	[1383] = {3500},
 	-- Aphcrypha
 	[1413] = {3636},
-	-- Telvani-Halbinsel
+	-- Telvanni Peninsula
 	[1414] = {3636},
-	-- Westauen
+	-- West Weald
 	[1443] = {3948},
 	-- Solstice
 	[1502] = {4404, 4460}

@@ -416,7 +416,7 @@ function RFT.MakeOrders()
 			RFT.window.column3
 		},
 		[3636] = {
-			-- Telvani-Halbinsel
+			-- Telvanni Peninsula
 			RFT.window.column4,
 			RFT.window.column4,
 			RFT.window.column4,
@@ -431,7 +431,7 @@ function RFT.MakeOrders()
 			RFT.window.column3
 		},
 		[3948] = {
-			-- Westauen
+			-- West Weald
 			RFT.window.column1,
 			RFT.window.column1,
 			RFT.window.column1,
@@ -446,7 +446,7 @@ function RFT.MakeOrders()
 			RFT.window.column3
 		},
 		[4404] = {
-			-- Sonnenwende (West)
+			-- Solstice (West)
 			RFT.window.column1,
 			RFT.window.column1,
 			RFT.window.column1,
@@ -461,7 +461,7 @@ function RFT.MakeOrders()
 			RFT.window.column3
 		},
 		[4460] = {
-			-- Sonnenwende (Ost)
+			-- Solstice (East)
 			RFT.window.column2,
 			RFT.window.column2,
 			RFT.window.column2,
@@ -743,7 +743,7 @@ function RFT.MakeOrders()
 			ITEM_FUNCTIONAL_QUALITY_MAGIC
 		},
 		[3636] = {
-			-- Telvani
+			-- Telvanni Peninsula
 			ITEM_FUNCTIONAL_QUALITY_MAGIC,
 			ITEM_FUNCTIONAL_QUALITY_MAGIC,
 			ITEM_FUNCTIONAL_QUALITY_ARCANE,
@@ -758,7 +758,7 @@ function RFT.MakeOrders()
 			ITEM_FUNCTIONAL_QUALITY_ARCANE
 		},
 		[3948] = {
-			-- Westauen
+			-- West Weald
 			ITEM_FUNCTIONAL_QUALITY_MAGIC,
 			ITEM_FUNCTIONAL_QUALITY_MAGIC,
 			ITEM_FUNCTIONAL_QUALITY_MAGIC,
@@ -773,7 +773,7 @@ function RFT.MakeOrders()
 			ITEM_FUNCTIONAL_QUALITY_ARCANE
 		},
 		[4404] = {
-			-- Sonnenwende (West)
+			-- Solstice (West)
 			ITEM_FUNCTIONAL_QUALITY_MAGIC,
 			ITEM_FUNCTIONAL_QUALITY_MAGIC,
 			ITEM_FUNCTIONAL_QUALITY_MAGIC,
@@ -788,7 +788,7 @@ function RFT.MakeOrders()
 			ITEM_FUNCTIONAL_QUALITY_ARCANE
 		},
 		[4460] = {
-			-- Sonnenwende (Ost)
+			-- Solstice (East)
 			ITEM_FUNCTIONAL_QUALITY_MAGIC,
 			ITEM_FUNCTIONAL_QUALITY_MAGIC,
 			ITEM_FUNCTIONAL_QUALITY_ARCANE,
@@ -942,13 +942,13 @@ function RFT.MakeOrders()
 			SI_RARE_FISH_TRACKER_TYPE_FOUL
 		},
 		[1443] = {
-			-- Westauen
+			-- West Weald
 			SI_RARE_FISH_TRACKER_TYPE_LAKE,
 			SI_RARE_FISH_TRACKER_TYPE_RIVER,
 			SI_RARE_FISH_TRACKER_TYPE_FOUL
 		},
 		[1502] = {
-			-- Sonnenwende East
+			-- Solstice
 			SI_RARE_FISH_TRACKER_TYPE_OCEAN,
 			SI_RARE_FISH_TRACKER_TYPE_LAKE,
 			SI_RARE_FISH_TRACKER_TYPE_RIVER,
