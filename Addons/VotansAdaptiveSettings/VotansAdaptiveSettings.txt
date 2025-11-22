@@ -1,7 +1,7 @@
 ## Title: Votan's Adaptive (Video-)Settings
 ## Author: votan
-## APIVersion: 101044 101045
-## Version: 1.5.8
+## APIVersion: 101047 101048
+## Version: 1.5.9
 ## DependsOn: LibHarvensAddonSettings>=10705
 ## OptionalDependsOn: InfoPanel
 ## SavedVariables: VotansAdaptiveSettings_Data

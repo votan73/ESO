@@ -1,3 +1,7 @@
+if IsConsoleUI() then
+	return
+end
+
 local addon = {
 	name = "VotansAdaptiveSettings",
 	fps_1 = 60,
@@ -429,25 +433,25 @@ function addon:InitSettings()
 					self.settings.combat = value
 					self:GetTargetFrameRate()
 				end
+			},
+			{
+				type = LibHarvensAddonSettings.ST_SLIDER,
+				label = "UI Hidden Minimum Framerate",
+				tooltip = "Try to keep framerate above this value while UI is hidden, e.g. for nice screenshots.",
+				min = 2,
+				max = 100,
+				step = 1,
+				format = "%f",
+				unit = "fps",
+				default = self.defaults.hidden,
+				getFunction = function()
+					return self.settings.hidden
+				end,
+				setFunction = function(value)
+					self.settings.hidden = value
+					self:GetTargetFrameRate()
+				end
 			}
-		},
-		{
-			type = LibHarvensAddonSettings.ST_SLIDER,
-			label = "UI Hidden Minimum Framerate",
-			tooltip = "Try to keep framerate above this value while UI is hidden, e.g. for nice screenshots.",
-			min = 2,
-			max = 100,
-			step = 1,
-			format = "%f",
-			unit = "fps",
-			default = self.defaults.hidden,
-			getFunction = function()
-				return self.settings.hidden
-			end,
-			setFunction = function(value)
-				self.settings.hidden = value
-				self:GetTargetFrameRate()
-			end
 		}
 	)
 	local sliders
