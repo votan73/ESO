@@ -276,14 +276,13 @@ function AddonSettings:GetIndexOf(setting, areParams)
 	end
 
 	local isMatch = false
-	for index, tempSetting in pairs(self.settings) do
+	for index, existing in pairs(self.settings) do
 		isMatch = true
 		for k, v in pairs(setting) do
-			if type(v) ~= "table" and type(v) ~= "userdata" then
-				if tempSetting[k] ~= v then 
-					isMatch = false
-					break
-				end
+			local t = type(v)
+			if t ~= "table" and t ~= "userdata" and existing[k] ~= v then 
+				isMatch = false
+				break
 			end
 		end
 		if isMatch then return index end
