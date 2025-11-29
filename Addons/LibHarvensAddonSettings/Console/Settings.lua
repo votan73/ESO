@@ -1025,3 +1025,18 @@ local function OptionsWindowFragmentStateChange(oldState, newState)
 end
 
 MAIN_MENU_GAMEPAD_SCENE:RegisterCallback("StateChange", OptionsWindowFragmentStateChange)
+
+-----
+
+SecurePostHook(COLOR_PICKER_GAMEPAD, -- Posthook the colour picker to allow users to adjust alpha values in addon colour pickers
+    "UpdateDirectionalInput",
+    function(self, deltaS)
+        local left = GetGamepadLeftTriggerMagnitude()
+        local right = GetGamepadRightTriggerMagnitude()
+        local currentAlpha = self.alphaSlider:GetValue()
+        local net = right - left
+        self.alphaSlider:SetValue(currentAlpha+net/50)
+    end)
+
+
+COLOR_PICKER_GAMEPAD.alphaLabel:SetFont("ZoFontGamepad22") -- Currently the alpha label uses a PC fontdef so it doesn't load on console.
