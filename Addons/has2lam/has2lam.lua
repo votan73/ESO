@@ -102,15 +102,24 @@ local function HookLibHarvensAddonSettings()
 		)
 	end
 
-	local function RefreshPanel(panel)
-		local addonSettings = panel and panel.addonSettings
-		if addonSettings and addonSettings.Select then
-			if not addonSettings.selected then
-				addonSettings:Select()
-			end
-			LibHarvensAddonSettings:RefreshAddonSettings()
-		end
-	end
+    local function RefreshPanel(panel)
+        local addonSettings = panel and panel.addonSettings
+        if addonSettings and addonSettings.Select and LibHarvensAddonSettings.addons then
+            local isLibHarvensAddon = false
+            for i = 1, #LibHarvensAddonSettings.addons do
+                if LibHarvensAddonSettings.addons[i] == addonSettings then
+                    isLibHarvensAddon = true
+                    break
+                end
+            end
+            if isLibHarvensAddon then
+                if not addonSettings.selected then
+                    addonSettings:Select()
+                end
+                LibHarvensAddonSettings:RefreshAddonSettings()
+            end
+        end
+    end
 
 	function LibHarvensAddonSettings:CreateAddonList()
 		local prev = nil
