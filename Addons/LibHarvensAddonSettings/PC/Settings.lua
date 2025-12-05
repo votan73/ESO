@@ -224,7 +224,7 @@ local createControlFunctions = {
 		-- Reset the template (ZO_Options_Slider) before calling InitializeControl
 		slider:SetHandler("OnValueChanged", nil)
 		updateControlFunctions[LibHarvensAddonSettings.ST_SLIDER](self, lastControl)
-		slider:SetHandler("OnValueChanged",	function(control, value)
+		slider:SetHandler("OnValueChanged", function(control, value)
 				local formattedValue = tonumber(string.format(self.format, value))
 				if self.unit and #self.unit > 0 then
 					control.label:SetText(formattedValue .. self:GetString(self:GetValueOrCallback(self.unit)))

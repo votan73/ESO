@@ -165,8 +165,8 @@ end
 
 function AddonSettings:AddSetting(params, index, playAnimation)
 	--Append if invalid or empty index
-	if index == nil or index < 1 then index = #self.settings + 1 end 
-	
+	if index == nil or index < 1 then index = #self.settings + 1 end
+
 	--Prevent an attempt at cleaning up the new control before it gets created.
 	if self.selected then
 		self:CleanUp()
@@ -203,7 +203,9 @@ function AddonSettings:AddSettings(params, index, playAnimation)
 	local indexes = {}
 	for i = 1, #params do
 		ret[i], indexes[i] = self:AddSetting(params[i], index, playAnimation)
-		if index ~= nil and index > 0 then index = index + 1 end --Increment the index to add them in-order, not reverse order.
+		if index ~= nil and index > 0 then
+			index = index + 1
+		end --Increment the index to add them in-order, not reverse order.
 	end
 	return ret, indexes
 end
@@ -230,7 +232,7 @@ function AddonSettings:RemoveSettings(index, count, playAnimation)
 	if not IsConsoleUI() and self.selected then
 		LibHarvensAddonSettings.container.endHeight = self:GetOverallHeight() + 8
 		--Conditionally show the animation. Useful for simulating submenus
-		if not playAnimation then 
+		if not playAnimation then
 			LibHarvensAddonSettings.openTimeline:PlayInstantlyToEnd()
 		else
 			LibHarvensAddonSettings.openTimeline:PlayFromStart()
@@ -246,7 +248,7 @@ function AddonSettings:RemoveAllSettings(playAnimation)
 	if self.selected then
 		self:CleanUp()
 	end
-	
+
 	local oldSettingsList = {}
 	while #self.settings > 0 do
 		table.insert(oldSettingsList, table.remove(self.settings, 1))
@@ -256,7 +258,7 @@ function AddonSettings:RemoveAllSettings(playAnimation)
 	if not IsConsoleUI() and self.selected then
 		LibHarvensAddonSettings.container.endHeight = self:GetOverallHeight() + 8
 		--Conditionally show the animation. Useful for simulating submenus
-		if not playAnimation then 
+		if not playAnimation then
 			LibHarvensAddonSettings.openTimeline:PlayInstantlyToEnd()
 		else
 			LibHarvensAddonSettings.openTimeline:PlayFromStart()
@@ -281,7 +283,7 @@ function AddonSettings:GetIndexOf(setting, areParams)
 		isMatch = true
 		for k, v in pairs(setting) do
 			local t = type(v)
-			if t ~= "table" and t ~= "userdata" and existing[k] ~= v then 
+			if t ~= "table" and t ~= "userdata" and existing[k] ~= v then
 				isMatch = false
 				break
 			end
