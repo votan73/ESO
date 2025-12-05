@@ -100,6 +100,7 @@ function AddonSettingsControl:SetValue(...)
 end
 
 function AddonSettingsControl:ResetToDefaults()
+	if self.ignoreDefault then return end
 	if self.type == LibHarvensAddonSettings.ST_DROPDOWN then
 		self:SetValue(self.default)
 		if self.control then
