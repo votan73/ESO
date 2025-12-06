@@ -422,15 +422,15 @@ end
 function LibHarvensAddonSettings.AddonSettings:RefreshSelection()
 	local list = LibHarvensAddonSettings.list
 	if #self.settings > 0 then
-		list:SetSelectedIndexWithoutAnimation(
-			list:FindFirstIndexByEval(
-				function(data)
-					return data == self.lastSelectedRow
-				end
-			) or list:CalculateFirstSelectableIndex(),
-			true,
-			false
-		)
+		local selectedIndex = list:FindFirstIndexByEval(
+			function(data)
+				return data == self.lastSelectedRow
+			end
+		) or list:CalculateFirstSelectableIndex()
+
+		list:EnableAnimation(false)
+		list:SetSelectedIndex(selectedIndex)
+		list:EnableAnimation(true)
 	end
 end
 
@@ -1049,3 +1049,4 @@ COLOR_PICKER_GAMEPAD.alphaLabel:SetFont("ZoFontGamepad22") -- Currently the alph
 COLOR_PICKER_GAMEPAD.alphaSlider:SetAnchor(TOP, COLOR_PICKER_GAMEPAD.alphaSlider:GetParent():GetNamedChild("ColorSelect"), BOTTOM, 0, 80)
 COLOR_PICKER_GAMEPAD.alphaLabel:ClearAnchors()
 COLOR_PICKER_GAMEPAD.alphaLabel:SetAnchor(RIGHT, COLOR_PICKER_GAMEPAD.alphaSlider, LEFT, -10, 0)
+
