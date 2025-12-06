@@ -1049,4 +1049,3 @@ COLOR_PICKER_GAMEPAD.alphaLabel:SetFont("ZoFontGamepad22") -- Currently the alph
 COLOR_PICKER_GAMEPAD.alphaSlider:SetAnchor(TOP, COLOR_PICKER_GAMEPAD.alphaSlider:GetParent():GetNamedChild("ColorSelect"), BOTTOM, 0, 80)
 COLOR_PICKER_GAMEPAD.alphaLabel:ClearAnchors()
 COLOR_PICKER_GAMEPAD.alphaLabel:SetAnchor(RIGHT, COLOR_PICKER_GAMEPAD.alphaSlider, LEFT, -10, 0)
-
