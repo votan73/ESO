@@ -229,11 +229,11 @@ The library prioritizes frame time settings in the following order: Vertical Syn
 
 - **Game Performance Optimization**: By dynamically throttling tasks, LibAsync minimizes disruptions to gameplay, ensuring smooth performance during combat or exploration.
 - **Adaptability**: Developers can design addons to work seamlessly across various system configurations and gameplay scenarios.
-- **Flexibility for Users**: Players can fine-tune ESO’s settings to indirectly influence LibAsync’s performance, particularly in scenarios requiring intensive operations.
+- **Flexibility for Users**: Players can fine-tune ESOï¿½s settings to indirectly influence LibAsyncï¿½s performance, particularly in scenarios requiring intensive operations.
 
 ### Cons
 
-- **Environment Sensitivity**: Performance varies significantly depending on the player’s location (e.g., busy city vs. player home) and system settings.
+- **Environment Sensitivity**: Performance varies significantly depending on the playerï¿½s location (e.g., busy city vs. player home) and system settings.
 - **Task Contention**: Multiple addons relying on LibAsync can lead to delays when one addon performs highly demanding operations.
 - **Perception of Stalling**: During low FPS or high CPU usage scenarios, tasks may appear to hang, though LibAsync remains active.
 
@@ -244,11 +244,129 @@ The library prioritizes frame time settings in the following order: Vertical Syn
 2. **Test Across Scenarios**:
    - Validate performance in various environments, such as cities, player homes, and during high-CPU activities, to ensure smooth user experiences.
 3. **Leverage LibAsync Settings**:
-   - Consider providing configurable options, like sliders or thresholds, to allow users to adjust performance to their system’s capabilities.
+   - Consider providing configurable options, like sliders or thresholds, to allow users to adjust performance to their systemï¿½s capabilities.
 
 ### Conclusion
 
 LibAsync is an invaluable tool for ESO addon developers, enabling powerful asynchronous workflows while maintaining game performance. By understanding its nuances and considering system-specific factors, developers and users alike can optimize their experience and mitigate potential bottlenecks.
+
+## Testing
+
+LibAsync includes a comprehensive test suite using the [Taneth](https://www.esoui.com/downloads/info2334-Taneth.html) testing framework. Tests are automatically registered when Taneth is available.
+
+### Running Tests In-Game
+
+1. Install the [Taneth addon](https://www.esoui.com/downloads/info2334-Taneth.html)
+2. Load LibAsync (tests automatically register if Taneth is available)
+3. Use the following slash commands in-game:
+
+```
+/libasynctests          - Show test help and available commands
+/libasynctest           - Run all LibAsync tests
+/libasynctest LibAsync  - Run the LibAsync test suite
+```
+
+### Test Suites
+
+The test suite is organized into the following test groups:
+
+#### Basic Task Management
+- Task creation with names
+- Getting current task context
+- Basic task execution
+
+#### Sequential Tasks
+- Chaining tasks with `Call` and `Then`
+- Nested `Call`/`Then` operations
+- Task sequencing and dependencies
+
+#### Loop Tasks
+- Numeric `For` loops (with and without step)
+- `pairs` iteration over tables
+- `ipairs` iteration over arrays
+- `While` loops with conditions
+- Breaking loops with `LibAsync.BREAK`
+
+#### Delay Tasks
+- `Delay` execution with timeouts
+- `ThenDelay` chaining with delays
+- Timing validation
+
+#### WaitUntil Tasks
+- Conditional waiting for conditions
+- Polling until conditions are met
+
+#### Error Handling
+- `OnError` callback execution
+- `Finally` block execution on success
+- `Finally` block execution on error
+- `Finally` block execution on cancel
+
+#### Task Control
+- Resuming suspended tasks
+- Canceling tasks
+- Task state management
+
+#### Sorting
+- Array sorting with default comparison
+- Array sorting with custom comparators
+- Sorting large arrays asynchronously
+
+#### Async Static Methods
+- Task instance operations
+- Default task behavior validation
+
+#### Nested Tasks and Complex Scenarios
+- Deeply nested task structures
+- Loops within tasks
+- Delays within loops
+- Complex async workflows
+
+#### Edge Cases
+- Empty tasks
+- Zero delay handling
+- Multiple resume calls
+- Canceling non-existent tasks
+- Boundary conditions
+
+#### Debug and Utility Functions
+- Debug state management (`SetDebug`/`GetDebug`)
+- Log to chat state (`SetLogToChat`/`GetLogToChat`)
+- CPU load monitoring (`GetCpuLoad`)
+
+#### Integration Tests
+- Complex async workflows with multiple steps
+- Error recovery in complex workflows
+- Real-world usage scenarios
+
+### Writing Tests
+
+Tests use Taneth's BDD-style syntax. For async operations, use `it.async` and call `done()` when the test completes:
+
+```lua
+describe("Feature Name", function()
+    it("should do something synchronously", function()
+        -- Synchronous test code
+        assert.is_true(condition)
+    end)
+
+    it.async("should handle async operations", function(done)
+        local task = LibAsync:Create("TestTask")
+        task:Call(function()
+            -- Do async work
+        end):Finally(function()
+            assert.equals(expected, actual)
+            done() -- Signal test completion
+        end)
+    end)
+end)
+```
+
+**Important Notes:**
+- Always use `:Finally()` or proper async waiting mechanisms in async tests to ensure operations complete before assertions
+- Use `done()` callback to signal when async tests are complete
+- Test delays use shorter timeouts (5-10ms) for faster test execution
+- Tests automatically restore original state for debug/log settings
 
 ## Best Practices
 
