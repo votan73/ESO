@@ -5,12 +5,12 @@ local MAJOR = "LibAsync"
 async.log = LibDebugLogger and LibDebugLogger(MAJOR)
 
 async.Debug = async.log and function(...)
-	async.log:Debug(...)
-end or df
+		async.log:Debug(...)
+	end or df
 
 async.Warn = async.log and function(...)
-	async.log:Warn(...)
-end or df
+		async.log:Warn(...)
+	end or df
 
 local Debug = async.Debug
 local Warn = async.Warn
@@ -83,8 +83,7 @@ local function DoCallback(job, callstackIndex)
 			end
 			-- After handling error, clear the remaining callstack to prevent further execution
 			ZO_ClearNumericallyIndexedTable(job.callstack)
-			job.lastCallIndex = 0
-		-- The empty callstack will be detected by DoJob and finally will be called
+			job.lastCallIndex = 0 -- The empty callstack will be detected by DoJob and finally will be called
 		else
 			job:Suspend()
 			error(job.Error)
@@ -142,8 +141,8 @@ local function doMeasure() -- uniform measuring rate
 	local framerate = GetFramerate()
 	if jobsDone then
 		framerate = framerate * 1.5
-		--else
-		--  framerate = framerate * 1.3334
+	--else
+	--  framerate = framerate * 1.3334
 	end
 	if framerate > 65 then
 		frameTimeTarget = VSYNC_FRAME_TIME_MS
@@ -226,24 +225,11 @@ function async.Scheduler()
 	local realFrameTime = start - lastStart
 	-- freezeTime - spendTime: We have gone too far. Next time we have to finish earlier.
 	-- realFrameTime: Time between two frames. Should match spendTime, but there is some overhead.
-	nextFrameReduce = min(
-		frameTimeTarget,
-		(
-			nextFrameReduce
-			+ max(0, freezeTime - spendTime, realFrameTime - frameTimeTarget, 1 / GetFramerate() - frameTimeTarget)
-		) * 0.5
-	)
+	nextFrameReduce = min(frameTimeTarget, (nextFrameReduce + max(0, freezeTime - spendTime, realFrameTime - frameTimeTarget, 1 / GetFramerate() - frameTimeTarget)) * 0.5)
 	if debug and job then
 		if freezeTime >= DEBUG_FREEZE_THRESHOLD_MS then
 			-- Add debug output to verify values
-			local msg = format(
-				"%s freeze. allowed: %.3fms, used %.3fms starting at %.3fms, resulting fps %i.",
-				job.name,
-				spendTime * DEBUG_TIME_MULTIPLIER,
-				(now - runTime) * DEBUG_TIME_MULTIPLIER,
-				(runTime - start) * DEBUG_TIME_MULTIPLIER,
-				1 / freezeTime
-			)
+			local msg = format("%s freeze. allowed: %.3fms, used %.3fms starting at %.3fms, resulting fps %i.", job.name, spendTime * DEBUG_TIME_MULTIPLIER, (now - runTime) * DEBUG_TIME_MULTIPLIER, (runTime - start) * DEBUG_TIME_MULTIPLIER, 1 / freezeTime)
 			Warn(msg) -- Use pre-formatted string
 		end
 	end
@@ -321,8 +307,8 @@ function task:Cancel()
 	if jobs[self.name] then
 		if not self.finally then
 			jobs[self.name] = nil
-			-- Debug("Task %s cancelled", self.name)
-			-- else run job with empty callstack to run finalizer
+		-- Debug("Task %s cancelled", self.name)
+		-- else run job with empty callstack to run finalizer
 		end
 	end
 	return self
@@ -366,23 +352,28 @@ end
 -- Start an interruptible for-loop.
 function task:For(p1, p2, p3)
 	-- If called as a normal job, false will prevent it is kept in callstack doing an endless loop
-	self:Call(function()
-		return false, p1, p2, p3
-	end)
+	self:Call(
+		function()
+			return false, p1, p2, p3
+		end
+	)
 	return self
 end
 
 -- Start an interruptible while-loop.
 function task:While(func)
 	-- If called as a normal job, false will prevent it is kept in callstack doing an endless loop
-	self:Call(function()
-		return false, func, "while"
-	end)
+	self:Call(
+		function()
+			return false, func, "while"
+		end
+	)
 	return self
 end
 
 do
-	local function ForConditionAlreadyFalse() end
+	local function ForConditionAlreadyFalse()
+	end
 	local function ContinueForward(index, endIndex)
 		return index <= endIndex
 	end
@@ -465,26 +456,34 @@ function task:Delay(delay, funcOfTask)
 	-- Generate unique identifier for this delay
 	self.currentCallLaterId = "AsyncDelay" .. tostring(self)
 
-	em:RegisterForUpdate(self.currentCallLaterId, delay, function()
-		em:UnregisterForUpdate(self.currentCallLaterId)
-		self.currentCallLaterId = nil
-		self:Call(funcOfTask)
-	end)
+	em:RegisterForUpdate(
+		self.currentCallLaterId,
+		delay,
+		function()
+			em:UnregisterForUpdate(self.currentCallLaterId)
+			self.currentCallLaterId = nil
+			self:Call(funcOfTask)
+		end
+	)
 	return self
 end
 
 function task:ThenDelay(delay, funcOfTask)
-	self:Then(function(innerTask)
-		innerTask:Delay(delay, funcOfTask)
-	end)
+	self:Then(
+		function(innerTask)
+			innerTask:Delay(delay, funcOfTask)
+		end
+	)
 	return self
 end
 
 function task:WaitUntil(funcOfTask)
-	self:Then(function(innerTask)
-		innerTask.oncePerFrame = not funcOfTask(innerTask)
-		return innerTask.oncePerFrame
-	end)
+	self:Then(
+		function(innerTask)
+			innerTask.oncePerFrame = not funcOfTask(innerTask)
+			return innerTask.oncePerFrame
+		end
+	)
 	return self:Resume()
 end
 
@@ -562,86 +561,102 @@ do
 
 			-- Partition phase: a[left..i] <= P <= a[j..right]
 			local i, j = left, right - 1
-			innerTask:Call(function()
-				while true do
-					-- Repeat ++i until a[i] >= P
-					repeat
-						i = i + 1
-						if i > right then
-							error("invalid order function for sorting")
-						end
-					until not compare(array[i], pivot)
+			innerTask:Call(
+				function()
+					while true do
+						-- Repeat ++i until a[i] >= P
+						repeat
+							i = i + 1
+							if i > right then
+								error("invalid order function for sorting")
+							end
+						until not compare(array[i], pivot)
 
-					-- Repeat --j until a[j] <= P
-					repeat
-						j = j - 1
-						if j < left then
-							error("invalid order function for sorting")
-						end
-					until not compare(pivot, array[j])
+						-- Repeat --j until a[j] <= P
+						repeat
+							j = j - 1
+							if j < left then
+								error("invalid order function for sorting")
+							end
+						until not compare(pivot, array[j])
 
-					if j < i then
-						break
+						if j < i then
+							break
+						end
+						swap(array, i, j)
+						return true -- Continue partitioning
 					end
-					swap(array, i, j)
-					return true -- Continue partitioning
 				end
-			end)
+			)
 
-			innerTask:Then(function(innerTask2)
-				-- Restore pivot
-				swap(array, i, right - 1)
+			innerTask:Then(
+				function(innerTask2)
+					-- Restore pivot
+					swap(array, i, right - 1)
 
-				-- Sort smaller partition first (tail recursion optimization)
-				-- Then sort larger partition
-				if i - left < right - i then
-					-- Left partition is smaller, sort it first
-					if left < i - 1 then
-						innerTask2
-							:Call(function()
-								quicksort(left, i - 1)
-							end)
-							:Then(function()
-								-- Then sort right partition (larger)
-								if i + 1 < right then
-									innerTask2:Call(function()
-										quicksort(i + 1, right)
-									end)
-								end
-							end)
-					else
-						-- No left partition, just sort right
-						if i + 1 < right then
-							innerTask2:Call(function()
-								quicksort(i + 1, right)
-							end)
-						end
-					end
-				else
-					-- Right partition is smaller, sort it first
-					if i + 1 < right then
-						innerTask2
-							:Call(function()
-								quicksort(i + 1, right)
-							end)
-							:Then(function()
-								-- Then sort left partition (larger)
-								if left < i - 1 then
-									innerTask2:Call(function()
-										quicksort(left, i - 1)
-									end)
-								end
-							end)
-					else
-						-- No right partition, just sort left
+					-- Sort smaller partition first (tail recursion optimization)
+					-- Then sort larger partition
+					if i - left < right - i then
+						-- Left partition is smaller, sort it first
 						if left < i - 1 then
-							innerTask2:Call(function()
-								quicksort(left, i - 1)
-							end)
+							innerTask2:Call(
+								function()
+									quicksort(left, i - 1)
+								end
+							):Then(
+								function()
+									-- Then sort right partition (larger)
+									if i + 1 < right then
+										innerTask2:Call(
+											function()
+												quicksort(i + 1, right)
+											end
+										)
+									end
+								end
+							)
+						else
+							-- No left partition, just sort right
+							if i + 1 < right then
+								innerTask2:Call(
+									function()
+										quicksort(i + 1, right)
+									end
+								)
+							end
+						end
+					else
+						-- Right partition is smaller, sort it first
+						if i + 1 < right then
+							innerTask2:Call(
+								function()
+									quicksort(i + 1, right)
+								end
+							):Then(
+								function()
+									-- Then sort left partition (larger)
+									if left < i - 1 then
+										innerTask2:Call(
+											function()
+												quicksort(left, i - 1)
+											end
+										)
+									end
+								end
+							)
+						else
+							-- No right partition, just sort left
+							if left < i - 1 then
+								innerTask2:Call(
+									function()
+										quicksort(left, i - 1)
+									end
+								)
+							end
 						end
 					end
 				end
-			end)
+			)
 		end
 
 		quicksort(1, #array)
@@ -649,9 +664,11 @@ do
 
 	-- This sort function works like table.sort(). The compare function is optional.
 	function task:Sort(array, compare)
-		return self:Then(function(innerTask)
-			sort(innerTask, array, compare or simpleCompare)
-		end)
+		return self:Then(
+			function(innerTask)
+				sort(innerTask, array, compare or simpleCompare)
+			end
+		)
 	end
 end
 
@@ -671,10 +688,7 @@ do
 	local Default = task:New("*Default Task*")
 
 	local function DEFAULT_TASK_SENTINEL()
-		error(
-			"Not allowed on default task. Use your_lib_var:Create(optional_name) for an interruptible task context.",
-			2
-		)
+		error("Not allowed on default task. Use your_lib_var:Create(optional_name) for an interruptible task context.", 2)
 	end
 
 	Default.Cancel = DEFAULT_TASK_SENTINEL
@@ -744,20 +758,10 @@ function async.Slash(...)
 		if type(argValue) == "number" then
 			-- Validate the FPS number
 			if argValue < ASYNC_MIN_STALL_THRESHOLD then
-				d(
-					string.format(
-						"[LibAsync] Invalid FPS value. The stall threshold must be at least %d FPS. Use /async stall <number>.",
-						ASYNC_MIN_STALL_THRESHOLD
-					)
-				)
+				d(string.format("[LibAsync] Invalid FPS value. The stall threshold must be at least %d FPS. Use /async stall <number>.", ASYNC_MIN_STALL_THRESHOLD))
 				return
 			elseif argValue > UPPER_FPS_BOUND then
-				d(
-					string.format(
-						"[LibAsync] Invalid FPS value. The stall threshold must be no greater than %d FPS. Use /async stall <number>.",
-						UPPER_FPS_BOUND
-					)
-				)
+				d(string.format("[LibAsync] Invalid FPS value. The stall threshold must be no greater than %d FPS. Use /async stall <number>.", UPPER_FPS_BOUND))
 				return
 			end
 
@@ -774,12 +778,7 @@ function async.Slash(...)
 			ASYNC_STALL_THRESHOLD = AsyncSavedVars.ASYNC_STALL_THRESHOLD
 
 			-- Notify the user of the reset to default
-			d(
-				string.format(
-					"[LibAsync] Stall threshold reset to the default value of %d FPS.",
-					ASYNC_DEFAULT_STALL_THRESHOLD
-				)
-			)
+			d(string.format("[LibAsync] Stall threshold reset to the default value of %d FPS.", ASYNC_DEFAULT_STALL_THRESHOLD))
 		else
 			-- Invalid argument
 			d("[LibAsync] Invalid argument. Use /async stall <number> or /async stall default.")
@@ -794,7 +793,7 @@ end
 local SchedulerManager = {
 	schedulerId = nil,
 	initId = nil,
-	isRunning = false,
+	isRunning = false
 }
 
 function SchedulerManager:stopScheduler()
@@ -822,20 +821,28 @@ function SchedulerManager:initialize(delay)
 	end
 
 	self.initId = "AsyncInit"
-	em:RegisterForUpdate(self.initId, delay or INIT_DELAY_MS, function()
-		em:UnregisterForUpdate(self.initId)
-		self.initId = nil
-		self:startScheduler()
-	end)
+	em:RegisterForUpdate(
+		self.initId,
+		delay or INIT_DELAY_MS,
+		function()
+			em:UnregisterForUpdate(self.initId)
+			self.initId = nil
+			self:startScheduler()
+		end
+	)
 end
 
 do
 	local identifier = "ASYNCTASKS_JOBS"
 
-	em:RegisterForEvent(identifier, EVENT_PLAYER_ACTIVATED, function()
-		em:UnregisterForEvent(identifier, EVENT_PLAYER_ACTIVATED)
-		SchedulerManager:initialize()
-	end)
+	em:RegisterForEvent(
+		identifier,
+		EVENT_PLAYER_ACTIVATED,
+		function()
+			em:UnregisterForEvent(identifier, EVENT_PLAYER_ACTIVATED)
+			SchedulerManager:initialize()
+		end
+	)
 	SLASH_COMMANDS["/async"] = function(...)
 		async:Slash(...)
 	end
