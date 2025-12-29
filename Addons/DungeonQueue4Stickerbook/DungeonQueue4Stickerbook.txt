@@ -1,7 +1,7 @@
 ## Title: Dungeon Queue 4 Stickerbook
 ## Author: tim99, votan & Antisenil
-## Version: 1.2.3
-## APIVersion: 101044 101045
+## Version: 1.2.8
+## APIVersion: 101048 101049
 ## OptionalDependsOn: pchat
 ## SavedVariables: DungeonQueue4Stickerbook
 ## Description: |t72:72:/esoui/art/icons/assistant_banker_01.dds|t|c9B30FFQueues for all normal dungeons, where you |r|u72:0::|u|c9B30FFmiss pieces from the stickerbook.|r

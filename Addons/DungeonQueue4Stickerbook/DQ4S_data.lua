@@ -87,6 +87,11 @@ ttq_DungeonData = {
     [615]	= {quest=7027, 	pledge=7028,	dlc=true,	sets={684, 685, 686},	helmet=nil},	--Halle der Schriftmeister (Scriveners Hall)
 	[638]	= {quest=7105,	pledge=7106,	dlc=true,	sets={730, 731, 732},	helmet=nil},	--Grube der Eidgeschworenen (Oathsworn Pit)
     [640]	= {quest=7155,	pledge=7156,	dlc=true,	sets={735, 736, 737},	helmet=nil},	--Schleier des Aufruhrs (Bedlam Veil)
+	[855] 	= {quest=7235, 	pledge=7236, 	dlc=true, 	sets={794, 795, 796}, 	helmet=nil}, 	--Schanze der Abgeschiedenen (Exiled Redobt)
+	[857] 	= {quest=7237, 	pledge=7238, 	dlc=true, 	sets={798, 799, 800}, 	helmet=nil}, 	--Sep Leclusa
+	[1037] 	= {quest=7320, 	pledge=7321, 	dlc=true, 	sets={825, 826, 827}, 	helmet=nil}, 	--Naj-Caldeesh
+	[1039] 	= {quest=7323, 	pledge=7324, 	dlc=true, 	sets={822, 823, 824}, 	helmet=nil}, 	--Schwarzstein-Giesserei (Black Gem Foundry)
+
 --DLC Veteran
     [287]	= {quest=5342,	pledge=5431,	dlc=true,	sets={184, 185, 198},	helmet=183},	--Weißgoldturm (White Gold Tower)
     [268]	= {quest=5136,	pledge=5382,	dlc=true,	sets={190, 195, 196},	helmet=164},	--Gefängnis der Kaiserstadt (Imperial City Prison)
@@ -118,4 +123,8 @@ ttq_DungeonData = {
     [616]	= {quest=7027,	pledge=7028,	dlc=true,	sets={684, 685, 686},	helmet=687},	--Halle der Schriftmeister (Scriveners Hall)
     [639]	= {quest=7105,	pledge=7106,	dlc=true,	sets={730, 731, 732},	helmet=734},	--Grube der Eidgeschworenen (Oathsworn Pit)
     [641]	= {quest=7155,	pledge=7156,	dlc=true,	sets={735, 736, 737},	helmet=738},	--Schleier des Aufruhrs (Bedlam Veil)
+	[856] 	= {quest=7235, 	pledge=7236, 	dlc=true, 	sets={794, 795, 796}, 	helmet=797}, 	--Schanze der Abgeschiedenen (Exiled Redoubt)
+	[858] 	= {quest=7237, 	pledge=7238, 	dlc=true, 	sets={798, 799, 800}, 	helmet=801}, 	--Sep Leclusa
+	[1038] 	= {quest=7320, 	pledge=7321, 	dlc=true, 	sets={825, 826, 827}, 	helmet=829}, 	--Naj-Caldeesh
+	[1040] 	= {quest=7323, 	pledge=7324, 	dlc=true, 	sets={822, 823, 824}, 	helmet=828}, 	--Schwarzstein-Giesserei (Black Gem Foundry)
 }

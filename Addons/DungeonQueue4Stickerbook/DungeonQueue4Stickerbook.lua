@@ -47,24 +47,19 @@ end
 ----------------------------------------------------------------------------------------------------
 function ttq.checkCompletedSets()
 	for i, v in pairs(DungeonSets) do
-		local HelmetID = v["helmet"]
 		local numSetsDone = 0
-		if HelmetID == nil then
-			for j = 1, #v.sets do
-				local itemSetCollectionData = ITEM_SET_COLLECTIONS_DATA_MANAGER:GetItemSetCollectionData(v.sets[j])
-				if itemSetCollectionData then
-					local numUnlockedPieces, numPieces = itemSetCollectionData:GetNumUnlockedPieces(), itemSetCollectionData:GetNumPieces()
-					if numUnlockedPieces == numPieces then
-						numSetsDone = numSetsDone + 1
-					end
-				else
-					numSetsDone = numSetsDone + 1 -- does not exist yet
+		for j = 1, #v.sets do
+			local itemSetCollectionData = ITEM_SET_COLLECTIONS_DATA_MANAGER:GetItemSetCollectionData(v.sets[j])
+			if itemSetCollectionData then
+				local numUnlockedPieces, numPieces = itemSetCollectionData:GetNumUnlockedPieces(), itemSetCollectionData:GetNumPieces()
+				if numUnlockedPieces == numPieces then
+					numSetsDone = numSetsDone + 1
 				end
+			else
+				numSetsDone = numSetsDone + 1 -- does not exist yet
 			end
-			if numSetsDone == #v.sets then
-				DungeonSets[i] = nil
-			end
-		elseif HelmetID ~= nil then
+		end
+		if numSetsDone == #v.sets then
 			DungeonSets[i] = nil
 		end
 	end
@@ -105,15 +100,10 @@ end
 function ttq.checkCompletedQuests()
 	for i, v in pairs(DungeonQuest) do
 		local QstID = v["quest"]
-		if v["helmet"] == nil then
-			if GetCompletedQuestInfo(QstID) ~= "" then
-				DungeonQuest[i] = nil
-			end
-		elseif v["helmet"] ~= nil then
+		if GetCompletedQuestInfo(QstID) ~= "" then
 			DungeonQuest[i] = nil
 		end
 	end
-	local next = next
 	if next(DungeonQuest) == nil then
 		ttq.complQust = true
 	end
@@ -155,18 +145,22 @@ end
 function ttq.markAndQueueNormalInisSets()
 	ttq.markAndQueueNormalInis(DungeonSets)
 end
+function ttq.markAndQueueVetInisSets()
+	ttq.markAndQueueVetInis(DungeonSets)
+	ttq.markAndQueueVetInis(DungeonSetsVet)
+end
 function ttq.markAndQueueNormalInisQust()
 	ttq.markAndQueueNormalInis(DungeonQuest)
 end
 function ttq.markAndQueueVetInisQust()
-	ttq.markAndQueueVetInis(DungeonSetsVet)
+	ttq.markAndQueueVetInis(DungeonQuest)
 end
 ----------------------------------------------------------------------------------------------------
 function ttq.createQueueButton()
 	local icon = zo_iconFormat("/esoui/art/icons/collectible_memento_pumpkincarving.dds", 26, 31)
 
 	local dropdown = CreateControlFromVirtual("TIM99_SearchingForMissing", ZO_SearchingForGroup, "ZO_ComboBox")
-	dropdown:SetDimensions(200, ZO_DungeonFinder_KeyboardFilter:GetHeight())
+	dropdown:SetDimensions(220, ZO_DungeonFinder_KeyboardFilter:GetHeight())
 	dropdown:ClearAnchors()
 	dropdown:SetAnchor(TOPRIGHT, ZO_DungeonFinder_KeyboardFilter, TOPLEFT, -9, 0)
 	dropdown:SetHidden(true)
@@ -178,9 +172,9 @@ function ttq.createQueueButton()
 	comboBox:SetSpacing(4)
 	comboBox:SetNoSelectionText(string.format("%s   Select", icon))
 	comboBox:SetMultiSelectionTextFormatter(string.format("%s   <<1>> <<1[Category/Categories]>>", icon))
-    comboBox.m_enableMultiSelect = true
-    comboBox.m_maxNumSelections = nil
-    comboBox.m_multiSelectItemData = {}
+	comboBox.m_enableMultiSelect = true
+	comboBox.m_maxNumSelections = nil
+	comboBox.m_multiSelectItemData = {}
 
 	local inchanged
 	ZO_PreHook(
@@ -204,19 +198,25 @@ function ttq.createQueueButton()
 		inchanged = false
 	end
 	do
-		local filterName = string.format("%s   Missing Sets", icon)
+		local filterName = string.format("%s   Missing Sets Normal", icon)
 		local entry = comboBox:CreateItemEntry(filterName, OnFiltersChanged)
 		entry.filterValue = ttq.markAndQueueNormalInisSets
 		comboBox:AddItem(entry)
 	end
 	do
-		local filterName = string.format("%s   Missing Quests", icon)
+		local filterName = string.format("%s   Missing Sets Vet + Helmets", icon)
+		local entry = comboBox:CreateItemEntry(filterName, OnFiltersChanged)
+		entry.filterValue = ttq.markAndQueueVetInisSets
+		comboBox:AddItem(entry)
+	end
+	do
+		local filterName = string.format("%s   Missing Quests Normal", icon)
 		local entry = comboBox:CreateItemEntry(filterName, OnFiltersChanged)
 		entry.filterValue = ttq.markAndQueueNormalInisQust
 		comboBox:AddItem(entry)
 	end
 	do
-		local filterName = string.format("%s   Missing Helmets", icon)
+		local filterName = string.format("%s   Missing Quests Vet", icon)
 		local entry = comboBox:CreateItemEntry(filterName, OnFiltersChanged)
 		entry.filterValue = ttq.markAndQueueVetInisQust
 		comboBox:AddItem(entry)
@@ -370,49 +370,105 @@ function ttq.addonLoaded(event, addonName)
 	EVENT_MANAGER:UnregisterForEvent(ttq.name, EVENT_ADD_ON_LOADED)
 	EVENT_MANAGER:RegisterForEvent(ttq.name, EVENT_PLAYER_ACTIVATED, ttq.playerActivated)
 
-	ttq.svChar = ZO_SavedVars:NewAccountWide("DungeonQueue4Stickerbook", 1, nil, ttq.svCharDef, GetWorldName())
-	
+	ttq.svChar = ZO_SavedVars:NewAccountWide("DunQ4Stickerbook", 1, nil, ttq.svCharDef, GetWorldName())
 	
 
-	SLASH_COMMANDS["/tq"] = function(a)
+	SLASH_COMMANDS["/dq"] = function(a)
 		if a == nil or a == "" or a == " " then
-			CHAT_SYSTEM:AddMessage(string.format("|c666666[%s]|r |c9B30FF[TimSetQueue]  Usage-Help:|r", GetTimeString()))
-			CHAT_SYSTEM:AddMessage(string.format("|c9B30FF  1)|r   |cFFFFFF/tq miss|r |c666666= Prints all Dungeons with missing sets|r"))
-			CHAT_SYSTEM:AddMessage(string.format("|c9B30FF  2)|r   |cFFFFFF/tq all|r |c666666= Prints all Dungeons|r"))
-			CHAT_SYSTEM:AddMessage(string.format("|c9B30FF  3)|r   |cFFFFFF/tq auto|r |c666666= Toggle auto-queue after marking. now:|r |c9B30FF%s|r", tostring(ttq.svChar.autoqueue)))
-			CHAT_SYSTEM:AddMessage(string.format("|c9B30FF  4)|r   |cFFFFFF/tq check|r |c666666= Recalculates the missing sets|r"))
-			CHAT_SYSTEM:AddMessage(string.format("|c9B30FF  5)|r   |cFFFFFF/tq quest|r |c666666= Recalculates the missing quests|r"))
-			CHAT_SYSTEM:AddMessage(string.format("|c9B30FF  6)|r   |cFFFFFF/tq|r itemLINK |c666666= if|r |cFFFFFFitemLink|r |c666666is a from a valid set, it prints the setId|r"))
+			CHAT_SYSTEM:AddMessage(string.format("|c666666[%s]|r |c9B30FF[DunQ4Stickerbook]  Usage-Help:|r", GetTimeString()))
+			CHAT_SYSTEM:AddMessage(string.format("|c9B30FF  1)|r   |cFFFFFF/dq miss|r |c666666= Prints all Dungeons with missing sets|r"))
+			CHAT_SYSTEM:AddMessage(string.format("|c9B30FF  2)|r   |cFFFFFF/dq all|r |c666666= Prints all Dungeons|r"))
+			CHAT_SYSTEM:AddMessage(string.format("|c9B30FF  3)|r   |cFFFFFF/dq done|r |c666666= Prints all pledge-id ever made|r"))
+			--CHAT_SYSTEM:AddMessage(string.format("|c9B30FF  3)|r   |cFFFFFF/tq auto|r |c666666= Toggle auto-queue after marking. now:|r |c9B30FF%s|r", tostring(ttq.svChar.autoqueue)))
+			--CHAT_SYSTEM:AddMessage(string.format("|c9B30FF  4)|r   |cFFFFFF/tq check|r |c666666= Recalculates the missing sets|r"))
+			--CHAT_SYSTEM:AddMessage(string.format("|c9B30FF  5)|r   |cFFFFFF/tq quest|r |c666666= Recalculates the missing quests|r"))
+			CHAT_SYSTEM:AddMessage(string.format("|c9B30FF  4)|r   |cFFFFFF/dq|r itemLINK |c666666= if|r |cFFFFFFitemLink|r |c666666is a from a valid set, it prints the setId|r"))
+		
 		elseif a == "miss" then
-			CHAT_SYSTEM:AddMessage(string.format("|c666666[%s]|r |c9B30FF[TimSetQueue]  Missing Sets from:|r", GetTimeString()))
+			CHAT_SYSTEM:AddMessage(string.format("|c666666[%s]|r |c9B30FF[DunQ4Stickerbook]  Missing Sets from:|r", GetTimeString()))
 			local b = 0
 			for c, d in pairs(DungeonSets) do
 				b = b + 1
 				CHAT_SYSTEM:AddMessage(string.format("|c9B30FF  %s)|r   %s", b, GetActivityName(c)))
 			end
+		
 		elseif a == "all" then
-			CHAT_SYSTEM:AddMessage(string.format("|c666666[%s]|r |c9B30FF[TimSetQueue]  All Dungeons:|r (%s)", GetTimeString(), GetNumActivitiesByType(LFG_ACTIVITY_DUNGEON)))
+			CHAT_SYSTEM:AddMessage(string.format("|c666666[%s]|r |c9B30FF[DunQ4Stickerbook]  All Dungeons:|r (#%s)", GetTimeString(), GetNumActivitiesByType(LFG_ACTIVITY_DUNGEON)))
 			local b = 0
-			for c = 1, GetNumActivitiesByType(2) do
+			CHAT_SYSTEM:AddMessage(string.format("|c9B30FF  normal:|r"))
+			for c = 1, GetNumActivitiesByType(LFG_ACTIVITY_DUNGEON) do
 				b = b + 1
-				local d = GetActivityIdByTypeAndIndex(2, c)
-				CHAT_SYSTEM:AddMessage(string.format("|c9B30FF  %s)|r   %03d - %s", b, d, GetActivityName(d)))
+				local d = GetActivityIdByTypeAndIndex(LFG_ACTIVITY_DUNGEON, c)
+				CHAT_SYSTEM:AddMessage(string.format("|c9B30FF    %02d)|r   %03d - %s", b, d, GetActivityName(d)))
 			end
-		elseif a == "auto" then
-			ttq.svChar.autoqueue = not ttq.svChar.autoqueue
-			CHAT_SYSTEM:AddMessage(string.format("|c666666[%s]|r |c9B30FF[TimSetQueue]  Auto-Queueing is now set to:|r |cFFFFFF%s|r", GetTimeString(), tostring(ttq.svChar.autoqueue)))
-		elseif a == "check" then
-			ttq.checkCompletedSets()
-			CHAT_SYSTEM:AddMessage(string.format("|c666666[%s]|r |c9B30FF[TimSetQueue]  Set recalculation done.|r", GetTimeString()))
-		elseif a == "quest" then
-			ttq.checkCompletedQuests()
-			CHAT_SYSTEM:AddMessage(string.format("|c666666[%s]|r |c9B30FF[TimSetQueue]  Quest recalculation done.|r", GetTimeString()))
-		else
+			b = 0
+			CHAT_SYSTEM:AddMessage(string.format("|c9B30FF  vet:|r"))
+			for c = 1, GetNumActivitiesByType(LFG_ACTIVITY_MASTER_DUNGEON) do
+				b = b + 1
+				local d = GetActivityIdByTypeAndIndex(LFG_ACTIVITY_MASTER_DUNGEON, c)
+				CHAT_SYSTEM:AddMessage(string.format("|c9B30FF    %02d)|r   %03d - %s", b, d, GetActivityName(d)))
+			end
+
+		elseif a == "done" then
+			CHAT_SYSTEM:AddMessage(string.format("|c666666[%s]|r |c9B30FF[DunQ4Stickerbook]  Pledges done:|r", GetTimeString()))
+			local activityToName = {}
+			local locations = ZO_ACTIVITY_FINDER_ROOT_MANAGER:GetLocationsData(LFG_ACTIVITY_DUNGEON)
+			for i = 1, #locations do
+				local activityId = locations[i]:GetId()
+				local name = locations[i]:GetRawName():gsub("Der ", "")
+				local list = activityToName[name] or {}
+				list[#list + 1] = activityId
+				activityToName[name] = list
+			end
+			local locations = ZO_ACTIVITY_FINDER_ROOT_MANAGER:GetLocationsData(LFG_ACTIVITY_MASTER_DUNGEON)
+			for i = 1, #locations do
+				local activityId = locations[i]:GetId()
+				local name = locations[i]:GetRawName():gsub("Der ", "")
+				local list = activityToName[name] or {}
+				list[#list + 1] = activityId
+				activityToName[name] = list
+			end
+
+			local questId = nil
+			while true do
+				questId = GetNextCompletedQuestId(questId)
+				if questId then
+					local name, questType = GetCompletedQuestInfo(questId)
+					if questType == QUEST_TYPE_UNDAUNTED_PLEDGE then
+					--if questType == QUEST_TYPE_DUNGEON then
+						name = name:gsub("Der ", "")
+						local list = activityToName[name]
+						if list then
+							CHAT_SYSTEM:AddMessage(string.format("|c9B30FF  pledge:|r %i |c9B30FF- (n=%i,v=%i)|r - %s", questId, list[1] or 0, list[2] or 0, name))
+							--lines[#lines + 1] = string.format("[%i] = {n=%i,v=%i}, -- %s", questId, list[1] or 0, list[2] or 0, name)
+						else
+							CHAT_SYSTEM:AddMessage(string.format("|c9B30FF  pledge:|r %i |c9B30FF- (n=%i,v=%i)|r - %s", questId, 0, 0, name))
+							--lines[#lines + 1] = string.format("[%i] = {n=%i,v=%i}, -- %s", questId, 0, 0, name)
+						end
+					end
+				else
+					break
+				end
+			end
+		
+		--elseif a == "auto" then
+		--	ttq.svChar.autoqueue = not ttq.svChar.autoqueue
+		--	CHAT_SYSTEM:AddMessage(string.format("|c666666[%s]|r |c9B30FF[TimSetQueue]  Auto-Queueing is now set to:|r |cFFFFFF%s|r", GetTimeString(), tostring(ttq.svChar.autoqueue)))
+		
+		--elseif a == "check" then
+		--	ttq.checkCompletedSets()
+		--	CHAT_SYSTEM:AddMessage(string.format("|c666666[%s]|r |c9B30FF[TimSetQueue]  Set recalculation done.|r", GetTimeString()))
+		
+		--elseif a == "quest" then
+		--	ttq.checkCompletedQuests()
+		--	CHAT_SYSTEM:AddMessage(string.format("|c666666[%s]|r |c9B30FF[TimSetQueue]  Quest recalculation done.|r", GetTimeString()))
+		
+		else --itemLINK from set-collection e.g.
 			local e, f, f, f, f, g = GetItemLinkSetInfo(a, false)
 			if e == true then
-				CHAT_SYSTEM:AddMessage(string.format("|c666666[%s]|r |c9B30FF[TimSetQueue]|r  |cFFFFFFSetId=%s  (%s)|r", GetTimeString(), tostring(g), tostring(a)))
+				CHAT_SYSTEM:AddMessage(string.format("|c666666[%s]|r |c9B30FF[DunQ4Stickerbook]|r  |cFFFFFFSetId=%s  (%s)|r", GetTimeString(), tostring(g), tostring(a)))
 			else
-				CHAT_SYSTEM:AddMessage(string.format("|c666666[%s]|r |c9B30FF[TimSetQueue]|r  WTF is  |cFFFFFF%s|r ???", GetTimeString(), tostring(a)))
+				CHAT_SYSTEM:AddMessage(string.format("|c666666[%s]|r |c9B30FF[DunQ4Stickerbook]|r  WTF is  |cFFFFFF%s|r ???", GetTimeString(), tostring(a)))
 			end
 		end
 	end
@@ -421,108 +477,110 @@ end
 ----------------------------------------------------------------------------------------------------
 EVENT_MANAGER:RegisterForEvent(ttq.name, EVENT_ADD_ON_LOADED, ttq.addonLoaded)
 
--- SLASH_COMMANDS["/test"] = function()
--- 	-- local activityToName = {}
--- 	-- local locations = ZO_ACTIVITY_FINDER_ROOT_MANAGER:GetLocationsData(LFG_ACTIVITY_DUNGEON)
--- 	-- for i = 1, #locations do
--- 	-- 	local activityId = locations[i]:GetId()
--- 	-- 	activityToName[activityId] = locations[i]:GetRawName():gsub("\194\160II", ""):gsub("\194\160I", "")
--- 	-- end
--- 	-- local setIdToActivity = {}
--- 	-- for _, collectionData in ITEM_SET_COLLECTIONS_DATA_MANAGER:ItemSetCollectionIterator() do
--- 	-- 	for _, pieceData in collectionData:PieceIterator() do
--- 	-- 		local quality = pieceData:GetDisplayQuality()
--- 	-- 		if quality < 4 then
--- 	-- 			local categoryData = collectionData:GetCategoryData()
--- 	-- 			for activityId, name in pairs(activityToName) do
--- 	-- 				if name == categoryData:GetFormattedName() then
--- 	-- 					local list = setIdToActivity[activityId] or {sets = {}}
--- 	-- 					list.sets[#list.sets + 1] = collectionData:GetId()
--- 	-- 					list.name = name
--- 	-- 					setIdToActivity[activityId] = list
--- 	-- 				end
--- 	-- 			end
--- 	-- 			break
--- 	-- 		end
--- 	-- 	end
--- 	-- end
--- 	-- 	local lines = {}
--- 	-- 	for activityId, list in pairs(setIdToActivity) do
--- 	-- 		lines[#lines + 1] = string.format("[%i] = {sets={%s}}, -- %s", activityId, table.concat(list.sets,","), GetActivityName(activityId))
--- 	-- 	end
--- 	-- 	DungeonQueue4Stickerbook.normal = lines
+ --[[
+ SLASH_COMMANDS["/dqtest"] = function()
+ 	-- local activityToName = {}
+ 	-- local locations = ZO_ACTIVITY_FINDER_ROOT_MANAGER:GetLocationsData(LFG_ACTIVITY_DUNGEON)
+ 	-- for i = 1, #locations do
+ 	-- 	local activityId = locations[i]:GetId()
+ 	-- 	activityToName[activityId] = locations[i]:GetRawName():gsub("\194\160II", ""):gsub("\194\160I", "")
+ 	-- end
+ 	-- local setIdToActivity = {}
+ 	-- for _, collectionData in ITEM_SET_COLLECTIONS_DATA_MANAGER:ItemSetCollectionIterator() do
+ 	-- 	for _, pieceData in collectionData:PieceIterator() do
+ 	-- 		local quality = pieceData:GetDisplayQuality()
+ 	-- 		if quality < 4 then
+ 	-- 			local categoryData = collectionData:GetCategoryData()
+ 	-- 			for activityId, name in pairs(activityToName) do
+ 	-- 				if name == categoryData:GetFormattedName() then
+ 	-- 					local list = setIdToActivity[activityId] or {sets = {}}
+ 	-- 					list.sets[#list.sets + 1] = collectionData:GetId()
+ 	-- 					list.name = name
+ 	-- 					setIdToActivity[activityId] = list
+ 	-- 				end
+ 	-- 			end
+ 	-- 			break
+ 	-- 		end
+ 	-- 	end
+ 	-- end
+ 	-- 	local lines = {}
+ 	-- 	for activityId, list in pairs(setIdToActivity) do
+ 	-- 		lines[#lines + 1] = string.format("[%i] = {sets={%s}}, -- %s", activityId, table.concat(list.sets,","), GetActivityName(activityId))
+ 	-- 	end
+ 	-- 	DungeonQueue4Stickerbook.normal = lines
 
--- 	-- 	local activityToName = {}
--- 	-- 	local locations = ZO_ACTIVITY_FINDER_ROOT_MANAGER:GetLocationsData(LFG_ACTIVITY_MASTER_DUNGEON)
--- 	--     for i = 1, #locations do
--- 	--         local activityId = locations[i]:GetId()
--- 	-- 		activityToName[activityId] = locations[i]:GetRawName():gsub("\194\160II", ""):gsub("\194\160I", "")
--- 	-- 	end
--- 	-- 	local setIdToActivity = {}
--- 	-- 	for _, collectionData in ITEM_SET_COLLECTIONS_DATA_MANAGER:ItemSetCollectionIterator() do
--- 	-- 		if collectionData:GetNumPieces() == 6 then
--- 	-- 			for _, pieceData in collectionData:PieceIterator() do
--- 	-- 				local quality = pieceData:GetDisplayQuality()
--- 	-- 				if quality == 4 then
--- 	-- 					if GetItemLinkEquipType(pieceData:GetItemLink()) == EQUIP_TYPE_HEAD then
--- 	-- 						local categoryData = collectionData:GetCategoryData()
--- 	-- 						for activityId, name in pairs(activityToName) do
--- 	-- 							if name == categoryData:GetFormattedName() then
--- 	-- 								local list = setIdToActivity[activityId] or { sets={} }
--- 	-- 								list.sets[#list.sets+1] = collectionData:GetId()
--- 	-- 								list.name = name
--- 	-- 								setIdToActivity[activityId] = list
--- 	-- 							end
--- 	-- 						end
--- 	-- 						break
--- 	-- 					end
--- 	-- 				end
--- 	-- 			end
--- 	-- 		end
--- 	-- 	end
--- 	-- 	local lines = {}
--- 	-- 	for activityId, list in pairs(setIdToActivity) do
--- 	-- 		lines[#lines + 1] = string.format("[%i] = {sets={%s}}, -- %s", activityId, table.concat(list.sets,","), GetActivityName(activityId))
--- 	-- 	end
--- 	-- 	DungeonQueue4Stickerbook.vet = lines
+ 	-- 	local activityToName = {}
+ 	-- 	local locations = ZO_ACTIVITY_FINDER_ROOT_MANAGER:GetLocationsData(LFG_ACTIVITY_MASTER_DUNGEON)
+ 	--     for i = 1, #locations do
+ 	--         local activityId = locations[i]:GetId()
+ 	-- 		activityToName[activityId] = locations[i]:GetRawName():gsub("\194\160II", ""):gsub("\194\160I", "")
+ 	-- 	end
+	-- 	local setIdToActivity = {}
+ 	-- 	for _, collectionData in ITEM_SET_COLLECTIONS_DATA_MANAGER:ItemSetCollectionIterator() do
+	-- 		if collectionData:GetNumPieces() == 6 then
+ 	-- 			for _, pieceData in collectionData:PieceIterator() do
+ 	-- 				local quality = pieceData:GetDisplayQuality()
+ 	-- 				if quality == 4 then
+ 	-- 					if GetItemLinkEquipType(pieceData:GetItemLink()) == EQUIP_TYPE_HEAD then
+	-- 						local categoryData = collectionData:GetCategoryData()
+ 	-- 						for activityId, name in pairs(activityToName) do
+ 	-- 							if name == categoryData:GetFormattedName() then
+ 	-- 								local list = setIdToActivity[activityId] or { sets={} }
+ 	-- 								list.sets[#list.sets+1] = collectionData:GetId()
+ 	-- 								list.name = name
+ 	-- 								setIdToActivity[activityId] = list
+ 	-- 							end
+ 	-- 						end
+ 	-- 						break
+ 	-- 					end
+ 	-- 				end
+ 	-- 			end
+ 	-- 		end
+ 	-- 	end
+ 	-- 	local lines = {}
+ 	-- 	for activityId, list in pairs(setIdToActivity) do
+ 	-- 		lines[#lines + 1] = string.format("[%i] = {sets={%s}}, -- %s", activityId, table.concat(list.sets,","), GetActivityName(activityId))
+ 	-- 	end
+ 	-- 	DungeonQueue4Stickerbook.vet = lines
 
--- 	local activityToName = {}
--- 	local locations = ZO_ACTIVITY_FINDER_ROOT_MANAGER:GetLocationsData(LFG_ACTIVITY_DUNGEON)
--- 	for i = 1, #locations do
--- 		local activityId = locations[i]:GetId()
--- 		local name = locations[i]:GetRawName():gsub("Der ", "")
--- 		local list = activityToName[name] or {}
--- 		list[#list + 1] = activityId
--- 		activityToName[name] = list
--- 	end
--- 	local locations = ZO_ACTIVITY_FINDER_ROOT_MANAGER:GetLocationsData(LFG_ACTIVITY_MASTER_DUNGEON)
--- 	for i = 1, #locations do
--- 		local activityId = locations[i]:GetId()
--- 		local name = locations[i]:GetRawName():gsub("Der ", "")
--- 		local list = activityToName[name] or {}
--- 		list[#list + 1] = activityId
--- 		activityToName[name] = list
--- 	end
+ 	local activityToName = {}
+ 	local locations = ZO_ACTIVITY_FINDER_ROOT_MANAGER:GetLocationsData(LFG_ACTIVITY_DUNGEON)
+ 	for i = 1, #locations do
+ 		local activityId = locations[i]:GetId()
+ 		local name = locations[i]:GetRawName():gsub("Der ", "")
+ 		local list = activityToName[name] or {}
+ 		list[#list + 1] = activityId
+ 		activityToName[name] = list
+ 	end
+ 	local locations = ZO_ACTIVITY_FINDER_ROOT_MANAGER:GetLocationsData(LFG_ACTIVITY_MASTER_DUNGEON)
+ 	for i = 1, #locations do
+ 		local activityId = locations[i]:GetId()
+ 		local name = locations[i]:GetRawName():gsub("Der ", "")
+ 		local list = activityToName[name] or {}
+ 		list[#list + 1] = activityId
+ 		activityToName[name] = list
+ 	end
 
--- 	local lines = {}
--- 	local questId = nil
--- 	while true do
--- 		questId = GetNextCompletedQuestId(questId)
--- 		if questId then
--- 			local name, questType = GetCompletedQuestInfo(questId)
--- 			if questType == QUEST_TYPE_UNDAUNTED_PLEDGE then
--- 			--if questType == QUEST_TYPE_DUNGEON then
--- 				name = name:gsub("Der ", "")
--- 				local list = activityToName[name]
--- 				if list then
--- 					lines[#lines + 1] = string.format("[%i] = {n=%i,v=%i}, -- %s", questId, list[1] or 0, list[2] or 0, name)
--- 				else
--- 					lines[#lines + 1] = string.format("[%i] = {n=%i,v=%i}, -- %s", questId, 0, 0, name)
--- 				end
--- 			end
--- 		else
--- 			break
--- 		end
--- 	end
--- 	DungeonQueue4Stickerbook.pledges = lines
--- end
+ 	local lines = {}
+ 	local questId = nil
+ 	while true do
+ 		questId = GetNextCompletedQuestId(questId)
+ 		if questId then
+ 			local name, questType = GetCompletedQuestInfo(questId)
+ 			if questType == QUEST_TYPE_UNDAUNTED_PLEDGE then
+ 			--if questType == QUEST_TYPE_DUNGEON then
+ 				name = name:gsub("Der ", "")
+ 				local list = activityToName[name]
+ 				if list then
+ 					lines[#lines + 1] = string.format("[%i] = {n=%i,v=%i}, -- %s", questId, list[1] or 0, list[2] or 0, name)
+ 				else
+ 					lines[#lines + 1] = string.format("[%i] = {n=%i,v=%i}, -- %s", questId, 0, 0, name)
+				end
+ 			end
+ 		else
+ 			break
+ 		end
+ 	end
+ 	DungeonQueue4Stickerbook.pledges = lines
+ end
+ --]]
