@@ -656,6 +656,29 @@ Taneth("LibAsync", function()
 					done()
 				end)
 		end)
+
+		it.async("should handle nested calls", function(done)
+			local result = ""
+
+			local task = LibAsync:Create("NestedCallsTask")
+
+			task:Call(function(task)
+				result = result .. 'Outer '
+				task:Then(function() result = result .. 'Then 1 ' end)
+				:Then(function(task) result = result .. 'Then 2 '
+					task:Call(function() result = result .. 'Call from ' end)
+					:Then(function() result = result .. 'Then 2 ' end)
+				end)
+				:Then(function() result = result .. 'Then 3 ' end)
+				:Then(function() result = result .. 'Then 4 ' end)
+				:Then(function() result = result .. 'Then 5 ' end)
+				:Then(function() result = result .. 'Then 6 ' end)
+				:Then(function() result = result .. 'Then 7 ' end)
+			end):Finally(function()
+				assert.equals(result, "Outer Then 1 Then 2 Call from Then 2 Then 3 Then 4 Then 5 Then 6 Then 7 ")
+				done()
+			end)
+		end)
 	end)
 end)
 

@@ -49,7 +49,7 @@ local GetGameTimeSeconds = GetGameTimeSeconds
 --- @param callstackIndex number
 local function RemoveCall(job, callstackIndex)
 	remove(job.callstack, callstackIndex)
-	job.lastCallIndex = min(job.lastCallIndex, #job.callstack)
+	job.lastCallIndex = #job.callstack
 end
 
 local current, call
