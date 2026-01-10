@@ -1,9 +1,9 @@
 ## Title: Rare Fish Tracker
-## APIVersion: 101047 101048
+## APIVersion: 101048 101049
 ## Author: katkat42 and votan
-## Version: 1.42.8
-## PCDependsOn: LibAddonMenu-2.0>=40
-## ConsoleDependsOn: LibHarvensAddonSettings>=20007
+## Version: 1.42.9
+## PCDependsOn: LibAddonMenu-2.0>=41
+## ConsoleDependsOn: LibHarvensAddonSettings>=20102
 ## SavedVariables: RareFishTrackerSavedVars
 
 ## This Add-On is not created by, affiliated with or sponsored by ZeniMax Media Inc. or its affiliates. The Elder Scrolls? and related logos are registered trademarks or trademarks of ZeniMax Media Inc. in the United States and/or other countries. All rights reserved.

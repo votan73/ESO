@@ -468,12 +468,12 @@ function RFT.MakeOrders()
 			RFT.window.column1,
 			RFT.window.column1,
 			RFT.window.column1,
-			RFT.window.column3,
-			RFT.window.column3,
-			RFT.window.column3,
 			RFT.window.column4,
 			RFT.window.column4,
-			RFT.window.column4
+			RFT.window.column4,
+			RFT.window.column3,
+			RFT.window.column3,
+			RFT.window.column3
 		}
 	}
 	RFT.quality = {
@@ -951,8 +951,8 @@ function RFT.MakeOrders()
 			-- Solstice
 			SI_RARE_FISH_TRACKER_TYPE_OCEAN,
 			SI_RARE_FISH_TRACKER_TYPE_LAKE,
-			SI_RARE_FISH_TRACKER_TYPE_RIVER,
-			SI_RARE_FISH_TRACKER_TYPE_FOUL
+			SI_RARE_FISH_TRACKER_TYPE_FOUL,
+			SI_RARE_FISH_TRACKER_TYPE_RIVER
 		}
 	}
 	RFT.typeSymbols = {

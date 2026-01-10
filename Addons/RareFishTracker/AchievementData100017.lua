@@ -87,7 +87,7 @@ RFT.zoneToAchievement = {
 	-- West Weald
 	[1443] = {3948},
 	-- Solstice
-	[1502] = {4404, 4460}
+	[1502] = {4460, 4404}
 }
 
 RFT.achievementToItem = {

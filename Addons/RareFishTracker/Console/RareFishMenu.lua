@@ -16,7 +16,7 @@ function RFT.MakeMenu()
 	end
 	settings.allowDefaults = true
 	settings.author = "katkat42 & votan"
-	settings.version = "1.42.8"
+	settings.version = "1.42.9"
 	settings.website = "http://www.esoui.com/downloads/info665-RareFishTracker.html"
 
 	local locationSettings
