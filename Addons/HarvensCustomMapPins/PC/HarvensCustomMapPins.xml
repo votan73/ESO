@@ -9,7 +9,7 @@
 			<Controls>
 				<Control name="$(parent)Content" inherits="ZO_DialogContentAnchors">
 					<Controls>
-						<Label name="$(parent)DescriptionLabel" font="ZoFontGame" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_SELECTED" horizontalAlignment="LEFT" modifyTextType="UPPERCASE" text="Enter Pin Description:">
+						<Label name="$(parent)DescriptionLabel" font="ZoFontGame" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_SELECTED" horizontalAlignment="LEFT" modifyTextType="UPPERCASE" text="SI_HARVEN_CMP_ENTER_PIN_DESCRIPTION">
 							<Anchor point="TOPLEFT"/>
 						</Label>
 						<EditBox name="$(parent)Description" inherits="ZO_DefaultEditMultiLineForBackdrop" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_SELECTED">
@@ -24,7 +24,7 @@
 						<Button name="$(parent)Advanced" inherits="ZO_CheckButton">
 							<Anchor point="TOPLEFT" relativeTo="$(parent)Description" relativePoint="BOTTOMLEFT" offsetY="16"/>
 						</Button>
-						<Label name="$(parent)IconLabel" font="ZoFontGame" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_SELECTED" horizontalAlignment="LEFT" modifyTextType="UPPERCASE" text="Select Icon:">
+						<Label name="$(parent)IconLabel" font="ZoFontGame" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_SELECTED" horizontalAlignment="LEFT" modifyTextType="UPPERCASE" text="SI_HARVEN_CMP_SELECT_ICON">
 							<Anchor point="TOPLEFT" relativeTo="$(parent)Advanced" relativePoint="BOTTOMLEFT" offsetY="16"/>
 						</Label>
 						<Control name="$(parent)Icon">
@@ -37,7 +37,7 @@
 								</Control>
 							</Controls>
 						</Control>
-						<Label name="$(parent)ColorLabel" font="ZoFontGame" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_SELECTED" horizontalAlignment="LEFT" modifyTextType="UPPERCASE" text="Select Color:">
+						<Label name="$(parent)ColorLabel" font="ZoFontGame" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_SELECTED" horizontalAlignment="LEFT" modifyTextType="UPPERCASE" text="SI_HARVEN_CMP_SELECT_COLOR">
 							<Anchor point="TOPLEFT" relativeTo="$(parent)Icon" relativePoint="BOTTOMLEFT" offsetY="16"/>
 							<Dimensions x="165" y="26" />
 						</Label>
@@ -56,7 +56,7 @@
 								</Texture>
 							</Controls>
 						</Control>
-						<Label name="$(parent)PredefinedSelectLabel" font="ZoFontGame" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_SELECTED" horizontalAlignment="LEFT" modifyTextType="UPPERCASE" text="Apply Predefined:">
+						<Label name="$(parent)PredefinedSelectLabel" font="ZoFontGame" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_SELECTED" horizontalAlignment="LEFT" modifyTextType="UPPERCASE" text="SI_HARVEN_CMP_APPLY_PREDEFINED">
 							<Anchor point="TOPLEFT" relativeTo="$(parent)ColorLabel" relativePoint="BOTTOMLEFT" offsetY="16"/>
 							<Dimensions x="165" y="26" />
 						</Label>
@@ -67,7 +67,7 @@
 						<Button name="$(parent)PredefinedDelete" inherits="ZO_CloseButton">
 							<Anchor point="LEFT" relativeTo="$(parent)PredefinedSelect" relativePoint="RIGHT" offsetX="4"/>
 						</Button>
-						<Label name="$(parent)PredefinedNameLabel" font="ZoFontGame" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_SELECTED" horizontalAlignment="LEFT" modifyTextType="UPPERCASE" text="Predefined Name:">
+						<Label name="$(parent)PredefinedNameLabel" font="ZoFontGame" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_SELECTED" horizontalAlignment="LEFT" modifyTextType="UPPERCASE" text="SI_HARVEN_CMP_PREDEFINED_NAME">
 							<Anchor point="TOPLEFT" relativeTo="$(parent)PredefinedSelectLabel" relativePoint="BOTTOMLEFT" offsetY="16"/>
 							<Dimensions x="165" y="26" />
 						</Label>

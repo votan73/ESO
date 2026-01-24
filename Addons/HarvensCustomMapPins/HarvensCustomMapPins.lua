@@ -1,4 +1,9 @@
-local HarvensCustomMapPins = {}
+if IsConsoleUI() then
+	return -- Not yet
+end
+
+HarvensCustomMapPins = {}
+local HarvensCustomMapPins = HarvensCustomMapPins
 
 local MAPPIN_LINK_TYPE = "hcmp"
 
@@ -71,7 +76,7 @@ function HarvensCustomMapPins:CreatePinSavedVariable(tileName, currentFloor, map
 	key = tonumber(key)
 
 	if type(color) == "table" then
-		color = ZO_ColorDef.ToARGBHexadecimal(unpack(color))
+		color = ZO_ColorDef.FloatsToHex(unpack(color))
 	end
 
 	if predefined and self.sv.predefined[predefined] then
@@ -242,52 +247,10 @@ function HarvensCustomMapPins:SetColor(pin, pTag)
 end
 
 local function ShowPinMenu(pin, button)
-	if not pin or not pin.__index or pin.__index ~= ZO_MapPin then
+	if not pin or pin.__index ~= ZO_MapPin then
 		return
 	end
-	local pType, pTag = pin:GetPinTypeAndTag()
-
-	ZO_WorldMap:StopMovingOrResizing()
-	ZO_WorldMap_MouseUp()
-	ClearMenu()
-	AddCustomMenuItem(
-		"Edit",
-		function()
-			HarvensCustomMapPins:EditPin(pin, pType, pTag)
-		end
-	)
-	AddCustomMenuItem(
-		"Show in Popup",
-		function()
-			local pin = HarvensCustomMapPins:GetPin(pTag)
-			if not pin then
-				return
-			end
-			PopupTooltip:SetHidden(false)
-			PopupTooltip:ClearLines()
-			PopupTooltip:AddLine(pin.description, "", ZO_TOOLTIP_DEFAULT_COLOR:UnpackRGB())
-		end
-	)
-	AddCustomMenuItem(
-		"Share",
-		function()
-			HarvensCustomMapPins:SharePin(pTag)
-		end
-	)
-	AddCustomMenuItem("-")
-	AddCustomMenuItem(
-		"Delete",
-		function()
-			HarvensCustomMapPins:DeletePin(pTag)
-		end
-	)
-	ShowMenu(pin:GetControl(), 1)
-
-	-- dirty hack! because something calls ClearMenu after this function returns
-	local backupfunc = ClearMenu
-	ClearMenu = function(...)
-		ClearMenu = backupfunc
-	end
+	HarvensCustomMapPins:ShowPinMenu(pin, button)
 end
 
 function HarvensCustomMapPins:CreatePin(cpin, key)
@@ -373,57 +336,6 @@ local function LayoutPins(pinManager)
 	end
 end
 
-function HarvensCustomMapPins:ShowDialog(x, y)
-	local tileName, currentFloor = HarvensCustomMapPins:GetTileAndFloorFromCurrentMap()
-
-	local color = self.sv.lastUsedColor or {1, 1, 1, 1}
-
-	local _, key = self:CreatePinSavedVariable(tileName, currentFloor, GetMapName(), x, y, "", 1, color)
-	ZO_Dialogs_ShowDialog("HARVENS_CUSTOM_MAP_PINS_EDIT", {key = self:CreatePinKey(tileName, currentFloor, key), edit = false}, {})
-end
-
-function HarvensCustomMapPins_WorldMapPlacePin()
-	local x, y = NormalizeMousePositionToControl(ZO_WorldMapContainer)
-	if (x > 0 and x < 1 and y > 0 and y < 1) then
-		HarvensCustomMapPins:ShowDialog(x, y)
-	end
-end
-
-function HarvensCustomMapPins_CustomPinCommand()
-	local x, y = GetMapPlayerPosition("player")
-	HarvensCustomMapPins:ShowDialog(x, y)
-end
-
-function HarvensCustomMapPins:InjectKeystrip()
-	local orgBackup = KEYBIND_STRIP.AddKeybindButtonGroup
-
-	KEYBIND_STRIP.AddKeybindButtonGroup = function(keybindStripManager, strip, ...)
-		if not SCENE_MANAGER:IsShowing("worldMap") then
-			return orgBackup(keybindStripManager, strip, ...)
-		end
-
-		local found = false
-		for i = 1, #strip do
-			if strip[i] == nil then
-				break
-			end
-
-			if type(strip[i].name) == "string" and strip[i].name == zo_strformat(SI_WORLD_MAP_CURRENT_LOCATION) then
-				found = true
-				break
-			end
-		end
-
-		if found then
-			table.insert(strip, {name = "Place custom pin", keybind = "UI_SHORTCUT_NEGATIVE", callback = HarvensCustomMapPins_WorldMapPlacePin})
-			KEYBIND_STRIP.AddKeybindButtonGroup = orgBackup
-			return KEYBIND_STRIP.AddKeybindButtonGroup(keybindStripManager, strip, ...)
-		else
-			return orgBackup(keybindStripManager, strip, ...)
-		end
-	end
-end
-
 function HarvensCustomMapPins:ImportPinsToAccountWide()
 	if self.sv_old.exported then
 		return
@@ -445,7 +357,7 @@ end
 
 function HarvensCustomMapPins:ImportFromImportSection()
 	if not HarvensCustomMapPins_SavedVariables or not HarvensCustomMapPins_SavedVariables["import"] then
-		CHAT_SYSTEM:AddMessage("No import section in the SavedVariable file. Logout and make sure that the section is present.")
+		CHAT_SYSTEM:AddMessage(zo_strformat(SI_HARVEN_CMP_NO_IMPORT_SECTION))
 		return
 	end
 	for k, v in pairs(HarvensCustomMapPins_SavedVariables["import"]) do
@@ -453,7 +365,7 @@ function HarvensCustomMapPins:ImportFromImportSection()
 			-- old format
 			if not self.customPins[k] then
 				if type(v) ~= "table" or not v.map or not v.description or not v.x or not v.y or not v.color or type(v.color) ~= "table" then
-					CHAT_SYSTEM:AddMessage("Pin " .. k .. " seems to be malformed, ignoring.")
+					CHAT_SYSTEM:AddMessage(zo_strformat(SI_HARVEN_CMP_PIN_MALFORMED, k))
 				else
 					self.customPins[k] = {
 						map = v.map,
@@ -468,10 +380,10 @@ function HarvensCustomMapPins:ImportFromImportSection()
 						},
 						icon = v.icon
 					}
-					CHAT_SYSTEM:AddMessage("Imported pin '" .. v.description .. "' on map '" .. zo_strformat("<<1>>", v.map) .. "' location " .. v.x .. ", " .. v.y)
+					CHAT_SYSTEM:AddMessage(zo_strformat(SI_HARVEN_CMP_IMPORTED_PIN, v.description, v.map, v.x, v.y))
 				end
 			else
-				CHAT_SYSTEM:AddMessage("A pin is already present at that location: " .. v.x .. ", " .. v.y .. " " .. v.description)
+				CHAT_SYSTEM:AddMessage(zo_strformat(SI_HARVEN_CMP_PIN_ALREADY_PRESENT, v.x, v.y, v.description))
 			end
 		else
 			-- new format
@@ -498,13 +410,13 @@ function HarvensCustomMapPins:ImportFromImportSection()
 							icon = v.icon
 						}
 					else
-						CHAT_SYSTEM:AddMessage("A pin is already present at that location: " .. pinData.x .. ", " .. pinData.y .. " " .. pinData.description)
+						CHAT_SYSTEM:AddMessage(zo_strformat(SI_HARVEN_CMP_PIN_ALREADY_PRESENT, pinData.x, pinData.y, pinData.description))
 					end
 				end
 			end
 		end
 	end
-	CHAT_SYSTEM:AddMessage("Import completed!")
+	CHAT_SYSTEM:AddMessage(zo_strformat(SI_HARVEN_CMP_IMPORT_COMPLETED))
 	HarvensCustomMapPins_SavedVariables["import"] = nil
 end
 
@@ -647,13 +559,13 @@ function HarvensCustomMapPins:InitLegend()
 end
 
 function HarvensCustomMapPins:SetupOptions()
-	local LibHarvensAddonSettings = LibHarvensAddonSettings or LibStub("LibHarvensAddonSettings-1.0")
+	local LibHarvensAddonSettings = LibHarvensAddonSettings
 	local settings = LibHarvensAddonSettings:AddAddon("Harven's Custom Map Pins")
-	settings.version = "3.2.5"
+	settings.version = "3.3.0"
 
 	local pinSize = {
 		type = LibHarvensAddonSettings.ST_SLIDER,
-		label = "Pin Size",
+		label = GetString(SI_HARVEN_CMP_PIN_SIZE),
 		min = 10,
 		max = 100,
 		step = 1,
@@ -669,12 +581,12 @@ function HarvensCustomMapPins:SetupOptions()
 
 	local pinLevel = {
 		type = LibHarvensAddonSettings.ST_SLIDER,
-		label = "Pin Draw Level",
+		label = GetString(SI_HARVEN_CMP_PIN_DRAW_LEVEL),
 		min = 2,
 		max = 200,
 		step = 10,
 		format = "%d",
-		tooltip = "The greater the number then more top level a pin would be.",
+		tooltip = GetString(SI_HARVEN_CMP_PIN_DRAW_LEVEL_TOOLTIP),
 		getFunction = function()
 			return self.sv.pinLevel
 		end,
@@ -688,8 +600,8 @@ function HarvensCustomMapPins:SetupOptions()
 
 	settings:AddSetting {
 		type = LibHarvensAddonSettings.ST_CHECKBOX,
-		label = "Spread Pin Rendering",
-		tooltip = "Spread pin rendering over time to reduce CPU load per frame.",
+		label = GetString(SI_HARVEN_CMP_SPREAD_PIN_RENDERING),
+		tooltip = GetString(SI_HARVEN_CMP_SPREAD_PIN_RENDERING_TOOLTIP),
 		getFunction = function()
 			return self.sv.alternateRenderer
 		end,
@@ -699,8 +611,8 @@ function HarvensCustomMapPins:SetupOptions()
 	}
 	settings:AddSetting {
 		type = LibHarvensAddonSettings.ST_CHECKBOX,
-		label = "Allow pin sub-filter" .. zo_iconFormat("esoui/art/miscellaneous/eso_icon_warning.dds", 28, 28),
-		tooltip = "Allow to show/hide predefines (map filter tab). Reloads UI!",
+		label = GetString(SI_HARVEN_CMP_ALLOW_PIN_SUB_FILTER) .. zo_iconFormat("esoui/art/miscellaneous/eso_icon_warning.dds", 28, 28),
+		tooltip = GetString(SI_HARVEN_CMP_ALLOW_PIN_SUB_FILTER_TOOLTIP),
 		getFunction = function()
 			return self.sv.allowSubFilter
 		end,
@@ -715,13 +627,13 @@ local function migrate(self, oldIconToNewIndex)
 	for name, predefined in pairs(self.sv.predefined) do
 		predefined.icon = oldIconToNewIndex[predefined.icon] or 1
 		if type(predefined.color) == "table" then
-			predefined.color = ZO_ColorDef.ToARGBHexadecimal(unpack(predefined.color))
+			predefined.color = ZO_ColorDef.FloatsToHex(unpack(predefined.color))
 		end
 	end
 	local function checkPin(pin)
 		pin.icon = oldIconToNewIndex[pin.icon] or 1
 		if type(pin.color) == "table" then
-			local hex = ZO_ColorDef.ToARGBHexadecimal(unpack(pin.color))
+			local hex = ZO_ColorDef.FloatsToHex(unpack(pin.color))
 			local color = self.hexToColorDef[hex]
 			if not color then
 				color = ZO_ColorDef:New(unpack(pin.color))
@@ -887,7 +799,7 @@ function HarvensCustomMapPins:Initialize()
 
 	function self:GetColor(hex)
 		if type(hex) == "table" then
-			hex = ZO_ColorDef.ToARGBHexadecimal(unpack(hex))
+			hex = ZO_ColorDef.FloatsToHex(unpack(hex))
 		end
 		return self.hexToColorDef[hex] or newHexColor(hex)
 	end
@@ -951,9 +863,7 @@ function HarvensCustomMapPins:Initialize()
 			show = function(...)
 				return true
 			end,
-			callback = ShowPinMenu,
-			duplicates = function(...)
-			end
+			callback = ShowPinMenu
 		}
 	}
 	ZO_MapPin.PIN_CLICK_HANDLERS[MOUSE_BUTTON_INDEX_RIGHT][self.pinTypeId] = ZO_MapPin.PIN_CLICK_HANDLERS[MOUSE_BUTTON_INDEX_LEFT][self.pinTypeId]

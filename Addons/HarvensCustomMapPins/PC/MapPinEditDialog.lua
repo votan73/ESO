@@ -78,11 +78,11 @@ function Dialog:SetupDialog(dialog, data)
 		self.scrollList:RefreshVisible()
 	else
 		if data.edit and data.pin then
-			dialog.info.title.text = "CUSTOM MAP PIN (replace)"
+			dialog.info.title.text = GetString(SI_HARVEN_CMP_TITLE_REPLACE)
 		elseif data.edit then
-			dialog.info.title.text = "CUSTOM MAP PIN (edit)"
+			dialog.info.title.text = GetString(SI_HARVEN_CMP_TITLE_EDIT)
 		else
-			dialog.info.title.text = "CUSTOM MAP PIN (new)"
+			dialog.info.title.text = GetString(SI_HARVEN_CMP_TITLE_NEW)
 		end
 		ZO_Dialogs_UpdateDialogTitleText(dialog, dialog.info.title)
 
@@ -247,7 +247,7 @@ function Dialog:Initialize(control, sv)
 	self.scrollList:Commit()
 
 	local advanced = GetControl(content, "Advanced")
-	ZO_CheckButton_SetLabelText(advanced, "Advanced Options")
+	ZO_CheckButton_SetLabelText(advanced, GetString(SI_HARVEN_CMP_ADVANCED_OPTIONS))
 	ZO_CheckButton_SetCheckState(advanced, self.sv.showAdvanced)
 	advanced.toggleFunction = function(control, state)
 		self:ShowAdvanced(state)
