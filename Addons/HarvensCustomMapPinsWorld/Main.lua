@@ -72,7 +72,8 @@ local function Hook(HarvensCustomMapPins)
 					local control
 					if key then
 						control = self.worldPinPool:GetActiveObject(key)
-					else
+					end
+					if not control then
 						control, key = self:GetNewWorldPin(cpin)
 						local pinId = getPinId(pinTag)
 						self.worldKeys[pinTag] = key
@@ -177,13 +178,16 @@ local function Hook(HarvensCustomMapPins)
 		EVENT_MANAGER:RegisterForEvent("HarvensCustomMapPinsWorldPins", EVENT_PLAYER_ACTIVATED, updateOrigin)
 		CALLBACK_MANAGER:RegisterCallback("OnWorldMapChanged", updateOrigin)
 
-		SecurePostHook(
-			ESO_Dialogs["HARVENS_CUSTOM_MAP_PINS_EDIT"].buttons[1],
-			"callback",
-			function(dialog)
-				HarvensCustomMapPins:RemoveWorldPin(dialog.data.key)
-			end
-		)
+		if IsConsoleUI() then
+		else
+			SecurePostHook(
+				ESO_Dialogs["HARVENS_CUSTOM_MAP_PINS_EDIT"].buttons[1],
+				"callback",
+				function(dialog)
+					HarvensCustomMapPins:RemoveWorldPin(dialog.data.key)
+				end
+			)
+		end
 	end
 
 	local function Get3dSize()
@@ -225,12 +229,12 @@ local function Hook(HarvensCustomMapPins)
 
 	settings:AddSetting {
 		type = LibHarvensAddonSettings.ST_SECTION,
-		label = "World Pins"
+		label = GetString(SI_HARVEN_CWP_WORLD_PINS)
 	}
 
 	settings:AddSetting {
 		type = LibHarvensAddonSettings.ST_SLIDER,
-		label = "World pin size",
+		label = GetString(SI_HARVEN_CWP_WORLD_PIN_SIZE),
 		min = 1,
 		max = 200,
 		step = 1,
@@ -248,8 +252,8 @@ local function Hook(HarvensCustomMapPins)
 	}
 	settings:AddSetting {
 		type = LibHarvensAddonSettings.ST_SLIDER,
-		label = "Distance",
-		tooltip = "If you have performance issues reducing the distance may helps. High distance with depth-buffer on is sometimes a bit exaggerated.",
+		label = GetString(SI_HARVEN_CWP_DISTANCE),
+		tooltip = GetString(SI_HARVEN_CWP_DISTANCE_TOOLTIP),
 		min = 1,
 		max = 200,
 		step = 1,
@@ -263,8 +267,8 @@ local function Hook(HarvensCustomMapPins)
 	}
 	settings:AddSetting {
 		type = LibHarvensAddonSettings.ST_CHECKBOX,
-		label = "Use depth-buffer",
-		tooltip = "Turn it off to see through walls and floors. You will see tricks and tweaks of level design as well.",
+		label = GetString(SI_HARVEN_CWP_USE_DEPTH_BUFFER),
+		tooltip = GetString(SI_HARVEN_CWP_USE_DEPTH_BUFFER_TOOLTIP),
 		getFunction = function()
 			return sv.useDepth
 		end,
@@ -278,8 +282,8 @@ local function Hook(HarvensCustomMapPins)
 	}
 	settings:AddSetting {
 		type = LibHarvensAddonSettings.ST_CHECKBOX,
-		label = "Rotate pins",
-		tooltip = "Turn it on to animate the pins for better visibility.",
+		label = GetString(SI_HARVEN_CWP_ROTATE_PINS),
+		tooltip = GetString(SI_HARVEN_CWP_ROTATE_PINS_TOOLTIP),
 		getFunction = function()
 			return sv.useRotation
 		end,
