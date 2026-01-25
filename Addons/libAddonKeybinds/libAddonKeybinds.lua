@@ -41,6 +41,8 @@ libAddonKeybinds = LAK
 local LAYER_DATA_TYPE = 1
 local CATEGORY_DATA_TYPE = 2
 local KEYBIND_DATA_TYPE = 3
+local KEYBINDING_MANAGER = KEYBOARD_KEYBINDING_MANAGER or KEYBINDING_MANAGER
+assert(KEYBINDING_MANAGER, "libAddonKeybinds: KEYBINDING_MANAGER not found")
 
 LAK.showAddonKeybinds = false
 
