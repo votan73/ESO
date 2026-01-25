@@ -88,14 +88,6 @@ local addon = {
 	}
 }
 
-local wm = GetWindowManager()
-local em = GetEventManager()
-local KEYBIND_DATA_TYPE = 3
-local keybindList = KEYBINDING_MANAGER.list
-local orgHandleBindingsLoaded = KEYBINDING_MANAGER.HandleBindingsLoaded
-local orgHandleBindingCleared = KEYBINDING_MANAGER.HandleBindingCleared
-local orgHandleBindingSet = KEYBINDING_MANAGER.HandleBindingSet
-local maxBindings = GetMaxBindingsPerAction()
 local unbindAllKeysFromAction
 local bindKeyToAction
 
@@ -113,6 +105,18 @@ elseif not IsPrivateFunction("UnbindAllKeysFromAction") then
 else
 	return
 end
+
+local wm = GetWindowManager()
+local em = GetEventManager()
+local KEYBIND_DATA_TYPE = 3
+local KEYBINDING_MANAGER = KEYBOARD_KEYBINDING_MANAGER or KEYBINDING_MANAGER
+assert(KEYBINDING_MANAGER, "VotansKeybinder: KEYBINDING_MANAGER not found")
+
+local keybindList = KEYBINDING_MANAGER.list
+local orgHandleBindingsLoaded = KEYBINDING_MANAGER.HandleBindingsLoaded
+local orgHandleBindingCleared = KEYBINDING_MANAGER.HandleBindingCleared
+local orgHandleBindingSet = KEYBINDING_MANAGER.HandleBindingSet
+local maxBindings = GetMaxBindingsPerAction()
 
 ----- Helper functions -----
 local function CompareBinding(a, b)
