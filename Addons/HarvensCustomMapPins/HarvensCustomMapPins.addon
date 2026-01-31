@@ -10,7 +10,7 @@
 ## APIVersion: 101048 101049
 ## SavedVariables: HarvensCustomMapPins_SavedVariables HarvensCustomMapPins_Data
 ## Author: Harven & votan
-## Version: 3.3.0
+## Version: 3.3.1
 ## Description: This addon allows you to place custom pins on the map. To place a pin at your position type |c00ff00/custompin|r in the chat window. To place a pin when the world map window is open, press |c00ff00'x'|r key (default).
 ## DependsOn: LibAsync>=30101 LibCustomMenu>=692 LibHarvensAddonSettings>=20102 LibChatMessage>=118
 ## PCDependsOn: LibMapPins-1.0>=10038
