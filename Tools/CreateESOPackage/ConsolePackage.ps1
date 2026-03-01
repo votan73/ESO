@@ -13,7 +13,7 @@ if (![System.IO.File]::Exists($manifest)) {
 if (![System.IO.File]::Exists($manifest)) { return }
 
 $targetPath = [System.IO.Path]::Combine($PSScriptRoot,$targetName)
-Remove-Item -Path $targetPath -Recurse | Out-Null
+Remove-Item -Path $targetPath -Recurse -ErrorAction SilentlyContinue | Out-Null
 
 $lines = Get-Content -Path $manifest
 $ver = ""
@@ -24,6 +24,8 @@ $newLines = @()
 
 $dependency = @()
 foreach($line in $lines) {
+    $line = $line.Trim()
+    $line = $line
     if ($line.StartsWith("## Title: ", "OrdinalIgnoreCase")) {
         $Title = $line.Substring(10).Trim()
     }
@@ -31,6 +33,7 @@ foreach($line in $lines) {
         $ver = $line.Substring(12).Trim().Replace(" ", "_")
     }
     if ($line.StartsWith("## ApiVersion: ", "OrdinalIgnoreCase")) {
+        $line = $line.Substring(0, 15).Trim() + " 101048 101049"
         $compatible = $line.Substring(15).Trim().Split(" ")
     }
     if ($line.StartsWith("## DependsOn: ", "OrdinalIgnoreCase")) {
@@ -77,6 +80,7 @@ Set-Content -Path ([System.IO.Path]::Combine($targetPath, "$targetName.addon")) 
 
 Remove-Item -Path ([System.IO.Path]::Combine($targetPath, "PC")) -Recurse -Force -ErrorAction SilentlyContinue
 Remove-Item -Path ([System.IO.Path]::Combine($targetPath, "Keyboard")) -Recurse -Force -ErrorAction SilentlyContinue
+Remove-Item -Path ([System.IO.Path]::Combine($targetPath, "tests")) -Recurse -Force -ErrorAction SilentlyContinue
 
 foreach($file in [System.IO.Directory]::GetFiles($targetPath, "Lib*.txt", "AllDirectories")) {
     if ([System.IO.Path]::GetFileName($file) -eq [System.IO.Path]::GetFileName($manifest)) { continue }
@@ -100,7 +104,7 @@ return
 
 $Filename = Get-Item -Path $Filename
 
-$Token = "5ff8072722ab0c814a37cae55a2fa225d0296a5fdd2cf55e98cc2a5172455337"
+$Token = $env:ESOUI_API_TOKEN
 
 if (!$Filename.Exists) { return }
 if (!$Filename.Name.EndsWith(".zip")) { return }
@@ -212,8 +216,8 @@ $data.id = $details.id
 $data.version = $ver
 $data.title = $details.title
 $list = @()
-if ($compatible -ccontains "101045") { $list+="10.3.5" }
-if ($compatible -ccontains "101046") { $list+="11.0.0" }
+if ($compatible -ccontains "101048") { $list+="11.2.0" }
+if ($compatible -ccontains "101049") { $list+="11.3.0" }
 if ($list.Count -lt 1) {
     Write-Host "API Version mismatch. Either manifest or script not up-to-date."
     return

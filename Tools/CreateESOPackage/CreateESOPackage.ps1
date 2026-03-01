@@ -6,9 +6,9 @@ if (![System.IO.Directory]::Exists($Path)) { return }
 $targetName = [System.IO.Path]::GetFileName($Path)
 if ($targetName.Length -eq 0){ return }
 
-$manifest = [System.IO.Path]::Combine($Path,$targetName+".addon")
+$manifest = [System.IO.Path]::Combine($Path, $targetName + ".addon")
 if (![System.IO.File]::Exists($manifest)) {
-    $manifest = [System.IO.Path]::Combine($Path,$targetName+".txt")
+    $manifest = [System.IO.Path]::Combine($Path, $targetName + ".txt")
 }
 if (![System.IO.File]::Exists($manifest)) { return }
 
@@ -74,7 +74,7 @@ if (!$Upload) { return }
 
 $Filename = Get-Item -Path $Filename
 
-$Token = "5ff8072722ab0c814a37cae55a2fa225d0296a5fdd2cf55e98cc2a5172455337"
+$Token = $env:ESOUI_API_TOKEN
 
 if (!$Filename.Exists) { return }
 if (!$Filename.Name.EndsWith(".zip")) { return }
@@ -186,8 +186,8 @@ $data.id = $details.id
 $data.version = $ver
 $data.title = $details.title
 $list = @()
-if ($compatible -ccontains "101045") { $list+="10.3.5" }
-if ($compatible -ccontains "101046") { $list+="11.0.0" }
+if ($compatible -ccontains "101048") { $list+="11.2.0" }
+if ($compatible -ccontains "101049") { $list+="11.3.0" }
 if ($list.Count -lt 1) {
     Write-Host "API Version mismatch. Either manifest or script not up-to-date."
     return

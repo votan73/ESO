@@ -1,6 +1,6 @@
 param($Path="", [switch]$Upload=$false, [switch]$Test=$false, [switch]$Bundle=$false)
 
-$Token = "5ff8072722ab0c814a37cae55a2fa225d0296a5fdd2cf55e98cc2a5172455337"
+$Token = $env:ESOUI_API_TOKEN
 
 Add-Type -AssemblyName System.Web
 Add-Type -AssemblyName System.Web.Extensions
@@ -60,6 +60,7 @@ $blackList["VotansNicerUnboundKeys"] = $true
 $blackList["VotansAssistentFeatures"] = $true
 $blackList["VotansSelectDifficulty"] = $true
 $blackList["VotansWorldChampBuff"] = $true
+$blackList["WaypointIt"] = $true
 
 $baseUrl = "https://api.esoui.com/addons/"
 $listUrl = $baseUrl + "list.json"
@@ -280,8 +281,8 @@ foreach($Path in [System.IO.Directory]::GetDirectories($Path)){
     $data.version = $ver
     $data.title = $details.title
     $list = @()
-    if ($compatible -ccontains "101045") { $list+="10.3.5" }
-    if ($compatible -ccontains "101046") { $list+="11.0.0" }
+    if ($compatible -ccontains "101048") { $list+="11.2.0" }
+    if ($compatible -ccontains "101049") { $list+="11.3.0" }
     if ($list.Length -lt 2) {
         Write-Host -ForegroundColor Red "Manifest or script not up-to-date. " + $data.title
         continue
