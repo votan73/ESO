@@ -1,30 +1,33 @@
 {
-    "name": "votans-eso-snippets",
-    "displayName": "Votans ESO snippets",
-    "description": "Elder Scrolls Online Addon Snippets",
-    "version": "1.0.0",
-    "publisher": "votan73",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/votan73/ESO/vscode/votans-eso-snippets"
-    },
-    "icon": "icon.png",
-    "engines": {
-        "vscode": "^1.6.0"
-    },
-    "categories": [
-        "Snippets"
-    ],
-    "contributes": {
-        "snippets": [
-            {
-                "language": "lua",
-                "path": "./snippets/eso-snippets.code-snippets"
-            },
-            {
-                "language": "xml",
-                "path": "./snippets/xml-snippets.code-snippets"
-            }
-        ]
-    }
+	"name": "votans-eso-snippets",
+	"displayName": "Votans ESO snippets",
+	"description": "Elder Scrolls Online Addon Snippets",
+	"version": "1.0.0",
+	"publisher": "votan73",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/votan73/ESO/vscode/votans-eso-snippets"
+	},
+	"icon": "icon.png",
+	"engines": {
+		"vscode": "^1.6.0"
+	},
+	"categories": [
+		"Snippets"
+	],
+	"contributes": {
+		"snippets": [
+			{
+				"language": "lua",
+				"path": "./snippets/eso-snippets.code-snippets"
+			},
+			{
+				"language": "xml",
+				"path": "./snippets/xml-snippets.code-snippets"
+			}
+		]
+	},
+	"__metadata": {
+		"size": 187123
+	}
 }
