@@ -16,7 +16,11 @@ foreach($addon in $existingAddons.GetEnumerator()) {
     $addonName = [System.IO.Path]::GetFileName($addon)
     #if (![System.IO.Directory]::Exists([System.IO.Path]::Combine($addon, ".svn"))) { continue }
 
-    $name = [System.IO.Path]::Combine($addon, $addonName + ".txt")
+    $name = [System.IO.Path]::Combine($addon, $addonName + ".addon")
+    if (![System.IO.File]::Exists($name)) {
+        $name = [System.IO.Path]::Combine($addon, $addonName + ".txt")
+        if (![System.IO.File]::Exists($name)) { continue }
+    }
     $version = ""
     foreach($line in Get-Content -Path $name -ErrorAction SilentlyContinue) {
         if ($line.StartsWith("## Version: ")) {
