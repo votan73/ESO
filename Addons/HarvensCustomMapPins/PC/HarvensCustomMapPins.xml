@@ -29,11 +29,11 @@
 						</Label>
 						<Control name="$(parent)Icon">
 							<Anchor point="TOPLEFT" relativeTo="$(parent)IconLabel" relativePoint="BOTTOMLEFT" offsetY="4"/>
-							<Dimensions x="360" y="64" />
+							<Dimensions x="360" y="192" />
 							<Controls>
-								<Control name="$(parent)Scroll" inherits="ZO_HorizontalScrollListTemplate">
-									<Anchor point="TOPLEFT"/>
-									<Anchor point="BOTTOMRIGHT"/>
+								<Control name="$(parent)Picker" inherits="ZO_GridScrollList_Keyboard">
+									<Anchor point="TOPLEFT" offsetX="16"/>
+									<Anchor point="BOTTOMRIGHT" offsetX="-16"/>
 								</Control>
 							</Controls>
 						</Control>
