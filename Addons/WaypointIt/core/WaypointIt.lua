@@ -114,6 +114,7 @@ function WaypointIt:GetDistanceToLocalCoords(locX, locY, playerOffsetX, playerOf
 	end
 
 	local gameUnitDistance = useLocalDistance and gps:GetGlobalDistanceInMeters(locX, locY, playerOffsetX, playerOffsetY) or math.floor(zo_distance(locX, locY, playerOffsetX, playerOffsetY) * 25000)
+	gameUnitDistance = gameUnitDistance == gameUnitDistance and gameUnitDistance or 0 --Not A Number check
 
 	-- 11,000 steps per unit, stride length 3.5 feet per step -- No longer calculated this way
 	-- Strike that, changing calculations to match ability grey out distance/range
