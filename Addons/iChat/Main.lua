@@ -55,7 +55,7 @@ function addon:InitSettings()
 		return
 	end
 	addon.settingsControls = settings
-	settings.version = "1.0.7"
+	settings.version = "1.0.10"
 	settings.allowDefaults = true
 	-- settings.website = "http://www.esoui.com/downloads/"
 end

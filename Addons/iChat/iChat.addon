@@ -1,0 +1,24 @@
+## Title: iChat
+## Author: votan
+## APIVersion: 101048 101049
+## AddOnVersion: 10100
+## Version: 1.0.10
+## DependsOn: LibHarvensAddonSettings LibAsync LibCustomMenu
+## OptionalDependsOn: LibChatMessage
+## SavedVariables: iChatSavedVar iChatHistory
+
+## This Add-On is not created by, affiliated with or sponsored by ZeniMax Media Inc. or its affiliates. The Elder Scrolls� and related logos are registered trademarks or trademarks of ZeniMax Media Inc. in the United States and/or other countries. All rights reserved.
+
+#lang/strings.lua
+#lang/$(language).lua
+
+## Controls.xml
+Main.lua
+votan/RestoreHistory.lua
+votan/Window.lua
+votan/BufferDebug.lua
+votan/ClearChat.lua
+votan/WisperNotify.lua
+votan/CommandHistory.lua
+
+## Bindings.xml
