@@ -656,7 +656,7 @@ function addon:InitScrollList()
 	local function setupDataRow(rowControl, rowData, scrollList)
 		local textLabel = rowControl:GetNamedChild("Text")
 		textLabel:SetText(#rowData[2] > 0 and zo_strformat(SI_TOOLTIP_ITEM_NAME, rowData[1]) or unknown)
-		textLabel:SetColor(GetItemQualityColor(GetItemLinkQuality(rowData[2])):UnpackRGB())
+		textLabel:SetColor(GetItemQualityColor(GetItemLinkFunctionalQuality(rowData[2])):UnpackRGB())
 
 		local power, essence, aspect = rowData[3], rowData[4], rowData[5]
 
