@@ -1,7 +1,7 @@
 local EnchantedQuality = {
 	Name = "EnchantedQuality",
 	Author = "Rhyono & votan",
-	Version = "1.35",
+	Version = "1.35.1",
 	SettingsVersion = "1.13"
 }
 
@@ -31,7 +31,7 @@ local function GetEnchantQuality(itemLink)
 		if not quality then
 			-- Create a fake itemLink to get the quality from built-in function
 			local itemLink = string.format("|H1:item:%i:%i:50:0:0:0:0:0:0:0:0:0:0:0:0:1:1:0:0:10000:0|h|h", itemId, enchantSub)
-			quality = GetItemLinkQuality(itemLink)
+			quality = GetItemLinkFunctionalQuality(itemLink)
 			subIdToQuality[enchantSub] = quality
 		end
 		return quality
@@ -48,7 +48,7 @@ local function TooltipHook(tooltipControl, method, linkFunc)
 		if EnchantedQuality.SavedVars.item_text then
 			local itemType = GetItemLinkItemType(itemLink)
 			if itemType == ITEMTYPE_ARMOR or itemType == ITEMTYPE_WEAPON then
-				local item_quality = GetItemLinkQuality(itemLink)
+				local item_quality = GetItemLinkFunctionalQuality(itemLink)
 				local item_color = GetString("SI_ITEMQUALITY", item_quality)
 				if #item_color ~= 0 then
 					local format = string.format(GetString(SI_ENCHANT_QUALITY_TOOLTIP_ITEM_NAME), item_color, item_color, item_color, item_color)
@@ -100,7 +100,7 @@ local function EnchantOnAddGameData(tooltip, gameDataType, ...)
 	if gameDataType == TOOLTIP_GAME_DATA_EQUIPPED_INFO then
 		local itemLink = GetWornItemLinkGameData(...)
 		if EnchantedQuality.SavedVars.item_text then
-			local item_quality = GetItemLinkQuality(itemLink)
+			local item_quality = GetItemLinkFunctionalQuality(itemLink)
 			local item_color = GetString("SI_ITEMQUALITY", item_quality)
 			if #item_color ~= 0 then
 				local format = string.format(GetString(SI_ENCHANT_QUALITY_TOOLTIP_ITEM_NAME), item_color, item_color, item_color, item_color)
