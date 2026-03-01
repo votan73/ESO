@@ -248,7 +248,7 @@ function addon:InitSettings()
     if not settings then
         return
     end
-    settings.version = "1.0.1"
+    settings.version = "1.0.2"
 
     local accountDefaults = {
         showInContextMenu = true,
