@@ -4,6 +4,11 @@
       <Anchor point="TOPLEFT" />
       <Anchor point="BOTTOMRIGHT" relativeTo="ZO_KeybindStripControl" relativePoint="TOPRIGHT" />
 
+      <OnMouseUp>
+          if upInside then
+              HARVENS_QUEST_JOURNAL:OnPageClicked(self, button)
+          end
+      </OnMouseUp>
       <Controls>
         <Control name="$(parent)Journal">
           <Dimensions x="1024" y="1024"/>
@@ -61,25 +66,19 @@
                 </Control>
               </Controls>
             </Scroll>
-
-            <Control name="$(parent)Sort" hidden="true">
-              <Anchor point="TOPLEFT" relativeTo="$(parent)LeftPage" relativePoint="BOTTOMLEFT" offsetY="70" offsetX="-70" />
-
-              <Controls>
-                <Label name="$(parent)Label" font="ZoFontGame" text="HARVEN_QUEST_JOURNAL_SORT_BY">
-                  <Anchor point="LEFT" />
-                </Label>
-
-                <Control name="$(parent)Dropdown" inherits="ZO_ComboBox">
-                  <Dimensions x="200" y="26" />
-                  <Anchor point="LEFT" relativeTo="$(parent)Label" relativePoint="RIGHT" offsetX="10"/>
-                </Control>
-
-                <Button name="$(parent)Ascending" inherits="ZO_CheckButton">
-                  <Anchor point="LEFT" relativeTo="$(parent)Dropdown" relativePoint="RIGHT" offsetX="10"/>
-                </Button>
-              </Controls>
-            </Control>
+          </Controls>
+        </Control>
+        <Control name="$(parent)KeyStripMouseButtons">
+          <Dimensions x="98" y="54"/>
+          <Controls>
+            <Texture name="$(parent)PreviousPage" mouseEnabled="true" textureFile="EsoUI/Art/Miscellaneous/icon_LMB.dds">
+              <Dimensions x="52" y="52"/>
+              <Anchor point="TOPLEFT"/>
+            </Texture>
+            <Texture name="$(parent)NextPage" mouseEnabled="true" textureFile="EsoUI/Art/Miscellaneous/icon_RMB.dds">
+              <Dimensions x="52" y="52"/>
+              <Anchor point="TOPLEFT" relativeTo="$(parent)PreviousPage" relativePoint="TOPRIGHT" offsetX="-10"/>
+            </Texture>
           </Controls>
         </Control>
       </Controls>

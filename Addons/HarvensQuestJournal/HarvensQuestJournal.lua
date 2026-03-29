@@ -304,8 +304,8 @@ function HarvensQuestJournal:CreateSortedList(svtable)
 						list[i],
 						{
 							name = k,
-							started = v[QS_STARTTIME],
-							level = v[QS_LEVEL]
+							started = v[QS_STARTTIME] or 0,
+							level = v[QS_LEVEL] or 0
 						}
 					)
 
@@ -326,84 +326,95 @@ function HarvensQuestJournal:CreateSortedList(svtable)
 	return list
 end
 
-function HarvensQuestJournal:ShowIndexPage()
-	local svtable
-	if self.currentSection == JS_CURRENT then
-		self.title:SetText(GetString(HARVEN_QUEST_JOURNAL_CURRENT_QUESTS_TITLE))
-		svtable = self.sv.quests
-		if not self.sortedListCurrent then
-			self.sortedListCurrent = self:CreateSortedList(svtable)
+do
+	local textHelper = WINDOW_MANAGER:CreateControl(nil, GuiRoot, CT_LABEL)
+	function HarvensQuestJournal:ShowIndexPage()
+		local svtable
+		if self.currentSection == JS_CURRENT then
+			self.title:SetText(GetString(HARVEN_QUEST_JOURNAL_CURRENT_QUESTS_TITLE))
+			svtable = self.sv.quests
+			if not self.sortedListCurrent then
+				self.sortedListCurrent = self:CreateSortedList(svtable)
+			end
+		else
+			self.title:SetText(GetString(HARVEN_QUEST_JOURNAL_COMPLETED_QUESTS_TITLE))
+			svtable = self.sv.completed
+			if not self.sortedListCompleted then
+				self.sortedListCompleted = self:CreateSortedList(svtable)
+			end
 		end
-	else
-		self.title:SetText(GetString(HARVEN_QUEST_JOURNAL_COMPLETED_QUESTS_TITLE))
-		svtable = self.sv.completed
-		if not self.sortedListCompleted then
-			self.sortedListCompleted = self:CreateSortedList(svtable)
+
+		local sortedList = self.currentSection == JS_CURRENT and self.sortedListCurrent or self.sortedListCompleted
+
+		local startPos = self.bodyFontHeight
+		local link
+
+		textHelper:SetFont(self.leftPage.body:GetFont())
+		local bodyWidth = self.leftPage.body:GetWidth()
+		local function GetTextHeight(text)
+			textHelper:SetText(text)
+			local result = mathFloor((textHelper:GetWidth() + bodyWidth - 1) / bodyWidth) * self.bodyFontHeight
+			return result
 		end
-	end
 
-	local sortedList = self.currentSection == JS_CURRENT and self.sortedListCurrent or self.sortedListCompleted
+		if self.currentSection == JS_COMPLETED and self.sv.showCompletedByCategory then
+			local text = {}
+			for i, v in pairs(sortedList) do
+				if i ~= QUEST_CATEGORY_ZONE then
+					text[#text + 1] = "\n"
+					text[#text + 1] = categoryIdToName[i]
+					self.clickMap[mathFloor(startPos)] = CreateLink(categoryIdToName[i], self.questColor, QUEST_CATEGORY_LINK_TYPE, i)
+					startPos = startPos + GetTextHeight(text[#text])
+				end
 
-	local startPos = self.bodyFontHeight
-	local link
+				for j = 1, #sortedList[i] do
+					if i == QUEST_CATEGORY_ZONE then
+						local zoneName = sortedList[i][j][1].zone
+						text[#text + 1] = "\n"
+						text[#text + 1] = zo_strformat(categoryIdToName[i], zoneName)
+						self.clickMap[mathFloor(startPos)] = CreateLink(zo_strformat(categoryIdToName[i], zoneName), self.questColor, QUEST_CATEGORY_LINK_TYPE, i, j)
+						startPos = startPos + GetTextHeight(text[#text])
+					end
+				end
+			end
+			self:ShowText(tableConcat(text))
+			return
+		end
 
-	if self.currentSection == JS_COMPLETED and self.sv.showCompletedByCategory then
 		local text = {}
+
 		for i, v in pairs(sortedList) do
 			if i ~= QUEST_CATEGORY_ZONE then
 				text[#text + 1] = "\n"
 				text[#text + 1] = categoryIdToName[i]
-				self.clickMap[mathFloor(startPos)] = CreateLink(categoryIdToName[i], self.questColor, QUEST_CATEGORY_LINK_TYPE, i)
-				startPos = startPos + self.bodyFontHeight --assume that category name fits in one line
+				startPos = startPos + GetTextHeight(text[#text])
 			end
 
 			for j = 1, #sortedList[i] do
 				if i == QUEST_CATEGORY_ZONE then
-					local zoneName = sortedList[i][j][1].zone
-					text[#text + 1] = "\n"
-					text[#text + 1] = zo_strformat(categoryIdToName[i], zoneName)
-					self.clickMap[mathFloor(startPos)] = CreateLink(zo_strformat(categoryIdToName[i], zoneName), self.questColor, QUEST_CATEGORY_LINK_TYPE, i, j)
-					startPos = startPos + self.bodyFontHeight --assume that zone name fits in one line
+					local zoneName = ""
+					for k = 1, #sortedList[i][j] do
+						if #zoneName == 0 then
+							zoneName = sortedList[i][j][k].zone
+							text[#text + 1] = "\n"
+							text[#text + 1] = zo_strformat(categoryIdToName[i], zoneName)
+							startPos = startPos + GetTextHeight(text[#text])
+						end
+						link = self:AppendQuest(svtable[i][sortedList[i][j][k].zone][sortedList[i][j][k].name], sortedList[i][j][k].zone)
+						text[#text + 1] = link
+						self.clickMap[mathFloor(startPos)] = link
+						startPos = startPos + GetTextHeight(text[#text])
+					end
+				elseif i ~= QUEST_CATEGORY_ZONE then
+					link = self:AppendQuest(svtable[i][sortedList[i][j].name], nil)
+					text[#text + 1] = link
+					self.clickMap[mathFloor(startPos)] = link
+					startPos = startPos + GetTextHeight(text[#text])
 				end
 			end
 		end
 		self:ShowText(tableConcat(text))
-		return
 	end
-
-	local text = {}
-
-	for i, v in pairs(sortedList) do
-		if i ~= QUEST_CATEGORY_ZONE then
-			text[#text + 1] = "\n"
-			text[#text + 1] = categoryIdToName[i]
-			startPos = startPos + self.bodyFontHeight --assume that category name fits in one line
-		end
-
-		for j = 1, #sortedList[i] do
-			if i == QUEST_CATEGORY_ZONE then
-				local zoneName = ""
-				for k = 1, #sortedList[i][j] do
-					if #zoneName == 0 then
-						zoneName = sortedList[i][j][k].zone
-						text[#text + 1] = "\n"
-						text[#text + 1] = zo_strformat(categoryIdToName[i], zoneName)
-						startPos = startPos + self.bodyFontHeight --assume that zone name fits in one line
-					end
-					link = self:AppendQuest(svtable[i][sortedList[i][j][k].zone][sortedList[i][j][k].name], sortedList[i][j][k].zone)
-					text[#text + 1] = link
-					self.clickMap[mathFloor(startPos)] = link
-					startPos = startPos + self.bodyFontHeight --assume that quest name fits in one line
-				end
-			elseif i ~= QUEST_CATEGORY_ZONE then
-				link = self:AppendQuest(svtable[i][sortedList[i][j].name], nil)
-				text[#text + 1] = link
-				self.clickMap[mathFloor(startPos)] = link
-				startPos = startPos + self.bodyFontHeight --assume that quest name fits in one line
-			end
-		end
-	end
-	self:ShowText(tableConcat(text))
 end
 
 function HarvensQuestJournal:ShowIndexCategoryPage()
@@ -448,14 +459,9 @@ function HarvensQuestJournal:UpdateJournal(silence)
 	self.currentPage = 1
 	self.clickMap = nil
 	self.clickMap = {}
-	self.sortControl:SetHidden(true)
 	if self.currentSection == JS_CURRENT or self.currentSection == JS_COMPLETED then
-		if not (self.currentSection == JS_COMPLETED and self.sv.showCompletedByCategory) then
-			self.sortControl:SetHidden(false)
-		end
 		self:ShowIndexPage()
 	elseif self.currentSection == JS_COMPLETED_QUEST_CATEGORY then
-		self.sortControl:SetHidden(false)
 		self:ShowIndexCategoryPage()
 	elseif self.currentSection == JS_CURRENT_QUEST or self.currentSection == JS_COMPLETED_QUEST then
 		self.keybindStripDescriptor[5].name = self.currentSection == JS_CURRENT_QUEST and GetString(SI_QUEST_JOURNAL_ABANDON) or GetString(HARVEN_QUEST_JOURNAL_DELETE)
@@ -520,12 +526,24 @@ function HarvensQuestJournal:HandleLinkClick(control, linkData, linkText, button
 end
 
 function HarvensQuestJournal:HandleQuestClick(control, button)
-	local _, y = GetUIMousePosition()
+	local _, y
+	if IsConsoleUI() or (IsInGamepadPreferredMode() and LibMousePointer) then
+		_, y = LibMousePointer:GetCursorPosition()
+	else
+		_, y = GetUIMousePosition()
+	end
 	y = y - control:GetTop()
 	local key = mathFloor(mathFloor(y / self.bodyFontHeight) * self.bodyFontHeight)
 	if self.clickMap[key] then
 		self:HandleLink(button, ZO_LinkHandler_ParseLink(self.clickMap[key]))
+		return
 	end
+	key = mathFloor(mathFloor((y - self.bodyFontHeight) / self.bodyFontHeight) * self.bodyFontHeight) -- we may be in the second line of the title, so check the line above as well
+	if self.clickMap[key] then
+		self:HandleLink(button, ZO_LinkHandler_ParseLink(self.clickMap[key]))
+		return
+	end
+	return self:OnPageClicked(control, button)
 end
 
 function HarvensQuestJournal:SortChanged(control, selectedText, selectedItem)
@@ -548,11 +566,11 @@ function HarvensQuestJournal:InitJournal(control)
 	self.leftPage = GetControl(self.journal, "LeftPage")
 	self.leftPage.container = GetControl(self.leftPage, "Container")
 	self.title = GetControl(self.leftPage.container, "Title")
-	self.title:SetFont(self.sv.layout.titleFont)
+	--self.title:SetFont(self.sv.layout.titleFont)
 	self.title:SetColor(self.sv.layout.fontR, self.sv.layout.fontG, self.sv.layout.fontB, self.sv.layout.fontA)
 	self.title:SetStyleColor(0, 0, 0, 1)
 	self.leftPage.body = GetControl(self.leftPage.container, "Body")
-	self.leftPage.body:SetFont(self.sv.layout.bodyFont)
+	--self.leftPage.body:SetFont(self.sv.layout.bodyFont)
 	self.leftPage.body:SetColor(self.sv.layout.fontR, self.sv.layout.fontG, self.sv.layout.fontB, self.sv.layout.fontA)
 	self.leftPage.body:SetStyleColor(0, 0, 0, 1)
 	self.leftPage.body:SetMouseEnabled(true)
@@ -572,7 +590,7 @@ function HarvensQuestJournal:InitJournal(control)
 	self.rightPage = GetControl(self.journal, "RightPage")
 	self.rightPage.container = GetControl(self.rightPage, "Container")
 	self.rightPage.body = GetControl(self.rightPage.container, "Body")
-	self.rightPage.body:SetFont(self.sv.layout.bodyFont)
+	--self.rightPage.body:SetFont(self.sv.layout.bodyFont)
 	self.rightPage.body:SetColor(self.sv.layout.fontR, self.sv.layout.fontG, self.sv.layout.fontB, self.sv.layout.fontA)
 	self.rightPage.body:SetStyleColor(0, 0, 0, 1)
 	self.rightPage.body:SetMouseEnabled(true)
@@ -588,46 +606,9 @@ function HarvensQuestJournal:InitJournal(control)
 			self:HandleQuestClick(...)
 		end
 	)
-
-	self.leftPage.body:SetText("TEST")
-	self.bodyFontHeight = self.leftPage.body:GetFontHeight()
+	self:ApplySkin(self.sv.layout.skin)
 
 	self.clickMap = {}
-
-	self.sortControl = GetControl(self.journal, "Sort")
-	self.sortControl.combobox = GetControl(self.sortControl, "Dropdown").m_comboBox
-	local sortItems = {
-		[SORT_ALPHABETICALLY] = GetString(HARVEN_QUEST_JOURNAL_SORT_ALPHABETICALLY),
-		[SORT_TIMEOFCOMPLETION] = GetString(HARVEN_QUEST_JOURNAL_SORT_TIMEOFCOMPLETION),
-		[SORT_TIMEOFSTART] = GetString(HARVEN_QUEST_JOURNAL_SORT_TIMEOFSTART),
-		[SORT_LEVEL] = GetString(HARVEN_QUEST_JOURNAL_SORT_LEVEL)
-	}
-	local item
-	for k, v in pairs(sortItems) do
-		item =
-			self.sortControl.combobox:CreateItemEntry(
-			v,
-			function(...)
-				self:SortChanged(...)
-			end
-		)
-		item.sortID = k
-		self.sortControl.combobox:AddItem(item)
-	end
-	self.sortControl.combobox:SetSelectedItem(sortItems[self.sv.sort])
-
-	local ascCheckbox = GetControl(self.sortControl, "Ascending")
-	ZO_CheckButton_SetLabelText(ascCheckbox, GetString(HARVEN_QUEST_JOURNAL_SORT_ASC))
-	ZO_CheckButton_SetCheckState(ascCheckbox, self.sv.sortAscending)
-	ZO_CheckButton_SetToggleFunction(
-		ascCheckbox,
-		function()
-			self.sv.sortAscending = ZO_CheckButton_IsChecked(ascCheckbox)
-			self.sortedListCurrent = nil
-			self.sortedListCompleted = nil
-			self:UpdateJournal()
-		end
-	)
 end
 
 function HarvensQuestJournal:HandleLink(button, text, color, linkType, completed, ...)
@@ -735,6 +716,8 @@ function HarvensQuestJournal:SetCompletedSavedVariable(quest, zone)
 		end
 		self.sv.completed[category][zone][quest[QS_NAME]] = quest
 	else
+		assert(self.sv.completed[category], "aha1")
+		assert(quest[QS_NAME], "aha2")
 		self.sv.completed[category][quest[QS_NAME]] = quest
 	end
 end
@@ -860,13 +843,27 @@ local deleteConfirmationDialog = {
 
 ZO_Dialogs_RegisterCustomDialog("HarvensDeleteQuestConfirmationDialog", deleteConfirmationDialog)
 
+function HarvensQuestJournal:OnPageClicked(control, button)
+	if button == MOUSE_BUTTON_INDEX_LEFT then
+		self:SwitchPage(-1)
+	elseif button == MOUSE_BUTTON_INDEX_RIGHT then
+		self:SwitchPage(1)
+	end
+end
+
 function HarvensQuestJournal:InitKeybindStripDescriptor()
+	local sortItems = {
+		[SORT_ALPHABETICALLY] = GetString(HARVEN_QUEST_JOURNAL_SORT_ALPHABETICALLY),
+		[SORT_TIMEOFCOMPLETION] = GetString(HARVEN_QUEST_JOURNAL_SORT_TIMEOFCOMPLETION),
+		[SORT_TIMEOFSTART] = GetString(HARVEN_QUEST_JOURNAL_SORT_TIMEOFSTART),
+		[SORT_LEVEL] = GetString(HARVEN_QUEST_JOURNAL_SORT_LEVEL)
+	}
 	self.keybindStripDescriptor = {
 		{
 			alignment = KEYBIND_STRIP_ALIGN_LEFT,
 			order = 0,
 			name = GetString(HARVEN_QUEST_JOURNAL_COMPLETED_QUESTS_KEYBIND),
-			keybind = "UI_SHORTCUT_QUATERNARY",
+			keybind = "UI_SHORTCUT_SECONDARY",
 			callback = function(keyUp)
 				descriptor = self.keybindStripDescriptor[1]
 				if self.currentSection == JS_COMPLETED or self.currentSection == JS_CURRENT_QUEST then
@@ -896,24 +893,30 @@ function HarvensQuestJournal:InitKeybindStripDescriptor()
 			alignment = KEYBIND_STRIP_ALIGN_LEFT,
 			order = 1,
 			name = GetString(SI_LORE_READER_PREVIOUS_PAGE),
-			keybind = "UI_SHORTCUT_PRIMARY",
+			keybind = "UI_SHORTCUT_LEFT_TRIGGER",
 			callback = function(keyUp)
 				self:SwitchPage(-1)
 			end,
+			enabled = function(descriptor)
+				return self.currentPage > 1
+			end,
 			visible = function(descriptor)
-				return (self.numPages > 1 and true or false)
+				return self.numPages > 1
 			end
 		},
 		{
 			alignment = KEYBIND_STRIP_ALIGN_LEFT,
 			order = 2,
 			name = GetString(SI_LORE_READER_NEXT_PAGE),
-			keybind = "UI_SHORTCUT_SECONDARY",
+			keybind = "UI_SHORTCUT_RIGHT_TRIGGER",
 			callback = function(keyUp)
 				self:SwitchPage(1)
 			end,
+			enabled = function(descriptor)
+				return self.currentPage < self.numPages
+			end,
 			visible = function(descriptor)
-				return (self.numPages > 1 and true or false)
+				return self.numPages > 1
 			end
 		},
 		{
@@ -925,10 +928,7 @@ function HarvensQuestJournal:InitKeybindStripDescriptor()
 				ZO_WorldMap_ShowQuestOnMap(self.activeQuests[self.currentQuest])
 			end,
 			visible = function(descriptor)
-				if self.currentSection == JS_CURRENT_QUEST then
-					return true
-				end
-				return false
+				return self.currentSection == JS_CURRENT_QUEST
 			end
 		},
 		{
@@ -956,20 +956,35 @@ function HarvensQuestJournal:InitKeybindStripDescriptor()
 			end
 		},
 		{
-			alignment = KEYBIND_STRIP_ALIGN_CENTER,
-			order = 0,
-			name = GetString(HARVEN_QUEST_JOURNAL_SET_FOCUS),
-			callback = function(keyUp)
-				FOCUSED_QUEST_TRACKER:ForceAssist(self.activeQuests[self.currentQuest])
-				KEYBIND_STRIP:UpdateKeybindButtonGroup(self.keybindStripDescriptor)
+			alignment = KEYBIND_STRIP_ALIGN_RIGHT,
+			order = 1,
+			name = function()
+				if self.currentSection == JS_CURRENT or self.currentSection == JS_COMPLETED then
+					return self.sv.sortAscending and GetString(HARVEN_QUEST_JOURNAL_SORT_ASC) or GetString(HARVEN_QUEST_JOURNAL_SORT_DESC)
+				end
+				return GetString(HARVEN_QUEST_JOURNAL_SET_FOCUS)
 			end,
-			keybind = "UI_SHORTCUT_REPORT_PLAYER",
+			callback = function(keyUp)
+				if self.currentSection == JS_CURRENT_QUEST then
+					FOCUSED_QUEST_TRACKER:ForceAssist(self.activeQuests[self.currentQuest])
+					KEYBIND_STRIP:UpdateKeybindButtonGroup(self.keybindStripDescriptor)
+				elseif self.currentSection == JS_CURRENT or self.currentSection == JS_COMPLETED then
+					self.sv.sortAscending = not self.sv.sortAscending
+					self.sortedListCurrent = nil
+					self.sortedListCompleted = nil
+					self:UpdateJournal()
+					KEYBIND_STRIP:UpdateKeybindButtonGroup(self.keybindStripDescriptor)
+				end
+			end,
+			keybind = "UI_SHORTCUT_QUATERNARY",
 			visible = function(descriptor)
 				if self.currentSection == JS_CURRENT_QUEST then
 					local isAssisted = GetTrackedIsAssisted(TRACK_TYPE_QUEST, self.activeQuests[self.currentQuest])
 					if not isAssisted then
 						return true
 					end
+				elseif self.currentSection == JS_CURRENT or self.currentSection == JS_COMPLETED then
+					return true
 				end
 				return false
 			end
@@ -988,8 +1003,62 @@ function HarvensQuestJournal:InitKeybindStripDescriptor()
 				end
 				return false
 			end
+		},
+		{
+			alignment = KEYBIND_STRIP_ALIGN_RIGHT,
+			order = 2,
+			keybind = "UI_SHORTCUT_QUINARY",
+			name = function()
+				return sortItems[self.sv.sort] -- or GetString(HARVEN_QUEST_JOURNAL_SORT_BY)
+			end,
+			callback = function(keyUp)
+				self.sv.sort = next(sortItems, self.sv.sort) or next(sortItems)
+				self.sortedListCurrent = nil
+				self.sortedListCompleted = nil
+				self:UpdateJournal()
+				KEYBIND_STRIP:UpdateKeybindButtonGroup(self.keybindStripDescriptor)
+			end,
+			visible = function(descriptor)
+				return self.currentSection == JS_CURRENT or self.currentSection == JS_COMPLETED
+			end
 		}
 	}
+	if IsConsoleUI() then
+		local backKeybind =
+			KEYBIND_STRIP:GenerateGamepadBackButtonDescriptor(
+			function()
+				SCENE_MANAGER:HideCurrentScene()
+			end
+		)
+		backKeybind.visible = function()
+			return self.currentSection == JS_CURRENT_QUEST or self.currentSection == JS_COMPLETED_QUEST or (self.currentSection == JS_CONVERSATION and self.currentQuestCompleted)
+		end
+		self.keybindStripDescriptor[#self.keybindStripDescriptor + 1] = backKeybind
+		self.keybindStripDescriptor[#self.keybindStripDescriptor + 1] = {
+			alignment = KEYBIND_STRIP_ALIGN_LEFT,
+			order = -1000,
+			name = GetString(SI_GAMEPAD_SELECT_OPTION),
+			keybind = "UI_SHORTCUT_PRIMARY",
+			callback = function(keyUp)
+				LibMousePointer:InvokeClick()
+			end
+		}
+	else
+		local customKeybindControl = self.control:GetNamedChild("KeyStripMouseButtons")
+		customKeybindControl:SetHidden(true)
+		customKeybindControl.owner = self
+		self.keybindStripDescriptor[#self.keybindStripDescriptor + 1] = {
+			alignment = KEYBIND_STRIP_ALIGN_CENTER,
+			name = GetString(SI_LORE_READER_TURN_PAGES),
+			keybind = "CUSTOM_LORE_READER",
+			callback = function()
+			end,
+			customKeybindControl = customKeybindControl,
+			visible = function()
+				return self.numPages > 1
+			end
+		}
+	end
 end
 
 function HarvensQuestJournal:ToggleJournal()
@@ -1000,59 +1069,72 @@ function HarvensQuestJournal:ToggleJournal()
 	end
 end
 
+function HarvensQuestJournal:ApplySkin(name)
+	self.background:SetTexture(self.skinsToTextures[name])
+	local fontBody, fontTitle
+	if IsConsoleUI() or IsInGamepadPreferredMode() then
+		fontBody = "ZoFontGamepadBook" .. name
+		fontTitle = fontBody .. "Title"
+	else
+		fontBody = "ZoFontBook" .. name
+		fontTitle = fontBody .. "Title"
+	end
+	self.leftPage.body:SetFont(fontBody)
+	self.rightPage.body:SetFont(fontBody)
+	self.title:SetFont(fontTitle)
+
+	self.leftPage.body:SetText("TEST")
+	self.bodyFontHeight = self.leftPage.body:GetFontHeight()
+end
+
 function HarvensQuestJournal:SetupOptions()
 	local settings = LibHarvensAddonSettings:AddAddon("Harven's Quest Journal")
-	settings.version = "2.9.2"
+	settings.version = "2.9.3"
 
 	local skin = {
 		type = LibHarvensAddonSettings.ST_DROPDOWN,
 		label = GetString(HARVEN_QUEST_JOURNAL_BOOK_SKIN),
 		items = {
-			{
-				name = "Paper"
-			},
-			{
-				name = "Skin"
-			},
-			{
-				name = "Rubbing"
-			}
+			{name = "Paper"},
+			{name = "Skin"},
+			{name = "Rubbing"},
+			{name = "Metal"}
 		},
 		getFunction = function()
 			return self.sv.layout.skin
 		end,
 		setFunction = function(combobox, name)
 			self.sv.layout.skin = name
-			self.background:SetTexture(HarvensQuestJournal.skinsToTextures[name])
+			self:ApplySkin(name)
 		end
 	}
 
-	local bodyFont = {
-		type = LibHarvensAddonSettings.ST_EDIT,
-		label = GetString(HARVEN_QUEST_JOURNAL_BODY_FONT),
-		getFunction = function()
-			return self.sv.layout.bodyFont
-		end,
-		setFunction = function(newValue)
-			self.sv.layout.bodyFont = newValue
-			self.leftPage.body:SetFont(self.sv.layout.bodyFont)
-			self.rightPage.body:SetFont(self.sv.layout.bodyFont)
-			self.leftPage.body:SetText("TEST")
-			self.bodyFontHeight = self.leftPage.body:GetFontHeight()
-		end
-	}
+	-- local bodyFont = {
+	-- 	type = LibHarvensAddonSettings.ST_EDIT,
+	-- 	label = GetString(HARVEN_QUEST_JOURNAL_BODY_FONT),
+	-- 	getFunction = function()
+	-- 		return self.sv.layout.bodyFont
+	-- 	end,
+	-- 	setFunction = function(newValue)
+	-- 		self.sv.layout.bodyFont = newValue
+	-- 		--self.leftPage.body:SetFont(self.sv.layout.bodyFont)
+	-- 		--self.rightPage.body:SetFont(self.sv.layout.bodyFont)
+	-- 		self.leftPage.body:SetText("TEST")
+	-- 		self.bodyFontHeight = self.leftPage.body:GetFontHeight()
+	-- 	end
+	-- }
 
-	local titleFont = {
-		type = LibHarvensAddonSettings.ST_EDIT,
-		label = GetString(HARVEN_QUEST_JOURNAL_TITLE_FONT),
-		getFunction = function()
-			return self.sv.layout.titleFont
-		end,
-		setFunction = function(newValue)
-			self.sv.layout.titleFont = newValue
-			self.title:SetFont(self.sv.layout.titleFont)
-		end
-	}
+	-- local titleFont = {
+	-- 	type = LibHarvensAddonSettings.ST_EDIT,
+	-- 	label = GetString(HARVEN_QUEST_JOURNAL_TITLE_FONT),
+	-- 	getFunction = function()
+	-- 		return self.sv.layout.titleFont
+	-- 	end,
+	-- 	setFunction = function(newValue)
+	-- 		self.sv.layout.titleFont = newValue
+	-- 		--self.title:SetFont(self.sv.layout.titleFont)
+	-- 	end
+	-- }
 
 	local fontColor = {
 		type = LibHarvensAddonSettings.ST_COLOR,
@@ -1150,7 +1232,7 @@ function HarvensQuestJournal:SetupOptions()
 		end
 	}
 
-	settings:AddSettings({openAtTracked, skin, titleFont, bodyFont, fontColor, questColor, npcNamesColor, showCompletedByCategory, saveDailyQuests, saveRepeatableQuests, playEmote})
+	settings:AddSettings({openAtTracked, skin, fontColor, questColor, npcNamesColor, showCompletedByCategory, saveDailyQuests, saveRepeatableQuests, playEmote})
 	if LibMainMenu2 then
 		settings:AddSetting {
 			type = LibHarvensAddonSettings.ST_CHECKBOX,
@@ -1235,10 +1317,8 @@ function HarvensQuestJournal:FixZones()
 	self.sv.zonesFixed = true
 end
 
-function HarvensQuestJournal.AddonLoaded(eventType, addonName)
-	if addonName ~= "HarvensQuestJournal" then
-		return
-	end
+function HarvensQuestJournal:Initialize()
+	self.control = HarvensQuestJournalTopLevel
 
 	local re, gr, bl = GetInterfaceColor(INTERFACE_COLOR_TYPE_BOOK_MEDIUM, BOOK_MEDIUM_YELLOWED_PAPER)
 	local defaults = {
@@ -1270,24 +1350,28 @@ function HarvensQuestJournal.AddonLoaded(eventType, addonName)
 		playEmote = true,
 		showInMainMenu = true
 	}
+	-- if IsConsoleUI() then
+	-- 	defaults.layout.bodyFont = "ZoFontGamepadBookPaper"
+	-- 	defaults.layout.titleFont = "ZoFontGamepadBookPaperTitle"
+	-- end
 
-	HarvensQuestJournal.sv = ZO_SavedVars:New("HarvensQuestJournal_SavedVariables", 1, nil, defaults)
+	self.sv = ZO_SavedVars:New("HarvensQuestJournal_SavedVariables", 1, nil, defaults)
 
-	if not HarvensQuestJournal.sv.quests and not HarvensQuestJournal.sv.completed then
-		HarvensQuestJournal.sv.quests = {
+	if not self.sv.quests and not self.sv.completed then
+		self.sv.quests = {
 			[QUEST_CATEGORY_MAIN_STORY] = {},
 			[QUEST_CATEGORY_GUILD] = {},
 			[QUEST_CATEGORY_ZONE] = {},
 			[QUEST_CATEGORY_MISC] = {}
 		}
 
-		HarvensQuestJournal.sv.completed = {
+		self.sv.completed = {
 			[QUEST_CATEGORY_MAIN_STORY] = {},
 			[QUEST_CATEGORY_GUILD] = {},
 			[QUEST_CATEGORY_ZONE] = {},
 			[QUEST_CATEGORY_MISC] = {}
 		}
-		HarvensQuestJournal.sv.zonesFixed = true
+		self.sv.zonesFixed = true
 	end
 
 	HarvensQuestJournalTopLevel:SetHandler(
@@ -1297,32 +1381,49 @@ function HarvensQuestJournal.AddonLoaded(eventType, addonName)
 		end
 	)
 
-	HarvensQuestJournal.numPages = 1
-	HarvensQuestJournal.currentPage = 1
-	HarvensQuestJournal.currentSection = JS_CURRENT
-	HarvensQuestJournal.currentQuest = ""
-	HarvensQuestJournal.skinsToTextures = {
+	self.numPages = 1
+	self.currentPage = 1
+	self.currentSection = JS_CURRENT
+	self.currentQuest = ""
+	self.skinsToTextures = {
 		["Paper"] = "EsoUI/Art/LoreLibrary/loreLibrary_paperBook.dds",
 		["Skin"] = "EsoUI/Art/LoreLibrary/loreLibrary_skinBook.dds",
-		["Rubbing"] = "EsoUI/Art/LoreLibrary/loreLibrary_rubbingBook.dds"
+		["Rubbing"] = "EsoUI/Art/LoreLibrary/loreLibrary_rubbingBook.dds",
+		["Metal"] = "EsoUI/Art/LoreLibrary/loreLibrary_dwemerBook.dds"
 	}
 
 	local fragment = ZO_FadeSceneFragment:New(HarvensQuestJournalTopLevel)
 
 	local sceneName = "HarvensQuestJournal"
 	local scene = ZO_Scene:New(sceneName, SCENE_MANAGER)
-	if FRAGMENT_GROUP.UI_WINDOW then
-		scene:AddFragmentGroup(FRAGMENT_GROUP.UI_WINDOW)
-	else
-		scene:AddFragmentGroup(FRAGMENT_GROUP.MOUSE_DRIVEN_UI_WINDOW)
+
+	local function modeChange()
+		local isGamepad = IsConsoleUI() or IsInGamepadPreferredMode()
+		if isGamepad then
+			scene:RemoveFragmentGroup(FRAGMENT_GROUP.MOUSE_DRIVEN_UI_WINDOW)
+			scene:AddFragmentGroup(FRAGMENT_GROUP.GAMEPAD_DRIVEN_UI_WINDOW)
+		else
+			scene:RemoveFragmentGroup(FRAGMENT_GROUP.GAMEPAD_DRIVEN_UI_WINDOW)
+			scene:AddFragmentGroup(FRAGMENT_GROUP.MOUSE_DRIVEN_UI_WINDOW)
+		end
+		if MOUSE_POINTER_FRAGMENT then
+			if isGamepad then
+				scene:AddFragment(MOUSE_POINTER_FRAGMENT)
+			else
+				scene:RemoveFragment(MOUSE_POINTER_FRAGMENT)
+			end
+		end
 	end
+	modeChange()
+	self.control:RegisterForEvent(EVENT_GAMEPAD_PREFERRED_MODE_CHANGED, modeChange)
+
 	scene:AddFragment(fragment)
 	scene:AddFragment(UNIFORM_BLUR_FRAGMENT)
 
-	HarvensQuestJournal:InitKeybindStripDescriptor()
+	self:InitKeybindStripDescriptor()
 
 	local function doEmote(name)
-		if not HarvensQuestJournal.sv.playEmote then
+		if not self.sv.playEmote then
 			return
 		end
 		local emote = SLASH_COMMANDS[name]
@@ -1334,14 +1435,14 @@ function HarvensQuestJournal.AddonLoaded(eventType, addonName)
 		"StateChange",
 		function(oldState, newState)
 			if newState == SCENE_SHOWING then
-				KEYBIND_STRIP:AddKeybindButtonGroup(HarvensQuestJournal.keybindStripDescriptor)
-				HarvensQuestJournal:OpenJournal()
+				self:OpenJournal()
+				KEYBIND_STRIP:AddKeybindButtonGroup(self.keybindStripDescriptor)
 			elseif newState == SCENE_SHOWN then
 				doEmote("/read")
 			elseif newState == SCENE_HIDING then
 				doEmote("/idle")
 			elseif newState == SCENE_HIDDEN then
-				KEYBIND_STRIP:RemoveKeybindButtonGroup(HarvensQuestJournal.keybindStripDescriptor)
+				KEYBIND_STRIP:RemoveKeybindButtonGroup(self.keybindStripDescriptor)
 			end
 		end
 	)
@@ -1372,10 +1473,10 @@ function HarvensQuestJournal.AddonLoaded(eventType, addonName)
 	end
 
 	SLASH_COMMANDS["/journal"] = function()
-		HarvensQuestJournal:ToggleJournal()
+		self:ToggleJournal()
 	end
 
-	HarvensQuestJournal:InitJournal(HarvensQuestJournalTopLevel)
+	self:InitJournal(HarvensQuestJournalTopLevel)
 
 	local GetOfferedQuestInfoOrg = GetOfferedQuestInfo
 	GetOfferedQuestInfo = function(...)
@@ -1441,6 +1542,7 @@ function HarvensQuestJournal.AddonLoaded(eventType, addonName)
 				quest[QS_COMPLETEDTIME] = GetTimeStamp()
 				quest[QS_TERMINATOR] = HarvensQuestJournal.chatter
 				quest[QS_REWARD] = HarvensQuestJournal.reward
+				quest[QS_NAME] = questName
 				HarvensQuestJournal:SetCompletedSavedVariable(quest, zoneName)
 			end
 			HarvensQuestJournal:DeleteQuest(quest[QS_TYPE], zoneName, quest[QS_NAME])
@@ -1609,6 +1711,7 @@ function HarvensQuestJournal.AddonLoaded(eventType, addonName)
 						for name, quest in pairs(quests) do
 							if not HarvensQuestJournal.activeQuests[name] then
 								quest[QS_COMPLETEDTIME] = GetTimeStamp()
+								quest[QS_NAME] = quest[QS_NAME] or name
 								HarvensQuestJournal:SetCompletedSavedVariable(quest, quest[QS_ZONE])
 								HarvensQuestJournal:DeleteQuest(quest[QS_TYPE], quest[QS_ZONE], quest[QS_NAME])
 								quest = nil
@@ -1619,6 +1722,7 @@ function HarvensQuestJournal.AddonLoaded(eventType, addonName)
 					for name, quest in pairs(v) do
 						if not HarvensQuestJournal.activeQuests[name] then
 							quest[QS_COMPLETEDTIME] = GetTimeStamp()
+							quest[QS_NAME] = quest[QS_NAME] or name
 							HarvensQuestJournal:SetCompletedSavedVariable(quest, nil)
 							HarvensQuestJournal:DeleteQuest(quest[QS_TYPE], nil, quest[QS_NAME])
 							quest = nil
@@ -1644,8 +1748,16 @@ function HarvensQuestJournal.AddonLoaded(eventType, addonName)
 	)
 
 	HarvensQuestJournal:SetupOptions()
-
-	HARVENS_QUEST_JOURNAL = HarvensQuestJournal
 end
 
-EVENT_MANAGER:RegisterForEvent("HarvensQuestJournal", EVENT_ADD_ON_LOADED, HarvensQuestJournal.AddonLoaded)
+HARVENS_QUEST_JOURNAL = HarvensQuestJournal
+
+local function AddonLoaded(eventType, addonName)
+	if addonName ~= "HarvensQuestJournal" then
+		return
+	end
+	EVENT_MANAGER:UnregisterForEvent("HarvensQuestJournal", EVENT_ADD_ON_LOADED)
+	HarvensQuestJournal:Initialize()
+end
+
+EVENT_MANAGER:RegisterForEvent("HarvensQuestJournal", EVENT_ADD_ON_LOADED, AddonLoaded)
