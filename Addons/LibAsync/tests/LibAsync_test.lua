@@ -579,6 +579,99 @@ Taneth("LibAsync", function()
 		end)
 	end)
 
+	describe("Console CPU Budget Integration", function()
+		local function withConsoleApiStubs(stubs, body)
+			local originalIsConsoleUI = IsConsoleUI
+			local originalGetTotalUserAddOnCPUTimeAvailableEachFrameMS = GetTotalUserAddOnCPUTimeAvailableEachFrameMS
+			local originalGetTotalUserAddOnCPUTimeUsedNowMS = GetTotalUserAddOnCPUTimeUsedNowMS
+			IsConsoleUI = stubs.IsConsoleUI
+			GetTotalUserAddOnCPUTimeAvailableEachFrameMS = stubs.GetTotalUserAddOnCPUTimeAvailableEachFrameMS
+			GetTotalUserAddOnCPUTimeUsedNowMS = stubs.GetTotalUserAddOnCPUTimeUsedNowMS
+
+			local function restore()
+				IsConsoleUI = originalIsConsoleUI
+				GetTotalUserAddOnCPUTimeAvailableEachFrameMS = originalGetTotalUserAddOnCPUTimeAvailableEachFrameMS
+				GetTotalUserAddOnCPUTimeUsedNowMS = originalGetTotalUserAddOnCPUTimeUsedNowMS
+			end
+
+			body(restore)
+		end
+
+		local function sampleLoopIterations(stubs, durationMs, callback)
+			withConsoleApiStubs(stubs, function(restore)
+				local iterations = 0
+				local task = LibAsync:Create("ConsoleBudgetSampler")
+				task:Call(function()
+					iterations = iterations + 1
+					return true
+				end)
+
+				zo_callLater(function()
+					task:Cancel()
+					restore()
+					callback(iterations)
+				end, durationMs)
+			end)
+		end
+
+		it.async("should throttle more under constrained console remaining budget", function(done)
+			sampleLoopIterations({
+				IsConsoleUI = function()
+					return false
+				end,
+				GetTotalUserAddOnCPUTimeAvailableEachFrameMS = function()
+					return 1000
+				end,
+				GetTotalUserAddOnCPUTimeUsedNowMS = function()
+					return 0
+				end,
+			}, 250, function(nonConsoleIterations)
+				sampleLoopIterations({
+					IsConsoleUI = function()
+						return true
+					end,
+					GetTotalUserAddOnCPUTimeAvailableEachFrameMS = function()
+						return 1000
+					end,
+					GetTotalUserAddOnCPUTimeUsedNowMS = function()
+						return 1000
+					end,
+				}, 250, function(constrainedConsoleIterations)
+					assert.is_true(constrainedConsoleIterations <= nonConsoleIterations)
+					done()
+				end)
+			end)
+		end)
+
+		it.async("should gracefully fall back when console API values are invalid", function(done)
+			local executed = false
+
+			withConsoleApiStubs({
+				IsConsoleUI = function()
+					return true
+				end,
+				GetTotalUserAddOnCPUTimeAvailableEachFrameMS = function()
+					return nil
+				end,
+				GetTotalUserAddOnCPUTimeUsedNowMS = function()
+					return -1
+				end,
+			}, function(restore)
+				LibAsync:Create("ConsoleInvalidBudgetFallback")
+					:Call(function()
+						executed = true
+					end)
+					:Finally(function() end)
+
+				zo_callLater(function()
+					restore()
+					assert.is_true(executed)
+					done()
+				end, 250)
+			end)
+		end)
+	end)
+
 	describe("Integration Tests", function()
 		it.async("should handle complex async workflow", function(done)
 			local workflow = {

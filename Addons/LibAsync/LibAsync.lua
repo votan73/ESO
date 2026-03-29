@@ -137,6 +137,19 @@ local spendTime = VSYNC_FRAME_TIME_MS
 local nextFrameReduce = 0
 local lastStart = GetFrameTimeSeconds()
 
+local function GetConsoleRemainingBudgetSeconds()
+	if not IsConsoleUI() then
+		return nil
+	end
+
+	local availableMs = GetTotalUserAddOnCPUTimeAvailableEachFrameMS()
+	local usedNowMs = GetTotalUserAddOnCPUTimeUsedNowMS()
+	if availableMs == nil or usedNowMs == nil or availableMs < 0 or usedNowMs < 0 then
+		return nil
+	end
+	return max(0, availableMs - usedNowMs) / 1000
+end
+
 local function doMeasure() -- uniform measuring rate
 	local framerate = GetFramerate()
 	if jobsDone then
@@ -159,6 +172,10 @@ local function doMeasure() -- uniform measuring rate
 		frameTimeTarget = frameTimeTarget * 1.21429
 	end
 	frameTimeTarget = min(1 / ASYNC_STALL_THRESHOLD, frameTimeTarget)
+	local consoleRemainingBudgetSeconds = GetConsoleRemainingBudgetSeconds()
+	if consoleRemainingBudgetSeconds ~= nil then
+		frameTimeTarget = min(frameTimeTarget, consoleRemainingBudgetSeconds)
+	end
 
 	spendTime = spendTime * 0.8 + frameTimeTarget * 0.2
 end
