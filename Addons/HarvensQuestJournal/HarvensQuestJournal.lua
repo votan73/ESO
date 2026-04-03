@@ -101,7 +101,7 @@ function HarvensQuestJournal:ShowQuest()
 	local text = {}
 	text[#text + 1] = GetDateStringFromTimestamp(quest[QS_STARTTIME])
 	text[#text + 1] = " "
-	text[#text + 1] = FormatTimeSeconds(quest[QS_STARTTIME] + GetTimeZoneOffset(), TIME_FORMAT_STYLE_CLOCK_TIME, CLOCK_FORMAT, TIME_FORMAT_DIRECTION_NONE)
+	text[#text + 1] = FormatTimeSeconds((quest[QS_STARTTIME] or 0) + GetTimeZoneOffset(), TIME_FORMAT_STYLE_CLOCK_TIME, CLOCK_FORMAT, TIME_FORMAT_DIRECTION_NONE)
 	if quest[QS_BESTOWER] then
 		text[#text + 1] = " "
 		text[#text + 1] = zo_strformat(SI_QUEST_JOURNAL_QUEST_NAME_FORMAT, quest[QS_BESTOWER][QS_NPCLOCATION])
@@ -464,7 +464,6 @@ function HarvensQuestJournal:UpdateJournal(silence)
 	elseif self.currentSection == JS_COMPLETED_QUEST_CATEGORY then
 		self:ShowIndexCategoryPage()
 	elseif self.currentSection == JS_CURRENT_QUEST or self.currentSection == JS_COMPLETED_QUEST then
-		self.keybindStripDescriptor[5].name = self.currentSection == JS_CURRENT_QUEST and GetString(SI_QUEST_JOURNAL_ABANDON) or GetString(HARVEN_QUEST_JOURNAL_DELETE)
 		self:ShowQuest()
 		self.keybindStripDescriptor[1].name = GetString(HARVEN_QUEST_JOURNAL_BACK)
 	elseif self.currentSection == JS_CONVERSATION then
@@ -829,10 +828,10 @@ local deleteConfirmationDialog = {
 		[1] = {
 			text = SI_NOTIFICATIONS_DELETE,
 			callback = function(dialog)
-				HarvensQuestJournal.DeleteCompletedQuest(HarvensQuestJournal, dialog.data.questType, dialog.data.questZone, dialog.data.questName)
+				HarvensQuestJournal:DeleteCompletedQuest(dialog.data.questType, dialog.data.questZone, dialog.data.questName)
 				HarvensQuestJournal.currentSection = JS_COMPLETED
 				HarvensQuestJournal.sortedListCompleted = nil
-				HarvensQuestJournal.UpdateJournal(HarvensQuestJournal)
+				HarvensQuestJournal:UpdateJournal()
 			end
 		},
 		[2] = {
@@ -934,25 +933,51 @@ function HarvensQuestJournal:InitKeybindStripDescriptor()
 		{
 			alignment = KEYBIND_STRIP_ALIGN_RIGHT,
 			order = 0,
-			name = GetString(SI_QUEST_JOURNAL_ABANDON),
+			name = function()
+				if self.currentSection == JS_CURRENT_QUEST then
+					return GetString(SI_QUEST_JOURNAL_ABANDON)
+				elseif self.currentSection == JS_COMPLETED_QUEST then
+					return GetString(HARVEN_QUEST_JOURNAL_DELETE)
+				else
+					return GetString(HARVEN_QUEST_JOURNAL_BACK)
+				end
+			end,
 			keybind = "UI_SHORTCUT_NEGATIVE",
 			callback = function(keyUp)
-				if self.currentSection == JS_CURRENT_QUEST then
+				if self.currentSection == JS_CURRENT_QUEST and self.currentQuestType ~= QUEST_TYPE_MAIN_STORY then
 					QUEST_JOURNAL_MANAGER:ConfirmAbandonQuest(self.activeQuests[self.currentQuest])
-				else
+				elseif self.currentSection == JS_COMPLETED_QUEST then
 					local quest = self:GetQuestSavedVariable(self.currentQuestType, self.currentQuestZone, self.currentQuest, (self.currentSection == JS_COMPLETED_QUEST and true or false))
 					if not quest then
 						return
 					end
 
-					ZO_Dialogs_ShowDialog("HarvensDeleteQuestConfirmationDialog", {questType = self.currentQuestType, questZone = self.currentQuestZone, questName = self.currentQuest}, {mainTextParams = {zo_strformat(SI_QUEST_JOURNAL_QUEST_NAME_FORMAT, quest[QS_NAME])}})
+					local data = {questType = self.currentQuestType, questZone = self.currentQuestZone, questName = self.currentQuest}
+					local textParams = {mainTextParams = {zo_strformat(SI_QUEST_JOURNAL_QUEST_NAME_FORMAT, quest[QS_NAME])}}
+					if IsConsoleUI() or IsInGamepadPreferredMode() then
+						--ZO_Dialogs_ShowGamepadDialog("HarvensDeleteQuestConfirmationDialog", data, textParams)
+					else
+						ZO_Dialogs_ShowDialog("HarvensDeleteQuestConfirmationDialog", data, textParams)
+					end
+				else
+					SCENE_MANAGER:HideCurrentScene()
 				end
 			end,
 			visible = function(descriptor)
-				if (self.currentSection == JS_CURRENT_QUEST and self.currentQuestType ~= QUEST_TYPE_MAIN_STORY) or self.currentSection == JS_COMPLETED_QUEST then
-					return true
+				-- if (self.currentSection == JS_CURRENT_QUEST and self.currentQuestType ~= QUEST_TYPE_MAIN_STORY) or self.currentSection == JS_COMPLETED_QUEST then
+				-- 	return true
+				-- end
+				-- return false
+				return true
+			end,
+			enabled = function(descriptor)
+				if self.currentSection == JS_COMPLETED_QUEST and (IsConsoleUI() or IsInGamepadPreferredMode()) then
+					return false -- Not yet implemented for gamepad, and deleting quests is a destructive action, so disable until implemented
 				end
-				return false
+				if self.currentSection == JS_CURRENT_QUEST and self.currentQuestType == QUEST_TYPE_MAIN_STORY then
+					return false
+				end
+				return true
 			end
 		},
 		{
@@ -1023,27 +1048,26 @@ function HarvensQuestJournal:InitKeybindStripDescriptor()
 			end
 		}
 	}
-	if IsConsoleUI() then
-		local backKeybind =
-			KEYBIND_STRIP:GenerateGamepadBackButtonDescriptor(
-			function()
-				SCENE_MANAGER:HideCurrentScene()
-			end
-		)
-		backKeybind.visible = function()
-			return self.currentSection == JS_CURRENT_QUEST or self.currentSection == JS_COMPLETED_QUEST or (self.currentSection == JS_CONVERSATION and self.currentQuestCompleted)
-		end
-		self.keybindStripDescriptor[#self.keybindStripDescriptor + 1] = backKeybind
-		self.keybindStripDescriptor[#self.keybindStripDescriptor + 1] = {
-			alignment = KEYBIND_STRIP_ALIGN_LEFT,
-			order = -1000,
-			name = GetString(SI_GAMEPAD_SELECT_OPTION),
-			keybind = "UI_SHORTCUT_PRIMARY",
-			callback = function(keyUp)
-				LibMousePointer:InvokeClick()
-			end
-		}
-	else
+	-- local backKeybind =
+	-- 	KEYBIND_STRIP:GenerateGamepadBackButtonDescriptor(
+	-- 	function()
+	-- 		SCENE_MANAGER:HideCurrentScene()
+	-- 	end
+	-- )
+	-- -- backKeybind.visible = function()
+	-- -- 	return self.currentSection == JS_CURRENT_QUEST or self.currentSection == JS_COMPLETED_QUEST or (self.currentSection == JS_CONVERSATION and self.currentQuestCompleted)
+	-- -- end
+	-- self.keybindStripDescriptor[#self.keybindStripDescriptor + 1] = backKeybind
+	-- self.keybindStripDescriptor[#self.keybindStripDescriptor + 1] = {
+	-- 	alignment = KEYBIND_STRIP_ALIGN_LEFT,
+	-- 	order = -1000,
+	-- 	name = GetString(SI_GAMEPAD_SELECT_OPTION),
+	-- 	keybind = "UI_SHORTCUT_PRIMARY",
+	-- 	callback = function(keyUp)
+	-- 		LibMousePointer:InvokeClick()
+	-- 	end
+	-- }
+	if not IsConsoleUI() then
 		local customKeybindControl = self.control:GetNamedChild("KeyStripMouseButtons")
 		customKeybindControl:SetHidden(true)
 		customKeybindControl.owner = self
@@ -1055,7 +1079,7 @@ function HarvensQuestJournal:InitKeybindStripDescriptor()
 			end,
 			customKeybindControl = customKeybindControl,
 			visible = function()
-				return self.numPages > 1
+				return self.numPages > 1 and not IsInGamepadPreferredMode()
 			end
 		}
 	end
@@ -1447,11 +1471,11 @@ function HarvensQuestJournal:Initialize()
 		end
 	)
 
+	ZO_CreateStringId("SI_HARVENS_QUEST_JOURNAL", "Harven's Quest Journal")
 	local LMM2 = LibMainMenu2
 	if LMM2 then
 		LMM2:Init()
 
-		ZO_CreateStringId("SI_HARVENS_QUEST_JOURNAL", "Harven's Quest Journal")
 		-- Add to main menu
 		local categoryLayoutInfo = {
 			binding = "TOGGLE_HARVENSQUESTJOURNAL",
@@ -1470,6 +1494,37 @@ function HarvensQuestJournal:Initialize()
 			disabled = "/esoui/art/tradinghouse/tradinghouse_racial_style_motif_book_disabled.dds"
 		}
 		LMM2:AddMenuItem(sceneName, sceneName, categoryLayoutInfo, nil)
+	end
+
+	local function CreateEntry(id, data)
+		local name = data.name
+		if type(name) == "function" then
+			name = "" --will be updated whenever the list is generated
+		end
+
+		local entry = ZO_GamepadEntryData:New(name, data.icon, nil, nil, data.isNewCallback)
+		entry:SetIconTintOnSelection(true)
+		entry:SetIconDisabledTintOnSelection(true)
+
+		entry.data = data
+		entry.id = id
+		return entry
+	end
+
+	local data = {
+		name = GetString(SI_HARVENS_QUEST_JOURNAL),
+		icon = "/esoui/art/tradinghouse/gamepad/gp_tradinghouse_racial_style_motif_book.dds",
+		activatedCallback = function()
+			self:ToggleJournal()
+		end
+	}
+
+	for i = 1, #ZO_MENU_ENTRIES do
+		if ZO_MENU_ENTRIES[i].id == ZO_MENU_MAIN_ENTRIES.JOURNAL then
+			local entry = CreateEntry(sceneName, data)
+			tableInsert(ZO_MENU_ENTRIES[i].subMenu, entry)
+			break
+		end
 	end
 
 	SLASH_COMMANDS["/journal"] = function()
