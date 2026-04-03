@@ -27,7 +27,7 @@ function lib:Initialize()
                 self.control:BringWindowToTop()
             elseif newState == SCENE_FRAGMENT_SHOWN then
                 self.gamepadCursor:UpdateVisibility(true)
-                DIRECTIONAL_INPUT:Activate(self.gamepadCursor, self.control)
+                DIRECTIONAL_INPUT:Activate(self, self.control)
                 if not KEYBIND_STRIP:HasKeybindButton(self.keybindButton) then
                     KEYBIND_STRIP:AddKeybindButton(self.keybindButton)
                     buttonApplied = true

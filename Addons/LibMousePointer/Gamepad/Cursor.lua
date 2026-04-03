@@ -17,7 +17,7 @@ function Cursor_Gamepad:UpdateDirectionalInput()
     end
 
     local dx, dy = DIRECTIONAL_INPUT:GetXY(ZO_DI_LEFT_STICK)
-    dx, dy = zo_clampLength2D(dx, dy, 1.0) -- clamp dpad output
+    dx, dy = zo_clampLength2D(dx, dy, 1.6) -- clamp dpad output
     local frameDelta = GetFrameDeltaNormalizedForTargetFramerate()
     local magnitude = frameDelta * CURSOR_SPEED
     dx = dx * magnitude
