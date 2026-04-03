@@ -137,25 +137,23 @@ local spendTime = VSYNC_FRAME_TIME_MS
 local nextFrameReduce = 0
 local lastStart = GetFrameTimeSeconds()
 
-local function GetConsoleRemainingBudgetSeconds()
-	if not IsConsoleUI() then
-		return nil
+local GetConsoleRemainingBudgetSeconds
+if IsConsoleUI() then
+	local availableMs = GetTotalUserAddOnCPUTimeAvailableEachFrameMS() - 5
+	function GetConsoleRemainingBudgetSeconds()
+		local usedNowMs = GetTotalUserAddOnCPUTimeUsedNowMS()
+		return max(0, availableMs - usedNowMs) / 1000
 	end
-
-	local availableMs = GetTotalUserAddOnCPUTimeAvailableEachFrameMS()
-	local usedNowMs = GetTotalUserAddOnCPUTimeUsedNowMS()
-	if availableMs == nil or usedNowMs == nil or availableMs < 0 or usedNowMs < 0 then
-		return nil
+else
+	function GetConsoleRemainingBudgetSeconds()
+		return 1
 	end
-	return max(0, availableMs - usedNowMs) / 1000
 end
 
 local function doMeasure() -- uniform measuring rate
 	local framerate = GetFramerate()
 	if jobsDone then
 		framerate = framerate * 1.5
-	--else
-	--  framerate = framerate * 1.3334
 	end
 	if framerate > 65 then
 		frameTimeTarget = VSYNC_FRAME_TIME_MS
@@ -172,11 +170,6 @@ local function doMeasure() -- uniform measuring rate
 		frameTimeTarget = frameTimeTarget * 1.21429
 	end
 	frameTimeTarget = min(1 / ASYNC_STALL_THRESHOLD, frameTimeTarget)
-	local consoleRemainingBudgetSeconds = GetConsoleRemainingBudgetSeconds()
-	if consoleRemainingBudgetSeconds ~= nil then
-		frameTimeTarget = min(frameTimeTarget, consoleRemainingBudgetSeconds)
-	end
-
 	spendTime = spendTime * 0.8 + frameTimeTarget * 0.2
 end
 
@@ -198,7 +191,7 @@ function async.Scheduler()
 	local runTime = start
 
 	jobsDone = false
-	local spendTime = spendTime - nextFrameReduce
+	local spendTime = min(spendTime - nextFrameReduce, GetConsoleRemainingBudgetSeconds())
 	-- Include oncePerFrame
 	while (now - start) <= spendTime do
 		name, job = next(jobs, name)
