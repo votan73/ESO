@@ -1,6 +1,6 @@
 ﻿Param([string]$Title, [System.IO.FileInfo]$Filename)
 
-$Token = "5ff8072722ab0c814a37cae55a2fa225d0296a5fdd2cf55e98cc2a5172455337"
+$Token = $env:ESOUI_API_TOKEN
 
 if (!$Filename.Exists) { return }
 if (!$Filename.Name.EndsWith(".zip")) { return }
