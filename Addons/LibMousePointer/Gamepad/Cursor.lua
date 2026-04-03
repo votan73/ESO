@@ -1,7 +1,7 @@
 local lib = LibMousePointer
 local Cursor_Gamepad = ZO_InitializingObject:Subclass()
 lib.Cursor_Gamepad = Cursor_Gamepad
-local CURSOR_SPEED = 5
+local CURSOR_SPEED = 3
 
 function Cursor_Gamepad:Initialize(control)
     self.control = control
@@ -10,6 +10,7 @@ function Cursor_Gamepad:Initialize(control)
     self:ResetPosition()
 end
 
+local moveStartTimestamp = 0
 function Cursor_Gamepad:UpdateDirectionalInput()
     if not DIRECTIONAL_INPUT:IsAvailable(ZO_DI_LEFT_STICK) then
         --d("Directional input not available, cannot update cursor position.")
@@ -17,9 +18,13 @@ function Cursor_Gamepad:UpdateDirectionalInput()
     end
 
     local dx, dy = DIRECTIONAL_INPUT:GetXY(ZO_DI_LEFT_STICK)
-    dx, dy = zo_clampLength2D(dx, dy, 1.6) -- clamp dpad output
+    dx, dy = zo_clampLength2D(dx, dy, 1.5) -- clamp dpad output
+    if dx == 0 and dy == 0 then
+        moveStartTimestamp = GetGameTimeMilliseconds()
+        return
+    end
     local frameDelta = GetFrameDeltaNormalizedForTargetFramerate()
-    local magnitude = frameDelta * CURSOR_SPEED
+    local magnitude = frameDelta * CURSOR_SPEED * zo_clamp((GetGameTimeMilliseconds() - moveStartTimestamp) / 250, 0, 8)
     dx = dx * magnitude
     dy = -dy * magnitude
 
