@@ -464,11 +464,11 @@ function HarvensQuestJournal:UpdateJournal(silence)
 	elseif self.currentSection == JS_COMPLETED_QUEST_CATEGORY then
 		self:ShowIndexCategoryPage()
 	elseif self.currentSection == JS_CURRENT_QUEST or self.currentSection == JS_COMPLETED_QUEST then
+		-- self.keybindStripDescriptor[1].name = GetString(HARVEN_QUEST_JOURNAL_BACK)
 		self:ShowQuest()
-		self.keybindStripDescriptor[1].name = GetString(HARVEN_QUEST_JOURNAL_BACK)
 	elseif self.currentSection == JS_CONVERSATION then
 		self:ShowConversation()
-		self.keybindStripDescriptor[1].name = GetString(HARVEN_QUEST_JOURNAL_BACK)
+	-- self.keybindStripDescriptor[1].name = GetString(HARVEN_QUEST_JOURNAL_BACK)
 	end
 	KEYBIND_STRIP:UpdateKeybindButtonGroup(self.keybindStripDescriptor)
 end
@@ -499,7 +499,7 @@ function HarvensQuestJournal:OpenJournal()
 		end
 	end
 
-	self.keybindStripDescriptor[1].name = GetString(HARVEN_QUEST_JOURNAL_COMPLETED_QUESTS_KEYBIND)
+	-- self.keybindStripDescriptor[1].name = GetString(HARVEN_QUEST_JOURNAL_COMPLETED_QUESTS_KEYBIND)
 
 	if self.sv.openAtTracked then
 		self:OpenAtFocused()
@@ -818,6 +818,9 @@ function HarvensQuestJournal:SwitchPage(direction)
 end
 
 local deleteConfirmationDialog = {
+	gamepadInfo = {
+		dialogType = GAMEPAD_DIALOGS.BASIC
+	},
 	title = {
 		text = GetString(HARVEN_QUEST_JOURNAL_DELETE_QUEST)
 	},
@@ -861,31 +864,55 @@ function HarvensQuestJournal:InitKeybindStripDescriptor()
 		{
 			alignment = KEYBIND_STRIP_ALIGN_LEFT,
 			order = 0,
-			name = GetString(HARVEN_QUEST_JOURNAL_COMPLETED_QUESTS_KEYBIND),
+			name = function()
+				if self.currentSection == JS_CURRENT then
+					return GetString(HARVEN_QUEST_JOURNAL_COMPLETED_QUESTS_KEYBIND)
+				elseif self.currentSection == JS_COMPLETED then
+					return GetString(HARVEN_QUEST_JOURNAL_CURRENT_QUESTS_KEYBIND)
+				elseif self.currentSection == JS_CURRENT_QUEST then
+					return GetString(SI_QUEST_JOURNAL_SHOW_ON_MAP)
+				end
+				-- if self.currentSection == JS_COMPLETED or self.currentSection == JS_CURRENT_QUEST then
+				-- 	return GetString(HARVEN_QUEST_JOURNAL_CURRENT_QUESTS_KEYBIND)
+				-- elseif self.currentSection == JS_CURRENT or self.currentSection == JS_COMPLETED_QUEST then
+				-- 	return GetString(HARVEN_QUEST_JOURNAL_COMPLETED_QUESTS_KEYBIND)
+				-- elseif self.currentSection == JS_CONVERSATION and self.currentQuestCompleted then
+				-- 	return GetString(HARVEN_QUEST_JOURNAL_BACK)
+				-- elseif self.currentSection == JS_CONVERSATION and not self.currentQuestCompleted then
+				-- 	return GetString(HARVEN_QUEST_JOURNAL_BACK)
+				-- elseif self.currentSection == JS_COMPLETED_QUEST_CATEGORY then
+				-- 	return GetString(HARVEN_QUEST_JOURNAL_CURRENT_QUESTS_KEYBIND)
+				-- end
+			end,
 			keybind = "UI_SHORTCUT_SECONDARY",
 			callback = function(keyUp)
-				descriptor = self.keybindStripDescriptor[1]
-				if self.currentSection == JS_COMPLETED or self.currentSection == JS_CURRENT_QUEST then
-					descriptor.name = GetString(HARVEN_QUEST_JOURNAL_COMPLETED_QUESTS_KEYBIND)
+				if self.currentSection == JS_COMPLETED then
 					self.currentSection = JS_CURRENT
-				elseif self.currentSection == JS_CURRENT or self.currentSection == JS_COMPLETED_QUEST then
-					descriptor.name = GetString(HARVEN_QUEST_JOURNAL_CURRENT_QUESTS_KEYBIND)
-					if self.sv.showCompletedByCategory and self.currentSection == JS_COMPLETED_QUEST then
-						self.currentSection = JS_COMPLETED_QUEST_CATEGORY
-					else
-						self.currentSection = JS_COMPLETED
-					end
-				elseif self.currentSection == JS_CONVERSATION and self.currentQuestCompleted then
-					descriptor.name = GetString(HARVEN_QUEST_JOURNAL_BACK)
-					self.currentSection = JS_COMPLETED_QUEST
-				elseif self.currentSection == JS_CONVERSATION and not self.currentQuestCompleted then
-					descriptor.name = GetString(HARVEN_QUEST_JOURNAL_BACK)
-					self.currentSection = JS_CURRENT_QUEST
-				elseif self.currentSection == JS_COMPLETED_QUEST_CATEGORY then
-					descriptor.name = GetString(HARVEN_QUEST_JOURNAL_CURRENT_QUESTS_KEYBIND)
+				elseif self.currentSection == JS_CURRENT then
 					self.currentSection = JS_COMPLETED
+				elseif self.currentSection == JS_CURRENT_QUEST then
+					ZO_WorldMap_ShowQuestOnMap(self.activeQuests[self.currentQuest])
+					return
 				end
+				-- if self.currentSection == JS_COMPLETED or self.currentSection == JS_CURRENT_QUEST then
+				-- 	self.currentSection = JS_CURRENT
+				-- elseif self.currentSection == JS_CURRENT or self.currentSection == JS_COMPLETED_QUEST then
+				-- 	if self.sv.showCompletedByCategory and self.currentSection == JS_COMPLETED_QUEST then
+				-- 		self.currentSection = JS_COMPLETED_QUEST_CATEGORY
+				-- 	else
+				-- 		self.currentSection = JS_COMPLETED
+				-- 	end
+				-- elseif self.currentSection == JS_CONVERSATION and self.currentQuestCompleted then
+				-- 	self.currentSection = JS_COMPLETED_QUEST
+				-- elseif self.currentSection == JS_CONVERSATION and not self.currentQuestCompleted then
+				-- 	self.currentSection = JS_CURRENT_QUEST
+				-- elseif self.currentSection == JS_COMPLETED_QUEST_CATEGORY then
+				-- 	self.currentSection = JS_COMPLETED
+				-- end
 				self:UpdateJournal()
+			end,
+			visible = function(descriptor)
+				return self.currentSection == JS_CURRENT or self.currentSection == JS_COMPLETED or self.currentSection == JS_CURRENT_QUEST
 			end
 		},
 		{
@@ -918,73 +945,52 @@ function HarvensQuestJournal:InitKeybindStripDescriptor()
 				return self.numPages > 1
 			end
 		},
+		-- {
+		-- 	alignment = KEYBIND_STRIP_ALIGN_RIGHT,
+		-- 	order = 1,
+		-- 	keybind = "UI_SHORTCUT_SHOW_QUEST_ON_MAP",
+		-- 	name = GetString(SI_QUEST_JOURNAL_SHOW_ON_MAP),
+		-- 	callback = function(keyUp)
+		-- 		ZO_WorldMap_ShowQuestOnMap(self.activeQuests[self.currentQuest])
+		-- 	end,
+		-- 	visible = function(descriptor)
+		-- 		return self.currentSection == JS_CURRENT_QUEST
+		-- 	end
+		-- },
 		{
-			alignment = KEYBIND_STRIP_ALIGN_RIGHT,
-			order = 1,
-			keybind = "UI_SHORTCUT_SHOW_QUEST_ON_MAP",
-			name = GetString(SI_QUEST_JOURNAL_SHOW_ON_MAP),
-			callback = function(keyUp)
-				ZO_WorldMap_ShowQuestOnMap(self.activeQuests[self.currentQuest])
-			end,
-			visible = function(descriptor)
-				return self.currentSection == JS_CURRENT_QUEST
-			end
-		},
-		{
-			alignment = KEYBIND_STRIP_ALIGN_RIGHT,
+			alignment = KEYBIND_STRIP_ALIGN_LEFT,
 			order = 0,
 			name = function()
-				if self.currentSection == JS_CURRENT_QUEST then
-					return GetString(SI_QUEST_JOURNAL_ABANDON)
-				elseif self.currentSection == JS_COMPLETED_QUEST then
-					return GetString(HARVEN_QUEST_JOURNAL_DELETE)
-				else
-					return GetString(HARVEN_QUEST_JOURNAL_BACK)
-				end
+				return GetString(HARVEN_QUEST_JOURNAL_BACK)
 			end,
 			keybind = "UI_SHORTCUT_NEGATIVE",
 			callback = function(keyUp)
-				if self.currentSection == JS_CURRENT_QUEST and self.currentQuestType ~= QUEST_TYPE_MAIN_STORY then
-					QUEST_JOURNAL_MANAGER:ConfirmAbandonQuest(self.activeQuests[self.currentQuest])
+				if self.currentSection == JS_CURRENT_QUEST then
+					self.currentSection = JS_CURRENT
 				elseif self.currentSection == JS_COMPLETED_QUEST then
-					local quest = self:GetQuestSavedVariable(self.currentQuestType, self.currentQuestZone, self.currentQuest, (self.currentSection == JS_COMPLETED_QUEST and true or false))
-					if not quest then
-						return
-					end
-
-					local data = {questType = self.currentQuestType, questZone = self.currentQuestZone, questName = self.currentQuest}
-					local textParams = {mainTextParams = {zo_strformat(SI_QUEST_JOURNAL_QUEST_NAME_FORMAT, quest[QS_NAME])}}
-					if IsConsoleUI() or IsInGamepadPreferredMode() then
-						--ZO_Dialogs_ShowGamepadDialog("HarvensDeleteQuestConfirmationDialog", data, textParams)
+					if self.sv.showCompletedByCategory and self.currentSection == JS_COMPLETED_QUEST then
+						self.currentSection = JS_COMPLETED_QUEST_CATEGORY
 					else
-						ZO_Dialogs_ShowDialog("HarvensDeleteQuestConfirmationDialog", data, textParams)
+						self.currentSection = JS_COMPLETED
 					end
+				elseif self.currentSection == JS_CONVERSATION and self.currentQuestCompleted then
+					self.currentSection = JS_COMPLETED_QUEST
+				elseif self.currentSection == JS_CONVERSATION and not self.currentQuestCompleted then
+					self.currentSection = JS_CURRENT_QUEST
+				elseif self.currentSection == JS_COMPLETED_QUEST_CATEGORY then
+					self.currentSection = JS_COMPLETED
 				else
 					SCENE_MANAGER:HideCurrentScene()
+					return
 				end
-			end,
-			visible = function(descriptor)
-				-- if (self.currentSection == JS_CURRENT_QUEST and self.currentQuestType ~= QUEST_TYPE_MAIN_STORY) or self.currentSection == JS_COMPLETED_QUEST then
-				-- 	return true
-				-- end
-				-- return false
-				return true
-			end,
-			enabled = function(descriptor)
-				if self.currentSection == JS_COMPLETED_QUEST and (IsConsoleUI() or IsInGamepadPreferredMode()) then
-					return false -- Not yet implemented for gamepad, and deleting quests is a destructive action, so disable until implemented
-				end
-				if self.currentSection == JS_CURRENT_QUEST and self.currentQuestType == QUEST_TYPE_MAIN_STORY then
-					return false
-				end
-				return true
+				self:UpdateJournal()
 			end
 		},
 		{
 			alignment = KEYBIND_STRIP_ALIGN_RIGHT,
 			order = 1,
 			name = function()
-				if self.currentSection == JS_CURRENT or self.currentSection == JS_COMPLETED then
+				if self.currentSection == JS_CURRENT or self.currentSection == JS_COMPLETED or self.currentSection == JS_COMPLETED_QUEST_CATEGORY then
 					return self.sv.sortAscending and GetString(HARVEN_QUEST_JOURNAL_SORT_ASC) or GetString(HARVEN_QUEST_JOURNAL_SORT_DESC)
 				end
 				return GetString(HARVEN_QUEST_JOURNAL_SET_FOCUS)
@@ -993,12 +999,11 @@ function HarvensQuestJournal:InitKeybindStripDescriptor()
 				if self.currentSection == JS_CURRENT_QUEST then
 					FOCUSED_QUEST_TRACKER:ForceAssist(self.activeQuests[self.currentQuest])
 					KEYBIND_STRIP:UpdateKeybindButtonGroup(self.keybindStripDescriptor)
-				elseif self.currentSection == JS_CURRENT or self.currentSection == JS_COMPLETED then
+				elseif self.currentSection == JS_CURRENT or self.currentSection == JS_COMPLETED or self.currentSection == JS_COMPLETED_QUEST_CATEGORY then
 					self.sv.sortAscending = not self.sv.sortAscending
 					self.sortedListCurrent = nil
 					self.sortedListCompleted = nil
 					self:UpdateJournal()
-					KEYBIND_STRIP:UpdateKeybindButtonGroup(self.keybindStripDescriptor)
 				end
 			end,
 			keybind = "UI_SHORTCUT_QUATERNARY",
@@ -1008,7 +1013,7 @@ function HarvensQuestJournal:InitKeybindStripDescriptor()
 					if not isAssisted then
 						return true
 					end
-				elseif self.currentSection == JS_CURRENT or self.currentSection == JS_COMPLETED then
+				elseif self.currentSection == JS_CURRENT or self.currentSection == JS_COMPLETED or self.currentSection == JS_COMPLETED_QUEST_CATEGORY then
 					return true
 				end
 				return false
@@ -1034,17 +1039,39 @@ function HarvensQuestJournal:InitKeybindStripDescriptor()
 			order = 2,
 			keybind = "UI_SHORTCUT_QUINARY",
 			name = function()
-				return sortItems[self.sv.sort] -- or GetString(HARVEN_QUEST_JOURNAL_SORT_BY)
+				if self.currentSection == JS_CURRENT or self.currentSection == JS_COMPLETED then
+					return sortItems[self.sv.sort] -- or GetString(HARVEN_QUEST_JOURNAL_SORT_BY)
+				elseif self.currentSection == JS_CURRENT_QUEST then
+					return GetString(SI_QUEST_JOURNAL_ABANDON)
+				elseif self.currentSection == JS_COMPLETED_QUEST then
+					return GetString(HARVEN_QUEST_JOURNAL_DELETE)
+				end
 			end,
 			callback = function(keyUp)
-				self.sv.sort = next(sortItems, self.sv.sort) or next(sortItems)
-				self.sortedListCurrent = nil
-				self.sortedListCompleted = nil
-				self:UpdateJournal()
-				KEYBIND_STRIP:UpdateKeybindButtonGroup(self.keybindStripDescriptor)
+				if self.currentSection == JS_CURRENT or self.currentSection == JS_COMPLETED then
+					self.sv.sort = next(sortItems, self.sv.sort) or next(sortItems)
+					self.sortedListCurrent = nil
+					self.sortedListCompleted = nil
+					self:UpdateJournal()
+				elseif self.currentSection == JS_CURRENT_QUEST and self.currentQuestType ~= QUEST_TYPE_MAIN_STORY then
+					QUEST_JOURNAL_MANAGER:ConfirmAbandonQuest(self.activeQuests[self.currentQuest])
+				elseif self.currentSection == JS_COMPLETED_QUEST then
+					local quest = self:GetQuestSavedVariable(self.currentQuestType, self.currentQuestZone, self.currentQuest, (self.currentSection == JS_COMPLETED_QUEST and true or false))
+					if not quest then
+						return
+					end
+
+					local data = {questType = self.currentQuestType, questZone = self.currentQuestZone, questName = self.currentQuest}
+					local textParams = {mainTextParams = {zo_strformat(SI_QUEST_JOURNAL_QUEST_NAME_FORMAT, quest[QS_NAME])}}
+					if IsConsoleUI() or IsInGamepadPreferredMode() then
+						ZO_Dialogs_ShowGamepadDialog("HarvensDeleteQuestConfirmationDialog", data, textParams)
+					else
+						ZO_Dialogs_ShowDialog("HarvensDeleteQuestConfirmationDialog", data, textParams)
+					end
+				end
 			end,
 			visible = function(descriptor)
-				return self.currentSection == JS_CURRENT or self.currentSection == JS_COMPLETED
+				return self.currentSection == JS_CURRENT or self.currentSection == JS_COMPLETED or self.currentSection == JS_CURRENT_QUEST or self.currentSection == JS_COMPLETED_QUEST
 			end
 		}
 	}
@@ -1087,7 +1114,7 @@ end
 
 function HarvensQuestJournal:ToggleJournal()
 	if not SCENE_MANAGER:IsShowing("HarvensQuestJournal") then
-		SCENE_MANAGER:Show("HarvensQuestJournal")
+		SCENE_MANAGER:Push("HarvensQuestJournal")
 	else
 		SCENE_MANAGER:Hide("HarvensQuestJournal")
 	end
