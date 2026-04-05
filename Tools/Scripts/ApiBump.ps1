@@ -3,7 +3,7 @@
 if ($Path.Length -eq 0){ return }
 if (![System.IO.Directory]::Exists($Path)) { return }
 
-$Token = "5ff8072722ab0c814a37cae55a2fa225d0296a5fdd2cf55e98cc2a5172455337"
+$Token = $env:ESOUI_API_TOKEN
 
 Add-Type -AssemblyName System.Web
 Add-Type -AssemblyName System.Web.Extensions
