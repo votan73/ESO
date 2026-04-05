@@ -3,7 +3,7 @@ if LibHarvensAddonSettings then
 end
 
 LibHarvensAddonSettings = {}
-LibHarvensAddonSettings.version = 20002
+LibHarvensAddonSettings.version = 20105
 local LibHarvensAddonSettings = LibHarvensAddonSettings
 
 -----
@@ -121,7 +121,7 @@ function AddonSettingsControl:ResetToDefaults()
 	elseif self.type == LibHarvensAddonSettings.ST_ICONPICKER then
 		self:SetValue(self.default or 1)
 		local items = self:GetValueOrCallback(self.items)
-		local combobox = self.control:GetDropDown()
+		local combobox = self.control and self.control:GetDropDown()
 		self.setFunction(combobox, self.default, self.items[self.default])
 	elseif self.setFunction then
 		self:SetValue(self.default)

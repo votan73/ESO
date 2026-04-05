@@ -8,7 +8,7 @@ local Templates = {
 	[LibHarvensAddonSettings.ST_COLOR] = "ZO_GamepadOptionsColorRow",
 	[LibHarvensAddonSettings.ST_BUTTON] = "ZO_GamepadOptionsLabelRow",
 	[LibHarvensAddonSettings.ST_LABEL] = "ZO_GamepadOptionsLabelRow",
-	[LibHarvensAddonSettings.ST_SECTION] = "ZO_Options_SectionTitle_WithDivider",
+	[LibHarvensAddonSettings.ST_SECTION] = "ZO_GamepadMenuEntryTemplateWithArrow",
 	[LibHarvensAddonSettings.ST_ICONPICKER] = "LibHarvensAddonSettingsGamepadIconPicker"
 }
 
@@ -219,7 +219,6 @@ local createControlFunctions = {
 	end,
 	[LibHarvensAddonSettings.ST_SECTION] = function(self, lastControl)
 		LibHarvensAddonSettings.list:AddEntry(Templates[self.type], self)
-		self.canSelect = false
 	end,
 	[LibHarvensAddonSettings.ST_COLOR] = function(self, lastControl)
 		LibHarvensAddonSettings.list:AddEntry(Templates[self.type], self)
@@ -250,7 +249,7 @@ local cleanControlFunctions = {
 		self.control.label:SetText(nil)
 	end,
 	[LibHarvensAddonSettings.ST_SECTION] = function(self)
-		self.control:GetNamedChild("Label"):SetText(nil)
+		(self.control.label or self.control:GetNamedChild("Label")):SetText(nil)
 	end,
 	[LibHarvensAddonSettings.ST_COLOR] = function(self)
 		self.control:GetNamedChild("Name"):SetText(nil)
@@ -399,12 +398,19 @@ function LibHarvensAddonSettings.AddonSettings:InitHandlers()
 end
 
 function LibHarvensAddonSettings.AddonSettings:CreateControls()
-	local list = LibHarvensAddonSettings.list
+	local list = LibHarvensAddonSettings.scrollList:GetCurrentList() or LibHarvensAddonSettings.scrollList:GetMainList()
 	list:Clear()
+	LibHarvensAddonSettings.list = list
+
 	local hasDefaults = false
+
+	local currentSection = list.currentSection
 	for i = 1, #self.settings do
-		self.settings[i]:CreateControl()
-		hasDefaults = hasDefaults or self.settings[i].default ~= nil
+		local setting = self.settings[i]
+		if setting.currentSection == currentSection then
+			setting:CreateControl()
+			hasDefaults = hasDefaults or setting.default ~= nil
+		end
 	end
 	self.hasDefaults = hasDefaults
 	list:Commit()
@@ -412,17 +418,23 @@ function LibHarvensAddonSettings.AddonSettings:CreateControls()
 end
 
 function LibHarvensAddonSettings.AddonSettings:UpdateControls()
+	local list = LibHarvensAddonSettings.scrollList:GetCurrentList() or LibHarvensAddonSettings.scrollList:GetMainList()
+	local currentSection = list.currentSection
 	for i = 1, #self.settings do
-		self.settings[i]:UpdateControl()
+		local setting = self.settings[i]
+		if setting.currentSection == currentSection then
+			setting:UpdateControl()
+		end
 	end
-	LibHarvensAddonSettings.list:RefreshVisible()
+	list:RefreshVisible()
 	needUpdate = false
 end
 
 function LibHarvensAddonSettings.AddonSettings:RefreshSelection()
 	local list = LibHarvensAddonSettings.list
 	if #self.settings > 0 then
-		local selectedIndex = list:FindFirstIndexByEval(
+		local selectedIndex =
+			list:FindFirstIndexByEval(
 			function(data)
 				return data == self.lastSelectedRow
 			end
@@ -451,7 +463,17 @@ function LibHarvensAddonSettings:SelectFirstAddon()
 end
 
 function LibHarvensAddonSettings:GoBack()
-	SCENE_MANAGER:HideCurrentScene()
+	if self.list.currentSection then
+		local list = self.scrollList:GetList("Section")
+		list.currentSection = nil
+		list:Clear()
+		list:Commit()
+		self.scrollList:SetCurrentList(self.scrollList:GetMainList())
+		currentSettings:CreateControls()
+		PlaySound(SOUNDS.GAMEPAD_MENU_BACK)
+	else
+		SCENE_MANAGER:HideCurrentScene()
+	end
 end
 
 -----
@@ -476,7 +498,8 @@ function Settings_ParametricList:InitializeKeybindStripDescriptors()
 		[LibHarvensAddonSettings.ST_CHECKBOX] = true,
 		[LibHarvensAddonSettings.ST_BUTTON] = true,
 		[LibHarvensAddonSettings.ST_COLOR] = true,
-		[LibHarvensAddonSettings.ST_EDIT] = true
+		[LibHarvensAddonSettings.ST_EDIT] = true,
+		[LibHarvensAddonSettings.ST_SECTION] = true
 	}
 	local CONTROL_TYPES_WITH_INPUT = {
 		[LibHarvensAddonSettings.ST_SLIDER] = true,
@@ -516,7 +539,7 @@ function Settings_ParametricList:InitializeKeybindStripDescriptors()
 					LibHarvensAddonSettings.list:GetSelectedData():ValueChanged(control)
 				elseif controlType == LibHarvensAddonSettings.ST_COLOR then
 					control:ShowDialog()
-				elseif controlType == LibHarvensAddonSettings.ST_EDIT then
+				elseif controlType == LibHarvensAddonSettings.ST_EDIT or controlType == LibHarvensAddonSettings.ST_SECTION then
 					control:Activate()
 				end
 			end,
@@ -769,19 +792,54 @@ function LibHarvensAddonSettings:CreateAddonSettingsPanel()
 
 	self.scrollList = Settings_ParametricList:New(control)
 	self.list = self.scrollList:GetMainList()
+	self.scrollList:AddList("Section")
+
+	local function SetupSections(addonSettings)
+		local settings = addonSettings.settings
+		-- local hasSections = false
+		-- for i = 1, #settings do
+		-- 	if settings[i].type == LibHarvensAddonSettings.ST_SECTION then
+		-- 		hasSections = true
+		-- 		break
+		-- 	end
+		-- end
+		-- if hasSections then
+		-- 	if settings[1].type ~= LibHarvensAddonSettings.ST_SECTION and settings[1].type ~= LibHarvensAddonSettings.ST_LABEL then
+		-- 		addonSettings:AddSetting({type = LibHarvensAddonSettings.ST_SECTION, label = GetString(SI_GAMEPLAY_OPTIONS_GENERAL)}, 1, false)
+		-- 	end
+		-- else
+		-- 	return
+		-- end
+
+		local currentSection = nil
+		for i = 1, #settings do
+			local setting = settings[i]
+			local isSection = setting.type == LibHarvensAddonSettings.ST_SECTION
+			if isSection then
+				currentSection = nil
+			end
+			setting.currentSection = currentSection
+			if isSection then
+				currentSection = setting
+			end
+		end
+	end
 
 	CALLBACK_MANAGER:RegisterCallback(
 		"LibHarvensAddonSettings_AddonSelected",
 		function(_, addonSettings)
 			currentSettings = addonSettings
+			self.list.currentSection = nil
+			SetupSections(addonSettings)
+			self.scrollList:SetCurrentList(self.scrollList:GetMainList())
 			addonSettings:CreateControls()
 		end
 	)
 end
 
 function LibHarvensAddonSettings:CreateControlPools()
-	local function extendFactory(templateName, func)
-		local pool = self.list.dataTypes[templateName].pool
+	local function extendFactory(list, templateName, func)
+		local pool = list.dataTypes[templateName].pool
 		local orgFactory = pool.m_Factory
 		pool.m_Factory = function(...)
 			local control = orgFactory(...)
@@ -794,6 +852,10 @@ function LibHarvensAddonSettings:CreateControlPools()
 		control.data = data
 		data:SetEnabled(not data:IsDisabled())
 		updateControlFunctions[data.type](data, control)
+		local list = self.list
+		if control:GetParent() ~= list.scrollControl then
+			control:SetParent(list.scrollControl)
+		end
 	end
 	local function reset(control)
 		local data = control.data
@@ -804,10 +866,19 @@ function LibHarvensAddonSettings:CreateControlPools()
 		end
 	end
 	local function AddPool(type, suffix, factory)
-		self.list:AddDataTemplate(Templates[type], update, ZO_GamepadMenuEntryTemplateParametricListFunction, nil, suffix, reset)
+		local list = self.scrollList:GetMainList()
+		local templateName = Templates[type]
+		list:AddDataTemplate(templateName, update, ZO_GamepadMenuEntryTemplateParametricListFunction, nil, suffix, reset)
 		if factory then
-			extendFactory(Templates[type], factory)
+			extendFactory(list, templateName, factory)
 		end
+		-- local list = self.scrollList:GetList("Section")
+		-- list:AddDataTemplate(Templates[type], update, ZO_GamepadMenuEntryTemplateParametricListFunction, nil, suffix, reset)
+		-- if factory then
+		-- 	extendFactory(list, Templates[type], factory)
+		-- end
+		local secondaryList = self.scrollList:GetList("Section")
+		secondaryList.dataTypes[templateName] = list.dataTypes[templateName]
 	end
 	AddPool(
 		self.ST_CHECKBOX,
@@ -976,8 +1047,14 @@ function LibHarvensAddonSettings:CreateControlPools()
 			local label = control:GetNamedChild("Label")
 			control.label = label
 			control:SetWidth(ZO_GAMEPAD_CONTENT_WIDTH)
-			label:SetWidth(ZO_GAMEPAD_CONTENT_WIDTH)
 			ZO_FontAdjustingWrapLabel_OnInitialized(label, fonts, TEXT_WRAP_MODE_ELLIPSIS)
+			function control:Activate()
+				local list = LibHarvensAddonSettings.scrollList:GetList("Section")
+				list.currentSection = self.data
+				LibHarvensAddonSettings.scrollList:SetCurrentList(list)
+				currentSettings:CreateControls()
+				PlaySound(SOUNDS.GAMEPAD_MENU_FORWARD)
+			end
 		end
 	)
 
