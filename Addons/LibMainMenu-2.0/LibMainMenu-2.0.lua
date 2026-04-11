@@ -246,7 +246,7 @@ function lib:SetupSceneGroupBar(category, sceneGroupName)
 		local activeSceneName = sceneGroup:GetActiveScene()
 		local layoutData
 		for i = 1, #menuBarIconData do
-			if (menuBarIconData[i].descriptor == activeSceneName) then
+			if menuBarIconData[i].descriptor == activeSceneName then
 				layoutData = menuBarIconData[i]
 				break
 			end
@@ -328,7 +328,7 @@ end
 function lib:ShowCategory(category)
 	local categoryLayoutInfo = lib.CATEGORY_LAYOUT_INFO[category]
 	local categoryInfo = self.categoryInfo[category]
-	if (categoryInfo.lastSceneName) then
+	if categoryInfo.lastSceneName then
 		self:ShowScene(categoryInfo.lastSceneName)
 	else
 		self:ShowSceneGroup(categoryInfo.lastSceneGroupName)
