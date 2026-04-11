@@ -1,10 +1,16 @@
 -- Feel free to use this library --
 -- but do not modify without sending a pm to me (votan at www.esoui.com) to avoid version conflicts --
 
-if LibMainMenu2 then return end
-local MAJOR, MINOR = "LibMainMenu-2.0", 40400
+if IsConsoleUI() then
+	return
+end
+
+if LibMainMenu2 then
+	return
+end
+local MAJOR, MINOR = "LibMainMenu-2.0", 40500
 local lib = {}
-lib.name	= MAJOR
+lib.name = MAJOR
 lib.version = MINOR
 
 local function GetMainMenu()
@@ -28,7 +34,6 @@ local function InitMenu(self)
 	MainMenu_Keyboard.RefreshCategoryIndicators = getCategories
 	menu:RefreshCategoryIndicators()
 
-	menu.categoryBarFragment.duration = 250
 	EVENT_MANAGER:UnregisterForEvent(MAJOR, EVENT_SECURE_RENDER_MODE_CHANGED)
 	EVENT_MANAGER:RegisterForEvent(
 		MAJOR,
@@ -68,7 +73,7 @@ local function InitMenu(self)
 	self.control = LMMXML
 
 	self.categoryBar = GetControl(self.control, "CategoryBar")
-	self.categoryBarFragment = ZO_FadeSceneFragment:New(self.categoryBar)
+	self.categoryBarFragment = ZO_SimpleSceneFragment:New(self.categoryBar)
 
 	self.sceneGroupBar = GetControl(self.control, "SceneGroupBar")
 	self.sceneGroupBarLabel = GetControl(self.control, "SceneGroupBarLabel")
@@ -80,7 +85,7 @@ local function InitMenu(self)
 	end
 
 	self.sceneShowCallback = function(oldState, newState)
-		if (newState == SCENE_SHOWING) then
+		if newState == SCENE_SHOWING then
 			local sceneGroupInfo = self.sceneGroupInfo[self.sceneShowGroupName]
 			self:SetupSceneGroupBar(sceneGroupInfo.category, self.sceneShowGroupName)
 			local scene = SCENE_MANAGER:GetCurrentScene()
@@ -114,7 +119,7 @@ do
 		local subcategoryBar = CreateControlFromVirtual("ZO_MainMenuSubcategoryBar", menu.control, "ZO_MainMenuSubcategoryBar", descriptor)
 		subcategoryBar:SetAnchor(TOP, menu.categoryBar, BOTTOM, 0, 7)
 
-		local subcategoryBarFragment = ZO_FadeSceneFragment:New(subcategoryBar, false, 150)
+		local subcategoryBarFragment = ZO_SimpleSceneFragment:New(subcategoryBar)
 		local categoryInfo = {
 			barControls = {},
 			subcategoryBar = subcategoryBar,
@@ -249,7 +254,7 @@ function lib:SetupSceneGroupBar(category, sceneGroupName)
 
 		self.ignoreCallbacks = true
 
-		if (layoutData) then
+		if layoutData then
 			if not ZO_MenuBar_SelectDescriptor(self.sceneGroupBar, activeSceneName) then
 				self.ignoreCallbacks = false
 				ZO_MenuBar_SelectFirstVisibleButton(self.sceneGroupBar, true)
@@ -269,18 +274,7 @@ function lib:AddCategory(data)
 	table.insert(lib.CATEGORY_LAYOUT_INFO, data)
 	lib.CATEGORY_LAYOUT_INFO[#lib.CATEGORY_LAYOUT_INFO].descriptor = #lib.CATEGORY_LAYOUT_INFO
 
-	--[[
-	local categoryBarData =
-    {
-        buttonPadding = 16,
-        normalSize = 51,
-        downSize = 64,
-        animationDuration = DEFAULT_SCENE_TRANSITION_TIME,
-        buttonTemplate = "LibMainmenuCategoryBarButton",
-    }
-	]] local subcategoryBar =
-		CreateControl("libMainMenuSubcategoryBar" .. #lib.CATEGORY_LAYOUT_INFO, self.control, CT_CONTROL)
-	--subcategoryBar:SetAnchor(TOP, self.categoryBar, BOTTOM, 0, 7)
+	local subcategoryBar = CreateControl("libMainMenuSubcategoryBar" .. #lib.CATEGORY_LAYOUT_INFO, self.control, CT_CONTROL)
 	local subcategoryBarFragment = ZO_FadeSceneFragment:New(subcategoryBar)
 	self.categoryInfo[#lib.CATEGORY_LAYOUT_INFO] = {
 		barControls = {},
@@ -326,7 +320,7 @@ function lib:AddCategoryAreaFragment(fragment)
 end
 
 function lib:OnCategoryClicked(category)
-	if (not self.ignoreCallbacks) then
+	if not self.ignoreCallbacks then
 		self:ShowCategory(category)
 	end
 end
@@ -352,7 +346,7 @@ end
 
 function lib:ShowSceneGroup(sceneGroupName, specificScene)
 	local sceneGroupInfo = self.sceneGroupInfo[sceneGroupName]
-	if (not specificScene) then
+	if not specificScene then
 		local sceneGroup = SCENE_MANAGER:GetSceneGroup(sceneGroupName)
 		specificScene = sceneGroup:GetActiveScene()
 	end
@@ -411,7 +405,7 @@ function lib:AddSceneGroup(category, sceneGroupName, menuBarIconData)
 		local scene = lib:AddRawScene(sceneName, category, categoryInfo, sceneGroupName)
 	end
 
-	if (not self:HasLast(categoryInfo)) then
+	if not self:HasLast(categoryInfo) then
 		self:SetLastSceneGroupName(categoryInfo, sceneGroupName)
 	end
 
@@ -435,7 +429,6 @@ end
 
 function lib:AddRawScene(sceneName, category, categoryInfo, sceneGroupName)
 	local scene = SCENE_MANAGER:GetScene(sceneName)
-	--scene:AddFragment(categoryInfo.subcategoryBarFragment)
 
 	local hideCategoryBar = self.categoryInfo[category].hideCategoryBar
 	if hideCategoryBar == nil or hideCategoryBar == false then
@@ -461,7 +454,7 @@ function lib:ToggleCategory(category)
 	end
 	local categoryLayoutInfo = self.CATEGORY_LAYOUT_INFO[category]
 	local categoryInfo = self.categoryInfo[category]
-	if (categoryInfo.lastSceneName) then
+	if categoryInfo.lastSceneName then
 		self:ToggleScene(categoryInfo.lastSceneName)
 	else
 		self:ToggleSceneGroup(categoryInfo.lastSceneGroupName)
@@ -473,7 +466,7 @@ function lib:ToggleSceneGroup(sceneGroupName, specificScene)
 		return
 	end
 	local sceneGroupInfo = self.sceneGroupInfo[sceneGroupName]
-	if (not specificScene) then
+	if not specificScene then
 		local sceneGroup = SCENE_MANAGER:GetSceneGroup(sceneGroupName)
 		specificScene = sceneGroup:GetActiveScene()
 	end
@@ -490,7 +483,7 @@ function lib:ShowSceneGroup(sceneGroupName, specificScene)
 		return
 	end
 	local sceneGroupInfo = self.sceneGroupInfo[sceneGroupName]
-	if (not specificScene) then
+	if not specificScene then
 		local sceneGroup = SCENE_MANAGER:GetSceneGroup(sceneGroupName)
 		specificScene = sceneGroup:GetActiveScene()
 	end
@@ -514,8 +507,7 @@ function lib:ToggleScene(sceneName)
 	if WINDOW_MANAGER:IsSecureRenderModeEnabled() then
 		return
 	end
-	local sceneInfo = self.sceneInfo[sceneName]
-	if (SCENE_MANAGER:IsShowing(sceneName)) then
+	if SCENE_MANAGER:IsShowing(sceneName) then
 		SCENE_MANAGER:ShowBaseScene()
 	else
 		self:ShowScene(sceneName)
