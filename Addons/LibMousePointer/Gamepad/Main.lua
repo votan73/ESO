@@ -4,7 +4,7 @@ lib.name = "LibMousePointer"
 
 function lib:Initialize()
     self.control = LibMousePointerTopLevel
-    local fragment = ZO_FadeSceneFragment:New(self.control)
+    local fragment = ZO_SimpleSceneFragment:New(self.control)
 
     lib.keybindButton = {
         alignment = KEYBIND_STRIP_ALIGN_LEFT,
@@ -20,12 +20,11 @@ function lib:Initialize()
     fragment:RegisterCallback(
         "StateChange",
         function(oldState, newState)
-            if newState == SCENE_FRAGMENT_SHOWING then
+            if newState == SCENE_FRAGMENT_SHOWN then
                 if not self.gamepadCursor then
                     self.gamepadCursor = self.Cursor_Gamepad:New(self.control:GetNamedChild("GamepadCursor"))
                 end
                 self.control:BringWindowToTop()
-            elseif newState == SCENE_FRAGMENT_SHOWN then
                 self.gamepadCursor:UpdateVisibility(true)
                 DIRECTIONAL_INPUT:Activate(self, self.control)
                 if not KEYBIND_STRIP:HasKeybindButton(self.keybindButton) then

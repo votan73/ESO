@@ -21,10 +21,9 @@ function Cursor_Gamepad:UpdateDirectionalInput()
     dx, dy = zo_clampLength2D(dx, dy, 1.5) -- clamp dpad output
     if dx == 0 and dy == 0 then
         moveStartTimestamp = GetGameTimeMilliseconds()
-        return
     end
     local frameDelta = GetFrameDeltaNormalizedForTargetFramerate()
-    local magnitude = frameDelta * CURSOR_SPEED * zo_clamp((GetGameTimeMilliseconds() - moveStartTimestamp) / 250, 0, 8)
+    local magnitude = frameDelta * CURSOR_SPEED * zo_clamp((GetGameTimeMilliseconds() - moveStartTimestamp) / 250, 1, 8)
     dx = dx * magnitude
     dy = -dy * magnitude
 
