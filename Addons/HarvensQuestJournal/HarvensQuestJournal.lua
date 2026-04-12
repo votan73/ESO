@@ -491,7 +491,6 @@ function HarvensQuestJournal:OpenAtFocused()
 end
 
 function HarvensQuestJournal:OpenJournal()
-	PlaySound(SOUNDS.BOOK_OPEN)
 	self.activeQuests = {}
 	for i = 1, MAX_JOURNAL_QUESTS do
 		if IsValidQuestIndex(i) then
@@ -1425,13 +1424,6 @@ function HarvensQuestJournal:Initialize()
 		self.sv.zonesFixed = true
 	end
 
-	HarvensQuestJournalTopLevel:SetHandler(
-		"OnHide",
-		function()
-			PlaySound(SOUNDS.BOOK_CLOSE)
-		end
-	)
-
 	self.numPages = 1
 	self.currentPage = 1
 	self.currentSection = JS_CURRENT
@@ -1443,7 +1435,7 @@ function HarvensQuestJournal:Initialize()
 		["Metal"] = "EsoUI/Art/LoreLibrary/loreLibrary_dwemerBook.dds"
 	}
 
-	local fragment = ZO_FadeSceneFragment:New(HarvensQuestJournalTopLevel)
+	local fragment = ZO_SimpleSceneFragment:New(HarvensQuestJournalTopLevel)
 
 	local sceneName = "HarvensQuestJournal"
 	local scene = ZO_Scene:New(sceneName, SCENE_MANAGER)
@@ -1465,11 +1457,13 @@ function HarvensQuestJournal:Initialize()
 			end
 		end
 	end
+	scene:AddFragment(UNIFORM_BLUR_FRAGMENT)
 	modeChange()
 	self.control:RegisterForEvent(EVENT_GAMEPAD_PREFERRED_MODE_CHANGED, modeChange)
 
 	scene:AddFragment(fragment)
-	scene:AddFragment(UNIFORM_BLUR_FRAGMENT)
+	scene:AddFragment(FRAME_EMOTE_FRAGMENT_MAP)
+	scene:AddFragment(ZO_WindowSoundFragment:New(SOUNDS.BOOK_OPEN, SOUNDS.BOOK_CLOSE))
 
 	self:InitKeybindStripDescriptor()
 
@@ -1482,18 +1476,18 @@ function HarvensQuestJournal:Initialize()
 			emote()
 		end
 	end
-	scene:RegisterCallback(
+	fragment:RegisterCallback(
 		"StateChange",
 		function(oldState, newState)
 			if newState == SCENE_SHOWING then
+			elseif newState == SCENE_SHOWN then
 				self:OpenJournal()
 				KEYBIND_STRIP:AddKeybindButtonGroup(self.keybindStripDescriptor)
-			elseif newState == SCENE_SHOWN then
 				doEmote("/read")
 			elseif newState == SCENE_HIDING then
 				doEmote("/idle")
-			elseif newState == SCENE_HIDDEN then
 				KEYBIND_STRIP:RemoveKeybindButtonGroup(self.keybindStripDescriptor)
+			elseif newState == SCENE_HIDDEN then
 			end
 		end
 	)

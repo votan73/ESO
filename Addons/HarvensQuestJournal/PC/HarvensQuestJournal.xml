@@ -29,7 +29,7 @@
               </OnInitialized>
 
               <Controls>
-                <Control name="$(parent)Container" resizeToFitDescendents="true">
+                <Control name="$(parent)Container">
                   <Anchor point="TOPLEFT" />
 
                   <Controls>
@@ -55,7 +55,7 @@
               </OnInitialized>
 
               <Controls>
-                <Control name="$(parent)Container" resizeToFitDescendents="true">
+                <Control name="$(parent)Container">
                   <Anchor point="TOPLEFT" />
                   <Controls>
                     <Label name="$(parent)Body" mouseEnabled="true" font="ZoFontBookPaper" linkEnabled="true">
