@@ -54,7 +54,7 @@ end
 
 function addon:InitTweaks()
 	local function ZoomDone()
-		return self.panZoom.targetNormalizedZoom == nil and self.panZoom:CanInitializeMap()
+		return self.panZoom.targetNormalizedZoom == nil and self.panZoom.pendingPanToPinZoomMode == nil and self.panZoom:CanInitializeMap()
 	end
 	do
 		local task = async:Create("VOTAN_RefreshAllPOIs")
@@ -119,6 +119,7 @@ function addon:InitTweaks()
 		end
 	end
 
+	local pendingWayshrineNode = nil
 	do
 		local task = async:Create("VOTAN_RefreshWayshrines")
 
@@ -128,7 +129,6 @@ function addon:InitTweaks()
 
 		local orgZO_WorldMap_PanToWayshrine = ZO_WorldMap_PanToWayshrine
 		local running = false
-		local pendingWayshrineNode = nil
 		local function GoPendingWayshrine()
 			running = false
 			if pendingWayshrineNode then
@@ -322,9 +322,10 @@ function addon:InitTweaks()
 			task:Cancel():ThenDelay(GetScene():IsShowing() and 0 or (delay * 7), runRefresh)
 		end
 	end
-	--DeferRefresh("ZO_WorldMap_RefreshWorldEvent", "MAP_RefreshWorldEvent", 50)
+
 	DeferRefresh("ZO_WorldMap_RefreshWorldEvents", "MAP_RefreshWorldEvents", 50)
 	DeferRefresh("ZO_WorldMap_RefreshObjectives", "MAP_RefreshObjectives", 50)
+	DeferRefresh("ZO_WorldMap_RefreshAllPOIs", "MAP_RefreshPOIs", 40)
 	DeferRefresh("ZO_WorldMap_RefreshKeeps", "MAP_RefreshKeeps", 30)
 	DeferRefresh("ZO_WorldMap_RefreshKillLocations", "MAP_RefreshKillLocations", 60)
 	DeferRefresh("ZO_WorldMap_RefreshWayshrines", "MAP_RefreshWayshrines", 10)
@@ -338,6 +339,10 @@ function addon:InitTweaks()
 		end
 		task:OnError(OnError)
 		local refreshPinType = {}
+
+		local function WayshrineDone()
+			return pendingWayshrineNode == nil
+		end
 
 		local GetFrameTimeSeconds, GetGameTimeSeconds = GetFrameTimeSeconds, GetGameTimeSeconds
 		local pins
@@ -384,7 +389,7 @@ function addon:InitTweaks()
 			end
 			task:Cancel():Call(
 				function(asyncTask)
-					asyncTask:For(pairs(refreshPinType)):Do(removePinType):WaitUntil(ZoomDone):Then(startDrawPins)
+					asyncTask:For(pairs(refreshPinType)):Do(removePinType):WaitUntil(WayshrineDone):WaitUntil(ZoomDone):Then(startDrawPins)
 				end
 			)
 		end
@@ -1077,6 +1082,9 @@ function addon:InitMiniMap()
 			if SIEGE_BAR_SCENE:IsShowing() then
 				return settings.showSiege
 			end
+			if GetCurrentZoneHouseId() ~= 0 then
+				return settings.showInHousing
+			end
 			if LOOT_SCENE:IsShowing() then
 				return settings.showLoot
 			end
@@ -1689,6 +1697,7 @@ function addon:Initialize()
 		showMounted = true,
 		showCombat = false,
 		showSiege = false,
+		showInHousing = true,
 		fixedMaps = {},
 		showAllTravelNodes = false
 	}
@@ -1753,6 +1762,8 @@ do
 	function addon:ToggleShowHUD()
 		if self.isMounted then
 			self.account.showMounted = not self.account.showMounted
+		elseif GetCurrentZoneHouseId() ~= 0 then
+			self.account.showInHousing = not self.account.showInHousing
 		else
 			self.account.showHUD = not self.account.showHUD
 		end
@@ -1769,6 +1780,12 @@ do
 
 	function addon:ToggleShowSiege()
 		self.account.showSiege = not self.account.showSiege
+		self:UpdateVisibility()
+		UpdateControls()
+	end
+
+	function addon:ToggleShowInHousing()
+		self.account.showInHousing = not self.account.showInHousing
 		self:UpdateVisibility()
 		UpdateControls()
 	end

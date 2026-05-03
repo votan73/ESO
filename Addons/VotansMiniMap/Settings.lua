@@ -99,7 +99,7 @@ function addon:InitSettings()
 	end
 	self.settingsControls = settings
 	settings.allowDefaults = true
-	settings.version = "2.1.8"
+	settings.version = "2.2.0"
 	settings.website = "http://www.esoui.com/downloads/info1399-VotansMiniMap.html"
 
 	settings:AddSetting(
@@ -356,6 +356,21 @@ function addon:InitSettings()
 				end,
 				setFunction = function(value)
 					self.account.showSiege = value
+					self:UpdateVisibility()
+				end
+			}
+		)
+		settings:AddSetting(
+			{
+				type = LibHarvensAddonSettings.ST_CHECKBOX,
+				label = " |u12:0::|u" .. GetString(SI_VOTANSMINIMAP_SHOW_IN_HOUSING),
+				tooltip = GetString(SI_VOTANSMINIMAP_SHOW_IN_HOUSING_TOOLTIP),
+				default = self.accountDefaults.showInHousing,
+				getFunction = function()
+					return self.account.showInHousing
+				end,
+				setFunction = function(value)
+					self.account.showInHousing = value
 					self:UpdateVisibility()
 				end
 			}
