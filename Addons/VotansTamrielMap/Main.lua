@@ -259,25 +259,19 @@
 		},
 		-- [35] =
 		{
-			-- "Norg-Tzel",
-			alliance = ALLIANCE_EBONHEART_PACT,
-			hidden = true
-		},
-		-- [36] =
-		{
 			-- "Northern Elswyer",
 			alliance = ALLIANCE_ALDMERI_DOMINION,
 			poi = 382,
 			labelY = 0.0125
 		},
-		-- [37] =
+		-- [36] =
 		{
 			-- "Southern Elswyer",
 			alliance = ALLIANCE_ALDMERI_DOMINION,
 			poi = 402,
 			labelY = -0.0125
 		},
-		-- [38] =
+		-- [37] =
 		{
 			-- "Western Skyrim",
 			alliance = ALLIANCE_EBONHEART_PACT,
@@ -285,65 +279,65 @@
 			offsetX = 0.05,
 			offsetY = -0.05
 		},
-		-- [39] =
+		-- [38] =
 		{
 			-- "Blackreach: Greymoore",
 			alliance = ALLIANCE_EBONHEART_PACT
 		},
-		-- [40] =
+		-- [39] =
 		{
 			-- "Blackreach",
 			alliance = 999
 		},
-		-- [41] =
+		-- [40] =
 		{
 			-- "Blackreach: Arkthzand",
 			alliance = ALLIANCE_EBONHEART_PACT
 		},
-		-- [42] =
+		-- [41] =
 		{
 			-- "Reik",
 			alliance = ALLIANCE_EBONHEART_PACT,
 			poi = 449,
 			labelX = 0.025
 		},
-		-- [43] =
+		-- [42] =
 		{
 			-- "Blackwood",
 			alliance = 999,
 			poi = 458
 		},
-		-- [44] =
+		-- [43] =
 		{
 			-- "Fargrave",
 			alliance = 999,
 			cosmic = true
 		},
-		-- [45] =
+		-- [44] =
 		{
 			-- "Deathlands",
 			alliance = 999,
 			cosmic = true
 		},
-		-- [46] =
+		-- [45] =
 		{
 			-- "High Isle",
 			alliance = ALLIANCE_DAGGERFALL_COVENANT,
 			poi = 513
 		},
-		-- [47] =
+		-- [46] =
 		{
 			-- "Fargrave City"
 			alliance = 999,
 			hidden = true
 		},
-		-- [48] =
+		-- [47] =
 		{
 			-- "Galen",
 			alliance = ALLIANCE_DAGGERFALL_COVENANT,
 			poi = 529
 		},
-		-- [49] =
+		-- [48] =
 		{
 			-- "Telvani",
 			alliance = ALLIANCE_EBONHEART_PACT,
@@ -351,20 +345,20 @@
 			labelX = 0.0125,
 			labelY = -0.005
 		},
-		-- [50] =
+		-- [49] =
 		{
 			-- "Apocrypha",
 			alliance = 999,
 			cosmic = true
 		},
-		-- [51] =
+		-- [50] =
 		{
 			-- "Westauen",
 			alliance = 999,
 			poi = 558,
 			cosmic = false
 		},
-		-- [52] =
+		-- [51] =
 		{
 			-- "Augvea",
 			alliance = 999,
@@ -373,11 +367,12 @@
 			blobX = 0.1367,
 			blobY = 0.5579
 		},
-		-- [53] =
+		-- [52] =
 		{
 			-- "Sonnenwende",
 			alliance = 999,
-			poi = 592
+			poi = 598,
+			labelY = -0.025
 		}
 	},
 	color = {
@@ -442,7 +437,7 @@ function addon:InitSettings()
 	end
 	addon.settingsControls = settings
 	settings.allowDefaults = true
-	settings.version = "1.2.4"
+	settings.version = "1.2.5"
 	settings.website = "https://www.esoui.com/downloads/info2672-VotansTamrielMap.html"
 
 	-- settings:AddSetting {
@@ -759,6 +754,17 @@ function addon:Initialize()
 	self:InitSettings()
 	local gps = LibGPS3
 
+	if GetAPIVersion() <= 101049 then
+		table.insert(
+			self.locations,
+			35,
+			{
+				-- "Norg-Tzel",
+				alliance = ALLIANCE_EBONHEART_PACT,
+				hidden = true
+			}
+		)
+	end
 	local positions = {}
 	gps:PushCurrentMap()
 	for i = 1, GetNumMaps() do
