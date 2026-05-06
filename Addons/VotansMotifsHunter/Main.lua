@@ -31,7 +31,7 @@ do
 		end
 
 		local scannedChars = self.settings.scannedChars
-		if IsConsoleUI() then
+		if ZO_IsConsoleOrGameCoreUI() then
 			scannedChars[charId] = 1
 		end
 		if knownBy then
@@ -117,7 +117,7 @@ local function ReturnItemLink(itemLink)
 end
 
 local function HookBagTips()
-	if not IsConsoleUI() then
+	if not ZO_IsConsoleOrGameCoreUI() then
 		TooltipHook(ItemTooltip, "SetBagItem", GetItemLink)
 		TooltipHook(ItemTooltip, "SetTradeItem", GetTradeItemLink)
 		TooltipHook(ItemTooltip, "SetBuybackItem", GetBuybackItemLink)
@@ -244,7 +244,7 @@ do
 		addon.charToName = charToName
 
 		HookBagTips()
-		if not IsConsoleUI() then
+		if not ZO_IsConsoleOrGameCoreUI() then
 			ScanMotifs()
 		end
 	end

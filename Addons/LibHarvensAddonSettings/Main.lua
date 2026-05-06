@@ -62,7 +62,7 @@ function AddonSettingsControl:SettingValueChangedCallback(changedSetting)
 end
 
 function AddonSettingsControl:SetAnchor(lastControl)
-	if IsConsoleUI() then
+	if ZO_IsConsoleOrGameCoreUI() then
 		return
 	end
 	self.control:ClearAnchors()
@@ -183,7 +183,7 @@ function AddonSettings:AddSetting(params, index, playAnimation)
 	end
 
 	--Update the container height in pc mode
-	if not IsConsoleUI() and self.selected then
+	if not ZO_IsConsoleOrGameCoreUI() and self.selected then
 		LibHarvensAddonSettings.container.endHeight = self:GetOverallHeight() + 8
 		--Conditionally show the animation. Useful for simulating submenus
 		if not playAnimation then
@@ -229,7 +229,7 @@ function AddonSettings:RemoveSettings(index, count, playAnimation)
 	end
 
 	--Update the container height in pc mode
-	if not IsConsoleUI() and self.selected then
+	if not ZO_IsConsoleOrGameCoreUI() and self.selected then
 		LibHarvensAddonSettings.container.endHeight = self:GetOverallHeight() + 8
 		--Conditionally show the animation. Useful for simulating submenus
 		if not playAnimation then
@@ -255,7 +255,7 @@ function AddonSettings:RemoveAllSettings(playAnimation)
 	end
 
 	--Update the container height in pc mode
-	if not IsConsoleUI() and self.selected then
+	if not ZO_IsConsoleOrGameCoreUI() and self.selected then
 		LibHarvensAddonSettings.container.endHeight = self:GetOverallHeight() + 8
 		--Conditionally show the animation. Useful for simulating submenus
 		if not playAnimation then
@@ -297,7 +297,7 @@ function AddonSettings:Select()
 	if self.selected then
 		return
 	end
-	local isConsoleUI = IsConsoleUI()
+	local isConsoleUI = ZO_IsConsoleOrGameCoreUI()
 	if not isConsoleUI then
 		LibHarvensAddonSettings:DetachContainer()
 	end
@@ -319,7 +319,7 @@ function AddonSettings:Select()
 end
 
 function AddonSettings:UpdateHighlight()
-	if IsConsoleUI() then
+	if ZO_IsConsoleOrGameCoreUI() then
 		return
 	end
 	if self.selected then
@@ -387,7 +387,7 @@ function LibHarvensAddonSettings:AddAddon(name, options)
 end
 
 function LibHarvensAddonSettings:DetachContainer()
-	if IsConsoleUI() then
+	if ZO_IsConsoleOrGameCoreUI() then
 		return
 	end
 	self.container:ClearAnchors()
@@ -398,7 +398,7 @@ function LibHarvensAddonSettings:DetachContainer()
 end
 
 function LibHarvensAddonSettings:AttachControlToContainer(control)
-	if IsConsoleUI() then
+	if ZO_IsConsoleOrGameCoreUI() then
 		return
 	end
 	control:ClearAnchors()
@@ -407,7 +407,7 @@ function LibHarvensAddonSettings:AttachControlToContainer(control)
 end
 
 function LibHarvensAddonSettings:AttachContainerToControl(control)
-	if IsConsoleUI() then
+	if ZO_IsConsoleOrGameCoreUI() then
 		return
 	end
 	self.container:ClearAnchors()

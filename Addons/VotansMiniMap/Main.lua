@@ -638,7 +638,7 @@ function addon:InitMiniMap()
 
 	ZO_WorldMap:SetClampedToScreenInsets(3, 29, -3, -40)
 
-	local isConsoleUI = IsConsoleUI()
+	local isConsoleUI = ZO_IsConsoleOrGameCoreUI()
 	control = CreateControl("$(parent)ClockRealTime", self.background, CT_LABEL)
 	self.clockRealTime = control
 	control:SetFont(isConsoleUI and "ZoFontGamepadBold34" or "ZoFontWindowTitle")
@@ -1672,7 +1672,7 @@ function addon:Initialize()
 		zoomOut = 0.15,
 		zoomIn = 2,
 		zoomToPlayer = false,
-		frameStyle = IsConsoleUI() and "Default" or "ESO",
+		frameStyle = ZO_IsConsoleOrGameCoreUI() and "Default" or "ESO",
 		borderAlpha = 100,
 		titleFont = "BOLD_FONT",
 		titleFontSize = 16,
@@ -1712,7 +1712,7 @@ function addon:Initialize()
 
 	self.player = ZO_SavedVars:NewCharacterIdSettings("VotansMiniMap_Data", 1, nil, defaults)
 
-	if IsConsoleUI() then
+	if ZO_IsConsoleOrGameCoreUI() then
 		self.account.enableTweaks = true
 	end
 	if self.account.enableTweaks then

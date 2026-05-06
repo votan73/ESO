@@ -114,7 +114,7 @@ function addon:InitSettings()
 			setFunction = function(value)
 				self.account.enableTweaks = value
 			end,
-			disable = IsConsoleUI()
+			disable = ZO_IsConsoleOrGameCoreUI()
 		}
 	)
 	settings:AddSetting(
