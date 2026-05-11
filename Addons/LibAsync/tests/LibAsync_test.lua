@@ -581,15 +581,15 @@ Taneth("LibAsync", function()
 
 	describe("Console CPU Budget Integration", function()
 		local function withConsoleApiStubs(stubs, body)
-			local originalIsConsoleUI = IsConsoleUI
+			local originalIsConsoleUI = ZO_IsConsoleOrGameCoreUI
 			local originalGetTotalUserAddOnCPUTimeAvailableEachFrameMS = GetTotalUserAddOnCPUTimeAvailableEachFrameMS
 			local originalGetTotalUserAddOnCPUTimeUsedNowMS = GetTotalUserAddOnCPUTimeUsedNowMS
-			IsConsoleUI = stubs.IsConsoleUI
+			ZO_IsConsoleOrGameCoreUI = stubs.ZO_IsConsoleOrGameCoreUI
 			GetTotalUserAddOnCPUTimeAvailableEachFrameMS = stubs.GetTotalUserAddOnCPUTimeAvailableEachFrameMS
 			GetTotalUserAddOnCPUTimeUsedNowMS = stubs.GetTotalUserAddOnCPUTimeUsedNowMS
 
 			local function restore()
-				IsConsoleUI = originalIsConsoleUI
+				ZO_IsConsoleOrGameCoreUI = originalIsConsoleUI
 				GetTotalUserAddOnCPUTimeAvailableEachFrameMS = originalGetTotalUserAddOnCPUTimeAvailableEachFrameMS
 				GetTotalUserAddOnCPUTimeUsedNowMS = originalGetTotalUserAddOnCPUTimeUsedNowMS
 			end
@@ -616,7 +616,7 @@ Taneth("LibAsync", function()
 
 		it.async("should throttle more under constrained console remaining budget", function(done)
 			sampleLoopIterations({
-				IsConsoleUI = function()
+				ZO_IsConsoleOrGameCoreUI = function()
 					return false
 				end,
 				GetTotalUserAddOnCPUTimeAvailableEachFrameMS = function()
@@ -627,7 +627,7 @@ Taneth("LibAsync", function()
 				end,
 			}, 250, function(nonConsoleIterations)
 				sampleLoopIterations({
-					IsConsoleUI = function()
+					ZO_IsConsoleOrGameCoreUI = function()
 						return true
 					end,
 					GetTotalUserAddOnCPUTimeAvailableEachFrameMS = function()
@@ -647,7 +647,7 @@ Taneth("LibAsync", function()
 			local executed = false
 
 			withConsoleApiStubs({
-				IsConsoleUI = function()
+				ZO_IsConsoleOrGameCoreUI = function()
 					return true
 				end,
 				GetTotalUserAddOnCPUTimeAvailableEachFrameMS = function()

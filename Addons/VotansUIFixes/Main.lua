@@ -670,7 +670,7 @@ do
 		g_activeWeaponSwapInProgress = false
 	end
 
-	if IsConsoleUI() then
+	if ZO_IsConsoleOrGameCoreUI() then
 		EVENT_MANAGER:RegisterForEvent(addon.name, EVENT_GLOBAL_MOUSE_UP, startLightAttack)
 	else
 		SLASH_COMMANDS["/lightattack"] = startLightAttack

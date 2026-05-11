@@ -105,7 +105,7 @@ function RFT.ShowTooltip(resultButton, state)
 	end
 end
 
-if IsConsoleUI() then
+if ZO_IsConsoleOrGameCoreUI() then
 	function RFT.IsShowingWorldMap()
 		return GAMEPAD_WORLD_MAP_SCENE:IsShowing() or (LibHarvensAddonSettings.scene and LibHarvensAddonSettings.scene:IsShowing() and RFT.moveForWorldMap == true)
 	end
@@ -394,7 +394,7 @@ function RFT.MakeWindow()
 			end
 		end
 	)
-	local mapScene = IsConsoleUI() and GAMEPAD_WORLD_MAP_SCENE or WORLD_MAP_SCENE
+	local mapScene = ZO_IsConsoleOrGameCoreUI() and GAMEPAD_WORLD_MAP_SCENE or WORLD_MAP_SCENE
 	mapScene:RegisterCallback(
 		"StateChange",
 		function(oldState, newState)
@@ -488,7 +488,7 @@ do
 	local bigFont
 	local normalFont
 
-	if IsConsoleUI() then
+	if ZO_IsConsoleOrGameCoreUI() then
 		bigFont = "ZoFontGamepad22"
 		normalFont = "ZoFontGamepad20"
 	else
@@ -590,7 +590,7 @@ do
 	local bigFont
 	local normalFont
 
-	if IsConsoleUI() then
+	if ZO_IsConsoleOrGameCoreUI() then
 		bigFont = "ZoFontGamepad27"
 		normalFont = "ZoFontGamepad22"
 	else
@@ -685,7 +685,7 @@ do
 		rft.title:SetHidden(not account.showtitle)
 
 		if account.showtitle then
-			if IsConsoleUI() then
+			if ZO_IsConsoleOrGameCoreUI() then
 				rft.title:SetFont(account.biggerFont and "ZoFontGamepadBold27" or "ZoFontGamepadBold22")
 			else
 				rft.title:SetFont(account.biggerFont and "ZoFontWinH3SoftShadowThin" or "ZoFontWinT1")

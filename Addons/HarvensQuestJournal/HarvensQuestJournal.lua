@@ -525,7 +525,7 @@ end
 
 function HarvensQuestJournal:HandleQuestClick(control, button)
 	local _, y
-	if IsConsoleUI() or (IsInGamepadPreferredMode() and LibMousePointer) then
+	if ZO_IsConsoleOrGameCoreUI() or (IsInGamepadPreferredMode() and LibMousePointer) then
 		_, y = LibMousePointer:GetCursorPosition()
 	else
 		_, y = GetUIMousePosition()
@@ -1062,7 +1062,7 @@ function HarvensQuestJournal:InitKeybindStripDescriptor()
 
 					local data = {questType = self.currentQuestType, questZone = self.currentQuestZone, questName = self.currentQuest}
 					local textParams = {mainTextParams = {zo_strformat(SI_QUEST_JOURNAL_QUEST_NAME_FORMAT, quest[QS_NAME])}}
-					if IsConsoleUI() or IsInGamepadPreferredMode() then
+					if ZO_IsConsoleOrGameCoreUI() or IsInGamepadPreferredMode() then
 						ZO_Dialogs_ShowGamepadDialog("HarvensDeleteQuestConfirmationDialog", data, textParams)
 					else
 						ZO_Dialogs_ShowDialog("HarvensDeleteQuestConfirmationDialog", data, textParams)
@@ -1093,7 +1093,7 @@ function HarvensQuestJournal:InitKeybindStripDescriptor()
 	-- 		LibMousePointer:InvokeClick()
 	-- 	end
 	-- }
-	if not IsConsoleUI() then
+	if not ZO_IsConsoleOrGameCoreUI() then
 		local customKeybindControl = self.control:GetNamedChild("KeyStripMouseButtons")
 		customKeybindControl:SetHidden(true)
 		customKeybindControl.owner = self
@@ -1122,7 +1122,7 @@ end
 function HarvensQuestJournal:ApplySkin(name)
 	self.background:SetTexture(self.skinsToTextures[name])
 	local fontBody, fontTitle
-	if IsConsoleUI() or IsInGamepadPreferredMode() then
+	if ZO_IsConsoleOrGameCoreUI() or IsInGamepadPreferredMode() then
 		fontBody = "ZoFontGamepadBook" .. name
 		fontTitle = fontBody .. "Title"
 	else
@@ -1400,7 +1400,7 @@ function HarvensQuestJournal:Initialize()
 		playEmote = true,
 		showInMainMenu = true
 	}
-	-- if IsConsoleUI() then
+	-- if ZO_IsConsoleOrGameCoreUI() then
 	-- 	defaults.layout.bodyFont = "ZoFontGamepadBookPaper"
 	-- 	defaults.layout.titleFont = "ZoFontGamepadBookPaperTitle"
 	-- end
@@ -1441,7 +1441,7 @@ function HarvensQuestJournal:Initialize()
 	local scene = ZO_Scene:New(sceneName, SCENE_MANAGER)
 
 	local function modeChange()
-		local isGamepad = IsConsoleUI() or IsInGamepadPreferredMode()
+		local isGamepad = ZO_IsConsoleOrGameCoreUI() or IsInGamepadPreferredMode()
 		if isGamepad then
 			scene:RemoveFragmentGroup(FRAGMENT_GROUP.MOUSE_DRIVEN_UI_WINDOW)
 			scene:AddFragmentGroup(FRAGMENT_GROUP.GAMEPAD_DRIVEN_UI_WINDOW)

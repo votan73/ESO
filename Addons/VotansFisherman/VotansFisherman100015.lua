@@ -1495,7 +1495,7 @@ local function AddFilter()
 	end
 
 	local function OnMapChanged()
-		local filters = ((IsInGamepadPreferredMode() or IsConsoleUI()) and GAMEPAD_WORLD_MAP_FILTERS or WORLD_MAP_FILTERS).currentPanel
+		local filters = ((IsInGamepadPreferredMode() or ZO_IsConsoleOrGameCoreUI()) and GAMEPAD_WORLD_MAP_FILTERS or WORLD_MAP_FILTERS).currentPanel
 		currentFilter = panelToFilter[filters]
 		if WORLD_MAP_FILTERS then
 			WORLD_MAP_FILTERS.currentPanel:SetPinFilter(data.pinTypeId, data.player.showPins[currentFilter] ~= false)
@@ -2489,7 +2489,7 @@ function data:AddPinType()
 
 	ZO_CreateStringId("SI_MAPFILTER" .. self.pinTypeId, data.title)
 
-	if IsConsoleUI() then
+	if ZO_IsConsoleOrGameCoreUI() then
 		return
 	end
 
@@ -2596,7 +2596,7 @@ local soundNames = {
 	"Raid Trial Failed"
 }
 
-if IsConsoleUI() then
+if ZO_IsConsoleOrGameCoreUI() then
 	function data:InitSettings()
 		local LibHarvensAddonSettings = LibHarvensAddonSettings
 
@@ -2897,7 +2897,7 @@ if IsConsoleUI() then
 				return not (RFT and RFT.window)
 			end
 		}
-		if not IsConsoleUI() then
+		if not ZO_IsConsoleOrGameCoreUI() then
 			optionsTable[#optionsTable + 1] = {
 				type = LibHarvensAddonSettings.ST_CHECKBOX,
 				label = GetString(SI_FISHERMAN_SETTING_PIN_SHOW_CONTEXTMENU),

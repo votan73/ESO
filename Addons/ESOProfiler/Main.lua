@@ -542,7 +542,7 @@ end
 
 function addon:CreateJournalTab()
 	local sceneName = "eso_profiler"
-	local isConsoleUI = IsConsoleUI()
+	local isConsoleUI = ZO_IsConsoleOrGameCoreUI()
 	ESO_PROFILER_FRAGMENT = ZO_HUDFadeSceneFragment:New(self.control)
 	ESO_PROFILER_SCRIPT_FRAGMENT = ZO_HUDFadeSceneFragment:New(ESOProfilerScriptTopLevel)
 	ESO_PROFILER_SCENE = ZO_Scene:New(sceneName, SCENE_MANAGER)

@@ -138,7 +138,7 @@ local nextFrameReduce = 0
 local lastStart = GetFrameTimeSeconds()
 
 local GetConsoleRemainingBudgetSeconds
-if IsConsoleUI() then
+if ZO_IsConsoleOrGameCoreUI() then
 	local availableMs = GetTotalUserAddOnCPUTimeAvailableEachFrameMS() - 5
 	function GetConsoleRemainingBudgetSeconds()
 		local usedNowMs = GetTotalUserAddOnCPUTimeUsedNowMS()
