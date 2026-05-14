@@ -176,6 +176,11 @@ function AddonSettings:AddSetting(params, index, playAnimation)
 	table.insert(self.settings, index, setting)
 	setting:SetupControl(params)
 
+	--Put insertions into proper sections.
+	if ZO_IsConsoleOrGameCoreUI() then
+		self:SetupSections()
+	end
+
 	--Force the settings page to update immediately if currently showing.
 	--The cleanup earlier prevents duplicate controls from being created.
 	if self.selected then
@@ -223,6 +228,12 @@ function AddonSettings:RemoveSettings(index, count, playAnimation)
 		if not self.settings[index] then break end
 		table.insert(removedSettingsList, table.remove(self.settings, index))
 	end
+
+	--Fix sections
+	if ZO_IsConsoleOrGameCoreUI() then
+		self:SetupSections()
+	end
+
 	--Force immediate page update
 	if self.selected then
 		self:CreateControls()
