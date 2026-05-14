@@ -16,7 +16,7 @@ function RFT.MakeMenu()
 	end
 	settings.allowDefaults = true
 	settings.author = "katkat42 & votan"
-	settings.version = "1.42.9"
+	settings.version = "1.43.0"
 	settings.website = "http://www.esoui.com/downloads/info665-RareFishTracker.html"
 
 	local locationSettings
@@ -84,6 +84,11 @@ function RFT.MakeMenu()
 		end
 	end
 	EVENT_MANAGER:RegisterForEvent("RareFishTracker", EVENT_ALL_GUI_SCREENS_RESIZED, getScreenDimensions)
+
+	settings:AddSetting {
+		type = LibHarvensAddonSettings.ST_SECTION,
+		label = GetString(SI_HOUSEPATHSETTINGCATEGORIES2)
+	}
 
 	locationSettings =
 		settings:AddSettings(
@@ -197,6 +202,114 @@ function RFT.MakeMenu()
 		-- 	default = RFT.accountDefaults.lockPosition
 		-- },
 		{
+			type = LibHarvensAddonSettings.ST_SECTION,
+			label = GetString(SI_GAMEPLAY_OPTIONS_GENERAL)
+		},
+		{
+			type = LibHarvensAddonSettings.ST_CHECKBOX,
+			label = GetString(SI_RARE_FISH_TRACKER_SHOW_HUD),
+			tooltip = GetString(SI_RARE_FISH_TRACKER_FISH_SHOW_HUD_TOOLTIP),
+			getFunction = function()
+				return set.shown
+			end,
+			setFunction = function(value)
+				set.shown = value
+				RFT.RefreshWindow()
+			end,
+			default = RFT.defaults.shown
+		},
+		{
+			type = LibHarvensAddonSettings.ST_CHECKBOX,
+			label = GetString(SI_RARE_FISH_TRACKER_SHOW_WORLD_MAP),
+			tooltip = GetString(SI_RARE_FISH_TRACKER_FISH_SHOW_WORLD_MAP_TOOLTIP),
+			getFunction = function()
+				return set.shown_world
+			end,
+			setFunction = function(value)
+				set.shown_world = value
+				RFT.RefreshWindow()
+			end,
+			default = RFT.defaults.shown
+		},
+		{
+			type = LibHarvensAddonSettings.ST_DROPDOWN,
+			label = GetString(SI_RARE_FISH_TRACKER_FISH_TO_HIGHLIGHT),
+			tooltip = GetString(SI_RARE_FISH_TRACKER_FISH_TO_HIGHLIGHT_TOOLTIP),
+			items = {{name = GetString(SI_RARE_FISH_TRACKER_CAUGHT), data = "Caught"}, {name = GetString(SI_RARE_FISH_TRACKER_UNCAUGHT), data = "Uncaught"}},
+			getFunction = function()
+				return account.highlight == "Caught" and GetString(SI_RARE_FISH_TRACKER_CAUGHT) or GetString(SI_RARE_FISH_TRACKER_UNCAUGHT)
+			end,
+			setFunction = function(combobox, name, item)
+				account.highlight = item.data
+				RFT.RefreshWindow()
+			end,
+			default = RFT.accountDefaults.highlight
+		},
+		-- {
+		-- 	type = LibHarvensAddonSettings.ST_CHECKBOX,
+		-- 	label = GetString(SI_RARE_FISH_TRACKER_AUTO_SHOW_HIDE_HUD),
+		-- 	tooltip = GetString(SI_RARE_FISH_TRACKER_AUTO_SHOW_HIDE_HUD_TOOLTIP),
+		-- 	getFunction = function()
+		-- 		return account.autoShowHide
+		-- 	end,
+		-- 	setFunction = function(value)
+		-- 		account.autoShowHide = value
+		-- 		RFT.RefreshWindow()
+		-- 	end,
+		-- 	default = RFT.accountDefaults.autoShowHide
+		-- },
+		{
+			type = LibHarvensAddonSettings.ST_CHECKBOX,
+			label = GetString(SI_RARE_FISH_TRACKER_ALLOW_PER_CHAR),
+			tooltip = GetString(SI_RARE_FISH_TRACKER_ALLOW_PER_CHAR_TOOLTIP),
+			getFunction = function()
+				return account.allowPerCharacter
+			end,
+			setFunction = function(value)
+				if account.allowPerCharacter ~= value then
+					account.allowPerCharacter = value
+					zo_callLater(
+						function()
+							SLASH_COMMANDS["/reloadui"]()
+						end,
+						250
+					)
+				end
+			end,
+			warning = GetString(SI_RARE_FISH_TRACKER_RELOADUI),
+			default = RFT.accountDefaults.allowPerCharacter
+		},
+		{
+			type = LibHarvensAddonSettings.ST_SECTION,
+			label = GetString(SI_STATS_BACKGROUND)
+		},
+		{
+			type = LibHarvensAddonSettings.ST_CHECKBOX,
+			label = GetString(SI_RARE_FISH_TRACKER_SHOW_MUNGE),
+			tooltip = GetString(SI_RARE_FISH_TRACKER_FISH_SHOW_MUNGE_TOOLTIP),
+			getFunction = function()
+				return account.showMunge
+			end,
+			setFunction = function(value)
+				account.showMunge = value
+				RFT.RefreshWindow()
+			end,
+			default = RFT.accountDefaults.showMunge
+		},
+		{
+			type = LibHarvensAddonSettings.ST_CHECKBOX,
+			label = GetString(SI_RARE_FISH_TRACKER_USE_DEFAULT_COLORS),
+			tooltip = GetString(SI_RARE_FISH_TRACKER_USE_DEFAULT_COLORS_TOOLTIP),
+			getFunction = function()
+				return account.useDefaultColors
+			end,
+			setFunction = function(value)
+				account.useDefaultColors = value
+				RFT.RefreshWindow()
+			end,
+			default = RFT.accountDefaults.useDefaultColors
+		},
+		{
 			type = LibHarvensAddonSettings.ST_SLIDER,
 			label = GetString(SI_RARE_FISH_TRACKER_WINDOW_BACKGROUND_ALPHA),
 			tooltip = GetString(SI_RARE_FISH_TRACKER_WINDOW_BACKGROUND_ALPHA_TOOLTIP),
@@ -270,104 +383,8 @@ function RFT.MakeMenu()
 			default = RFT.accountDefaults.captionAlphaNormal
 		},
 		{
-			type = LibHarvensAddonSettings.ST_DROPDOWN,
-			label = GetString(SI_RARE_FISH_TRACKER_FISH_TO_HIGHLIGHT),
-			tooltip = GetString(SI_RARE_FISH_TRACKER_FISH_TO_HIGHLIGHT_TOOLTIP),
-			items = {{name = GetString(SI_RARE_FISH_TRACKER_CAUGHT), data = "Caught"}, {name = GetString(SI_RARE_FISH_TRACKER_UNCAUGHT), data = "Uncaught"}},
-			getFunction = function()
-				return account.highlight == "Caught" and GetString(SI_RARE_FISH_TRACKER_CAUGHT) or GetString(SI_RARE_FISH_TRACKER_UNCAUGHT)
-			end,
-			setFunction = function(combobox, name, item)
-				account.highlight = item.data
-				RFT.RefreshWindow()
-			end,
-			default = RFT.accountDefaults.highlight
-		},
-		-- {
-		-- 	type = LibHarvensAddonSettings.ST_CHECKBOX,
-		-- 	label = GetString(SI_RARE_FISH_TRACKER_AUTO_SHOW_HIDE_HUD),
-		-- 	tooltip = GetString(SI_RARE_FISH_TRACKER_AUTO_SHOW_HIDE_HUD_TOOLTIP),
-		-- 	getFunction = function()
-		-- 		return account.autoShowHide
-		-- 	end,
-		-- 	setFunction = function(value)
-		-- 		account.autoShowHide = value
-		-- 		RFT.RefreshWindow()
-		-- 	end,
-		-- 	default = RFT.accountDefaults.autoShowHide
-		-- },
-		{
-			type = LibHarvensAddonSettings.ST_CHECKBOX,
-			label = GetString(SI_RARE_FISH_TRACKER_ALLOW_PER_CHAR),
-			tooltip = GetString(SI_RARE_FISH_TRACKER_ALLOW_PER_CHAR_TOOLTIP),
-			getFunction = function()
-				return account.allowPerCharacter
-			end,
-			setFunction = function(value)
-				if account.allowPerCharacter ~= value then
-					account.allowPerCharacter = value
-					zo_callLater(
-						function()
-							SLASH_COMMANDS["/reloadui"]()
-						end,
-						250
-					)
-				end
-			end,
-			warning = GetString(SI_RARE_FISH_TRACKER_RELOADUI),
-			default = RFT.accountDefaults.allowPerCharacter
-		},
-		{
-			type = LibHarvensAddonSettings.ST_CHECKBOX,
-			label = GetString(SI_RARE_FISH_TRACKER_SHOW_HUD),
-			tooltip = GetString(SI_RARE_FISH_TRACKER_FISH_SHOW_HUD_TOOLTIP),
-			getFunction = function()
-				return set.shown
-			end,
-			setFunction = function(value)
-				set.shown = value
-				RFT.RefreshWindow()
-			end,
-			default = RFT.defaults.shown
-		},
-		{
-			type = LibHarvensAddonSettings.ST_CHECKBOX,
-			label = GetString(SI_RARE_FISH_TRACKER_SHOW_WORLD_MAP),
-			tooltip = GetString(SI_RARE_FISH_TRACKER_FISH_SHOW_WORLD_MAP_TOOLTIP),
-			getFunction = function()
-				return set.shown_world
-			end,
-			setFunction = function(value)
-				set.shown_world = value
-				RFT.RefreshWindow()
-			end,
-			default = RFT.defaults.shown
-		},
-		{
-			type = LibHarvensAddonSettings.ST_CHECKBOX,
-			label = GetString(SI_RARE_FISH_TRACKER_SHOW_MUNGE),
-			tooltip = GetString(SI_RARE_FISH_TRACKER_FISH_SHOW_MUNGE_TOOLTIP),
-			getFunction = function()
-				return account.showMunge
-			end,
-			setFunction = function(value)
-				account.showMunge = value
-				RFT.RefreshWindow()
-			end,
-			default = RFT.accountDefaults.showMunge
-		},
-		{
-			type = LibHarvensAddonSettings.ST_CHECKBOX,
-			label = GetString(SI_RARE_FISH_TRACKER_USE_DEFAULT_COLORS),
-			tooltip = GetString(SI_RARE_FISH_TRACKER_USE_DEFAULT_COLORS_TOOLTIP),
-			getFunction = function()
-				return account.useDefaultColors
-			end,
-			setFunction = function(value)
-				account.useDefaultColors = value
-				RFT.RefreshWindow()
-			end,
-			default = RFT.accountDefaults.useDefaultColors
+			type = LibHarvensAddonSettings.ST_SECTION,
+			label = GetString(SI_SETTINGSYSTEMPANEL3)
 		},
 		{
 			type = LibHarvensAddonSettings.ST_CHECKBOX,
