@@ -448,21 +448,6 @@ end
 
 function LibHarvensAddonSettings.AddonSettings:SetupSections()
 	local settings = self.settings
-	-- local hasSections = false
-	-- for i = 1, #settings do
-	-- 	if settings[i].type == LibHarvensAddonSettings.ST_SECTION then
-	-- 		hasSections = true
-	-- 		break
-	-- 	end
-	-- end
-	-- if hasSections then
-	-- 	if settings[1].type ~= LibHarvensAddonSettings.ST_SECTION and settings[1].type ~= LibHarvensAddonSettings.ST_LABEL then
-	-- 		addonSettings:AddSetting({type = LibHarvensAddonSettings.ST_SECTION, label = GetString(SI_GAMEPLAY_OPTIONS_GENERAL)}, 1, false)
-	-- 	end
-	-- else
-	-- 	return
-	-- end
-
 	local currentSection = nil
 	for i = 1, #settings do
 		local setting = settings[i]

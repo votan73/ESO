@@ -624,6 +624,9 @@ function LibHarvensAddonSettings.AddonSettings:UpdateControls()
 	needUpdate = false
 end
 
+function LibHarvensAddonSettings.AddonSettings:SetupSections()
+end
+
 ----- end -----
 
 function LibHarvensAddonSettings:SetContainerHeightPercentage(progress)
