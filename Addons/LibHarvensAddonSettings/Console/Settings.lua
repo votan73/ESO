@@ -168,6 +168,7 @@ local updateControlFunctions = {
 		local label = control.label
 		label:SetText(self:GetString(self:GetValueOrCallback(self.labelText)))
 		control:SetHeight(label:GetTextHeight() + 4)
+		control.arrow:SetHidden(self.subMenu == false)
 	end,
 	[LibHarvensAddonSettings.ST_COLOR] = function(self, control)
 		local label = control:GetNamedChild("Name")
@@ -323,6 +324,7 @@ local setupControlFunctions = {
 	[LibHarvensAddonSettings.ST_SECTION] = function(self, params)
 		self.labelText = params.label
 		self.tooltipText = params.tooltip
+		self.subMenu = params.subMenu
 	end,
 	[LibHarvensAddonSettings.ST_COLOR] = function(self, params)
 		self.labelText = params.label
@@ -456,7 +458,7 @@ function LibHarvensAddonSettings.AddonSettings:SetupSections()
 			currentSection = nil
 		end
 		setting.currentSection = currentSection
-		if isSection then
+		if isSection and setting.subMenu ~= false then
 			currentSection = setting
 		end
 	end
@@ -678,7 +680,12 @@ local function OptionsWindowFragmentStateChangeRefresh(oldState, newState)
 			LibHarvensAddonSettings:SelectFirstAddon()
 		end
 		if currentSettings then
-			currentSettings:RefreshSelection()
+			if LibHarvensAddonSettings.list.currentSection then
+				LibHarvensAddonSettings.list.currentSection = nil
+				currentSettings:CreateControls()
+			else
+				currentSettings:RefreshSelection()
+			end
 		end
 	end
 end
@@ -1031,9 +1038,13 @@ function LibHarvensAddonSettings:CreateControlPools()
 		function(control)
 			local label = control:GetNamedChild("Label")
 			control.label = label
+			control.arrow = control:GetNamedChild("Arrow")
 			control:SetWidth(ZO_GAMEPAD_CONTENT_WIDTH)
 			ZO_FontAdjustingWrapLabel_OnInitialized(label, fonts, TEXT_WRAP_MODE_ELLIPSIS)
 			function control:Activate()
+				if self.data and self.data.subMenu == false then
+					return
+				end
 				local list = LibHarvensAddonSettings.scrollList:GetList("Section")
 				list.currentSection = self.data
 				LibHarvensAddonSettings.scrollList:SetCurrentList(list)
