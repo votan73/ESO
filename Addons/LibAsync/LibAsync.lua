@@ -29,6 +29,9 @@ local INIT_DELAY_MS = 50 -- delay for initialization
 -- Scheduler Operation Constants
 local DEBUG_FREEZE_THRESHOLD_MS = 0.016 -- Threshold in ms before considering a frame freeze
 local DEBUG_TIME_MULTIPLIER = 1000 -- Multiplier to convert time to milliseconds for debug output
+local DEBUG_STEP_THRESHOLD_MS = 1 -- Log steps slower than this (ms) when debug is enabled
+
+local debug = false
 
 local em = GetEventManager()
 local remove = table.remove
@@ -54,16 +57,36 @@ end
 
 local current, call
 local currentStackIndex = 0
---- @return any
-local function safeCall()
-	return call(current)
+
+--- @param job any
+--- @param contextLabel string
+--- @return boolean success
+--- @return any ...
+local function runProtectedCall(job, contextLabel)
+	local stepStart = debug and GetGameTimeSeconds() or nil
+	local success, shouldContinue = pcall(call, current)
+	if debug and stepStart then
+		local elapsedMs = (GetGameTimeSeconds() - stepStart) * DEBUG_TIME_MULTIPLIER
+		if elapsedMs >= DEBUG_STEP_THRESHOLD_MS then
+			Warn(
+				format(
+					"LibAsync step %s [%s] callstack depth %d took %.3fms",
+					job.name,
+					contextLabel,
+					currentStackIndex,
+					elapsedMs
+				)
+			)
+		end
+	end
+	return success, shouldContinue
 end
 
 --- @param job any
 --- @param callstackIndex number
 local function DoCallback(job, callstackIndex)
 	currentStackIndex = callstackIndex
-	local success, shouldContinue = pcall(safeCall)
+	local success, shouldContinue = runProtectedCall(job, "step")
 	if success then
 		-- If the call returns true, the call wants to be called again
 		if not shouldContinue then
@@ -77,9 +100,9 @@ local function DoCallback(job, callstackIndex)
 		call = job.onError
 		if call then
 			local msg
-			success, msg = pcall(safeCall)
+			success, msg = runProtectedCall(job, "onError")
 			if not success then
-				Warn(msg)
+				Warn(format("OnError failed for %s: %s", job.name, tostring(msg)))
 			end
 			-- After handling error, clear the remaining callstack to prevent further execution
 			ZO_ClearNumericallyIndexedTable(job.callstack)
@@ -107,7 +130,12 @@ local function DoJob(job)
 		jobs[job.name] = nil
 		call = job.finally
 		if call then
-			pcall(safeCall)
+			currentStackIndex = 0
+			local success, err = runProtectedCall(job, "finally")
+			if not success then
+				job.FinallyError = err
+				Warn(format("Finally failed for %s: %s", job.name, tostring(err)))
+			end
 		end
 	end
 	current, call = nil, nil
@@ -125,7 +153,6 @@ function InitSavedVar()
 	ASYNC_STALL_THRESHOLD = AsyncSavedVars.ASYNC_STALL_THRESHOLD
 end
 
-local debug = false
 local running
 local jobsDone = false
 local GetFrameTimeSeconds, GetGameTimeSeconds = GetFrameTimeSeconds, GetGameTimeSeconds

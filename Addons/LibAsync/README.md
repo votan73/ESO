@@ -250,6 +250,94 @@ The library prioritizes frame time settings in the following order: Vertical Syn
 
 LibAsync is an invaluable tool for ESO addon developers, enabling powerful asynchronous workflows while maintaining game performance. By understanding its nuances and considering system-specific factors, developers and users alike can optimize their experience and mitigate potential bottlenecks.
 
+## Guide for addon authors (scheduler, sharing, errors)
+
+This section answers common integration questions when several addons use LibAsync at once (for example trading/price tools, minimaps, and map overlays).
+
+### One global scheduler
+
+- LibAsync runs a single `RegisterForUpdate` scheduler every frame.
+- Every active task from every addon is stored in one table, keyed by the string you pass to `async:Create("YourTaskName")`.
+- There is **no per-addon queue**, **no priority**, and **no fair-share guarantee** beyond walking active tasks with `next(jobs)` until the frame budget is used up.
+
+If your addon and another both run heavy work at login, you share the same time slice.
+
+### When work moves to the next frame
+
+The scheduler stops starting new `DoJob` calls for the current frame when elapsed time exceeds `spendTime` (measured with `GetGameTimeSeconds()`).
+
+`spendTime` is **not** a fixed millisecond constant. It is adapted from:
+
+- Current framerate (higher FPS → smaller target slice; lower FPS → larger slice, up to a cap)
+- Whether HUD / HUD UI scenes are showing (gameplay vs menus)
+- `ASYNC_STALL_THRESHOLD` (default 15 FPS equivalent cap via saved var; users can tune with `/async stall <fps>`)
+- `nextFrameReduce` if the scheduler overran last frame (backs off next frame)
+- On console / Game Core UI: `min(..., GetConsoleRemainingBudgetSeconds())` using `GetTotalUserAddOnCPUTimeAvailableEachFrameMS()` and `GetTotalUserAddOnCPUTimeUsedNowMS()`
+
+**Cooperative yielding:** LibAsync only splits work you express as steps:
+
+| Pattern | Yields between frames? |
+|--------|-------------------------|
+| `task:For(...):Do(function() ... end)` | Yes — one loop body per scheduler step (return `async.BREAK` to stop early) |
+| `task:Call(function() return true end)` | Yes — return `true` to run again; any other return removes the step |
+| `task:Call(function() ... huge block ... end)` with no `true` | **No** — entire function runs in one `pcall` |
+| Top-level `async:For(...):Do(...)` (default task) | Yes, same as `For`/`Do` on a task |
+| Top-level `async:Call(function() ... end)` without returning `true` | **No** — same as a single non-yielding `Call` |
+
+Rule of thumb: **one iteration or one small batch per `Do` body**, or explicit `return true` from `Call`. Decoding thousands of items inside one callback will still hitch and still counts toward the engine’s per-frame addon CPU limit.
+
+### LibAsync budget vs the “1000 ms” UI error
+
+These are different limits:
+
+1. **LibAsync** tries to keep its scheduler near a small target per frame (on the order of tens of milliseconds at default settings, before console clamping).
+2. **The game client** enforces a much larger **total user-addon CPU budget per frame** (the familiar UI error: CPU time budget of 1000 ms reached this frame, no further add-on scripts until next frame).
+
+When that engine error appears, the stack trace often shows `LibAsync.lua` inside `DoCallback` because that is where your callback was running under `pcall`. The **job name** in the error (for example `VOTANS_MAP_DO_CALLBACKS`) is the **task name of whoever was executing at cutoff**, not a full attribution of which addon consumed the most time in that frame.
+
+Earlier in the same frame, other addons may have run:
+
+- Other LibAsync tasks (including yours)
+- Event handlers, XML, and Lua that never went through LibAsync
+
+All of that shares the engine’s single per-frame addon CPU pool.
+
+### Can I wait until other addons finish their LibAsync work?
+
+**Not with a built-in API today.** LibAsync does not expose:
+
+- A list of all addons’ tasks
+- A global “idle” or “all jobs complete” event
+- `Finally` hooks on another addon’s task
+
+What you **can** use:
+
+- **Per task:** `:Finally(function() ... end)` on **your** `async:Create(...)` task only
+- **Rough load:** `async:GetCpuLoad()` — recent scheduler activity for LibAsync, not total engine headroom or non-LibAsync work
+- **Stagger:** `task:Delay` / `task:ThenDelay` after `EVENT_PLAYER_ACTIVATED` or after your UI opens, instead of starting huge jobs at load
+- **Heuristic:** `task:WaitUntil(function() return async:GetCpuLoad() < threshold end)` (optional; still does not account for heavy non-LibAsync code)
+- **Load events:** `EVENT_ADD_ON_LOADED` means an addon’s files ran, **not** that its async price decode or map build finished
+
+Coordinating “wait until minimap/price fetcher is done” requires an explicit contract between addons (shared event, library API, or settings), not LibAsync alone.
+
+### Practical recommendations
+
+1. **Name tasks** with your addon prefix (`MYADDON_DECODE_PRICES`) so errors and debug output are identifiable.
+2. **Chunk data work** with `For`/`Do` or repeated `Call` returning `true`; avoid one callback that processes thousands of rows.
+3. **Defer heavy jobs** until after the first UI frame or when the player opens the feature that needs the data.
+4. **Use `:OnError` and `:Finally`** on long-running tasks so failures and cancel do not leave state half-built.
+5. On console, assume **`GetConsoleRemainingBudgetSeconds()`** may shrink your slice when other addons have already used CPU this frame.
+6. Tell users that **many LibAsync addons at once** will slow everyone’s background tasks in cities and at login; reducing batch size often helps more than blaming LibAsync itself.
+
+### Slash command (users and support)
+
+```
+/async stall <fps>     -- clamp stall threshold (15–200), saved in AsyncSavedVars
+/async stall default -- reset to default (15)
+```
+
+Lower stall FPS (higher threshold number) allows LibAsync a larger per-frame target, up to the cap in code; use carefully on low-end hardware.
+
 ## Testing
 
 LibAsync includes a comprehensive test suite using the [Taneth](https://www.esoui.com/downloads/info2334-Taneth.html) testing framework. Tests are automatically registered when Taneth is available.
@@ -370,12 +458,13 @@ end)
 
 ## Best Practices
 
-1. Use descriptive task names for debugging
-2. Keep individual tasks lightweight
+1. Use descriptive task names for debugging (see [Guide for addon authors](#guide-for-addon-authors-scheduler-sharing-errors))
+2. Keep individual tasks lightweight; chunk with `For`/`Do` or `Call` returning `true`
 3. Use error handling for robustness
 4. Clean up with Finally blocks
 5. Break long loops when needed using `async.BREAK`
-6. Monitor CPU load with `async:GetCpuLoad()`
+6. Monitor CPU load with `async:GetCpuLoad()` (LibAsync scheduler only, not global idle)
+7. Do not rely on LibAsync to serialize or prioritize work across unrelated addons
 
 ## Debug Mode
 
@@ -386,6 +475,8 @@ async:SetDebug(true)
 -- Check debug status
 local isDebug = async:GetDebug()
 ```
+
+With debug enabled, LibAsync warns when a single step (`step`), `OnError`, or `Finally` takes 1ms or longer, including `job.name` and callstack depth—use this to find hot tasks without reading raw `pcall` stacks. `Finally` failures set `task.FinallyError` and are logged without re-raising.
 
 ## Estimated Values for MinFrameTime.2
 
