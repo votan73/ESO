@@ -6,7 +6,7 @@ WaypointIt = {}
 
 local WaypointIt = WaypointIt
 local ADDON_NAME = "WaypointIt"
-local CODE_VERSION = "1.14.10"
+local CODE_VERSION = "1.14.11"
 -- Holds the requested taskID
 local CURRENT_TASK
 
@@ -647,11 +647,11 @@ function WaypointIt:ForceAssist(journalQuestIndex)
 		suspendAssistState = true
 		if QUEST_JOURNAL_MANAGER:GetFocusedQuestIndex() ~= journalQuestIndex then
 			GetQuestTracker():ForceAssist(journalQuestIndex)
-			if QUEST_JOURNAL_KEYBOARD then
-				QUEST_JOURNAL_KEYBOARD:FocusQuestWithIndex(journalQuestIndex)
+			if ZO_QUEST_JOURNAL_QUESTS_KEYBOARD and ZO_QUEST_JOURNAL_QUESTS_KEYBOARD.FocusQuestWithIndex then
+				ZO_QUEST_JOURNAL_QUESTS_KEYBOARD:FocusQuestWithIndex(journalQuestIndex)
 			end
-			if QUEST_JOURNAL_GAMEPAD then
-				QUEST_JOURNAL_GAMEPAD:FocusQuestWithIndex(journalQuestIndex)
+			if ZO_QUEST_JOURNAL_QUESTS_GAMEPAD and ZO_QUEST_JOURNAL_QUESTS_GAMEPAD.FocusQuestWithIndex then
+				ZO_QUEST_JOURNAL_QUESTS_GAMEPAD:FocusQuestWithIndex(journalQuestIndex)
 			end
 		end
 		suspendAssistState = false

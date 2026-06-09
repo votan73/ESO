@@ -1,11 +1,11 @@
 ## Title: WaypointIt
-## APIVersion: 101048 101049
+## APIVersion: 101050 101051
 ## DependsOn: LibAddonMenu-2.0>=38 LibMapPing>=1200 LibGPS>=69
 ## PCDependsOn: LibWorldMapInfoTab
 ## ConsoleDependsOn: LibConsoleDialogs
 ## OptionalDependsOn: LibDebugLogger Destinations MapPins QuestMap SimpleSkyshards
 ## SavedVariables: WaypointItSavedVars
-## Version: 1.14.10
+## Version: 1.14.11
 ## Author: Circonian & votan
 ## Description: Circonians WaypointIt
 
