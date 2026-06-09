@@ -1,13 +1,13 @@
 ## Title: Votan's Improved Locations
 ## Author: votan
 ## Description: Adds additional information to location tab in world map.
-## Version: 1.23.3
-## APIVersion: 101045 101046
+## Version: 1.23.4
+## APIVersion: 101050 101051
 ## DependsOn: LibAddonMenu-2.0>=38
 ## OptionalDependsOn: AccurateWorldMap
 ## SavedVariables: VotansImprovedLocations_Data
 
-## This Add-On is not created by, affiliated with or sponsored by ZeniMax Media Inc. or its affiliates. The Elder Scrolls® and related logos are registered trademarks or trademarks of ZeniMax Media Inc. in the United States and/or other countries. All rights reserved.
+## This Add-On is not created by, affiliated with or sponsored by ZeniMax Media Inc. or its affiliates. The Elder ScrollsÂ® and related logos are registered trademarks or trademarks of ZeniMax Media Inc. in the United States and/or other countries. All rights reserved.
 
 lang/strings.lua
 lang/$(language).lua

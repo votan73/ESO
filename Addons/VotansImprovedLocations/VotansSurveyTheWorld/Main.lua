@@ -1,3 +1,7 @@
+if IsConsoleUI() then
+	return
+end
+
 -- With permission of @manavortex
 local addon = VOTANS_IMPROVED_LOCATIONS
 addon.treasureMap = {}

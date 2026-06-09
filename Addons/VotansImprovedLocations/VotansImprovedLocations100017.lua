@@ -1,4 +1,8 @@
-﻿local addon = {
+﻿if IsConsoleUI() then
+	return
+end
+
+local addon = {
 	name = "VotansImprovedLocations",
 	allianceOrder = {
 		[ALLIANCE_DAGGERFALL_COVENANT] = {
@@ -264,95 +268,90 @@
 		},
 		-- [35] =
 		{
-			-- "Norg-Tzel",
-			alliance = ALLIANCE_EBONHEART_PACT
-		},
-		-- [36] =
-		{
 			-- "Northern Elswyer",
 			alliance = ALLIANCE_ALDMERI_DOMINION
 		},
-		-- [37] =
+		-- [36] =
 		{
 			-- "Southern Elswyer",
 			alliance = ALLIANCE_ALDMERI_DOMINION
 		},
-		-- [38] =
+		-- [37] =
 		{
 			-- "Western Skyrim",
+			alliance = ALLIANCE_EBONHEART_PACT
+		},
+		-- [38] =
+		{
+			-- "Blackreach",
 			alliance = ALLIANCE_EBONHEART_PACT
 		},
 		-- [39] =
 		{
 			-- "Blackreach",
-			alliance = ALLIANCE_EBONHEART_PACT
-		},
-		-- [40] =
-		{
-			-- "Blackreach",
 			alliance = 999
 		},
-		-- [41] =
+		-- [40] =
 		{
 			-- "Blackreach: Arkthzand",
 			alliance = ALLIANCE_EBONHEART_PACT
 		},
-		-- [42] =
+		-- [41] =
 		{
 			-- "Reik",
 			alliance = ALLIANCE_EBONHEART_PACT
 		},
-		-- [43] =
+		-- [42] =
 		{
 			-- "Blackwood",
 			alliance = 999
 		},
-		-- [44] =
+		-- [43] =
 		{
 			-- "Fargrave",
 			alliance = 999
 		},
-		-- [45] =
+		-- [44] =
 		{
 			-- "Deathlands",
 			alliance = 999
 		},
-		-- [46] =
+		-- [45] =
 		{
 			-- "High Isle",
 			alliance = ALLIANCE_DAGGERFALL_COVENANT
 		},
-		-- [47] =
+		-- [46] =
 		{
 			-- "Fargrave City"
 			alliance = 999
 		},
-		-- [48] =
+		-- [47] =
 		{
 			-- "Galen",
 			alliance = ALLIANCE_DAGGERFALL_COVENANT
 		},
-		-- [49] =
+		-- [48] =
 		{
 			-- "Telvani",
 			alliance = ALLIANCE_EBONHEART_PACT
 		},
-		-- [50] =
+		-- [49] =
 		{
 			-- "Apocrypha",
 			alliance = 999
 		},
-		-- [51] =
+		-- [50] =
 		{
 			-- "Westauen",
 			alliance = 999
 		},
-		-- [52] =
+		-- [51] =
 		{
 			-- "Augvea",
 			alliance = 999
 		},
-		-- [53] =
+		-- [52] =
 		{
 			-- "Solstice",
 			alliance = 999
@@ -1290,7 +1289,7 @@ function addon:PostInitSettings(optionsTable)
 		type = "panel",
 		name = "Improved Locations",
 		author = "votan",
-		version = "1.23.2",
+		version = "1.23.4",
 		registerForRefresh = false,
 		registerForDefaults = true,
 		website = "http://www.esoui.com/downloads/info1096-VotansImprovedLocations.html"
