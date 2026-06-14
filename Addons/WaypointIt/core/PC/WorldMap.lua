@@ -932,11 +932,7 @@ end
 local function GetInstanceTooltipText(self, journalQuestIndex)
 	local instanceDisplayType = GetJournalInstanceDisplayType(journalQuestIndex)
 
-	-- local sText = ZO_QuestJournalManager_GetInstanceDisplayTypeTooltipString(instanceDisplayType)
-	-- Code change below: game version 100012 (they removed QUEST_JOURNAL
-	-- local sText = QUEST_JOURNAL:GetTooltipText(instanceDisplayType)
-	local sText = QUEST_JOURNAL_KEYBOARD:GetTooltipText(instanceDisplayType)
-
+	local sText = ZO_QUEST_JOURNAL_QUESTS_KEYBOARD:GetTooltipText(instanceDisplayType)
 	if sText and sText ~= "" then
 		return self.color.red .. sText .. "|r"
 	end

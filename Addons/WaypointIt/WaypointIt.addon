@@ -5,7 +5,7 @@
 ## ConsoleDependsOn: LibConsoleDialogs
 ## OptionalDependsOn: LibDebugLogger Destinations MapPins QuestMap SimpleSkyshards
 ## SavedVariables: WaypointItSavedVars
-## Version: 1.14.11
+## Version: 1.14.12
 ## Author: Circonian & votan
 ## Description: Circonians WaypointIt
 

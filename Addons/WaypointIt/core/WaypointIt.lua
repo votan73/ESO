@@ -6,7 +6,7 @@ WaypointIt = {}
 
 local WaypointIt = WaypointIt
 local ADDON_NAME = "WaypointIt"
-local CODE_VERSION = "1.14.11"
+local CODE_VERSION = "1.14.12"
 -- Holds the requested taskID
 local CURRENT_TASK
 
