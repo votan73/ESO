@@ -1,7 +1,7 @@
 ## Title: Votan's Improved Outfit Station
 ## Author: votan
-## APIVersion: 101042 101043
-## Version: 1.4.5
+## APIVersion: 101050 101051
+## Version: 1.4.6
 ## DependsOn: LibCustomMenu>=690
 ## SavedVariables: VotansImprovedOutfit_Data VotansImprovedOutfit_Fashion
 
