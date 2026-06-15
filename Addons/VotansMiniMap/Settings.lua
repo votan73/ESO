@@ -99,7 +99,7 @@ function addon:InitSettings()
 	end
 	self.settingsControls = settings
 	settings.allowDefaults = true
-	settings.version = "2.2.0"
+	settings.version = "2.2.2"
 	settings.website = "http://www.esoui.com/downloads/info1399-VotansMiniMap.html"
 
 	settings:AddSetting(
@@ -991,12 +991,15 @@ function addon:InitSettings()
 			}
 		)
 
-		settings:AddSetting(
-			{
-				type = LibHarvensAddonSettings.ST_SECTION,
-				label = GetString(SI_VOTANSMINIMAP_FRAMEDROP_DEBUG)
-			}
-		)
+		if not ZO_IsConsoleOrGameCoreUI() then
+			settings:AddSetting(
+				{
+					type = LibHarvensAddonSettings.ST_SECTION,
+					label = GetString(SI_VOTANSMINIMAP_FRAMEDROP_DEBUG)
+				}
+			)
+		end
+
 		settings:AddSetting(
 			{
 				type = LibHarvensAddonSettings.ST_CHECKBOX,

@@ -945,7 +945,7 @@ function addon:InitMiniMap()
 		end
 		if needChange then
 			runningCallbacks = true
-			asyncCallbacks:Cancel():Call(DoCallbacks):Then(WaitForTexture)
+			asyncCallbacks:Cancel():Call(WaitForTexture):Then(DoCallbacks)
 			MoveToPlayer = ZO_WorldMap_JumpToPlayer
 			lastMapId = GetMapTileTexture()
 		elseif (currentTime - lastUpdate) >= 0.200 then
