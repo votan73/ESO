@@ -547,9 +547,8 @@ do
 		local levelLabel = rowControl.levelLabel
 
 		rowData = self.player.recent[rowData.index] or 0
-		if rowData > 0 then
-			local location = self.locations[rowData]
-
+		local location = self.locations[rowData]
+		if rowData > 0 and location then
 			locationLabel:SetText(self:SetupLocationName(location))
 			rowControl:SetMouseEnabled(not listDisabled)
 
@@ -577,9 +576,8 @@ do
 		local levelLabel = rowControl.levelLabel
 
 		rowData = self.account.favorites[rowData.index] or 0
-		if rowData > 0 then
-			local location = self.locations[rowData]
-
+		local location = self.locations[rowData]
+		if rowData > 0 and location then
 			locationLabel:SetText(self:SetupLocationName(location))
 			rowControl:SetMouseEnabled(not listDisabled)
 
@@ -1289,7 +1287,7 @@ function addon:PostInitSettings(optionsTable)
 		type = "panel",
 		name = "Improved Locations",
 		author = "votan",
-		version = "1.23.4",
+		version = "1.23.5",
 		registerForRefresh = false,
 		registerForDefaults = true,
 		website = "http://www.esoui.com/downloads/info1096-VotansImprovedLocations.html"
