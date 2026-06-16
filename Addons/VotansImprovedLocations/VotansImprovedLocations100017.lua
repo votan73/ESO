@@ -850,7 +850,16 @@ function addon:BuildLocationList()
 			end
 		end
 	)
-	SortFavs(self.account.favorites)
+
+	local locations = self.locations
+	local favorites = self.account.favorites
+	for i = #favorites, 1, -1 do
+		if not locations[favorites[i]] then
+			table.remove(favorites, i)
+		end
+	end
+
+	SortFavs(favorites)
 
 	return self.mapData
 end
@@ -1287,7 +1296,7 @@ function addon:PostInitSettings(optionsTable)
 		type = "panel",
 		name = "Improved Locations",
 		author = "votan",
-		version = "1.23.5",
+		version = "1.23.6",
 		registerForRefresh = false,
 		registerForDefaults = true,
 		website = "http://www.esoui.com/downloads/info1096-VotansImprovedLocations.html"

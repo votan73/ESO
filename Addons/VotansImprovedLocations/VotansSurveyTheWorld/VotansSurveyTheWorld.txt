@@ -1,7 +1,7 @@
 ## Title: Votan's Survey The World
 ## Author: manavortex & votan
 ## Description: Adds survey and tresure map icons to the location tab in world map.
-## Version: 1.23.5
+## Version: 1.23.6
 ## APIVersion: 101050 101051
 ## DependsOn: VotansImprovedLocations
 
