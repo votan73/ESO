@@ -5,7 +5,7 @@
 
 PotMaker = {
 	name = "PotionMaker",
-	version = "5.10.2",
+	version = "5.10.3",
 	ResultControls = {},
 	PositiveTraitControls = {},
 	NegativeTraitControls = {},
@@ -651,7 +651,10 @@ function PotMaker.initVar()
 			known, traitName = getTraitInfo(reagent.itemLink, i)
 			-- if unknown, traitName is empty
 			if known then
-				traitName = format("<<1>>", traitName)
+				traitName = format("<<C:1>>", traitName)
+				-- if reagent.traits[traitName] == nil then
+				-- 	error("Unknown trait name: " .. traitName .. " for item " .. getItemLinkName(reagent.itemLink))
+				-- end
 				reagent.traits[traitName] = known
 			end
 		end
