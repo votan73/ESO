@@ -1,12 +1,12 @@
 ## Title: Votan's Achievements Overview
 ## Author: votan
 ## Description: Built-in achievements overview replacement.
-## Version: 1.6.5
-## APIVersion: 101042 101043
+## Version: 1.6.6
+## APIVersion: 101050 101051
 ## DependsOn: LibCustomMenu>=692
 ## SavedVariables: VotansAchievementsOvw_Data
 
-## This Add-On is not created by, affiliated with or sponsored by ZeniMax Media Inc. or its affiliates. The Elder Scrolls® and related logos are registered trademarks or trademarks of ZeniMax Media Inc. in the United States and/or other countries. All rights reserved.
+## This Add-On is not created by, affiliated with or sponsored by ZeniMax Media Inc. or its affiliates. The Elder ScrollsÂ® and related logos are registered trademarks or trademarks of ZeniMax Media Inc. in the United States and/or other countries. All rights reserved.
 
 StatusBar.lua
 VotansAchievementsOvw.xml

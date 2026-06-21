@@ -1,3 +1,7 @@
+if IsConsoleUI() then
+	return
+end
+
 local addon = {
 	name = "VotansAchievementFavorites"
 }
@@ -43,28 +47,6 @@ function addon:CreateFavorites()
 			ACHIEVEMENTS.UpdateCategoryLabels(...)
 		else
 			return orgOnCategorySelected(...)
-		end
-	end
-
-	local orgGetCategoryInfoFromData = Achievements.GetCategoryInfoFromData
-	function Achievements.GetCategoryInfoFromData(...)
-		local ACHIEVEMENTS, data, parentData = ...
-		if data.categoryIndex == VotansFavorites then
-			local numAchievements, earnedPoints, totalPoints = 0, 0, 0
-			local favorites, GetAchievementInfo = self.favorites, GetAchievementInfo
-			local id, points, _, completed
-			for id in pairs(favorites) do
-				numAchievements = numAchievements + 1
-				points, _, completed = select(3, GetAchievementInfo(id))
-				totalPoints = totalPoints + points
-				if completed then
-					earnedPoints = earnedPoints + points
-				end
-			end
-			local hidesPoints = totalPoints == 0
-			return numAchievements, earnedPoints, totalPoints, hidesPoints
-		else
-			return orgGetCategoryInfoFromData(...)
 		end
 	end
 
@@ -188,11 +170,43 @@ function addon:CreateFavorites()
 	end
 end
 
+function addon:HookFunctions()
+	local orgGetAchievementCategoryInfo = GetAchievementCategoryInfo
+	function GetAchievementCategoryInfo(...)
+		local categoryIndex = ...
+		if categoryIndex == VotansFavorites then
+			local numAchievements, earnedPoints, totalPoints = 0, 0, 0
+			local favorites, GetAchievementInfo = self.favorites, GetAchievementInfo
+			local id, points, _, completed
+			for id in pairs(favorites) do
+				numAchievements = numAchievements + 1
+				points, _, completed = select(3, GetAchievementInfo(id))
+				totalPoints = totalPoints + points
+				if completed then
+					earnedPoints = earnedPoints + points
+				end
+			end
+			local hidesPoints = totalPoints == 0
+			return GetString(SI_VOTANS_ACHIEVEMENT_FAVORITES), 0, numAchievements, earnedPoints, totalPoints, hidesPoints
+		end
+		return orgGetAchievementCategoryInfo(...)
+	end
+	local orgGetAchievementSubCategoryInfo = GetAchievementSubCategoryInfo
+	function GetAchievementSubCategoryInfo(...)
+		local categoryIndex, subcategoryIndex = ...
+		if categoryIndex == VotansFavorites then
+			return "", 0, 0, 0, true
+		end
+		return orgGetAchievementSubCategoryInfo(...)
+	end
+end
+
 function addon:Initialize()
 	local defaults = {favorites = {}}
 	self.account = ZO_SavedVars:NewAccountWide("VotansAchievementsOvw_Data", 1, nil, defaults)
 	self.favorites = self.account.favorites
 	self:CreateFavorites()
+	self:HookFunctions()
 end
 
 local function OnAddOnLoaded(event, addonName)

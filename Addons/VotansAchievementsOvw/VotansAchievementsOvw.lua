@@ -1,4 +1,4 @@
-if VOTANS_ACHIEVEMENTS then
+if IsConsoleUI() then
 	return
 end
 

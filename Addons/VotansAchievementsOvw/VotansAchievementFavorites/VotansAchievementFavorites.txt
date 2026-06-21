@@ -1,11 +1,11 @@
 ## Title: Votan's Achievement Favorites
 ## Author: votan
 ## Description: Adds Favorites to Achievement Journal.
-## Version: 1.6.5
-## APIVersion: 101041 101042
+## Version: 1.6.6
+## APIVersion: 101050 101051
 ## DependsOn: LibCustomMenu VotansAchievementsOvw
 
-## This Add-On is not created by, affiliated with or sponsored by ZeniMax Media Inc. or its affiliates. The Elder Scrolls® and related logos are registered trademarks or trademarks of ZeniMax Media Inc. in the United States and/or other countries. All rights reserved.
+## This Add-On is not created by, affiliated with or sponsored by ZeniMax Media Inc. or its affiliates. The Elder ScrollsÂ® and related logos are registered trademarks or trademarks of ZeniMax Media Inc. in the United States and/or other countries. All rights reserved.
 
 lang/strings.lua
 lang/$(language).lua
