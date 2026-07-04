@@ -3,7 +3,7 @@ if LibHarvensAddonSettings then
 end
 
 LibHarvensAddonSettings = {}
-LibHarvensAddonSettings.version = 20105
+LibHarvensAddonSettings.version = 20109
 local LibHarvensAddonSettings = LibHarvensAddonSettings
 
 -----
@@ -163,24 +163,22 @@ function AddonSettings:SetAnchor(prev)
 	end
 end
 
-function AddonSettings:AddSetting(params, index, playAnimation)
+function AddonSettings:InsertSetting(params, index)
 	--Append if invalid or empty index
 	if index == nil or index < 1 then index = #self.settings + 1 end
-
-	--Prevent an attempt at cleaning up the new control before it gets created.
-	if self.selected then
-		self:CleanUp()
-	end
 
 	local setting = AddonSettingsControl:New(self.callbackManager, params.type)
 	table.insert(self.settings, index, setting)
 	setting:SetupControl(params)
 
+	return setting, index
+end
+
+function AddonSettings:RefreshAfterSettingsChange(playAnimation)
 	--Put insertions into proper sections.
 	self:SetupSections()
 
 	--Force the settings page to update immediately if currently showing.
-	--The cleanup earlier prevents duplicate controls from being created.
 	if self.selected then
 		self:CreateControls()
 	end
@@ -195,21 +193,40 @@ function AddonSettings:AddSetting(params, index, playAnimation)
 			LibHarvensAddonSettings.openTimeline:PlayFromStart()
 		end
 	end
+end
 
-	return setting, index
+function AddonSettings:AddSetting(params, index, playAnimation)
+	--Prevent an attempt at cleaning up the new control before it gets created.
+	if self.selected then
+		self:CleanUp()
+	end
+
+	local setting, insertIndex = self:InsertSetting(params, index)
+	self:RefreshAfterSettingsChange(playAnimation)
+
+	return setting, insertIndex
 end
 
 function AddonSettings:AddSettings(params, index, playAnimation)
 	--It should be possible to set for i = (index or 1), #params + index and let the indexes be
 	--built into the returned table, but that might be less intuitive to iterate through.
+	if self.selected then
+		self:CleanUp()
+	end
+
 	local ret = {}
 	local indexes = {}
 	for i = 1, #params do
-		ret[i], indexes[i] = self:AddSetting(params[i], index, playAnimation)
+		ret[i], indexes[i] = self:InsertSetting(params[i], index)
 		if index ~= nil and index > 0 then
 			index = index + 1
 		end --Increment the index to add them in-order, not reverse order.
 	end
+
+	if #params > 0 then
+		self:RefreshAfterSettingsChange(playAnimation)
+	end
+
 	return ret, indexes
 end
 
@@ -227,23 +244,8 @@ function AddonSettings:RemoveSettings(index, count, playAnimation)
 		table.insert(removedSettingsList, table.remove(self.settings, index))
 	end
 
-	--Fix sections
-	self:SetupSections()
-
-	--Force immediate page update
-	if self.selected then
-		self:CreateControls()
-	end
-
-	--Update the container height in pc mode
-	if not ZO_IsConsoleOrGameCoreUI() and self.selected then
-		LibHarvensAddonSettings.container.endHeight = self:GetOverallHeight() + 8
-		--Conditionally show the animation. Useful for simulating submenus
-		if not playAnimation then
-			LibHarvensAddonSettings.openTimeline:PlayInstantlyToEnd()
-		else
-			LibHarvensAddonSettings.openTimeline:PlayFromStart()
-		end
+	if #removedSettingsList > 0 then
+		self:RefreshAfterSettingsChange(playAnimation)
 	end
 
 	return removedSettingsList
@@ -261,15 +263,8 @@ function AddonSettings:RemoveAllSettings(playAnimation)
 		table.insert(oldSettingsList, table.remove(self.settings, 1))
 	end
 
-	--Update the container height in pc mode
-	if not ZO_IsConsoleOrGameCoreUI() and self.selected then
-		LibHarvensAddonSettings.container.endHeight = self:GetOverallHeight() + 8
-		--Conditionally show the animation. Useful for simulating submenus
-		if not playAnimation then
-			LibHarvensAddonSettings.openTimeline:PlayInstantlyToEnd()
-		else
-			LibHarvensAddonSettings.openTimeline:PlayFromStart()
-		end
+	if #oldSettingsList > 0 then
+		self:RefreshAfterSettingsChange(playAnimation)
 	end
 
 	return oldSettingsList
