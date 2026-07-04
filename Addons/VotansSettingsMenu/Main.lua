@@ -12,6 +12,9 @@ local LAM2
 local LMM2
 local sm = SCENE_MANAGER
 local gameMenuScene = "gameMenuInGame"
+local max = 0
+local normalLimit = 0
+local maxMemory = 4096
 
 local function RememberSelectedPanel(panel)
 	if panel and panel.data and panel.data.type == "panel" then
@@ -96,14 +99,15 @@ function addon:Initialize()
 	if LAM2 and self.player.LastAddon and #self.player.LastAddon > 0 then
 		LAM2:GetAddonSettingsFragment():RegisterCallback("StateChange", SelectLastUsedAddon)
 	end
+
+	normalLimit = math.floor(collectgarbage("count") / 1024 + 0.5) * 4
+	normalLimit = math.min(normalLimit, maxMemory)
 end
 
-local max = 0
-local normalLimit = 0
-
 function addon:UpdateUsage()
-	local current = math.floor(collectgarbage("count") / 1024 + 0.5)
-	max = math.floor(math.max(current + 127, max) / 64) * 64
+	local current
+	current = math.floor(collectgarbage("count") / 1024 + 0.5)
+	max = math.min(math.floor(math.max(current + 127, max) / 64) * 64, maxMemory)
 	local statusBar = addon.statusbar
 	statusBar:SetMinMax(0, max)
 	statusBar:SetValue(math.min(max, current))
@@ -119,8 +123,6 @@ local function RegisterUpdateUsage()
 	addon:UpdateUsage()
 	EVENT_MANAGER:RegisterForUpdate(addon.name, 1000, AutoRefreshUsage)
 end
-
-local ROW_TYPE_ID = 1
 
 function addon:SetupControls(panel)
 	sm:GetScene(gameMenuScene):RegisterCallback(
@@ -157,28 +159,20 @@ function addon:SetupControls(panel)
 
 	control = wm:CreateControl("$(parent)Ouroboros", panel, CT_TEXTURE)
 	control:SetTexture("esoui/art/login/gamepad/console-ouroboros.dds")
-	control:SetDimensions(448, 448)
-	control:SetAnchor(TOP, addon.statusbar, BOTTOM, 0, 0)
+	control:SetDimensions(640, 640)
+	control:SetAnchor(TOP, addon.statusbar, BOTTOM, 0, -128)
 	control:SetColor(1, 1, 1, 0.25)
 	last = control
 
 	local title, releaseType, version, release = GetESOVersionString():match("(%l+)%.(%l+)%.(%d+.%d+.%d+).(%d+)")
 	releaseType = releaseType:gsub("rc", "release candidate")
 
-	control = wm:CreateControl("$(parent)ESOTitle", panel, CT_LABEL)
-	control:SetFont("$(ANTIQUE_FONT)|64")
-	control:SetText("Elder Scrolls Online")
-	control:SetDrawLevel(2)
-	control:SetColor(GetInterfaceColor(INTERFACE_COLOR_TYPE_TEXT_COLORS, INTERFACE_TEXT_COLOR_NORMAL))
-	control:SetAnchor(TOP, last, TOP, 0, 64)
-	last = control
-
 	control = wm:CreateControl("$(parent)ESORelease", panel, CT_LABEL)
 	control:SetFont("$(GAMEPAD_MEDIUM_FONT)|$(GP_36)")
 	control:SetText(zo_strformat("<<t:1>>", releaseType))
 	control:SetDrawLevel(2)
 	control:SetColor(GetInterfaceColor(INTERFACE_COLOR_TYPE_TEXT_COLORS, INTERFACE_TEXT_COLOR_SELECTED))
-	control:SetAnchor(TOP, last, BOTTOM, 0, 0)
+	control:SetAnchor(TOP, last, TOP, 0, 232)
 	last = control
 
 	control = wm:CreateControl("$(parent)ESOVersion", panel, CT_LABEL)
@@ -186,7 +180,7 @@ function addon:SetupControls(panel)
 	control:SetText(string.format("Version %s", version))
 	control:SetDrawLevel(2)
 	control:SetColor(GetInterfaceColor(INTERFACE_COLOR_TYPE_TEXT_COLORS, INTERFACE_TEXT_COLOR_NORMAL))
-	control:SetAnchor(TOP, last, BOTTOM, 0, 24)
+	control:SetAnchor(TOP, last, BOTTOM, 0, 96)
 	last = control
 
 	control = wm:CreateControl("$(parent)ESORevision", panel, CT_LABEL)
@@ -218,7 +212,7 @@ function addon:SetupControls(panel)
 		control:SetText(platform)
 		control:SetDrawLevel(2)
 		control:SetColor(GetInterfaceColor(INTERFACE_COLOR_TYPE_TEXT_COLORS, INTERFACE_TEXT_COLOR_NORMAL))
-		control:SetAnchor(TOP, last, BOTTOM, 0, 72)
+		control:SetAnchor(TOP, last, BOTTOM, 0, 64)
 		last = control
 	end
 
@@ -249,7 +243,7 @@ function addon:InitSettings()
 		name = addonName,
 		displayName = addonName,
 		author = "votan",
-		version = "1.6.0",
+		version = "1.6.1",
 		registerForRefresh = true,
 		registerForDefaults = true
 	}
@@ -275,17 +269,6 @@ function addon:InitSettings()
 	LAM2:RegisterOptionControls(addonName, optionsTable)
 
 	CALLBACK_MANAGER:RegisterCallback("LAM-PanelControlsCreated", CreateOwnControls)
-
-	EVENT_MANAGER:RegisterForEvent(
-		addon.name,
-		EVENT_PLAYER_ACTIVATED,
-		function()
-			EVENT_MANAGER:UnregisterForEvent(addon.name, EVENT_PLAYER_ACTIVATED)
-			normalLimit = math.floor(collectgarbage("count") / 1024 + 0.5) * 4
-			normalLimit = math.min(normalLimit, 8192)
-			max = math.floor((normalLimit + 63) / 64) * 64
-		end
-	)
 end
 
 local identifier = "VOTANS_MENU_SETTINGS_SHOW_MENU"

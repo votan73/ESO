@@ -1,7 +1,7 @@
 ## Title: Votan's Settings Menu
 ## Author: votan
-## APIVersion: 101041 101042
-## Version: 1.6.0
+## APIVersion: 101050 101051
+## Version: 1.6.1
 ## DependsOn: LibAddonMenu-2.0>=36 LibMainMenu-2.0>=431
 ## SavedVariables: VotansSettingsMenu_Data
 
