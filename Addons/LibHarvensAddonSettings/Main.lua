@@ -100,7 +100,9 @@ function AddonSettingsControl:SetValue(...)
 end
 
 function AddonSettingsControl:ResetToDefaults()
-	if self.ignoreDefault then return end
+	if self.ignoreDefault then
+		return
+	end
 	if self.type == LibHarvensAddonSettings.ST_DROPDOWN then
 		self:SetValue(self.default)
 		if self.control then
@@ -165,7 +167,9 @@ end
 
 function AddonSettings:InsertSetting(params, index)
 	--Append if invalid or empty index
-	if index == nil or index < 1 then index = #self.settings + 1 end
+	if index == nil or index < 1 then
+		index = #self.settings + 1
+	end
 
 	local setting = AddonSettingsControl:New(self.callbackManager, params.type)
 	table.insert(self.settings, index, setting)
@@ -197,9 +201,7 @@ end
 
 function AddonSettings:AddSetting(params, index, playAnimation)
 	--Prevent an attempt at cleaning up the new control before it gets created.
-	if self.selected then
-		self:CleanUp()
-	end
+	self:CleanUpIfSelected()
 
 	local setting, insertIndex = self:InsertSetting(params, index)
 	self:RefreshAfterSettingsChange(playAnimation)
@@ -210,9 +212,7 @@ end
 function AddonSettings:AddSettings(params, index, playAnimation)
 	--It should be possible to set for i = (index or 1), #params + index and let the indexes be
 	--built into the returned table, but that might be less intuitive to iterate through.
-	if self.selected then
-		self:CleanUp()
-	end
+	self:CleanUpIfSelected()
 
 	local ret = {}
 	local indexes = {}
@@ -234,13 +234,15 @@ end
 --always refreshes list to ensure proper cleanup.
 function AddonSettings:RemoveSettings(index, count, playAnimation)
 	--It is important to cleanup before removing from table or else we can get stuck with the controls forever.
-	if self.selected then
-		self:CleanUp()
-	end
+	self:CleanUpIfSelected()
 	local removedSettingsList = {}
-	if not count then count = 1 end
+	if not count then
+		count = 1
+	end
 	for i = 1, count do
-		if not self.settings[index] then break end
+		if not self.settings[index] then
+			break
+		end
 		table.insert(removedSettingsList, table.remove(self.settings, index))
 	end
 
@@ -254,9 +256,7 @@ end
 --removes all settings
 --always refreshes list to ensure proper cleanup.
 function AddonSettings:RemoveAllSettings(playAnimation)
-	if self.selected then
-		self:CleanUp()
-	end
+	self:CleanUpIfSelected()
 
 	local oldSettingsList = {}
 	while #self.settings > 0 do
@@ -290,7 +290,9 @@ function AddonSettings:GetIndexOf(setting, areParams)
 				break
 			end
 		end
-		if isMatch then return index end
+		if isMatch then
+			return index
+		end
 	end
 	return nil
 end
@@ -349,6 +351,13 @@ function AddonSettings:CleanUp()
 	for i = 1, #self.settings do
 		self.settings[i]:CleanUp()
 	end
+end
+
+function AddonSettings:CleanUpIfSelected()
+	if not self.selected then
+		return
+	end
+	return self:CleanUp()
 end
 
 function AddonSettings:GetOverallHeight()
