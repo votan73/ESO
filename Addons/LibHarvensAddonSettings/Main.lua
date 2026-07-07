@@ -126,6 +126,10 @@ function AddonSettingsControl:ResetToDefaults()
 		local items = self:GetValueOrCallback(self.items)
 		local combobox = self.control and self.control:GetDropDown()
 		self.setFunction(combobox, self.default, self.items[self.default])
+	elseif self.type == LibHarvensAddonSettings.ST_ATLASICONPICKER then
+		self:SetValue(self.default or 1)
+		local combobox = self.control and self.control:GetDropDown()
+		self.setFunction(combobox, self.default)
 	elseif self.setFunction then
 		self:SetValue(self.default)
 		self.setFunction(self.default)
