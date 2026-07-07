@@ -18,6 +18,7 @@ LibHarvensAddonSettings.ST_BUTTON = 6
 LibHarvensAddonSettings.ST_LABEL = 7
 LibHarvensAddonSettings.ST_SECTION = 8
 LibHarvensAddonSettings.ST_ICONPICKER = 9
+LibHarvensAddonSettings.ST_ATLASICONPICKER = 10
 -----
 
 LibHarvensAddonSettings.addons = {}

@@ -100,7 +100,19 @@ local changeControlStateFunctions = {
 		local alpha = GetAlphaFromState(state)
 		control.button:SetAlpha(alpha)
 		control:SetHidden(false)
-	end
+	end,
+	[LibHarvensAddonSettings.ST_ATLASICONPICKER] = function(control, state)
+		SetNameControlState(control, state)
+		local checkBox = control.checkBox
+		if state == false then
+			ZO_CheckButton_Disable(checkBox)
+		else
+			ZO_CheckButton_Enable(checkBox)
+		end
+		local alpha = GetAlphaFromState(state)
+		control.button:SetAlpha(alpha)
+		control:SetHidden(false)
+	end,
 }
 
 local updateControlFunctions = {
@@ -195,7 +207,21 @@ local updateControlFunctions = {
 			ZO_Dialogs_ShowDialog("LibHarvensAddonSettingsIconPicker")
 		end
 		self.control.checkBox:SetHandler("OnClicked", OnIconPickerClicked)
-	end
+	end,
+	[LibHarvensAddonSettings.ST_ATLASICONPICKER] = function(self, lastControl)
+		self:SetAnchor(lastControl)
+		self.control:GetNamedChild("Name"):SetText(self:GetString(self:GetValueOrCallback(self.labelText)))
+		local value = self.getFunction() or 1
+		self.control.texture = self.texture
+		self.control.atlasSizeX = self.atlasSizeX
+		self.control.atlasSizeY = self.atlasSizeY
+		self.control:SetValue(value)
+		local function OnIconPickerClicked()
+			HarvensAddonSettingsIconPickerDialog.setting = self
+			ZO_Dialogs_ShowDialog("LibHarvensAddonSettingsAtlasIconPicker")
+		end
+		self.control.checkBox:SetHandler("OnClicked", OnIconPickerClicked)
+	end,
 }
 
 local createControlFunctions = {
@@ -299,7 +325,12 @@ local createControlFunctions = {
 		self.control, self.controlKey = LibHarvensAddonSettings.iconpickerPool:AcquireObject()
 		self.control.data = self.control.data or ZO_Object:New(self)
 		updateControlFunctions[LibHarvensAddonSettings.ST_ICONPICKER](self, lastControl)
-	end
+	end,
+	[LibHarvensAddonSettings.ST_ATLASICONPICKER] = function(self, lastControl)
+		self.control, self.controlKey = LibHarvensAddonSettings.atlasIconpickerPool:AcquireObject()
+		self.control.data = self.control.data or ZO_Object:New(self)
+		updateControlFunctions[LibHarvensAddonSettings.ST_ATLASICONPICKER](self, lastControl)
+	end,
 }
 
 local cleanControlFunctions = {
@@ -346,7 +377,17 @@ local cleanControlFunctions = {
 		self.control.checkBox:SetHandler("OnClicked", nil)
 		self.control.items = nil
 		LibHarvensAddonSettings.iconpickerPool:ReleaseObject(self.controlKey)
-	end
+	end,
+	[LibHarvensAddonSettings.ST_ATLASICONPICKER] = function(self)
+		self.control.iconControl:SetTexture(nil)
+		self.control.iconControl:SetTextureCoords(0, 1, 0, 1)
+		self.control.checkBox:SetHandler("OnClicked", nil)
+		-- self.control.items = nil
+		self.control.texture = nil
+		self.control.atlasSizeX = nil
+		self.control.atlasSizeY = nil
+		LibHarvensAddonSettings.iconpickerPool:ReleaseObject(self.controlKey)
+	end,
 }
 
 local setupControlFunctions = {
@@ -422,6 +463,18 @@ local setupControlFunctions = {
 	end,
 	[LibHarvensAddonSettings.ST_ICONPICKER] = function(self, params)
 		self.items = params.items
+		self.labelText = params.label
+		self.tooltipText = params.tooltip
+		self.setFunction = params.setFunction
+		self.getFunction = params.getFunction
+		self.default = params.default
+		self.ignoreDefault = params.ignoreDefault
+		self.disable = params.disable
+	end,
+	[LibHarvensAddonSettings.ST_ATLASICONPICKER] = function(self, params)
+		self.texture = params.texture
+		self.atlasSizeX = params.atlasSizeX
+		self.atlasSizeY = params.atlasSizeY
 		self.labelText = params.label
 		self.tooltipText = params.tooltip
 		self.setFunction = params.setFunction
@@ -710,6 +763,34 @@ local function IconPickerPoolCreate(pool)
 	return control, id
 end
 
+local function GetAtlasCoordinatesFor(n, atlasSizeX, atlasSizeY)
+	if n > atlasSizeX * atlasSizeY then
+		error(('Index is too big! Max atlas index must be less than %d x %d (%d), requested %d'):format(atlasSizeX, atlasSizeY, atlasSizeX * atlasSizeY, n))
+	end
+
+	n = n - 1
+	local X, Y = n % atlasSizeX, math.floor(n / atlasSizeX)
+	local xStep, yStep = 1 / atlasSizeX, 1 / atlasSizeY
+
+    return xStep * X, xStep * (X + 1), yStep * Y, yStep * (Y + 1)
+end
+
+local function AtlasIconPickerPoolCreate(pool)
+	local control, id = PoolCreateControlBase("HarvensAddonSettingsIconPicker", pool)
+	local button = WINDOW_MANAGER:CreateControlFromVirtual("$(parent)Button", control, "ZO_GuildRank_RankIconPickerIcon_Keyboard_Control")
+	control:SetHeight(button:GetHeight())
+	button:SetAnchor(LEFT, control, RIGHT, -208, 0)
+	control.button = button
+	control.checkBox = button:GetNamedChild("IconContainerFrame")
+	control.iconControl = button:GetNamedChild("IconContainerIcon")
+	function control:SetValue(index)
+		self.iconControl:SetTexture(control.texture)
+		local l, r, t, b = GetAtlasCoordinatesFor(index, control.atlasSizeX, control.atlasSizeY)
+		self.iconControl:SetTextureCoords(l, r, t, b)
+	end
+	return control, id
+end
+
 local function OptionsWindowFragmentStateChangeRefresh(oldState, newState)
 	if newState == SCENE_FRAGMENT_HIDING then
 		needUpdate = true
@@ -852,6 +933,28 @@ function LibHarvensAddonSettings:CreateControlPools()
 	end
 	dialog.iconPicker:AddEntryTemplate("ZO_GuildRank_RankIconPickerIcon_Keyboard_Control", 60, 60, iconPickerEntrySetup, nil, nil, 0, 0)
 
+	self.atlasIconpickerPool = ZO_ObjectPool:New(AtlasIconPickerPoolCreate, ZO_ObjectPool_DefaultResetControl)
+
+	-- local atlasDialog = HarvensAddonSettingsIconPickerDialog
+	-- atlasDialog.iconPickerGridListControl = atlasDialog:GetNamedChild("IconPickerContainerPanel")
+	-- atlasDialog.iconPicker = ZO_GridScrollList_Keyboard:New(atlasDialog.iconPickerGridListControl)
+	-- local function atlasIconPickerEntrySetup(control, item)
+	-- 	local iconContainer = control:GetNamedChild("IconContainer")
+	-- 	local checkButton = iconContainer:GetNamedChild("Frame")
+
+	-- 	local isCurrent = item.index == item.data.getFunction()
+
+	-- 	local function OnClick()
+	-- 		item.data.setFunction(control, item.index, item.icon)
+	-- 		item.data.control:SetValue(item.index)
+	-- 	end
+
+	-- 	iconContainer:GetNamedChild("Icon"):SetTexture(item.icon)
+	-- 	ZO_CheckButton_SetCheckState(checkButton, isCurrent)
+	-- 	ZO_CheckButton_SetToggleFunction(checkButton, OnClick)
+	-- end
+	-- atlasDialog.iconPicker:AddEntryTemplate("ZO_GuildRank_RankIconPickerIcon_Keyboard_Control", 60, 60, atlasIconPickerEntrySetup, nil, nil, 0, 0)
+
 	ZO_Dialogs_RegisterCustomDialog(
 		"LibHarvensAddonSettingsIconPicker",
 		{
@@ -879,6 +982,54 @@ function LibHarvensAddonSettings:CreateControlPools()
 				end
 
 				dialog.iconPicker:CommitGridList()
+			end,
+			customControl = dialog,
+			buttons = {
+				[1] = {
+					control = dialog:GetNamedChild("Close"),
+					text = SI_DIALOG_CLOSE
+				}
+			}
+		}
+	)
+
+	ZO_Dialogs_RegisterCustomDialog(
+		"LibHarvensAddonSettingsAtlasIconPicker",
+		{
+			title = {
+				text = function()
+					local data = dialog.setting
+					return data:GetString(data:GetValueOrCallback(data.labelText))
+				end
+			},
+			mainText = {
+				text = ""
+			},
+			setup = function()
+				dialog.iconPicker:ClearGridList()
+
+				local data = dialog.setting
+				local atlasSizeX, atlasSizeY = data.atlasSizeX, data.atlasSizeY
+
+				for i = 1, atlasSizeX * atlasSizeY do
+					local item = {
+						index = i,
+						icon = data.texture,
+						data = data,
+					}
+					dialog.iconPicker:AddEntry(item, "ZO_GuildRank_RankIconPickerIcon_Keyboard_Control")
+				end
+
+				dialog.iconPicker:CommitGridList()
+
+				local activeControls = dialog.iconPicker.list.activeControls
+				for i = 1, #activeControls do
+					local ctrl = activeControls[i]
+					local index = ctrl.dataEntry.data.index
+					local icon = ctrl:GetNamedChild('IconContainerIcon')
+					local l, r, t, b = GetAtlasCoordinatesFor(index, atlasSizeX, atlasSizeY)
+					icon:SetTextureCoords(l, r, t, b)
+				end
 			end,
 			customControl = dialog,
 			buttons = {
