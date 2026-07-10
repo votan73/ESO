@@ -215,8 +215,9 @@ local updateControlFunctions = {
 		self.control.texture = self.texture
 		self.control.atlasSizeX = self.atlasSizeX
 		self.control.atlasSizeY = self.atlasSizeY
-		self.control.atlasStart = self.atlasStart or 1
-		self.control.atlasEnd = self.atlasEnd or (self.control.atlasSizeX * self.control.atlasSizeY)
+		self.control.atlasStart = self.atlasStart
+		self.control.atlasEnd = self.atlasEnd
+		self.control.atlasIndices = self.atlasIndices
 		self.control:SetValue(value)
 		local function OnIconPickerClicked()
 			HarvensAddonSettingsIconPickerDialog.setting = self
@@ -390,6 +391,7 @@ local cleanControlFunctions = {
 		self.control.atlasSizeY = nil
 		self.control.atlasStart = nil
 		self.control.atlasEnd = nil
+		self.control.atlasIndices = nil
 		LibHarvensAddonSettings.iconpickerPool:ReleaseObject(self.controlKey)
 	end,
 }
@@ -479,8 +481,9 @@ local setupControlFunctions = {
 		self.texture = params.texture
 		self.atlasSizeX = params.atlasSizeX
 		self.atlasSizeY = params.atlasSizeY
-		self.atlasStart = params.atlasStart
-		self.atlasEnd = params.atlasEnd
+		self.atlasStart = params.atlasStart or 1
+		self.atlasEnd = params.atlasEnd or (params.atlasSizeX * params.atlasSizeY)
+		self.atlasIndices = params.atlasIndices
 		self.labelText = params.label
 		self.tooltipText = params.tooltip
 		self.setFunction = params.setFunction
@@ -1016,15 +1019,26 @@ function LibHarvensAddonSettings:CreateControlPools()
 
 				local data = dialog.setting
 				local atlasSizeX, atlasSizeY = data.atlasSizeX, data.atlasSizeY
-				local atlasStart = data.atlasStart or 1
-				local atlasEnd = data.atlasEnd or (atlasSizeX * atlasSizeY)
-				for i = atlasStart, atlasEnd do
-					local item = {
-						index = i,
-						icon = data.texture,
-						data = data,
-					}
-					dialog.iconPicker:AddEntry(item, "ZO_GuildRank_RankIconPickerIcon_Keyboard_Control")
+				if data.atlasIndices then
+					for _, i in ipairs(data.atlasIndices) do
+						local item = {
+							index = i,
+							icon = data.texture,
+							data = data,
+						}
+						dialog.iconPicker:AddEntry(item, "ZO_GuildRank_RankIconPickerIcon_Keyboard_Control")
+					end
+				else
+					local atlasStart = data.atlasStart or 1
+					local atlasEnd = data.atlasEnd or (atlasSizeX * atlasSizeY)
+					for i = atlasStart, atlasEnd do
+						local item = {
+							index = i,
+							icon = data.texture,
+							data = data,
+						}
+						dialog.iconPicker:AddEntry(item, "ZO_GuildRank_RankIconPickerIcon_Keyboard_Control")
+					end
 				end
 
 				dialog.iconPicker:CommitGridList()

@@ -207,17 +207,19 @@ local updateControlFunctions = {
 		local combobox = control:GetDropDown()
 		combobox:SetOnSelectedDataChangedCallback(nil)
 		combobox:Clear()
-		local itemEntry
 		local callback = function(data)
 			self:ValueChanged(control, data.index, data.icon)
 		end
-		local texture = self.texture
-		local atlasSizeX = self.atlasSizeX
-		local atlasSizeY = self.atlasSizeY
-		local atlasStart = self.atlasStart or 1
-		local atlasEnd = self.atlasEnd or (atlasSizeX * atlasSizeY)
-		for i = atlasStart, atlasEnd do
-			combobox:AddEntry({index = i, data = self})
+		if self.atlasIndices then
+			for _, i in ipairs(self.atlasIndices) do
+				combobox:AddEntry({index = i, data = self})
+			end
+		else
+			local atlasStart = self.atlasStart
+			local atlasEnd = self.atlasEnd
+			for i = atlasStart, atlasEnd do
+				combobox:AddEntry({index = i, data = self})
+			end
 		end
 		combobox:Commit()
 		combobox:SetSelectedIndex(combobox:FindIndexFromData({index = self.getFunction()}, combobox.equalityFunction) or self.default or 0, false, true)
@@ -382,8 +384,9 @@ local setupControlFunctions = {
 		self.texture = params.texture
 		self.atlasSizeX = params.atlasSizeX
 		self.atlasSizeY = params.atlasSizeY
-		self.atlasStart = params.atlasStart
-		self.atlasEnd = params.atlasEnd
+		self.atlasStart = params.atlasStart or 1
+		self.atlasEnd = params.atlasEnd or (params.atlasSizeX * params.atlasSizeY)
+		self.atlasIndices = params.atlasIndices
 		self.labelText = params.label
 		self.tooltipText = params.tooltip
 		self.setFunction = params.setFunction
@@ -1134,24 +1137,6 @@ function LibHarvensAddonSettings:CreateControlPools()
 			end
 		end
 	)
-
-	-- local function GetAtlasCoordinatesFor(n, atlasSizeX, atlasSizeY)
-	-- 	if n > atlasSizeX * atlasSizeY then
-	-- 		error(('Index is too big! Max atlas index must be less than %d x %d (%d), requested %d'):format(atlasSizeX, atlasSizeY, atlasSizeX * atlasSizeY, n))
-	-- 	end
-
-	-- 	n = n - 1
-	-- 	local X, Y = n % atlasSizeX, math.floor(n / atlasSizeX)
-	-- 	local xStep, yStep = 1 / atlasSizeX, 1 / atlasSizeY
-
-	-- 	return xStep * X, xStep * (X + 1), yStep * Y, yStep * (Y + 1)
-	-- end
-
-	-- local function setupAtlasIconPicker(control, data, selected, reselectingDuringRebuild, enabled, selectedFromParent)
-    --     local icon = control:GetNamedChild('Icon')
-    --     icon:SetTexture(data.data.texture)
-    --     icon:SetTextureCoords(GetAtlasCoordinatesFor(data.index, data.atlasSizeX, data.atlasSizeY))
-    -- end
 
 	AddPool(
 		self.ST_ATLASICONPICKER,
