@@ -215,6 +215,8 @@ local updateControlFunctions = {
 		self.control.texture = self.texture
 		self.control.atlasSizeX = self.atlasSizeX
 		self.control.atlasSizeY = self.atlasSizeY
+		self.control.atlasStart = self.atlasStart or 1
+		self.control.atlasEnd = self.atlasEnd or (self.control.atlasSizeX * self.control.atlasSizeY)
 		self.control:SetValue(value)
 		local function OnIconPickerClicked()
 			HarvensAddonSettingsIconPickerDialog.setting = self
@@ -386,6 +388,8 @@ local cleanControlFunctions = {
 		self.control.texture = nil
 		self.control.atlasSizeX = nil
 		self.control.atlasSizeY = nil
+		self.control.atlasStart = nil
+		self.control.atlasEnd = nil
 		LibHarvensAddonSettings.iconpickerPool:ReleaseObject(self.controlKey)
 	end,
 }
@@ -475,6 +479,8 @@ local setupControlFunctions = {
 		self.texture = params.texture
 		self.atlasSizeX = params.atlasSizeX
 		self.atlasSizeY = params.atlasSizeY
+		self.atlasStart = params.atlasStart
+		self.atlasEnd = params.atlasEnd
 		self.labelText = params.label
 		self.tooltipText = params.tooltip
 		self.setFunction = params.setFunction
@@ -1010,8 +1016,9 @@ function LibHarvensAddonSettings:CreateControlPools()
 
 				local data = dialog.setting
 				local atlasSizeX, atlasSizeY = data.atlasSizeX, data.atlasSizeY
-
-				for i = 1, atlasSizeX * atlasSizeY do
+				local atlasStart = data.atlasStart or 1
+				local atlasEnd = data.atlasEnd or (atlasSizeX * atlasSizeY)
+				for i = atlasStart, atlasEnd do
 					local item = {
 						index = i,
 						icon = data.texture,

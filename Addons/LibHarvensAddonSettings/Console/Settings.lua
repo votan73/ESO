@@ -214,7 +214,9 @@ local updateControlFunctions = {
 		local texture = self.texture
 		local atlasSizeX = self.atlasSizeX
 		local atlasSizeY = self.atlasSizeY
-		for i = 1, atlasSizeX * atlasSizeY do
+		local atlasStart = self.atlasStart or 1
+		local atlasEnd = self.atlasEnd or (atlasSizeX * atlasSizeY)
+		for i = atlasStart, atlasEnd do
 			combobox:AddEntry({index = i, data = self})
 		end
 		combobox:Commit()
@@ -380,6 +382,8 @@ local setupControlFunctions = {
 		self.texture = params.texture
 		self.atlasSizeX = params.atlasSizeX
 		self.atlasSizeY = params.atlasSizeY
+		self.atlasStart = params.atlasStart
+		self.atlasEnd = params.atlasEnd
 		self.labelText = params.label
 		self.tooltipText = params.tooltip
 		self.setFunction = params.setFunction
