@@ -9,7 +9,8 @@ local Templates = {
 	[LibHarvensAddonSettings.ST_BUTTON] = "ZO_GamepadOptionsLabelRow",
 	[LibHarvensAddonSettings.ST_LABEL] = "ZO_GamepadOptionsLabelRow",
 	[LibHarvensAddonSettings.ST_SECTION] = "ZO_GamepadMenuEntryTemplateWithArrow",
-	[LibHarvensAddonSettings.ST_ICONPICKER] = "LibHarvensAddonSettingsGamepadIconPicker"
+	[LibHarvensAddonSettings.ST_ICONPICKER] = "LibHarvensAddonSettingsGamepadIconPicker",
+	[LibHarvensAddonSettings.ST_ATLASICONPICKER] = "LibHarvensAddonSettingsGamepadAtlasIconPicker",
 }
 
 local currentSettings
@@ -66,7 +67,11 @@ local changeControlStateFunctions = {
 	[LibHarvensAddonSettings.ST_ICONPICKER] = function(control, state)
 		SetNameControlState(control, state)
 		control:GetDropDown():SetSelectedFromParent(state)
-	end
+	end,
+	[LibHarvensAddonSettings.ST_ATLASICONPICKER] = function(control, state)
+		SetNameControlState(control, state)
+		control:GetDropDown():SetSelectedFromParent(state)
+	end,
 }
 
 local updateControlFunctions = {
@@ -196,7 +201,30 @@ local updateControlFunctions = {
 		combobox:Commit()
 		combobox:SetSelectedIndex(combobox:FindIndexFromData({index = self.getFunction()}, combobox.equalityFunction) or self.default or 0, false, true)
 		combobox:SetOnSelectedDataChangedCallback(callback)
-	end
+	end,
+	[LibHarvensAddonSettings.ST_ATLASICONPICKER] = function(self, control)
+		control:GetNamedChild("Name"):SetText(self:GetString(self:GetValueOrCallback(self.labelText)))
+		local combobox = control:GetDropDown()
+		combobox:SetOnSelectedDataChangedCallback(nil)
+		combobox:Clear()
+		local callback = function(data)
+			self:ValueChanged(control, data.index, data.icon)
+		end
+		if self.atlasIndices then
+			for _, i in ipairs(self.atlasIndices) do
+				combobox:AddEntry({index = i, data = self})
+			end
+		else
+			local atlasStart = self.atlasStart
+			local atlasEnd = self.atlasEnd
+			for i = atlasStart, atlasEnd do
+				combobox:AddEntry({index = i, data = self})
+			end
+		end
+		combobox:Commit()
+		combobox:SetSelectedIndex(combobox:FindIndexFromData({index = self.getFunction()}, combobox.equalityFunction) or self.default or 0, false, true)
+		combobox:SetOnSelectedDataChangedCallback(callback)
+	end,
 }
 
 local createControlFunctions = {
@@ -226,7 +254,10 @@ local createControlFunctions = {
 	end,
 	[LibHarvensAddonSettings.ST_ICONPICKER] = function(self, lastControl)
 		LibHarvensAddonSettings.list:AddEntry(Templates[self.type], self)
-	end
+	end,
+	[LibHarvensAddonSettings.ST_ATLASICONPICKER] = function(self, lastControl)
+		LibHarvensAddonSettings.list:AddEntry(Templates[self.type], self)
+	end,
 }
 
 local cleanControlFunctions = {
@@ -258,7 +289,11 @@ local cleanControlFunctions = {
 	[LibHarvensAddonSettings.ST_ICONPICKER] = function(self)
 		local combobox = self.control:GetDropDown()
 		combobox:SetOnSelectedDataChangedCallback(nil)
-	end
+	end,
+	[LibHarvensAddonSettings.ST_ATLASICONPICKER] = function(self)
+		local combobox = self.control:GetDropDown()
+		combobox:SetOnSelectedDataChangedCallback(nil)
+	end,
 }
 
 local setupControlFunctions = {
@@ -344,7 +379,22 @@ local setupControlFunctions = {
 		self.default = params.default
 		self.ignoreDefault = params.ignoreDefault
 		self.disable = params.disable
-	end
+	end,
+	[LibHarvensAddonSettings.ST_ATLASICONPICKER] = function(self, params)
+		self.texture = params.texture
+		self.atlasSizeX = params.atlasSizeX
+		self.atlasSizeY = params.atlasSizeY
+		self.atlasStart = params.atlasStart or 1
+		self.atlasEnd = params.atlasEnd or (params.atlasSizeX * params.atlasSizeY)
+		self.atlasIndices = params.atlasIndices
+		self.labelText = params.label
+		self.tooltipText = params.tooltip
+		self.setFunction = params.setFunction
+		self.getFunction = params.getFunction
+		self.default = params.default
+		self.ignoreDefault = params.ignoreDefault
+		self.disable = params.disable
+	end,
 }
 
 -----
@@ -522,7 +572,8 @@ function Settings_ParametricList:InitializeKeybindStripDescriptors()
 	local CONTROL_TYPES_WITH_INPUT = {
 		[LibHarvensAddonSettings.ST_SLIDER] = true,
 		[LibHarvensAddonSettings.ST_DROPDOWN] = true,
-		[LibHarvensAddonSettings.ST_ICONPICKER] = true
+		[LibHarvensAddonSettings.ST_ICONPICKER] = true,
+		[LibHarvensAddonSettings.ST_ATLASICONPICKER] = true,
 	}
 	local lastActiveInput
 	self.keybindStripDescriptor = {
@@ -1069,6 +1120,30 @@ function LibHarvensAddonSettings:CreateControlPools()
 		function(control)
 			local horizontalListObject = control.horizontalListObject
 			horizontalListObject.setupFunction = setupIconPicker
+			horizontalListObject.equalityFunction = equalityFunctionIconPicker
+			control:GetNamedChild("HorizontalList"):SetHeight(64)
+			function control:Activate()
+				self:GetDropDown():Activate()
+			end
+			function control:Deactivate()
+				self:GetDropDown():Deactivate()
+			end
+			function control:GetDropDown()
+				return self.horizontalListObject
+			end
+			function control:SetValue(index)
+				local combobox = self:GetDropDown()
+				combobox:SetSelectedIndex(combobox:FindIndexFromData({index = index}, combobox.equalityFunction), false, false)
+			end
+		end
+	)
+
+	AddPool(
+		self.ST_ATLASICONPICKER,
+		"AtlasIconPicker",
+		function(control)
+			local horizontalListObject = control.horizontalListObject
+			-- horizontalListObject.setupFunction = setupAtlasIconPicker
 			horizontalListObject.equalityFunction = equalityFunctionIconPicker
 			control:GetNamedChild("HorizontalList"):SetHeight(64)
 			function control:Activate()

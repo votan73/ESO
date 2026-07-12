@@ -18,6 +18,7 @@ LibHarvensAddonSettings.ST_BUTTON = 6
 LibHarvensAddonSettings.ST_LABEL = 7
 LibHarvensAddonSettings.ST_SECTION = 8
 LibHarvensAddonSettings.ST_ICONPICKER = 9
+LibHarvensAddonSettings.ST_ATLASICONPICKER = 10
 -----
 
 LibHarvensAddonSettings.addons = {}
@@ -125,6 +126,10 @@ function AddonSettingsControl:ResetToDefaults()
 		local items = self:GetValueOrCallback(self.items)
 		local combobox = self.control and self.control:GetDropDown()
 		self.setFunction(combobox, self.default, self.items[self.default])
+	elseif self.type == LibHarvensAddonSettings.ST_ATLASICONPICKER then
+		self:SetValue(self.default or 1)
+		local combobox = self.control and self.control:GetDropDown()
+		self.setFunction(combobox, self.default)
 	elseif self.setFunction then
 		self:SetValue(self.default)
 		self.setFunction(self.default)
