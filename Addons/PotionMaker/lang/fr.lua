@@ -62,11 +62,11 @@
 		["Ravage Magicka"] = "Réduit la Magie",
 		["Restore Stamina"] = "Rend de la Vigueur",
 		["Ravage Stamina"] = "Ravage de Vigueur",
-		["Increase Weapon Power"] = "Augmente la puissance de l'arme",
-		["Lower Weapon Power"] = "Mutilation",
+		["Increase Weapon Power"] = "Augmente la puissance",
+		["Lower Weapon Power"] = "Couardise",
 		["Increase Spell Power"] = "Augmente la puissance",
 		["Lower Spell Power"] = "Couardise",
-		["Weapon Crit"] = "Critique d'armes",
+		["Weapon Crit"] = "Critique",
 		["Lower Weapon Crit"] = "Affaiblissement",
 		["Spell Crit"] = "Critique",
 		["Lower Spell Crit"] = "Incertitude",
@@ -90,6 +90,18 @@
 
 		["Heroism"] = "Héroïsme",
 		["Timidity"] = "Timidité",
+
+		["Increase Power"] = "Augmente la puissance",
+		["Critical"] = "Critique",
+		["Lingering Health"] = "Santé persistante",
+		["Gradual Ravage Health"] = "Ravage de Santé graduel",
+		["Hindrance"] = "Entrave",
+		["Entrapment"] = "Capture",
+		["Fracture"] = "Fracture",
+		["Cowardice"] = "Couardise",
+		["Enervation"] = "Affaiblissement",
+		["Uncertainty"] = "Incertitude",
+		["Breach"] = "Brèche",
 	},
 }
 
