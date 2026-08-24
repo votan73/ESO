@@ -62,11 +62,11 @@ PotMaker:LoadLanguage {
 		["Ravage Magicka"] = "Magickaverwüstung",
 		["Restore Stamina"] = "Ausdauer wiederherstellen",
 		["Ravage Stamina"] = "Ausdauerverwüstung",
-		["Increase Weapon Power"] = "Erhöht Waffenkraft",
-		["Lower Weapon Power"] = "Versehren",
+		["Increase Weapon Power"] = "Erhöht Macht",
+		["Lower Weapon Power"] = "Feigheit",
 		["Increase Spell Power"] = "Erhöht Macht",
 		["Lower Spell Power"] = "Feigheit",
-		["Weapon Crit"] = "Kritische Waffentreffer",
+		["Weapon Crit"] = "Kritische Treffer",
 		["Lower Weapon Crit"] = "Schwäche",
 		["Spell Crit"] = "Kritische Treffer",
 		["Lower Spell Crit"] = "Ungewissheit",
@@ -90,6 +90,18 @@ PotMaker:LoadLanguage {
 
 		["Heroism"] = "Heldentum",
 		["Timidity"] = "Scheu",
+
+		["Increase Power"] = "Erhöht Macht",
+		["Critical"] = "Kritische Treffer",
+		["Lingering Health"] = "Beständige Heilung",
+		["Gradual Ravage Health"] = "Langsame Lebensverwüstung",
+		["Hindrance"] = "Einschränken",
+		["Entrapment"] = "Einfangen",
+		["Fracture"] = "Fraktur",
+		["Cowardice"] = "Feigheit",
+		["Enervation"] = "Schwäche",
+		["Uncertainty"] = "Ungewissheit",
+		["Breach"] = "Bruch",
 	},
 }
 
