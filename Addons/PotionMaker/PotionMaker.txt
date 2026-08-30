@@ -2,7 +2,7 @@
 ## Author: Facit & |cFF6A00Khrill|r & votan
 ## Description: Gives feedback for what potions you can make with alchemy using the ingredients you have.
 ## Version: 5.11.0
-## APIVersion: 101051 101052
+## APIVersion: 101050 101051
 ## DependsOn: LibAddonMenu-2.0>=39 LibAlchemyStation>=343 LibAsync>=20100 LibCustomMenu>=692 LibMainMenu-2.0>=432
 ## OptionalDependsOn: MultiCraft
 ## SavedVariables: PotionMaker_Data
