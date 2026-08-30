@@ -93,6 +93,11 @@ PotMaker:LoadLanguage {
 
 		["Increase Power"] = "Erhöht Macht",
 		["Critical"] = "Kritische Treffer",
+		["Mending"] = "Pflege",
+		["Vexation"] = "Verdruss",
+		["Damage Shield"] = "Schadenschild",
+		["Heal Absorption"] = "Heilabsorption",
+		["Force"] = "Kraft",
 		["Lingering Health"] = "Beständige Heilung",
 		["Gradual Ravage Health"] = "Langsame Lebensverwüstung",
 		["Hindrance"] = "Einschränken",

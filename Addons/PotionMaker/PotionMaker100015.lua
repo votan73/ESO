@@ -261,7 +261,6 @@ end
 
 local function ClearResultList()
 	ZO_ClearNumericallyIndexedTable(PotMaker.doablePotions)
-	-- collectgarbage()
 end
 
 local function ClearInventory()
@@ -307,388 +306,831 @@ end
 
 function PotMaker.initVar()
 	local traitNames = PotMaker.language.traitNames
-	local reagentsById = {
-		[77583] = {
-			-- Beetle Scuttle
-			traits = {
-				[traitNames["Breach"]] = false,
-				[traitNames["Increase Armor"]] = false,
-				[traitNames["Protection"]] = false,
-				[traitNames["Vitality"]] = false
+	local reagentsById
+	if GetAPIVersion() < 101051 then
+		reagentsById = {
+			[30165] = {
+				traits = {
+					[traitNames["Ravage Health"]] = false,
+					[traitNames["Lower Spell Crit"]] = false,
+					[traitNames["Lower Weapon Crit"]] = false,
+					[traitNames["Invisible"]] = false
+				},
+				itemId = 30165
 			},
-			itemId = 77583
-		},
-		[30157] = {
-			-- Blessed Thistle
-			traits = {
-				[traitNames["Restore Stamina"]] = false,
-				[traitNames["Increase Power"]] = false,
-				[traitNames["Heal Absorption"]] = false,
-				[traitNames["Speed"]] = false
+			[30158] = {
+				traits = {
+					[traitNames["Increase Spell Power"]] = false,
+					[traitNames["Restore Magicka"]] = false,
+					[traitNames["Lower Spell Resist"]] = false,
+					[traitNames["Spell Crit"]] = false
+				},
+				itemId = 30158
 			},
-			itemId = 30157
-		},
-		[30148] = {
-			-- Blue Entoloma
-			traits = {
-				[traitNames["Ravage Magicka"]] = false,
-				[traitNames["Heal Absorption"]] = false,
-				[traitNames["Restore Health"]] = false,
-				[traitNames["Invisible"]] = false
+			[30155] = {
+				traits = {
+					[traitNames["Ravage Stamina"]] = false,
+					[traitNames["Lower Weapon Power"]] = false,
+					[traitNames["Restore Health"]] = false,
+					[traitNames["Reduce Speed"]] = false
+				},
+				itemId = 30155
 			},
-			itemId = 30148
-		},
-		[30160] = {
-			-- Bugloss
-			traits = {
-				[traitNames["Increase Spell Resist"]] = false,
-				[traitNames["Restore Health"]] = false,
-				[traitNames["Mending"]] = false,
-				[traitNames["Restore Magicka"]] = false
+			[30152] = {
+				traits = {
+					[traitNames["Lower Spell Resist"]] = false,
+					[traitNames["Ravage Health"]] = false,
+					[traitNames["Increase Spell Power"]] = false,
+					[traitNames["Ravage Magicka"]] = false
+				},
+				itemId = 30152
 			},
-			itemId = 30160
-		},
-		[77585] = {
-			-- Butterfly Wing
-			traits = {
-				[traitNames["Restore Health"]] = false,
-				[traitNames["Damage Shield"]] = false,
-				[traitNames["Lingering Health"]] = false,
-				[traitNames["Vitality"]] = false
+			[30162] = {
+				-- Dragonthorn
+				traits = {
+					[traitNames["Increase Weapon Power"]] = false,
+					[traitNames["Restore Stamina"]] = false,
+					[traitNames["Lower Armor"]] = false,
+					[traitNames["Weapon Crit"]] = false
+				},
+				itemId = 30162
 			},
-			itemId = 77585
-		},
-		[150669] = {
-			-- Chaurus Egg
-			traits = {
-				[traitNames["Timidity"]] = false,
-				[traitNames["Ravage Magicka"]] = false,
-				[traitNames["Vexation"]] = false,
-				[traitNames["Detection"]] = false
+			[30148] = {
+				traits = {
+					[traitNames["Ravage Magicka"]] = false,
+					[traitNames["Lower Spell Power"]] = false,
+					[traitNames["Restore Health"]] = false,
+					[traitNames["Invisible"]] = false
+				},
+				itemId = 30148
 			},
-			itemId = 150669
-		},
-		[139020] = {
-			-- Clam Gall
-			traits = {
-				[traitNames["Increase Spell Resist"]] = false,
-				[traitNames["Hindrance"]] = false,
-				[traitNames["Vulnerability"]] = false,
-				[traitNames["Defile"]] = false
+			[30149] = {
+				traits = {
+					[traitNames["Lower Armor"]] = false,
+					[traitNames["Ravage Health"]] = false,
+					[traitNames["Increase Weapon Power"]] = false,
+					[traitNames["Ravage Stamina"]] = false
+				},
+				itemId = 30149
 			},
-			itemId = 139020
-		},
-		[30164] = {
-			-- Columbine
-			traits = {
-				[traitNames["Restore Health"]] = false,
-				[traitNames["Restore Magicka"]] = false,
-				[traitNames["Restore Stamina"]] = false,
-				[traitNames["Unstoppable"]] = false
+			[30161] = {
+				traits = {
+					[traitNames["Restore Magicka"]] = false,
+					[traitNames["Increase Spell Power"]] = false,
+					[traitNames["Ravage Health"]] = false,
+					[traitNames["Detection"]] = false
+				},
+				itemId = 30161
 			},
-			itemId = 30164
-		},
-		[30161] = {
-			-- Corn Flower
-			traits = {
-				[traitNames["Restore Magicka"]] = false,
-				[traitNames["Increase Power"]] = false,
-				[traitNames["Ravage Health"]] = false,
-				[traitNames["Detection"]] = false
+			[30160] = {
+				traits = {
+					[traitNames["Increase Spell Resist"]] = false,
+					[traitNames["Restore Health"]] = false,
+					[traitNames["Lower Spell Power"]] = false,
+					[traitNames["Restore Magicka"]] = false
+				},
+				itemId = 30160
 			},
-			itemId = 30161
-		},
-		[150672] = {
-			-- Crimson Nirnroot
-			traits = {
-				[traitNames["Timidity"]] = false,
-				[traitNames["Force"]] = false,
-				[traitNames["Gradual Ravage Health"]] = false,
-				[traitNames["Restore Health"]] = false
+			[30154] = {
+				traits = {
+					[traitNames["Lower Spell Power"]] = false,
+					[traitNames["Ravage Magicka"]] = false,
+					[traitNames["Increase Spell Resist"]] = false,
+					[traitNames["Detection"]] = false
+				},
+				itemId = 30154
 			},
-			itemId = 150672
-		},
-		[224357] = {
-			-- Cultivated Cryptpods
-			traits = {
-				[traitNames["Heroism"]] = false,
-				[traitNames["Increase Power"]] = false,
-				[traitNames["Mending"]] = false,
-				[traitNames["Damage Shield"]] = false
+			[30157] = {
+				traits = {
+					[traitNames["Restore Stamina"]] = false,
+					[traitNames["Increase Weapon Power"]] = false,
+					[traitNames["Ravage Health"]] = false,
+					[traitNames["Speed"]] = false
+				},
+				itemId = 30157
 			},
-			itemId = 224357
-		},
-		[224358] = {
-			-- Daedra-Blood Maggots
-			traits = {
-				[traitNames["Defile"]] = false,
-				[traitNames["Heal Absorption"]] = false,
-				[traitNames["Cowardice"]] = false,
-				[traitNames["Entrapment"]] = false
+			[30151] = {
+				traits = {
+					[traitNames["Ravage Health"]] = false,
+					[traitNames["Ravage Magicka"]] = false,
+					[traitNames["Ravage Stamina"]] = false,
+					[traitNames["Stun"]] = false
+				},
+				itemId = 30151
 			},
-			itemId = 224358
-		},
-		[150789] = {
-			-- Dragon's Bile
-			traits = {
-				[traitNames["Heroism"]] = false,
-				[traitNames["Vulnerability"]] = false,
-				[traitNames["Invisible"]] = false,
-				[traitNames["Vitality"]] = false
+			[30164] = {
+				traits = {
+					[traitNames["Restore Health"]] = false,
+					[traitNames["Restore Magicka"]] = false,
+					[traitNames["Restore Stamina"]] = false,
+					[traitNames["Unstoppable"]] = false
+				},
+				itemId = 30164
 			},
-			itemId = 150789
-		},
-		[150731] = {
-			-- Dragon's Blood
-			traits = {
-				[traitNames["Lingering Health"]] = false,
-				[traitNames["Restore Stamina"]] = false,
-				[traitNames["Heroism"]] = false,
-				[traitNames["Defile"]] = false
+			[30159] = {
+				traits = {
+					[traitNames["Weapon Crit"]] = false,
+					[traitNames["Reduce Speed"]] = false,
+					[traitNames["Detection"]] = false,
+					[traitNames["Unstoppable"]] = false
+				},
+				itemId = 30159
 			},
-			itemId = 150731
-		},
-		[150671] = {
-			-- Dragon Rheum
-			traits = {
-				[traitNames["Restore Magicka"]] = false,
-				[traitNames["Uncertainty"]] = false,
-				[traitNames["Heroism"]] = false,
-				[traitNames["Speed"]] = false
+			[30163] = {
+				-- Mountain Flower
+				traits = {
+					[traitNames["Increase Armor"]] = false,
+					[traitNames["Restore Health"]] = false,
+					[traitNames["Lower Weapon Power"]] = false,
+					[traitNames["Restore Stamina"]] = false
+				},
+				itemId = 30163
 			},
-			itemId = 150671
-		},
-		[30162] = {
-			-- Dragonthorn
-			traits = {
-				[traitNames["Increase Power"]] = false,
-				[traitNames["Restore Stamina"]] = false,
-				[traitNames["Fracture"]] = false,
-				[traitNames["Critical"]] = false
+			[30153] = {
+				traits = {
+					[traitNames["Spell Crit"]] = false,
+					[traitNames["Speed"]] = false,
+					[traitNames["Invisible"]] = false,
+					[traitNames["Unstoppable"]] = false
+				},
+				itemId = 30153
 			},
-			itemId = 30162
-		},
-		[30151] = {
-			-- Emetic Russula
-			traits = {
-				[traitNames["Ravage Health"]] = false,
-				[traitNames["Ravage Magicka"]] = false,
-				[traitNames["Ravage Stamina"]] = false,
-				[traitNames["Entrapment"]] = false
+			[30156] = {
+				traits = {
+					[traitNames["Lower Weapon Power"]] = false,
+					[traitNames["Ravage Stamina"]] = false,
+					[traitNames["Increase Armor"]] = false,
+					[traitNames["Lower Weapon Crit"]] = false
+				},
+				itemId = 30156
 			},
-			itemId = 30151
-		},
-		[77587] = {
-			-- Fleshfly Larva
-			traits = {
-				[traitNames["Ravage Stamina"]] = false,
-				[traitNames["Vulnerability"]] = false,
-				[traitNames["Gradual Ravage Health"]] = false,
-				[traitNames["Vitality"]] = false
+			[30166] = {
+				traits = {
+					[traitNames["Restore Health"]] = false,
+					[traitNames["Spell Crit"]] = false,
+					[traitNames["Weapon Crit"]] = false,
+					[traitNames["Stun"]] = false
+				},
+				itemId = 30166
 			},
-			itemId = 77587
-		},
-		[224359] = {
-			-- Fossilized Verminous Bones
-			traits = {
-				[traitNames["Heroism"]] = false,
-				[traitNames["Restore Stamina"]] = false,
-				[traitNames["Force"]] = false,
-				[traitNames["Detection"]] = false
+			[77581] = {
+				-- Torchbug Thorax
+				traits = {
+					[traitNames["Lower Armor"]] = false,
+					[traitNames["Lower Weapon Crit"]] = false,
+					[traitNames["Detection"]] = false,
+					[traitNames["Vitality"]] = false
+				},
+				itemId = 77581
 			},
-			itemId = 224359
-		},
-		[30156] = {
-			-- Imp Stool
-			traits = {
-				[traitNames["Cowardice"]] = false,
-				[traitNames["Ravage Stamina"]] = false,
-				[traitNames["Increase Armor"]] = false,
-				[traitNames["Enervation"]] = false
+			[77583] = {
+				-- 	Beetle Scuttle
+				traits = {
+					[traitNames["Lower Spell Resist"]] = false,
+					[traitNames["Increase Armor"]] = false,
+					[traitNames["Protection"]] = false,
+					[traitNames["Vitality"]] = false
+				},
+				itemId = 77583
 			},
-			itemId = 30156
-		},
-		[30158] = {
-			-- Lady's Smock
-			traits = {
-				[traitNames["Force"]] = false,
-				[traitNames["Restore Magicka"]] = false,
-				[traitNames["Breach"]] = false,
-				[traitNames["Critical"]] = false
+			[77584] = {
+				-- Spider Egg
+				traits = {
+					[traitNames["Reduce Speed"]] = false,
+					[traitNames["Invisible"]] = false,
+					[traitNames["Sustained Restore Health"]] = false,
+					[traitNames["Defile"]] = false
+				},
+				itemId = 77584
 			},
-			itemId = 30158
-		},
-		[30155] = {
-			-- Luminous Russula
-			traits = {
-				[traitNames["Ravage Stamina"]] = false,
-				[traitNames["Restore Health"]] = false,
-				[traitNames["Hindrance"]] = false,
-				[traitNames["Cowardice"]] = false
+			[77585] = {
+				-- Butterfly Wing
+				traits = {
+					[traitNames["Restore Health"]] = false,
+					[traitNames["Lower Spell Crit"]] = false,
+					[traitNames["Sustained Restore Health"]] = false,
+					[traitNames["Vitality"]] = false
+				},
+				itemId = 77585
 			},
-			itemId = 30155
-		},
-		[30163] = {
-			-- Mountain Flower
-			traits = {
-				[traitNames["Increase Armor"]] = false,
-				[traitNames["Restore Health"]] = false,
-				[traitNames["Cowardice"]] = false,
-				[traitNames["Restore Stamina"]] = false
+			[77587] = {
+				-- Fleshfly Larva
+				traits = {
+					[traitNames["Ravage Stamina"]] = false,
+					[traitNames["Vulnerability"]] = false,
+					[traitNames["Creeping Ravage Health"]] = false,
+					[traitNames["Vitality"]] = false
+				},
+				itemId = 77587
 			},
-			itemId = 30163
-		},
-		[77591] = {
-			-- Mudcrab Chitin
-			traits = {
-				[traitNames["Increase Spell Resist"]] = false,
-				[traitNames["Increase Armor"]] = false,
-				[traitNames["Protection"]] = false,
-				[traitNames["Defile"]] = false
+			[77589] = {
+				-- Scrib Jelly
+				traits = {
+					[traitNames["Ravage Magicka"]] = false,
+					[traitNames["Speed"]] = false,
+					[traitNames["Vulnerability"]] = false,
+					[traitNames["Sustained Restore Health"]] = false
+				},
+				itemId = 77589
 			},
-			itemId = 77591
-		},
-		[30153] = {
-			-- Namira's Rot
-			traits = {
-				[traitNames["Enervation"]] = false,
-				[traitNames["Speed"]] = false,
-				[traitNames["Invisible"]] = false,
-				[traitNames["Unstoppable"]] = false
+			[77590] = {
+				-- Nightshade
+				traits = {
+					[traitNames["Ravage Health"]] = false,
+					[traitNames["Protection"]] = false,
+					[traitNames["Creeping Ravage Health"]] = false,
+					[traitNames["Defile"]] = false
+				},
+				itemId = 77590
 			},
-			itemId = 30153
-		},
-		[77590] = {
-			-- Nightshade
-			traits = {
-				[traitNames["Ravage Health"]] = false,
-				[traitNames["Protection"]] = false,
-				[traitNames["Gradual Ravage Health"]] = false,
-				[traitNames["Defile"]] = false
+			[77591] = {
+				-- Mudcrab Chitin
+				traits = {
+					[traitNames["Increase Spell Resist"]] = false,
+					[traitNames["Increase Armor"]] = false,
+					[traitNames["Protection"]] = false,
+					[traitNames["Defile"]] = false
+				},
+				itemId = 77591
 			},
-			itemId = 77590
-		},
-		[30165] = {
-			-- Nirnroot
-			traits = {
-				[traitNames["Ravage Health"]] = false,
-				[traitNames["Uncertainty"]] = false,
-				[traitNames["Invisible"]] = false,
-				[traitNames["Heal Absorption"]] = false
+			-- 	[114893] =
+			-- 	{
+			-- 		-- Alchemical Resin
+			-- 		traits = { },
+			-- 		itemId = 114893
+			-- 	},
+			[139019] = {
+				traits = {
+					[traitNames["Sustained Restore Health"]] = false,
+					[traitNames["Speed"]] = false,
+					[traitNames["Vitality"]] = false,
+					[traitNames["Protection"]] = false
+				},
+				itemId = 139019
 			},
-			itemId = 30165
-		},
-		[139019] = {
-			-- Powdered Mother of Pearl
-			traits = {
-				[traitNames["Mending"]] = false,
-				[traitNames["Speed"]] = false,
-				[traitNames["Vitality"]] = false,
-				[traitNames["Protection"]] = false
+			[139020] = {
+				traits = {
+					[traitNames["Increase Spell Resist"]] = false,
+					[traitNames["Reduce Speed"]] = false,
+					[traitNames["Vulnerability"]] = false,
+					[traitNames["Defile"]] = false
+				},
+				itemId = 139020
 			},
-			itemId = 139019
-		},
-		[77589] = {
-			-- Scrib Jelly
-			traits = {
-				[traitNames["Vexation"]] = false,
-				[traitNames["Speed"]] = false,
-				[traitNames["Vulnerability"]] = false,
-				[traitNames["Lingering Health"]] = false
+			[150731] = {
+				-- Dragon Blood Calx
+				traits = {
+					[traitNames["Sustained Restore Health"]] = false,
+					[traitNames["Restore Stamina"]] = false,
+					[traitNames["Heroism"]] = false,
+					[traitNames["Defile"]] = false
+				},
+				itemId = 150731
 			},
-			itemId = 77589
-		},
-		[77584] = {
-			-- Spider Egg
-			traits = {
-				[traitNames["Hindrance"]] = false,
-				[traitNames["Invisible"]] = false,
-				[traitNames["Damage Shield"]] = false,
-				[traitNames["Defile"]] = false
+			[150789] = {
+				-- Dragon's Bile Mellago
+				traits = {
+					[traitNames["Heroism"]] = false,
+					[traitNames["Vulnerability"]] = false,
+					[traitNames["Invisible"]] = false,
+					[traitNames["Vitality"]] = false
+				},
+				itemId = 150789
 			},
-			itemId = 77584
-		},
-		[30149] = {
-			-- Stinkhorn
-			traits = {
-				[traitNames["Fracture"]] = false,
-				[traitNames["Ravage Health"]] = false,
-				[traitNames["Force"]] = false,
-				[traitNames["Ravage Stamina"]] = false
+			[150671] = {
+				-- Dragon Rheum
+				traits = {
+					[traitNames["Restore Magicka"]] = false,
+					[traitNames["Heroism"]] = false,
+					[traitNames["Lower Weapon Crit"]] = false,
+					[traitNames["Speed"]] = false
+				},
+				itemId = 150671
 			},
-			itemId = 30149
-		},
-		[77581] = {
-			-- Torchbug Thorax
-			traits = {
-				[traitNames["Fracture"]] = false,
-				[traitNames["Uncertainty"]] = false,
-				[traitNames["Detection"]] = false,
-				[traitNames["Mending"]] = false
+			[150669] = {
+				-- Chaurus Egg
+				traits = {
+					[traitNames["Timidity"]] = false,
+					[traitNames["Ravage Magicka"]] = false,
+					[traitNames["Restore Stamina"]] = false,
+					[traitNames["Detection"]] = false
+				},
+				itemId = 150669
 			},
-			itemId = 77581
-		},
-		[150670] = {
-			-- Vile Coagulant
-			traits = {
-				[traitNames["Timidity"]] = false,
-				[traitNames["Ravage Health"]] = false,
-				[traitNames["Restore Magicka"]] = false,
-				[traitNames["Protection"]] = false
+			[150670] = {
+				-- Vile Coagulant
+				traits = {
+					[traitNames["Timidity"]] = false,
+					[traitNames["Ravage Health"]] = false,
+					[traitNames["Restore Magicka"]] = false,
+					[traitNames["Protection"]] = false
+				},
+				itemId = 150670
 			},
-			itemId = 150670
-		},
-		[30152] = {
-			-- Violet Coprinus
-			traits = {
-				[traitNames["Breach"]] = false,
-				[traitNames["Ravage Health"]] = false,
-				[traitNames["Increase Power"]] = false,
-				[traitNames["Ravage Magicka"]] = false
-			},
-			itemId = 30152
-		},
-		[30166] = {
-			-- Water Hyacinth
-			traits = {
-				[traitNames["Restore Health"]] = false,
-				[traitNames["Critical"]] = false,
-				[traitNames["Entrapment"]] = false,
-				[traitNames["Damage Shield"]] = false
-			},
-			itemId = 30166
-		},
-		[30154] = {
-			-- White Cap
-			traits = {
-				[traitNames["Enervation"]] = false,
-				[traitNames["Ravage Magicka"]] = false,
-				[traitNames["Increase Spell Resist"]] = false,
-				[traitNames["Detection"]] = false
-			},
-			itemId = 30154
-		},
-		[224360] = {
-			-- Winter's Grave Tongue
-			traits = {
-				[traitNames["Vexation"]] = false,
-				[traitNames["Heal Absorption"]] = false,
-				[traitNames["Defile"]] = false,
-				[traitNames["Breach"]] = false
-			},
-			itemId = 224360
-		},
-		[30159] = {
-			-- Wormwood
-			traits = {
-				[traitNames["Critical"]] = false,
-				[traitNames["Hindrance"]] = false,
-				[traitNames["Detection"]] = false,
-				[traitNames["Unstoppable"]] = false
-			},
-			itemId = 30159
+			[150672] = {
+				-- Purple Nirnroot
+				traits = {
+					[traitNames["Timidity"]] = false,
+					[traitNames["Spell Crit"]] = false,
+					[traitNames["Creeping Ravage Health"]] = false,
+					[traitNames["Restore Health"]] = false
+				},
+				itemId = 150672
+			}
 		}
-	}
+
+		PotMaker.badTraitMatches = {
+			[traitNames["Ravage Health"]] = true,
+			[traitNames["Ravage Magicka"]] = true,
+			[traitNames["Ravage Stamina"]] = true,
+			[traitNames["Lower Weapon Power"]] = true,
+			[traitNames["Lower Spell Power"]] = true,
+			[traitNames["Lower Weapon Crit"]] = true,
+			[traitNames["Lower Spell Crit"]] = true,
+			[traitNames["Lower Armor"]] = true,
+			[traitNames["Lower Spell Resist"]] = true,
+			[traitNames["Stun"]] = true,
+			[traitNames["Reduce Speed"]] = true,
+			[traitNames["Creeping Ravage Health"]] = true,
+			[traitNames["Defile"]] = true,
+			[traitNames["Vulnerability"]] = true,
+			[traitNames["Timidity"]] = true
+		}
+
+		PotMaker.oppositeTraits = {
+			[traitNames["Restore Health"]] = traitNames["Ravage Health"],
+			[traitNames["Ravage Health"]] = traitNames["Restore Health"],
+			[traitNames["Restore Magicka"]] = traitNames["Ravage Magicka"],
+			[traitNames["Ravage Magicka"]] = traitNames["Restore Magicka"],
+			[traitNames["Restore Stamina"]] = traitNames["Ravage Stamina"],
+			[traitNames["Ravage Stamina"]] = traitNames["Restore Stamina"],
+			[traitNames["Increase Weapon Power"]] = traitNames["Lower Weapon Power"],
+			[traitNames["Lower Weapon Power"]] = traitNames["Increase Weapon Power"],
+			[traitNames["Increase Spell Power"]] = traitNames["Lower Spell Power"],
+			[traitNames["Lower Spell Power"]] = traitNames["Increase Spell Power"],
+			[traitNames["Weapon Crit"]] = traitNames["Lower Weapon Crit"],
+			[traitNames["Lower Weapon Crit"]] = traitNames["Weapon Crit"],
+			[traitNames["Spell Crit"]] = traitNames["Lower Spell Crit"],
+			[traitNames["Lower Spell Crit"]] = traitNames["Spell Crit"],
+			[traitNames["Increase Armor"]] = traitNames["Lower Armor"],
+			[traitNames["Lower Armor"]] = traitNames["Increase Armor"],
+			[traitNames["Increase Spell Resist"]] = traitNames["Lower Spell Resist"],
+			[traitNames["Lower Spell Resist"]] = traitNames["Increase Spell Resist"],
+			[traitNames["Unstoppable"]] = traitNames["Stun"],
+			[traitNames["Stun"]] = traitNames["Unstoppable"],
+			[traitNames["Speed"]] = traitNames["Reduce Speed"],
+			[traitNames["Reduce Speed"]] = traitNames["Speed"],
+			[traitNames["Invisible"]] = traitNames["Detection"],
+			[traitNames["Detection"]] = traitNames["Invisible"],
+			[traitNames["Vitality"]] = traitNames["Defile"],
+			[traitNames["Sustained Restore Health"]] = traitNames["Creeping Ravage Health"],
+			[traitNames["Protection"]] = traitNames["Vulnerability"],
+			[traitNames["Creeping Ravage Health"]] = traitNames["Sustained Restore Health"],
+			[traitNames["Defile"]] = traitNames["Vitality"],
+			[traitNames["Vulnerability"]] = traitNames["Protection"],
+			[traitNames["Heroism"]] = traitNames["Timidity"],
+			[traitNames["Timidity"]] = traitNames["Heroism"]
+		}
+	else
+		reagentsById = {
+			[77583] = {
+				-- Beetle Scuttle
+				traits = {
+					[traitNames["Breach"]] = false,
+					[traitNames["Increase Armor"]] = false,
+					[traitNames["Protection"]] = false,
+					[traitNames["Vitality"]] = false
+				},
+				itemId = 77583
+			},
+			[30157] = {
+				-- Blessed Thistle
+				traits = {
+					[traitNames["Restore Stamina"]] = false,
+					[traitNames["Increase Power"]] = false,
+					[traitNames["Heal Absorption"]] = false,
+					[traitNames["Speed"]] = false
+				},
+				itemId = 30157
+			},
+			[30148] = {
+				-- Blue Entoloma
+				traits = {
+					[traitNames["Ravage Magicka"]] = false,
+					[traitNames["Heal Absorption"]] = false,
+					[traitNames["Restore Health"]] = false,
+					[traitNames["Invisible"]] = false
+				},
+				itemId = 30148
+			},
+			[30160] = {
+				-- Bugloss
+				traits = {
+					[traitNames["Increase Spell Resist"]] = false,
+					[traitNames["Restore Health"]] = false,
+					[traitNames["Mending"]] = false,
+					[traitNames["Restore Magicka"]] = false
+				},
+				itemId = 30160
+			},
+			[77585] = {
+				-- Butterfly Wing
+				traits = {
+					[traitNames["Restore Health"]] = false,
+					[traitNames["Damage Shield"]] = false,
+					[traitNames["Lingering Health"]] = false,
+					[traitNames["Vitality"]] = false
+				},
+				itemId = 77585
+			},
+			[150669] = {
+				-- Chaurus Egg
+				traits = {
+					[traitNames["Timidity"]] = false,
+					[traitNames["Ravage Magicka"]] = false,
+					[traitNames["Vexation"]] = false,
+					[traitNames["Detection"]] = false
+				},
+				itemId = 150669
+			},
+			[139020] = {
+				-- Clam Gall
+				traits = {
+					[traitNames["Increase Spell Resist"]] = false,
+					[traitNames["Hindrance"]] = false,
+					[traitNames["Vulnerability"]] = false,
+					[traitNames["Defile"]] = false
+				},
+				itemId = 139020
+			},
+			[30164] = {
+				-- Columbine
+				traits = {
+					[traitNames["Restore Health"]] = false,
+					[traitNames["Restore Magicka"]] = false,
+					[traitNames["Restore Stamina"]] = false,
+					[traitNames["Unstoppable"]] = false
+				},
+				itemId = 30164
+			},
+			[30161] = {
+				-- Corn Flower
+				traits = {
+					[traitNames["Restore Magicka"]] = false,
+					[traitNames["Increase Power"]] = false,
+					[traitNames["Ravage Health"]] = false,
+					[traitNames["Detection"]] = false
+				},
+				itemId = 30161
+			},
+			[150672] = {
+				-- Crimson Nirnroot
+				traits = {
+					[traitNames["Timidity"]] = false,
+					[traitNames["Force"]] = false,
+					[traitNames["Gradual Ravage Health"]] = false,
+					[traitNames["Restore Health"]] = false
+				},
+				itemId = 150672
+			},
+			[224357] = {
+				-- Cultivated Cryptpods
+				traits = {
+					[traitNames["Heroism"]] = false,
+					[traitNames["Increase Power"]] = false,
+					[traitNames["Mending"]] = false,
+					[traitNames["Damage Shield"]] = false
+				},
+				itemId = 224357
+			},
+			[224358] = {
+				-- Daedra-Blood Maggots
+				traits = {
+					[traitNames["Defile"]] = false,
+					[traitNames["Heal Absorption"]] = false,
+					[traitNames["Cowardice"]] = false,
+					[traitNames["Entrapment"]] = false
+				},
+				itemId = 224358
+			},
+			[150789] = {
+				-- Dragon's Bile
+				traits = {
+					[traitNames["Heroism"]] = false,
+					[traitNames["Vulnerability"]] = false,
+					[traitNames["Invisible"]] = false,
+					[traitNames["Vitality"]] = false
+				},
+				itemId = 150789
+			},
+			[150731] = {
+				-- Dragon's Blood
+				traits = {
+					[traitNames["Lingering Health"]] = false,
+					[traitNames["Restore Stamina"]] = false,
+					[traitNames["Heroism"]] = false,
+					[traitNames["Defile"]] = false
+				},
+				itemId = 150731
+			},
+			[150671] = {
+				-- Dragon Rheum
+				traits = {
+					[traitNames["Restore Magicka"]] = false,
+					[traitNames["Uncertainty"]] = false,
+					[traitNames["Heroism"]] = false,
+					[traitNames["Speed"]] = false
+				},
+				itemId = 150671
+			},
+			[30162] = {
+				-- Dragonthorn
+				traits = {
+					[traitNames["Increase Power"]] = false,
+					[traitNames["Restore Stamina"]] = false,
+					[traitNames["Fracture"]] = false,
+					[traitNames["Critical"]] = false
+				},
+				itemId = 30162
+			},
+			[30151] = {
+				-- Emetic Russula
+				traits = {
+					[traitNames["Ravage Health"]] = false,
+					[traitNames["Ravage Magicka"]] = false,
+					[traitNames["Ravage Stamina"]] = false,
+					[traitNames["Entrapment"]] = false
+				},
+				itemId = 30151
+			},
+			[77587] = {
+				-- Fleshfly Larva
+				traits = {
+					[traitNames["Ravage Stamina"]] = false,
+					[traitNames["Vulnerability"]] = false,
+					[traitNames["Gradual Ravage Health"]] = false,
+					[traitNames["Vitality"]] = false
+				},
+				itemId = 77587
+			},
+			[224359] = {
+				-- Fossilized Verminous Bones
+				traits = {
+					[traitNames["Heroism"]] = false,
+					[traitNames["Restore Stamina"]] = false,
+					[traitNames["Force"]] = false,
+					[traitNames["Detection"]] = false
+				},
+				itemId = 224359
+			},
+			[30156] = {
+				-- Imp Stool
+				traits = {
+					[traitNames["Cowardice"]] = false,
+					[traitNames["Ravage Stamina"]] = false,
+					[traitNames["Increase Armor"]] = false,
+					[traitNames["Enervation"]] = false
+				},
+				itemId = 30156
+			},
+			[30158] = {
+				-- Lady's Smock
+				traits = {
+					[traitNames["Force"]] = false,
+					[traitNames["Restore Magicka"]] = false,
+					[traitNames["Breach"]] = false,
+					[traitNames["Critical"]] = false
+				},
+				itemId = 30158
+			},
+			[30155] = {
+				-- Luminous Russula
+				traits = {
+					[traitNames["Ravage Stamina"]] = false,
+					[traitNames["Restore Health"]] = false,
+					[traitNames["Hindrance"]] = false,
+					[traitNames["Cowardice"]] = false
+				},
+				itemId = 30155
+			},
+			[30163] = {
+				-- Mountain Flower
+				traits = {
+					[traitNames["Increase Armor"]] = false,
+					[traitNames["Restore Health"]] = false,
+					[traitNames["Cowardice"]] = false,
+					[traitNames["Restore Stamina"]] = false
+				},
+				itemId = 30163
+			},
+			[77591] = {
+				-- Mudcrab Chitin
+				traits = {
+					[traitNames["Increase Spell Resist"]] = false,
+					[traitNames["Increase Armor"]] = false,
+					[traitNames["Protection"]] = false,
+					[traitNames["Defile"]] = false
+				},
+				itemId = 77591
+			},
+			[30153] = {
+				-- Namira's Rot
+				traits = {
+					[traitNames["Enervation"]] = false,
+					[traitNames["Speed"]] = false,
+					[traitNames["Invisible"]] = false,
+					[traitNames["Unstoppable"]] = false
+				},
+				itemId = 30153
+			},
+			[77590] = {
+				-- Nightshade
+				traits = {
+					[traitNames["Ravage Health"]] = false,
+					[traitNames["Protection"]] = false,
+					[traitNames["Gradual Ravage Health"]] = false,
+					[traitNames["Defile"]] = false
+				},
+				itemId = 77590
+			},
+			[30165] = {
+				-- Nirnroot
+				traits = {
+					[traitNames["Ravage Health"]] = false,
+					[traitNames["Uncertainty"]] = false,
+					[traitNames["Invisible"]] = false,
+					[traitNames["Heal Absorption"]] = false
+				},
+				itemId = 30165
+			},
+			[139019] = {
+				-- Powdered Mother of Pearl
+				traits = {
+					[traitNames["Mending"]] = false,
+					[traitNames["Speed"]] = false,
+					[traitNames["Vitality"]] = false,
+					[traitNames["Protection"]] = false
+				},
+				itemId = 139019
+			},
+			[77589] = {
+				-- Scrib Jelly
+				traits = {
+					[traitNames["Vexation"]] = false,
+					[traitNames["Speed"]] = false,
+					[traitNames["Vulnerability"]] = false,
+					[traitNames["Lingering Health"]] = false
+				},
+				itemId = 77589
+			},
+			[77584] = {
+				-- Spider Egg
+				traits = {
+					[traitNames["Hindrance"]] = false,
+					[traitNames["Invisible"]] = false,
+					[traitNames["Damage Shield"]] = false,
+					[traitNames["Defile"]] = false
+				},
+				itemId = 77584
+			},
+			[30149] = {
+				-- Stinkhorn
+				traits = {
+					[traitNames["Fracture"]] = false,
+					[traitNames["Ravage Health"]] = false,
+					[traitNames["Force"]] = false,
+					[traitNames["Ravage Stamina"]] = false
+				},
+				itemId = 30149
+			},
+			[77581] = {
+				-- Torchbug Thorax
+				traits = {
+					[traitNames["Fracture"]] = false,
+					[traitNames["Uncertainty"]] = false,
+					[traitNames["Detection"]] = false,
+					[traitNames["Mending"]] = false
+				},
+				itemId = 77581
+			},
+			[150670] = {
+				-- Vile Coagulant
+				traits = {
+					[traitNames["Timidity"]] = false,
+					[traitNames["Ravage Health"]] = false,
+					[traitNames["Restore Magicka"]] = false,
+					[traitNames["Protection"]] = false
+				},
+				itemId = 150670
+			},
+			[30152] = {
+				-- Violet Coprinus
+				traits = {
+					[traitNames["Breach"]] = false,
+					[traitNames["Ravage Health"]] = false,
+					[traitNames["Increase Power"]] = false,
+					[traitNames["Ravage Magicka"]] = false
+				},
+				itemId = 30152
+			},
+			[30166] = {
+				-- Water Hyacinth
+				traits = {
+					[traitNames["Restore Health"]] = false,
+					[traitNames["Critical"]] = false,
+					[traitNames["Entrapment"]] = false,
+					[traitNames["Damage Shield"]] = false
+				},
+				itemId = 30166
+			},
+			[30154] = {
+				-- White Cap
+				traits = {
+					[traitNames["Enervation"]] = false,
+					[traitNames["Ravage Magicka"]] = false,
+					[traitNames["Increase Spell Resist"]] = false,
+					[traitNames["Detection"]] = false
+				},
+				itemId = 30154
+			},
+			[224360] = {
+				-- Winter's Grave Tongue
+				traits = {
+					[traitNames["Vexation"]] = false,
+					[traitNames["Heal Absorption"]] = false,
+					[traitNames["Defile"]] = false,
+					[traitNames["Breach"]] = false
+				},
+				itemId = 224360
+			},
+			[30159] = {
+				-- Wormwood
+				traits = {
+					[traitNames["Critical"]] = false,
+					[traitNames["Hindrance"]] = false,
+					[traitNames["Detection"]] = false,
+					[traitNames["Unstoppable"]] = false
+				},
+				itemId = 30159
+			}
+		}
+
+		PotMaker.badTraitMatches = {
+			[traitNames["Ravage Health"]] = true,
+			[traitNames["Ravage Magicka"]] = true,
+			[traitNames["Ravage Stamina"]] = true,
+			[traitNames["Cowardice"]] = true,
+			[traitNames["Enervation"]] = true,
+			[traitNames["Uncertainty"]] = true,
+			[traitNames["Fracture"]] = true,
+			[traitNames["Breach"]] = true,
+			[traitNames["Entrapment"]] = true,
+			[traitNames["Hindrance"]] = true,
+			[traitNames["Gradual Ravage Health"]] = true,
+			[traitNames["Defile"]] = true,
+			[traitNames["Vulnerability"]] = true,
+			[traitNames["Timidity"]] = true,
+			[traitNames["Vexation"]] = true,
+			[traitNames["Heal Absorption"]] = true
+		}
+
+		PotMaker.oppositeTraits = {
+			[traitNames["Restore Health"]] = traitNames["Ravage Health"],
+			[traitNames["Ravage Health"]] = traitNames["Restore Health"],
+			[traitNames["Restore Magicka"]] = traitNames["Ravage Magicka"],
+			[traitNames["Ravage Magicka"]] = traitNames["Restore Magicka"],
+			[traitNames["Restore Stamina"]] = traitNames["Ravage Stamina"],
+			[traitNames["Ravage Stamina"]] = traitNames["Restore Stamina"],
+			[traitNames["Increase Armor"]] = traitNames["Fracture"],
+			[traitNames["Fracture"]] = traitNames["Increase Armor"],
+			[traitNames["Increase Spell Resist"]] = traitNames["Breach"],
+			[traitNames["Breach"]] = traitNames["Increase Spell Resist"],
+			[traitNames["Unstoppable"]] = traitNames["Entrapment"],
+			[traitNames["Entrapment"]] = traitNames["Unstoppable"],
+			[traitNames["Speed"]] = traitNames["Hindrance"],
+			[traitNames["Hindrance"]] = traitNames["Speed"],
+			[traitNames["Invisible"]] = traitNames["Detection"],
+			[traitNames["Detection"]] = traitNames["Invisible"],
+			[traitNames["Vitality"]] = traitNames["Defile"],
+			[traitNames["Defile"]] = traitNames["Vitality"],
+			[traitNames["Lingering Health"]] = traitNames["Gradual Ravage Health"],
+			[traitNames["Gradual Ravage Health"]] = traitNames["Lingering Health"],
+			[traitNames["Protection"]] = traitNames["Vulnerability"],
+			[traitNames["Vulnerability"]] = traitNames["Protection"],
+			[traitNames["Heroism"]] = traitNames["Timidity"],
+			[traitNames["Timidity"]] = traitNames["Heroism"],
+			[traitNames["Increase Power"]] = traitNames["Cowardice"],
+			[traitNames["Cowardice"]] = traitNames["Increase Power"],
+			[traitNames["Critical"]] = traitNames["Uncertainty"],
+			[traitNames["Uncertainty"]] = traitNames["Critical"],
+			[traitNames["Force"]] = traitNames["Enervation"],
+			[traitNames["Enervation"]] = traitNames["Force"],
+			[traitNames["Mending"]] = traitNames["Vexation"],
+			[traitNames["Vexation"]] = traitNames["Mending"],
+			[traitNames["Damage Shield"]] = traitNames["Heal Absorption"],
+			[traitNames["Heal Absorption"]] = traitNames["Damage Shield"]
+		}
+	end
 
 	-- generate PotMaker.allReagents from API by item id
 	PotMaker.allReagents = {}
@@ -704,70 +1146,15 @@ function PotMaker.initVar()
 			-- if unknown, traitName is empty
 			if known then
 				traitName = format("<<C:1>>", traitName)
-				-- if reagent.traits[traitName] == nil then
-				-- 	error("Unknown trait name: " .. traitName .. " for item " .. getItemLinkName(reagent.itemLink))
-				-- end
+				if reagent.traits[traitName] == nil then
+					d("Unknown trait name: " .. traitName .. " for item " .. getItemLinkName(reagent.itemLink))
+				end
 				reagent.traits[traitName] = known
 			end
 		end
 		allReagents[itemId] = reagent
 	end
 
-	PotMaker.badTraitMatches = {
-		[traitNames["Ravage Health"]] = true,
-		[traitNames["Ravage Magicka"]] = true,
-		[traitNames["Ravage Stamina"]] = true,
-		[traitNames["Cowardice"]] = true,
-		[traitNames["Enervation"]] = true,
-		[traitNames["Uncertainty"]] = true,
-		[traitNames["Fracture"]] = true,
-		[traitNames["Breach"]] = true,
-		[traitNames["Entrapment"]] = true,
-		[traitNames["Hindrance"]] = true,
-		[traitNames["Gradual Ravage Health"]] = true,
-		[traitNames["Defile"]] = true,
-		[traitNames["Vulnerability"]] = true,
-		[traitNames["Timidity"]] = true,
-		[traitNames["Vexation"]] = true,
-		[traitNames["Heal Absorption"]] = true
-	}
-
-	PotMaker.oppositeTraits = {
-		[traitNames["Restore Health"]] = traitNames["Ravage Health"],
-		[traitNames["Ravage Health"]] = traitNames["Restore Health"],
-		[traitNames["Restore Magicka"]] = traitNames["Ravage Magicka"],
-		[traitNames["Ravage Magicka"]] = traitNames["Restore Magicka"],
-		[traitNames["Restore Stamina"]] = traitNames["Ravage Stamina"],
-		[traitNames["Ravage Stamina"]] = traitNames["Restore Stamina"],
-		[traitNames["Increase Armor"]] = traitNames["Fracture"],
-		[traitNames["Fracture"]] = traitNames["Increase Armor"],
-		[traitNames["Increase Spell Resist"]] = traitNames["Breach"],
-		[traitNames["Breach"]] = traitNames["Increase Spell Resist"],
-		[traitNames["Unstoppable"]] = traitNames["Entrapment"],
-		[traitNames["Entrapment"]] = traitNames["Unstoppable"],
-		[traitNames["Speed"]] = traitNames["Hindrance"],
-		[traitNames["Hindrance"]] = traitNames["Speed"],
-		[traitNames["Invisible"]] = traitNames["Detection"],
-		[traitNames["Detection"]] = traitNames["Invisible"],
-		[traitNames["Vitality"]] = traitNames["Defile"],
-		[traitNames["Defile"]] = traitNames["Vitality"],
-		[traitNames["Lingering Health"]] = traitNames["Gradual Ravage Health"],
-		[traitNames["Gradual Ravage Health"]] = traitNames["Lingering Health"],
-		[traitNames["Protection"]] = traitNames["Vulnerability"],
-		[traitNames["Vulnerability"]] = traitNames["Protection"],
-		[traitNames["Heroism"]] = traitNames["Timidity"],
-		[traitNames["Timidity"]] = traitNames["Heroism"],
-		[traitNames["Increase Power"]] = traitNames["Cowardice"],
-		[traitNames["Cowardice"]] = traitNames["Increase Power"],
-		[traitNames["Critical"]] = traitNames["Uncertainty"],
-		[traitNames["Uncertainty"]] = traitNames["Critical"],
-		[traitNames["Force"]] = traitNames["Enervation"],
-		[traitNames["Enervation"]] = traitNames["Force"],
-		[traitNames["Mending"]] = traitNames["Vexation"],
-		[traitNames["Vexation"]] = traitNames["Mending"],
-		[traitNames["Damage Shield"]] = traitNames["Heal Absorption"],
-		[traitNames["Heal Absorption"]] = traitNames["Damage Shield"]
-	}
 	-- scan matching reagents once
 	local reagents = {}
 	for itemId in pairs(allReagents) do
@@ -2732,95 +3119,186 @@ do
 
 	local control
 
-	function PotMaker.createControls()
-		if #PotMaker.PositiveTraitControls == 0 then
-			local cnt = 1
-			PotMaker.PositiveTraitControls[cnt] = updateControl({name = "Restore Health", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_restorehealth.dds"}, xPosMustFilter, cnt)
-			cnt = cnt + 1
-			PotMaker.PositiveTraitControls[cnt] = updateControl({name = "Restore Magicka", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_restoremagicka.dds"}, xPosMustFilter, cnt)
-			cnt = cnt + 1
-			PotMaker.PositiveTraitControls[cnt] = updateControl({name = "Restore Stamina", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_restorestamina.dds"}, xPosMustFilter, cnt)
-			cnt = cnt + 1
-			PotMaker.PositiveTraitControls[cnt] = updateControl({name = "Increase Armor", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_increasearmor.dds"}, xPosMustFilter, cnt)
-			cnt = cnt + 1
-			PotMaker.PositiveTraitControls[cnt] = updateControl({name = "Unstoppable", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_unstoppable.dds"}, xPosMustFilter, cnt)
-			cnt = cnt + 1
-			PotMaker.PositiveTraitControls[cnt] = updateControl({name = "Speed", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_speed.dds"}, xPosMustFilter, cnt)
-			cnt = cnt + 1
-			PotMaker.PositiveTraitControls[cnt] = updateControl({name = "Increase Power", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_increasespellpower.dds"}, xPosMustFilter, cnt)
-			cnt = cnt + 1
-			PotMaker.PositiveTraitControls[cnt] = updateControl({name = "Critical", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_spellcrit.dds"}, xPosMustFilter, cnt)
-			cnt = cnt + 1
-			PotMaker.PositiveTraitControls[cnt] = updateControl({name = "Increase Spell Resist", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_increasespellresist.dds"}, xPosMustFilter, cnt)
-			cnt = cnt + 1
-			PotMaker.PositiveTraitControls[cnt] = updateControl({name = "Invisible", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_invisible.dds"}, xPosMustFilter, cnt)
-			cnt = cnt + 1
-			PotMaker.PositiveTraitControls[cnt] = updateControl({name = "Detection", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_detection.dds"}, xPosMustFilter, cnt)
-			cnt = cnt + 1
-			PotMaker.PositiveTraitControls[cnt] = updateControl({name = "Lingering Health", icon = "esoui/art/icons/alchemy/crafting_poison_trait_hot.dds"}, xPosMustFilter, cnt)
-			cnt = cnt + 1
-			PotMaker.PositiveTraitControls[cnt] = updateControl({name = "Vitality", icon = "esoui/art/icons/alchemy/crafting_poison_trait_increasehealing.dds"}, xPosMustFilter, cnt)
-			cnt = cnt + 1
-			PotMaker.PositiveTraitControls[cnt] = updateControl({name = "Protection", icon = "esoui/art/icons/alchemy/crafting_poison_trait_protection.dds"}, xPosMustFilter, cnt)
-			cnt = cnt + 1
-			PotMaker.PositiveTraitControls[cnt] = updateControl({name = "Heroism", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_heroism.dds"}, xPosMustFilter, cnt)
-			cnt = cnt + 1
-			PotMaker.PositiveTraitControls[cnt] = updateControl({name = "Mending", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_mending.dds"}, xPosMustFilter, cnt)
-			cnt = cnt + 1
-			PotMaker.PositiveTraitControls[cnt] = updateControl({name = "Force", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_increaseweaponpower.dds"}, xPosMustFilter, cnt)
-			cnt = cnt + 1
-			PotMaker.PositiveTraitControls[cnt] = updateControl({name = "Damage Shield", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_damageshield.dds"}, xPosMustFilter, cnt)
+	if GetAPIVersion() < 101051 then
+		function PotMaker.createControls()
+			if #PotMaker.PositiveTraitControls == 0 then
+				local cnt = 1
+				PotMaker.PositiveTraitControls[cnt] = updateControl({name = "Restore Health", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_restorehealth.dds"}, xPosMustFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.PositiveTraitControls[cnt] = updateControl({name = "Restore Magicka", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_restoremagicka.dds"}, xPosMustFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.PositiveTraitControls[cnt] = updateControl({name = "Restore Stamina", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_restorestamina.dds"}, xPosMustFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.PositiveTraitControls[cnt] = updateControl({name = "Increase Armor", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_increasearmor.dds"}, xPosMustFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.PositiveTraitControls[cnt] = updateControl({name = "Unstoppable", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_unstoppable.dds"}, xPosMustFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.PositiveTraitControls[cnt] = updateControl({name = "Speed", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_speed.dds"}, xPosMustFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.PositiveTraitControls[cnt] = updateControl({name = "Increase Weapon Power", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_increaseweaponpower.dds"}, xPosMustFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.PositiveTraitControls[cnt] = updateControl({name = "Increase Spell Power", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_increasespellpower.dds"}, xPosMustFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.PositiveTraitControls[cnt] = updateControl({name = "Weapon Crit", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_weaponcrit.dds"}, xPosMustFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.PositiveTraitControls[cnt] = updateControl({name = "Spell Crit", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_spellcrit.dds"}, xPosMustFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.PositiveTraitControls[cnt] = updateControl({name = "Increase Spell Resist", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_increasespellresist.dds"}, xPosMustFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.PositiveTraitControls[cnt] = updateControl({name = "Invisible", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_invisible.dds"}, xPosMustFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.PositiveTraitControls[cnt] = updateControl({name = "Detection", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_detection.dds"}, xPosMustFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.PositiveTraitControls[cnt] = updateControl({name = "Sustained Restore Health", icon = "esoui/art/icons/alchemy/crafting_poison_trait_hot.dds"}, xPosMustFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.PositiveTraitControls[cnt] = updateControl({name = "Vitality", icon = "esoui/art/icons/alchemy/crafting_poison_trait_increasehealing.dds"}, xPosMustFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.PositiveTraitControls[cnt] = updateControl({name = "Protection", icon = "esoui/art/icons/alchemy/crafting_poison_trait_protection.dds"}, xPosMustFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.PositiveTraitControls[cnt] = updateControl({name = "Heroism", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_heroism.dds"}, xPosMustFilter, cnt)
 
-			control = CreateControlFromVirtual("PotionMakerAllMustCheckBox", PotionMakerSearchBG, "PotionMakerCheckBox")
-			control:SetAnchor(BOTTOMLEFT, nil, BOTTOMLEFT, xPosMustFilter, -12)
-			control:GetNamedChild("Text").defaultHighlightColor = COLOR_KHRILLSELECT
-			ZO_CheckButton_SetToggleFunction(control, PotMaker.checkAll)
-			local labelControl = control:GetNamedChild("Text")
-			labelControl:SetText(PotMaker.language.check_all)
-			control.traitControls = PotMaker.PositiveTraitControls
+				control = CreateControlFromVirtual("PotionMakerAllMustCheckBox", PotionMakerSearchBG, "PotionMakerCheckBox")
+				control:SetAnchor(BOTTOMLEFT, nil, BOTTOMLEFT, xPosMustFilter, -12)
+				control:GetNamedChild("Text").defaultHighlightColor = COLOR_KHRILLSELECT
+				ZO_CheckButton_SetToggleFunction(control, PotMaker.checkAll)
+				local labelControl = control:GetNamedChild("Text")
+				labelControl:SetText(PotMaker.language.check_all)
+				control.traitControls = PotMaker.PositiveTraitControls
+			end
+			if #PotMaker.NegativeTraitControls == 0 then
+				local cnt = 1
+				PotMaker.NegativeTraitControls[cnt] = updateControl({name = "Ravage Health", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_ravagehealth.dds"}, xPosMustNotFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.NegativeTraitControls[cnt] = updateControl({name = "Ravage Magicka", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_ravagemagicka.dds"}, xPosMustNotFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.NegativeTraitControls[cnt] = updateControl({name = "Ravage Stamina", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_ravagestamina.dds"}, xPosMustNotFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.NegativeTraitControls[cnt] = updateControl({name = "Lower Armor", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_lowerarmor.dds"}, xPosMustNotFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.NegativeTraitControls[cnt] = updateControl({name = "Stun", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_stun.dds"}, xPosMustNotFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.NegativeTraitControls[cnt] = updateControl({name = "Reduce Speed", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_reducespeed.dds"}, xPosMustNotFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.NegativeTraitControls[cnt] = updateControl({name = "Lower Weapon Power", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_lowerweaponpower.dds"}, xPosMustNotFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.NegativeTraitControls[cnt] = updateControl({name = "Lower Spell Power", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_lowerspellpower.dds"}, xPosMustNotFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.NegativeTraitControls[cnt] = updateControl({name = "Lower Weapon Crit", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_lowerweaponcrit.dds"}, xPosMustNotFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.NegativeTraitControls[cnt] = updateControl({name = "Lower Spell Crit", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_lowerspellcrit.dds"}, xPosMustNotFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.NegativeTraitControls[cnt] = updateControl({name = "Lower Spell Resist", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_lowerspellresist.dds"}, xPosMustNotFilter, cnt)
+				cnt = cnt + 1
+
+				PotMaker.NegativeTraitControls[cnt] = updateControl({name = "Creeping Ravage Health", icon = "esoui/art/icons/alchemy/crafting_poison_trait_dot.dds"}, xPosMustNotFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.NegativeTraitControls[cnt] = updateControl({name = "Defile", icon = "esoui/art/icons/alchemy/crafting_poison_trait_decreasehealing.dds"}, xPosMustNotFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.NegativeTraitControls[cnt] = updateControl({name = "Vulnerability", icon = "esoui/art/icons/alchemy/crafting_poison_trait_damage.dds"}, xPosMustNotFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.NegativeTraitControls[cnt] = updateControl({name = "Timidity", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_timidity.dds"}, xPosMustNotFilter, cnt)
+				cnt = cnt + 1
+
+				control = CreateControlFromVirtual("PotionMakerAllMustNotCheckBox", PotionMakerSearchBG, "PotionMakerCheckBox")
+				control:SetAnchor(BOTTOMLEFT, nil, BOTTOMLEFT, xPosMustNotFilter, -12)
+				control:GetNamedChild("Text").defaultHighlightColor = COLOR_KHRILLSELECT
+				ZO_CheckButton_SetToggleFunction(control, PotMaker.checkAll)
+				local labelControl = control:GetNamedChild("Text")
+				labelControl:SetText(PotMaker.language.check_all)
+				control.traitControls = PotMaker.NegativeTraitControls
+			end
 		end
-		if #PotMaker.NegativeTraitControls == 0 then
-			local cnt = 1
-			PotMaker.NegativeTraitControls[cnt] = updateControl({name = "Ravage Health", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_ravagehealth.dds"}, xPosMustNotFilter, cnt)
-			cnt = cnt + 1
-			PotMaker.NegativeTraitControls[cnt] = updateControl({name = "Ravage Magicka", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_ravagemagicka.dds"}, xPosMustNotFilter, cnt)
-			cnt = cnt + 1
-			PotMaker.NegativeTraitControls[cnt] = updateControl({name = "Ravage Stamina", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_ravagestamina.dds"}, xPosMustNotFilter, cnt)
-			cnt = cnt + 1
-			PotMaker.NegativeTraitControls[cnt] = updateControl({name = "Fracture", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_lowerarmor.dds"}, xPosMustNotFilter, cnt)
-			cnt = cnt + 1
-			PotMaker.NegativeTraitControls[cnt] = updateControl({name = "Entrapment", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_stun.dds"}, xPosMustNotFilter, cnt)
-			cnt = cnt + 1
-			PotMaker.NegativeTraitControls[cnt] = updateControl({name = "Hindrance", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_reducespeed.dds"}, xPosMustNotFilter, cnt)
-			cnt = cnt + 1
-			PotMaker.NegativeTraitControls[cnt] = updateControl({name = "Cowardice", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_lowerspellpower.dds"}, xPosMustNotFilter, cnt)
-			cnt = cnt + 1
-			PotMaker.NegativeTraitControls[cnt] = updateControl({name = "Enervation", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_lowerweaponpower.dds"}, xPosMustNotFilter, cnt)
-			cnt = cnt + 1
-			PotMaker.NegativeTraitControls[cnt] = updateControl({name = "Uncertainty", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_lowerspellcrit.dds"}, xPosMustNotFilter, cnt)
-			cnt = cnt + 1
-			PotMaker.NegativeTraitControls[cnt] = updateControl({name = "Breach", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_lowerspellresist.dds"}, xPosMustNotFilter, cnt)
-			cnt = cnt + 1
+	else
+		function PotMaker.createControls()
+			if #PotMaker.PositiveTraitControls == 0 then
+				local cnt = 1
+				PotMaker.PositiveTraitControls[cnt] = updateControl({name = "Restore Health", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_restorehealth.dds"}, xPosMustFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.PositiveTraitControls[cnt] = updateControl({name = "Restore Magicka", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_restoremagicka.dds"}, xPosMustFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.PositiveTraitControls[cnt] = updateControl({name = "Restore Stamina", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_restorestamina.dds"}, xPosMustFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.PositiveTraitControls[cnt] = updateControl({name = "Increase Armor", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_increasearmor.dds"}, xPosMustFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.PositiveTraitControls[cnt] = updateControl({name = "Unstoppable", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_unstoppable.dds"}, xPosMustFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.PositiveTraitControls[cnt] = updateControl({name = "Speed", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_speed.dds"}, xPosMustFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.PositiveTraitControls[cnt] = updateControl({name = "Increase Power", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_increasespellpower.dds"}, xPosMustFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.PositiveTraitControls[cnt] = updateControl({name = "Critical", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_spellcrit.dds"}, xPosMustFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.PositiveTraitControls[cnt] = updateControl({name = "Increase Spell Resist", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_increasespellresist.dds"}, xPosMustFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.PositiveTraitControls[cnt] = updateControl({name = "Invisible", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_invisible.dds"}, xPosMustFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.PositiveTraitControls[cnt] = updateControl({name = "Detection", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_detection.dds"}, xPosMustFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.PositiveTraitControls[cnt] = updateControl({name = "Lingering Health", icon = "esoui/art/icons/alchemy/crafting_poison_trait_hot.dds"}, xPosMustFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.PositiveTraitControls[cnt] = updateControl({name = "Vitality", icon = "esoui/art/icons/alchemy/crafting_poison_trait_increasehealing.dds"}, xPosMustFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.PositiveTraitControls[cnt] = updateControl({name = "Protection", icon = "esoui/art/icons/alchemy/crafting_poison_trait_protection.dds"}, xPosMustFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.PositiveTraitControls[cnt] = updateControl({name = "Heroism", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_heroism.dds"}, xPosMustFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.PositiveTraitControls[cnt] = updateControl({name = "Mending", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_mending.dds"}, xPosMustFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.PositiveTraitControls[cnt] = updateControl({name = "Force", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_increaseweaponpower.dds"}, xPosMustFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.PositiveTraitControls[cnt] = updateControl({name = "Damage Shield", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_damageshield.dds"}, xPosMustFilter, cnt)
 
-			PotMaker.NegativeTraitControls[cnt] = updateControl({name = "Gradual Ravage Health", icon = "esoui/art/icons/alchemy/crafting_poison_trait_dot.dds"}, xPosMustNotFilter, cnt)
-			cnt = cnt + 1
-			PotMaker.NegativeTraitControls[cnt] = updateControl({name = "Defile", icon = "esoui/art/icons/alchemy/crafting_poison_trait_decreasehealing.dds"}, xPosMustNotFilter, cnt)
-			cnt = cnt + 1
-			PotMaker.NegativeTraitControls[cnt] = updateControl({name = "Vulnerability", icon = "esoui/art/icons/alchemy/crafting_poison_trait_damage.dds"}, xPosMustNotFilter, cnt)
-			cnt = cnt + 1
-			PotMaker.NegativeTraitControls[cnt] = updateControl({name = "Timidity", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_timidity.dds"}, xPosMustNotFilter, cnt)
-			cnt = cnt + 1
-			PotMaker.NegativeTraitControls[cnt] = updateControl({name = "Vexation", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_reducedhealing.dds"}, xPosMustNotFilter, cnt)
-			cnt = cnt + 1
-			PotMaker.NegativeTraitControls[cnt] = updateControl({name = "Heal Absorption", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_healabsorption.dds"}, xPosMustNotFilter, cnt)
+				control = CreateControlFromVirtual("PotionMakerAllMustCheckBox", PotionMakerSearchBG, "PotionMakerCheckBox")
+				control:SetAnchor(BOTTOMLEFT, nil, BOTTOMLEFT, xPosMustFilter, -12)
+				control:GetNamedChild("Text").defaultHighlightColor = COLOR_KHRILLSELECT
+				ZO_CheckButton_SetToggleFunction(control, PotMaker.checkAll)
+				local labelControl = control:GetNamedChild("Text")
+				labelControl:SetText(PotMaker.language.check_all)
+				control.traitControls = PotMaker.PositiveTraitControls
+			end
+			if #PotMaker.NegativeTraitControls == 0 then
+				local cnt = 1
+				PotMaker.NegativeTraitControls[cnt] = updateControl({name = "Ravage Health", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_ravagehealth.dds"}, xPosMustNotFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.NegativeTraitControls[cnt] = updateControl({name = "Ravage Magicka", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_ravagemagicka.dds"}, xPosMustNotFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.NegativeTraitControls[cnt] = updateControl({name = "Ravage Stamina", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_ravagestamina.dds"}, xPosMustNotFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.NegativeTraitControls[cnt] = updateControl({name = "Fracture", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_lowerarmor.dds"}, xPosMustNotFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.NegativeTraitControls[cnt] = updateControl({name = "Entrapment", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_stun.dds"}, xPosMustNotFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.NegativeTraitControls[cnt] = updateControl({name = "Hindrance", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_reducespeed.dds"}, xPosMustNotFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.NegativeTraitControls[cnt] = updateControl({name = "Cowardice", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_lowerspellpower.dds"}, xPosMustNotFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.NegativeTraitControls[cnt] = updateControl({name = "Enervation", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_lowerweaponpower.dds"}, xPosMustNotFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.NegativeTraitControls[cnt] = updateControl({name = "Uncertainty", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_lowerspellcrit.dds"}, xPosMustNotFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.NegativeTraitControls[cnt] = updateControl({name = "Breach", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_lowerspellresist.dds"}, xPosMustNotFilter, cnt)
+				cnt = cnt + 1
 
-			control = CreateControlFromVirtual("PotionMakerAllMustNotCheckBox", PotionMakerSearchBG, "PotionMakerCheckBox")
-			control:SetAnchor(BOTTOMLEFT, nil, BOTTOMLEFT, xPosMustNotFilter, -12)
-			control:GetNamedChild("Text").defaultHighlightColor = COLOR_KHRILLSELECT
-			ZO_CheckButton_SetToggleFunction(control, PotMaker.checkAll)
-			local labelControl = control:GetNamedChild("Text")
-			labelControl:SetText(PotMaker.language.check_all)
-			control.traitControls = PotMaker.NegativeTraitControls
+				PotMaker.NegativeTraitControls[cnt] = updateControl({name = "Gradual Ravage Health", icon = "esoui/art/icons/alchemy/crafting_poison_trait_dot.dds"}, xPosMustNotFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.NegativeTraitControls[cnt] = updateControl({name = "Defile", icon = "esoui/art/icons/alchemy/crafting_poison_trait_decreasehealing.dds"}, xPosMustNotFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.NegativeTraitControls[cnt] = updateControl({name = "Vulnerability", icon = "esoui/art/icons/alchemy/crafting_poison_trait_damage.dds"}, xPosMustNotFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.NegativeTraitControls[cnt] = updateControl({name = "Timidity", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_timidity.dds"}, xPosMustNotFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.NegativeTraitControls[cnt] = updateControl({name = "Vexation", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_reducedhealing.dds"}, xPosMustNotFilter, cnt)
+				cnt = cnt + 1
+				PotMaker.NegativeTraitControls[cnt] = updateControl({name = "Heal Absorption", icon = "esoui/art/icons/alchemy/crafting_alchemy_trait_healabsorption.dds"}, xPosMustNotFilter, cnt)
+
+				control = CreateControlFromVirtual("PotionMakerAllMustNotCheckBox", PotionMakerSearchBG, "PotionMakerCheckBox")
+				control:SetAnchor(BOTTOMLEFT, nil, BOTTOMLEFT, xPosMustNotFilter, -12)
+				control:GetNamedChild("Text").defaultHighlightColor = COLOR_KHRILLSELECT
+				ZO_CheckButton_SetToggleFunction(control, PotMaker.checkAll)
+				local labelControl = control:GetNamedChild("Text")
+				labelControl:SetText(PotMaker.language.check_all)
+				control.traitControls = PotMaker.NegativeTraitControls
+			end
 		end
 	end
 
@@ -2949,7 +3427,6 @@ function PotMaker.close()
 	ClearMenu()
 	ClearTooltips()
 	ClearResultList()
-	-- collectgarbage()
 end
 
 function PotMaker:SetSelected(potion)

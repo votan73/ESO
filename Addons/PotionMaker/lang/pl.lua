@@ -87,7 +87,25 @@ PotMaker:LoadLanguage {
 		["Protection"] = "Ochrony",
 		["Defile"] = "Splugawienia",
 
+		["Heroism"] = "Heroism",
+		["Timidity"] = "Timidity",
+
+		["Increase Power"] = "Increase Power",
+		["Critical"] = "Critical",
+		["Mending"] = "Mending",
+		["Vexation"] = "Vexation",
+		["Damage Shield"] = "Damage Shield",
+		["Heal Absorption"] = "Heal Absorption",
+		["Force"] = "Force",
+		["Lingering Health"] = "Lingering Health",
+		["Gradual Ravage Health"] = "Gradual Ravage Health",
+		["Hindrance"] = "Hindrance",
+		["Entrapment"] = "Entrapment",
+		["Fracture"] = "Fracture",
+		["Cowardice"] = "Cowardice",
+		["Enervation"] = "Enervation",
 		["Uncertainty"] = "Niepewności",
+		["Breach"] = "Breach",
 	},
 }
 

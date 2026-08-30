@@ -79,6 +79,7 @@ PotMaker:LoadLanguage {
 		["Reduce Speed"] = "Замедление",
 		["Invisible"] = "Невидимость",
 		["Detection"] = "Обнаружение",
+
 		["Sustained Restore Health"] = "Длительное исцеление",
 		["Creeping Ravage Health"] = "Постепенное опустошение здоровья",
 		["Vitality"] = "Живучесть",
@@ -91,6 +92,11 @@ PotMaker:LoadLanguage {
 
 		["Increase Power"] = "Увеличение силы заклинаний",
 		["Critical"] = "Крит. рейтинг заклинаний",
+		["Mending"] = "Mending",
+		["Vexation"] = "Vexation",
+		["Damage Shield"] = "Damage Shield",
+		["Heal Absorption"] = "Heal Absorption",
+		["Force"] = "Force",
 		["Lingering Health"] = "Длительное исцеление",
 		["Gradual Ravage Health"] = "Постепенное опустошение здоровья",
 		["Hindrance"] = "Замедление",

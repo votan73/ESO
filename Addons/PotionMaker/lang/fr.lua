@@ -93,6 +93,11 @@
 
 		["Increase Power"] = "Augmente la puissance",
 		["Critical"] = "Critique",
+		["Mending"] = "Guérison",
+		["Vexation"] = "Vexation",
+		["Damage Shield"] = "Bouclier protecteur",
+		["Heal Absorption"] = "Absorption de soins",
+		["Force"] = "Force",
 		["Lingering Health"] = "Santé persistante",
 		["Gradual Ravage Health"] = "Ravage de Santé graduel",
 		["Hindrance"] = "Entrave",

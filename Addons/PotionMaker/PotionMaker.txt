@@ -12,8 +12,9 @@
 PotionMaker100015.lua
 
 lang/default_en.lua
+lang$(APIVersion)/default_en.lua
 lang/$(language).lua
-##lang$(APIVersion)/$(language).lua
+lang$(APIVersion)/$(language).lua
 
 PotionMaker100015.xml
 Bindings.xml

@@ -92,6 +92,11 @@
 
 		["Increase Power"] = "增加法术伤害",
 		["Critical"] = "增加法术暴击",
+		["Mending"] = "Mending",
+		["Vexation"] = "Vexation",
+		["Damage Shield"] = "Damage Shield",
+		["Heal Absorption"] = "Heal Absorption",
+		["Force"] = "Force",
 		["Lingering Health"] = "持续生命伤害",
 		["Gradual Ravage Health"] = "持续生命流失",
 		["Hindrance"] = "妨害",
