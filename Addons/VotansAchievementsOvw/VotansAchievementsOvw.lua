@@ -471,9 +471,9 @@ function addon:HookCategoriesRow()
 			ZO_PreHook(control, "OnMouseEnter", MouseEnter)
 			ZO_PreHook(control, "OnMouseExit", MouseExit)
 		end
-		SecurePostHook(ACHIEVEMENTS.categoryTree.templateInfo["ZO_IconHeader"], "setupFunction", initControl)
-		SecurePostHook(ACHIEVEMENTS.categoryTree.templateInfo["ZO_IconChildlessHeader"], "setupFunction", initControl)
-		SecurePostHook(ACHIEVEMENTS.categoryTree.templateInfo["ZO_TreeLabelSubCategory"], "setupFunction", initControl)
+		SecurePostHook(ACHIEVEMENTS.categoryTree.templateInfo["ZO_Achievements_StatusIconHeader"], "setupFunction", initControl)
+		SecurePostHook(ACHIEVEMENTS.categoryTree.templateInfo["ZO_Achievements_StatusIconChildlessHeader"], "setupFunction", initControl)
+		SecurePostHook(ACHIEVEMENTS.categoryTree.templateInfo["ZO_Achievements_SubCategory"], "setupFunction", initControl)
 	end
 end
 

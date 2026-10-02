@@ -29,7 +29,7 @@ function addon:CreateFavorites()
 
 		local normalIcon, pressedIcon, mouseoverIcon = unpack(SUMMARY_ICONS)
 
-		local parentNode = self:AddCategory(lookup, tree, "ZO_IconChildlessHeader", nil, VotansFavorites, GetString(SI_VOTANS_ACHIEVEMENT_FAVORITES), hidesUnearned, normalIcon, pressedIcon, mouseoverIcon, true, true)
+		local parentNode = self:AddCategory(lookup, tree, "ZO_Achievements_StatusIconChildlessHeader", nil, VotansFavorites, GetString(SI_VOTANS_ACHIEVEMENT_FAVORITES), hidesUnearned, normalIcon, pressedIcon, mouseoverIcon, true, true)
 		local row = parentNode:GetData()
 		row.isFavorits = true
 
