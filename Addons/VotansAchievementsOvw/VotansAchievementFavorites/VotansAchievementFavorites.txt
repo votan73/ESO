@@ -1,7 +1,7 @@
 ## Title: Votan's Achievement Favorites
 ## Author: votan
 ## Description: Adds Favorites to Achievement Journal.
-## Version: 1.6.7
+## Version: 1.6.8
 ## APIVersion: 101052 101053
 ## DependsOn: LibCustomMenu VotansAchievementsOvw
 
