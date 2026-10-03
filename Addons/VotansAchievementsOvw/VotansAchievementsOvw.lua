@@ -467,13 +467,28 @@ function addon:HookCategoriesRow()
 			control:SetMouseEnabled(true)
 		end
 	else
-		local function initControl(node, control, data, open)
+		local function initHeaderControl(node, control)
+			if control.votansAchievementsCategoryMouseHooked then
+				return
+			end
+			control.votansAchievementsCategoryMouseHooked = true
 			ZO_PreHook(control, "OnMouseEnter", MouseEnter)
 			ZO_PreHook(control, "OnMouseExit", MouseExit)
 		end
-		SecurePostHook(ACHIEVEMENTS.categoryTree.templateInfo["ZO_Achievements_StatusIconHeader"], "setupFunction", initControl)
-		SecurePostHook(ACHIEVEMENTS.categoryTree.templateInfo["ZO_Achievements_StatusIconChildlessHeader"], "setupFunction", initControl)
-		SecurePostHook(ACHIEVEMENTS.categoryTree.templateInfo["ZO_Achievements_SubCategory"], "setupFunction", initControl)
+
+		local function initSubCategoryControl(node, control)
+			if control.votansAchievementsCategoryMouseHooked then
+				return
+			end
+			control.votansAchievementsCategoryMouseHooked = true
+			ZO_PreHookHandler(control, "OnMouseEnter", MouseEnter)
+			ZO_PreHookHandler(control, "OnMouseExit", MouseExit)
+		end
+
+		local templateInfo = ACHIEVEMENTS.categoryTree.templateInfo
+		SecurePostHook(templateInfo["ZO_Achievements_StatusIconHeader"], "setupFunction", initHeaderControl)
+		SecurePostHook(templateInfo["ZO_Achievements_StatusIconChildlessHeader"], "setupFunction", initHeaderControl)
+		SecurePostHook(templateInfo["ZO_Achievements_SubCategory"], "setupFunction", initSubCategoryControl)
 	end
 end
 

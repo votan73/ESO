@@ -121,6 +121,10 @@ function addon:CreateFavorites()
 				GetString(SI_VOTANS_ACHIEVEMENT_FAVORITE_REMOVE),
 				function()
 					RemoveAllOfThem(self.favorites, id)
+					local selectedCategoryData = ACHIEVEMENTS.categoryTree:GetSelectedData()
+					if selectedCategoryData and selectedCategoryData.categoryIndex == VotansFavorites then
+						ACHIEVEMENTS:UpdateCategoryLabels(selectedCategoryData, true, false)
+					end
 				end
 			)
 		else
