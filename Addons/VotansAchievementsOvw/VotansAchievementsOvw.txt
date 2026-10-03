@@ -2,7 +2,7 @@
 ## Author: votan
 ## Description: Built-in achievements overview replacement.
 ## Version: 1.6.7
-## APIVersion: 101051 101052
+## APIVersion: 101052 101053
 ## DependsOn: LibCustomMenu>=692
 ## SavedVariables: VotansAchievementsOvw_Data
 
