@@ -6,8 +6,8 @@ A powerful asynchronous execution library for Elder Scrolls Online (ESO) addons 
 
 LibAsync helps manage CPU-intensive tasks by:
 - Spreading execution across multiple frames
-- Automatically adjusting execution time based on CPU load
-- Providing intuitive async/await-like syntax
+- Automatically adjusting execution time based on the current frame rate and scene (HUD or menu)
+- Providing an intuitive, chainable syntax
 - Managing frame timing to maintain UI responsiveness
 
 Why use LibAsync?
@@ -17,8 +17,8 @@ Why use LibAsync?
 
 ## Installation
 
-1. Copy the `LibAsync` folder to your addon's directory
-2. Add to your manifest:
+1. Install LibAsync as a separate addon: copy the `LibAsync` folder to your `AddOns` directory
+2. Add to your addon's manifest:
 ```txt
 ## DependsOn: LibAsync
 ```
@@ -68,10 +68,13 @@ end):Then(function(task)
     -- Next task
 end)
 
--- Delayed execution
+-- Delayed execution (suspends the task immediately; delays below 10 ms run as a normal Call)
 task:Delay(1000, function(task)
     -- Executes after 1000ms
 end)
+
+-- Stop a pending Delay (also done by Cancel)
+task:StopTimer()
 
 -- Chain with delay
 task:ThenDelay(1000, function(task)
@@ -109,6 +112,23 @@ task:For(1, 100):Do(function(index)
     if shouldStop then
         return async.BREAK
     end
+end)
+```
+
+### Sorting
+
+```lua
+-- Works like table.sort(); the compare function is optional
+task:Sort(myArray, function(a, b) return a.value < b.value end)
+```
+
+### Default Task (without Create)
+
+`async:Call`, `async:For`, `async:While`, `async:WaitUntil` and `async:Sort` run on a shared default task. It is not cancellable, and `Cancel`, `Finally` and `OnError` raise an error on it. Inside a running step these functions become nested calls of the current task.
+
+```lua
+async:For(1, 100):Do(function(index)
+    ProcessItem(index)
 end)
 ```
 
@@ -157,6 +177,11 @@ task:Cancel()  -- Will still trigger the Finally block
 | `task:For`      | Starts a loop over a range or collection.       |
 | `task:WaitUntil`| Waits until a condition is met.                 |
 | `task:Finally`  | Ensures cleanup logic runs after the task ends. |
+| `task:OnError`  | Handles errors raised inside the task.          |
+| `task:While`    | Starts a loop that runs while a condition holds.|
+| `task:Sort`     | Sorts an array asynchronously.                  |
+| `task:ThenDelay`| Delays at the current position in the chain.    |
+| `task:StopTimer`| Stops a pending `Delay`.                        |
 
 ## Examples
 
@@ -203,52 +228,28 @@ end)
 
 ## Performance Insights and Considerations
 
-LibAsync provides seamless asynchronous execution for addons in Elder Scrolls Online, allowing for frame-safe operations across all addons that use it. However, performance behavior varies based on several factors, as illustrated by real-world testing.
+LibAsync runs the steps of **all** addons that use it in one shared scheduler. How fast a task finishes therefore depends on the time budget the scheduler grants per frame.
 
-### Observations from Testing
+### How the time budget is chosen
 
-1. **Performance Scaling Based on Environment**:
-   - Tasks execute significantly faster in player homes or when the UI/HUD is active. For example, a global enumeration task completed in **1 second** in a player home but took over **900 seconds** in busy areas like Vvardenfell near a bank.
-   - Lower frame rates in cities and crowded areas reduce the time allocated to tasks, increasing overall execution time.
+1. The current frame rate selects a target slice of 1, 2, 3 or 4 frames (16.7 ms at more than 65 fps, 33 ms above 45 fps, 50 ms above 30 fps, otherwise 67 ms).
+2. While the HUD is visible (gameplay) the slice is reduced (x0.91). In menus and other full-screen UI it is enlarged (x1.21), because stutter is less noticeable there.
+3. The slice never exceeds `1 / stall threshold` seconds (default 15 fps, see `/async stall`) and is smoothed over time.
+4. If the scheduler overran last frame, the next slice is reduced.
+5. On console the remaining add-on CPU budget of the frame is respected.
 
-2. **Impact of Shared Usage**:
-   - LibAsync processes tasks from all addons using the library. Performance-intensive tasks can impact other addons by monopolizing execution time.
+### What this means in practice
 
-3. **Throttling Behavior**:
-   - When the HUD/UI is closed, task execution slows as LibAsync prioritizes gameplay performance. This behavior can sometimes create the perception of tasks "stalling."
-   - Opening the UI/HUD often accelerates task processing, especially when frame rates are higher.
-
-4. **Customizing Performance**:
-   - Vertical Sync (Settings > Video > Vertical Sync) is used to cap frame time when enabled.
-   - Advanced users can manually edit `UserSettings.txt` to adjust `MinFrameTime.2` for more precise control.
-   - For general users, the in-game settings menu (Settings > Video > Limit Background FPS) allows enabling "Limit Background FPS" without altering files directly.
-
-The library prioritizes frame time settings in the following order: Vertical Sync, `MinFrameTime.2`, "Limit Background FPS," and a default fallback if none of the others are active.
-
-### Pros
-
-- **Game Performance Optimization**: By dynamically throttling tasks, LibAsync minimizes disruptions to gameplay, ensuring smooth performance during combat or exploration.
-- **Adaptability**: Developers can design addons to work seamlessly across various system configurations and gameplay scenarios.
-- **Flexibility for Users**: Players can fine-tune ESO�s settings to indirectly influence LibAsync�s performance, particularly in scenarios requiring intensive operations.
-
-### Cons
-
-- **Environment Sensitivity**: Performance varies significantly depending on the player�s location (e.g., busy city vs. player home) and system settings.
-- **Task Contention**: Multiple addons relying on LibAsync can lead to delays when one addon performs highly demanding operations.
-- **Perception of Stalling**: During low FPS or high CPU usage scenarios, tasks may appear to hang, though LibAsync remains active.
+- Tasks finish fastest while a menu is open and the frame rate is high, and slowest in busy areas during gameplay with a low frame rate. Large jobs can take minutes in crowded places such as a city bank.
+- Performance-intensive tasks of one addon slow down the tasks of all other addons.
+- When tasks seem to "stall", the frame rate is usually low and the slice small; LibAsync is still working.
 
 ### Recommendations for Developers
 
-1. **Optimize Task Granularity**:
-   - Break tasks into smaller units to prevent large, single operations from dominating execution time.
-2. **Test Across Scenarios**:
-   - Validate performance in various environments, such as cities, player homes, and during high-CPU activities, to ensure smooth user experiences.
-3. **Leverage LibAsync Settings**:
-   - Consider providing configurable options, like sliders or thresholds, to allow users to adjust performance to their system�s capabilities.
+1. **Optimize task granularity**: Break work into small units (one item or a small batch per `Do` body) so a single step does not dominate the slice.
+2. **Test across scenarios**: Validate in cities, player homes and during high-CPU activities.
+3. **Offer settings**: Consider configurable batch sizes to let users adapt performance to their system.
 
-### Conclusion
-
-LibAsync is an invaluable tool for ESO addon developers, enabling powerful asynchronous workflows while maintaining game performance. By understanding its nuances and considering system-specific factors, developers and users alike can optimize their experience and mitigate potential bottlenecks.
 
 ## Guide for addon authors (scheduler, sharing, errors)
 
@@ -333,10 +334,10 @@ Coordinating “wait until minimap/price fetcher is done” requires an explicit
 
 ```
 /async stall <fps>     -- clamp stall threshold (15–200), saved in AsyncSavedVars
-/async stall default -- reset to default (15)
+/async stall default   -- reset to default (15)
 ```
 
-Lower stall FPS (higher threshold number) allows LibAsync a larger per-frame target, up to the cap in code; use carefully on low-end hardware.
+The per-frame target of LibAsync is capped at `1 / fps` seconds. A lower stall FPS therefore allows a larger slice per frame (faster completion, but lower frame rates); a higher value keeps frames short and smooth, but tasks take longer. Use low values carefully on low-end hardware.
 
 ## Testing
 
@@ -422,6 +423,9 @@ The test suite is organized into the following test groups:
 - Log to chat state (`SetLogToChat`/`GetLogToChat`)
 - CPU load monitoring (`GetCpuLoad`)
 
+#### Console CPU Budget Integration
+- Respecting the add-on CPU budget on console / Game Core UI
+
 #### Integration Tests
 - Complex async workflows with multiple steps
 - Error recovery in complex workflows
@@ -477,15 +481,3 @@ local isDebug = async:GetDebug()
 ```
 
 With debug enabled, LibAsync warns when a single step (`step`), `OnError`, or `Finally` takes 1ms or longer, including `job.name` and callstack depth—use this to find hot tasks without reading raw `pcall` stacks. `Finally` failures set `task.FinallyError` and are logged without re-raising.
-
-## Estimated Values for MinFrameTime.2
-
-| FPS | MinFrameTime | upperSpendTimeDef | upperSpendTimeDefNoHUD | lowerSpendTimeDef | lowerSpendTimeDefNoHUD |
-|----------------|-------------|-------------------|------------------------|------------------|-----------------------|
-| 50 FPS | 0.02000000 | 0.01411 (14.11ms) / FPS 70.85 | 0.01714 (17.14ms) / FPS 58.34 | 0.05999 (59.99ms) / FPS 16.67 | 0.04799 (47.99ms) / FPS 20.84 |
-| 60 FPS | 0.01666667 | 0.01176 (11.76ms) / FPS 85.02 | 0.01428 (14.28ms) / FPS 70.01 | 0.04999 (49.99ms) / FPS 20.0 | 0.03999 (39.99ms) / FPS 25.0 |
-| 70 FPS | 0.01428571 | 0.01008 (10.08ms) / FPS 99.19 | 0.01224 (12.24ms) / FPS 81.68 | 0.04285 (42.85ms) / FPS 23.34 | 0.03428 (34.28ms) / FPS 29.17 |
-| 96 FPS | 0.01041667 | 0.00735 (7.35ms) / FPS 136.03 | 0.00893 (8.93ms) / FPS 112.02 | 0.03124 (31.24ms) / FPS 32.01 | 0.02500 (25.0ms) / FPS 40.01 |
-| 100 FPS | 0.01000000 | 0.00706 (7.06ms) / FPS 141.7 | 0.00857 (8.57ms) / FPS 116.69 | 0.02999 (29.99ms) / FPS 33.34 | 0.02400 (24.0ms) / FPS 41.68 |
-| 120 FPS | 0.00833333 | 0.00588 (5.88ms) / FPS 170.03 | 0.00714 (7.14ms) / FPS 140.03 | 0.02499 (24.99ms) / FPS 40.01 | 0.02000 (20.0ms) / FPS 50.01 |
-| 144 FPS | 0.00694444 | 0.00490 (4.9ms) / FPS 204.04 | 0.00595 (5.95ms) / FPS 168.03 | 0.02083 (20.83ms) / FPS 48.01 | 0.01666 (16.66ms) / FPS 60.01 |
