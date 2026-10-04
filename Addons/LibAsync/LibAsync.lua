@@ -142,7 +142,7 @@ local function DoJob(job)
 end
 
 -- Create local variables from AsyncSavedVars
-function InitSavedVar()
+local function InitSavedVar()
 	-- Initialize AsyncSavedVars if not already defined
 	AsyncSavedVars = AsyncSavedVars or {}
 
@@ -339,6 +339,7 @@ end
 
 -- Interupt and fully stop the execution context. Can be called from outside to stop everything.
 function task:Cancel()
+	self:StopTimer()
 	ZO_ClearNumericallyIndexedTable(self.callstack)
 	self.lastCallIndex = 0
 	if jobs[self.name] then
