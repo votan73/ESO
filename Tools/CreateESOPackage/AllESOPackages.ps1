@@ -13,11 +13,12 @@ $blackList["DeconstructionFilter"] = $true
 $blackList["emotes"] = $true
 $blackList["DungeonQueue4Stickerbook"] = $true
 #$blackList["EnchantMaker"] = $true
-$blackList["EnchantedQuality"] = $true
+#$blackList["EnchantedQuality"] = $true
 $blackList["ESOProfiler"] = $true
 #$blackList["HarvensCustomMapPins"] = $true
 $blackList["HarvensPotionsAlert"] = $true
 $blackList["HarvensTraitAndStyle"] = $true
+$blackList["HarvensQuestJournal"] = $true
 $blackList["HomesteadOCD"] = $true
 $blackList["iChat"] = $true
 $blackList["InfoBar"] = $true
@@ -25,7 +26,7 @@ $blackList["libCommonInventoryFilters"] = $true
 $blackList["LibAddonMenu-2.0"] = $true
 #$blackList["LibGPS"] = $true
 $blackList["LibRuneBox"] = $true
-$blackList["LibHarvensAddonSettings"] = $true
+#$blackList["LibHarvensAddonSettings"] = $true
 $blackList["LibMapPing"] = $true
 $blackList["LibStub"] = $true
 $blackList["LoadingScreenDetector"] = $true
@@ -53,14 +54,14 @@ $blackList["VotansImprovedMapMenu"] = $true
 #$blackList["LibEnchantingStation"] = $true
 $blackList["LibTextFilter"] = $true
 $blackList["LibMsgWin-1.0"] = $true
-$blackList["RareFishTracker"] = $true
+#$blackList["RareFishTracker"] = $true
 $blackList["SetSwap"] = $true
 $blackList["VotansWorldClocks"] = $true
 $blackList["VotansNicerUnboundKeys"] = $true
 $blackList["VotansAssistentFeatures"] = $true
 $blackList["VotansSelectDifficulty"] = $true
 $blackList["VotansWorldChampBuff"] = $true
-$blackList["WaypointIt"] = $true
+#$blackList["WaypointIt"] = $true
 
 $baseUrl = "https://api.esoui.com/addons/"
 $listUrl = $baseUrl + "list.json"
@@ -132,7 +133,7 @@ foreach($Path in [System.IO.Directory]::GetDirectories($Path)){
     Copy-Item -Recurse $Path $targetPath
 
 	if ($Title -ne "ESO Profiler") {
-	    Remove-Item -Path ([System.IO.Path]::Combine($targetPath, "*")) -Recurse -Include "*.png","*.pdn"
+	    Remove-Item -Path ([System.IO.Path]::Combine($targetPath, "*")) -Recurse -Include "*.png","*.pdn","*.md","*.bbcode"
 	}
     Remove-Item -Path ([System.IO.Path]::Combine($targetPath, "*")) -Recurse -Include "*.db"
 	
@@ -281,8 +282,9 @@ foreach($Path in [System.IO.Directory]::GetDirectories($Path)){
     $data.version = $ver
     $data.title = $details.title
     $list = @()
-    if ($compatible -ccontains "101048") { $list+="11.2.0" }
     if ($compatible -ccontains "101049") { $list+="11.3.0" }
+    if ($compatible -ccontains "101050") { $list+="12.0.0" }
+    if ($compatible -ccontains "101051") { $list+="12.1.0" }
     if ($list.Length -lt 2) {
         Write-Host -ForegroundColor Red "Manifest or script not up-to-date. " + $data.title
         continue

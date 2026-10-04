@@ -33,7 +33,7 @@ foreach($line in $lines) {
         $ver = $line.Substring(12).Trim().Replace(" ", "_")
     }
     if ($line.StartsWith("## ApiVersion: ", "OrdinalIgnoreCase")) {
-        $line = $line.Substring(0, 15).Trim() + " 101048 101049"
+        $line = $line.Substring(0, 15).Trim() + " 101051 101052"
         $compatible = $line.Substring(15).Trim().Split(" ")
     }
     if ($line.StartsWith("## DependsOn: ", "OrdinalIgnoreCase")) {
@@ -69,7 +69,7 @@ Remove-Item -Path ($targetPath + "_v$ver.zip") -ErrorAction SilentlyContinue
 Copy-Item -Recurse $Path $targetPath
 
 if ($Title -ne "ESO Profiler") {
-    Remove-Item -Path ([System.IO.Path]::Combine($targetPath, "*")) -Recurse -Include "*.png","*.pdn" -Force
+    Remove-Item -Path ([System.IO.Path]::Combine($targetPath, "*")) -Recurse -Include "*.png","*.pdn","*.md","*.bbcode" -Force
 }
 Remove-Item -Path ([System.IO.Path]::Combine($targetPath, "*")) -Recurse -Include "Thumbs.db" -Force
 Remove-Item -Path ([System.IO.Path]::Combine($targetPath, "*.md")) -Recurse -Force -ErrorAction SilentlyContinue
@@ -216,8 +216,9 @@ $data.id = $details.id
 $data.version = $ver
 $data.title = $details.title
 $list = @()
-if ($compatible -ccontains "101048") { $list+="11.2.0" }
 if ($compatible -ccontains "101049") { $list+="11.3.0" }
+if ($compatible -ccontains "101050") { $list+="12.0.0" }
+if ($compatible -ccontains "101051") { $list+="12.1.0" }
 if ($list.Count -lt 1) {
     Write-Host "API Version mismatch. Either manifest or script not up-to-date."
     return
