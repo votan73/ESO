@@ -1,0 +1,426 @@
+[SIZE="3"][COLOR="Yellow"]Info[/COLOR][/SIZE]
+This library is for [U]addon developers[/U]. Download it, if an addon dependency tells you so.
+
+[SIZE="3"][COLOR="DarkOrange"]Description[/COLOR][/SIZE]
+This library is written to overcome one way to get the "Access a private function XYZ from insecure code" error. Beyond that it adds features the built-in menu does not have:
+[LIST]
+[*]Beginning with version 2.0: sub menus
+[*]Beginning with version 3.0: dividers
+[*]Beginning with version 5.0: checkboxes in sub menus
+[*]Beginning with version 6.2: hooks into the inventory context menu and the key strip
+[*]Beginning with version 6.8: tooltips for menu entries
+[*]Beginning with version 6.9: alternative context menus using the keyboard modifier keys
+[*]Beginning with version 7.0: headers
+[*]Beginning with version 7.1: hooks into the player, guild roster, friends list, group list and ignore list context menus
+[/LIST]
+
+[SIZE="2"][COLOR="DarkOrange"]Background[/COLOR][/SIZE]
+Controls, created from add-on code (as part of the code path) are marked as "insecure/compromised".
+Functions, which have no problem with being called from "insecure" controls, are still working perfectly.
+Like those of add-ons or [B]Show On Map[/B], [B]Link in Chat[/B] or [B]Get Help[/B].
+But "secured" functions like [B]UseItem[/B], [B]InitiateDestroy[/B], [B]PickupInventoryItem[/B] raise the error message from above.
+Once you hook [B]AddMenuItem[/B] ALL controls created for the context-menu are "insecure".
+
+Prior to ESO 2.0.13 if an add-on offers a full custom context-menu (no built-in menu entries) and this context-menu is shown first after (re-)load UI the first menu item controls are insecure. A crash of "Use" in the inventory afterwards was guaranteed.
+Starting with ESO 2.0.13 ZOS preallocates 10 "secure" menu items. See [URL="http://www.esoui.com/forums/showpost.php?p=21915&postcount=50"]here[/URL].
+But this just reduces the chance of running into that problem, it does not fix it.
+Currently the number of preallocated controls is 30. Running into this problem with AddMenuItem is really rare, but inventory action slots still don't like custom menu entries.
+
+To avoid the error message, the controls of built-in menu items and add-on menu items must be strictly separated. That's what [B]AddCustomMenuItem[/B] of this library does. It uses its own pool of controls, which look exactly the same. Sounds strange, but works.
+
+[SIZE="3"][COLOR="DarkOrange"]I don't use private functions. Why should I use this lib?[/COLOR][/SIZE]
+It's not you, who uses private functions. It is built-in code, which re-uses controls indirectly created by your add-on in AddMenuItem.
+
+[SIZE="3"][COLOR="DarkOrange"]I want to use this lib, so what to do?[/COLOR][/SIZE]
+Add [FONT="Courier New"]LibCustomMenu[/FONT] to the [FONT="Courier New"]## DependsOn:[/FONT] line of your add-on manifest. The library is available as the global variable [FONT="Courier New"]LibCustomMenu[/FONT]. (LibStub is no longer supported since version 7.0.)
+Then do a text search for the global function AddMenuItem (not any :AddMenuItem of other objects) and replace it with AddCustomMenuItem.
+Be careful with a simple "Replace All" over all files! You probably replace the AddMenuItem of LibCustomMenu itself ;)
+
+[SIZE="2"][COLOR="DarkOrange"]Version 1.0[/COLOR][/SIZE]
+[URL="http://www.esoui.com/forums/attachment.php?attachmentid=594&d=1430285148"]This version[/URL] was intended as proof of concept, but was successfully used in Beartram's FCO Item Saver, Circonian's FilterIt and my Fish Fillet.
+
+[SIZE="2"][COLOR="DarkOrange"]Version 2.0[/COLOR][/SIZE]
+In order to have more value than avoiding a rare, just annoying "bug", sirinsidiator suggested and provided proof of concept code for sub menu items.
+A big thank to sirinsidiator!
+I finalized it and here we are.
+
+[SIZE="3"][COLOR="DarkOrange"]Overview[/COLOR][/SIZE]
+[B]Create your own menus[/B] (use together with ClearMenu() and ShowMenu())
+[LIST]
+[*]AddCustomMenuItem(mytext, myfunction, itemType, myfont, normalColor, highlightColor, itemYPad) - API 2.0, 3.0, 5.0, 7.0
+[*]AddCustomSubMenuItem(mytext, entries, myfont, normalColor, highlightColor, itemYPad, subMenuButtonCallbackFunc) - API 2.0, 3.0, 5.0, 6.8, 7.0
+[*]AddCustomMenuTooltip(tooltip, index) - API 6.8
+[/LIST]
+[B]Hook into existing menus[/B] (function names are called on the library: LibCustomMenu:RegisterXyz(func, category))
+[LIST]
+[*][B]RegisterContextMenu[/B](func, category) - Inventory slot, right click. API 6.2
+Signature: func(inventorySlot, slotActions)
+[*][B]RegisterKeyStripEnter[/B](func, category) - Inventory slot, mouse hover (key strip). API 6.2
+Signature: func(inventorySlot, slotActions)
+[*][B]RegisterKeyStripExit[/B](func) - Inventory slot, mouse exit. API 6.2
+Signature: func()
+[*][B]RegisterSpecialKeyContextMenu[/B](func) - Inventory slot, right click + modifier key. API 6.9
+Signature: func(inventorySlot, slotActions, ctrl, alt, shift, command)
+[*][B]RegisterPlayerContextMenu[/B](func, category) - Chat player link. API 6.92
+Signature: func(playerName, rawName)
+[*][B]RegisterGuildRosterContextMenu[/B](func, category) - Guild roster member. API 7.1
+Signature: func(rowData)
+[*][B]RegisterFriendsListContextMenu[/B](func, category) - Friends list. API 7.2
+Signature: func(rowData)
+[*][B]RegisterGroupListContextMenu[/B](func, category) - Group list. API 7.2
+Signature: func(rowData)
+[*][B]RegisterIgnoreListContextMenu[/B](func, category) - Ignore list. API 7.3
+Signature: func(rowData)
+[/LIST]
+The player, guild roster, friends, group and ignore list hooks are not active on console.
+
+[SIZE="3"][COLOR="DarkOrange"]API 2.0[/COLOR][/SIZE]
+function AddCustomMenuItem(mytext, myfunction, itemType, myfont, normalColor, highlightColor, itemYPad)
+
+Fully compatible with AddMenuItem.
+mytext: string, required. Caption of menu item.
+myfunction: function(), required. Called if clicked.
+itemType: int, optional. MENU_ADD_OPTION_LABEL or MENU_ADD_OPTION_CHECKBOX (and MENU_ADD_OPTION_HEADER since API 7.0). Default MENU_ADD_OPTION_LABEL.
+myfont: string, optional.
+normalColor: ZO_ColorDef, optional. Color of unselected item.
+highlightColor: ZO_ColorDef, optional. Color of selected/hovered item.
+itemYPad: int, optional. y-padding between items.
+
+
+function AddCustomSubMenuItem(mytext, entries, myfont, normalColor, highlightColor, itemYPad, subMenuButtonCallbackFunc)
+
+mytext: string, required. Caption of menu item.
+entries: table of sub items or callback returning table of sub items, required. A callback is evaluated every time the sub menu opens.
+myfont: string, optional. Default font of the sub items.
+normalColor: ZO_ColorDef, optional. Color of unselected/normal sub item.
+highlightColor: ZO_ColorDef, optional. Color of selected/hovered sub item.
+itemYPad: int, optional. y-padding between sub items.
+subMenuButtonCallbackFunc: function, optional. Callback function for the click on the submenu open button (the one at the main menu showing the submenu). The menu is closed before it is called. (Since version 7.0.1)
+
+sub item:
+label: string or function(rootMenu, childControl), required.
+callback: function(), required.
+disabled: boolean or function(rootMenu, childControl), optional. Default false. if true, sub item is visible, but gray and not clickable.
+visible: boolean or function(rootMenu, childControl), optional. Default true.
+
+[COLOR="Yellow"]These examples are for self-created menus. If you want to add items to the inventory context-menu, look at the example for LibCustomMenu:RegisterContextMenu more below.[/COLOR]
+
+example 1:
+[highlight="Lua"]local entries = {
+  {
+    label = "Test 1",
+    callback = function() d("Test 1") end,
+  },
+  {
+    label = "Test 2",
+    callback = function() d("Test 2") end,
+    disabled = function(rootMenu, childControl) return true end,
+  }
+}
+ClearMenu()
+AddCustomSubMenuItem("Sub Menu", entries)
+ShowMenu()[/highlight]
+
+example 2:
+[highlight="Lua"]local function GetEntries(rootMenu)
+d("run")
+return {
+  {
+    label = function() return GetTimeStamp() end,
+    callback = function() d("Test 1") end,
+  },
+  {
+    label = "Test 2",
+    callback = function() d("Test 2") end,
+    disabled = function(rootMenu, childControl) return true end,
+  }
+}
+end
+ClearMenu()
+AddCustomSubMenuItem("Sub Menu", GetEntries)
+ShowMenu()[/highlight]
+If you have Notebook or ZAM Notebook, you could copy&paste the scripts from above and execute them.
+
+[SIZE="3"][COLOR="DarkOrange"]API 3.0[/COLOR][/SIZE]
+In addition to API 2.0:
+Allow divider by setting member [B]label[/B] to a static "-". Suggested by Beartram. You can use [FONT="Courier New"]LibCustomMenu.DIVIDER[/FONT] for better readability.
+Dividers also work at the top level: [FONT="Courier New"]AddCustomMenuItem("-")[/FONT].
+Dividers at the beginning or the end of a menu and multiple dividers in a row are hidden automatically.
+
+example:
+[highlight="Lua"]local entries = {
+  {
+    label = "Test 1",
+    callback = function() d("Test 1") end,
+  },
+  {
+    label = "-",
+  },
+  {
+    label = "Test 2",
+    callback = function() d("Test 2") end,
+    disabled = function(rootMenu, childControl) return true end,
+  }
+}
+ClearMenu()
+AddCustomSubMenuItem("Sub Menu", entries)
+ShowMenu()[/highlight]
+
+[SIZE="3"][COLOR="DarkOrange"]API 4.1[/COLOR][/SIZE]
+In addition to API 3.0:
+actionSlots:AddCustomSlotAction(actionStringId, actionCallback, actionType, visibilityFunction, options)
+
+[strike]for example while hooking ZO_InventorySlot_DiscoverSlotActionsFromActionList(inventorySlot, slotActions)[/strike]
+for example within the callback of API 6.2. See below.
+
+[SIZE="3"][COLOR="DarkOrange"]API 5.0[/COLOR][/SIZE]
+In addition to API 4.1+:
+New entry properties [FONT="Courier New"]itemType[/FONT] and [FONT="Courier New"]checked[/FONT].
+itemType = MENU_ADD_OPTION_LABEL (default) or MENU_ADD_OPTION_CHECKBOX for a checkbox
+checked  = false/true or function() return state end
+The initial checked state when opening the sub menu.
+The callback of a checkbox entry receives the new state as parameter: function(state).
+
+example:
+[highlight="Lua"]local myState = true
+    local entries = {
+      {
+        label = "Test 1",
+        callback = function(state) myState = state df("Test 1: %s", tostring(myState)) end,
+        checked = function() return myState end,
+        itemType = MENU_ADD_OPTION_CHECKBOX,
+      },
+      {
+        label = "Test 1b",
+        callback = function() d("Test 1b") end,
+        itemType = MENU_ADD_OPTION_LABEL,
+      },
+      {
+        label = "-",
+      },
+      {
+        label = "Test 2",
+        callback = function() d("Test 2") end,
+        disabled = function(rootMenu, childControl) return true end,
+      }
+    }
+    ClearMenu()
+    AddCustomSubMenuItem("Sub Menu", entries)
+    ShowMenu()[/highlight]
+
+[SIZE="3"][COLOR="DarkOrange"]API 6.2[/COLOR][/SIZE]
+In addition to API 5+:
+Added callbacks, you can register to, to hook into inventory slot context menu. You don't need to reinvent the hook and are able to control the position of your entry/entries more granular.
+
+category
+lib.CATEGORY_EARLY
+lib.CATEGORY_PRIMARY
+lib.CATEGORY_SECONDARY
+lib.CATEGORY_TERTIARY
+lib.CATEGORY_QUATERNARY
+lib.CATEGORY_LATE
+
+CATEGORY_EARLY is before the first built-in menu entry.
+CATEGORY_PRIMARY is after the first built-in menu entry. And so on.
+CATEGORY_LATE is after built-in menu and default.
+
+lib:RegisterContextMenu(func, category)
+Register to the context menu of the inventory mouse right click.
+
+lib:RegisterKeyStripEnter(func, category)
+Register to the inventory mouse hover used to update the keybind buttons at the bottom.
+
+func: callback function to be called.
+Signature:
+[highlight="Lua"]local function func(inventorySlot, slotActions)
+end[/highlight]
+
+category: optional. defaults to CATEGORY_LATE.
+
+lib:RegisterKeyStripExit(func)
+Register to the inventory mouse hover used to update the keybind buttons at the bottom, if the mouse exits an inventory slot.
+
+func: callback function to be called.
+Signature:
+[highlight="Lua"]local function func()
+end[/highlight]
+
+example:
+[highlight="Lua"]ZO_CreateStringId("SI_BINDING_NAME_SHOW_POPUP", "Show in Popup")
+local function AddItem(inventorySlot, slotActions)
+  local valid = ZO_Inventory_GetBagAndIndex(inventorySlot)
+  if not valid then return end
+  slotActions:AddCustomSlotAction(SI_BINDING_NAME_SHOW_POPUP, function()
+    local bagId, slotIndex = ZO_Inventory_GetBagAndIndex(inventorySlot)
+    local itemLink = GetItemLink(bagId, slotIndex)
+    ZO_PopupTooltip_SetLink(itemLink)
+  end , "")
+end
+
+LibCustomMenu:RegisterContextMenu(AddItem, LibCustomMenu.CATEGORY_PRIMARY)
+[/highlight]
+
+example 2:
+[highlight="Lua"]local function AddItem(inventorySlot, slotActions)
+  local bagId, slotIndex = ZO_Inventory_GetBagAndIndex(inventorySlot)
+  if not CanItemBePlayerLocked(bagId, slotIndex) then return end
+  local locked = IsItemPlayerLocked(bagId, slotIndex)
+
+  slotActions:AddCustomSlotAction(locked and SI_ITEM_ACTION_UNMARK_AS_LOCKED or SI_ITEM_ACTION_MARK_AS_LOCKED, function()
+    SetItemIsPlayerLocked(bagId, slotIndex, not locked)
+  end, "keybind2")
+  -- you can use: "primary", "secondary", "keybind1", "keybind2"
+end
+
+local menu = LibCustomMenu
+--menu:RegisterContextMenu(AddItem, menu.CATEGORY_PRIMARY)
+menu:RegisterKeyStripEnter(AddItem, menu.CATEGORY_LATE)
+[/highlight]
+Not really practical, because it hides the built-in keybind. :)
+But you could use the callback just to be notified as well.
+
+[SIZE="3"][COLOR="DarkOrange"]API 6.8[/COLOR][/SIZE]
+In addition to API 6.2+:
+Added functionality to add an optional tooltip to a menu entry.
+For the top level menu entries there is a new global function:
+function AddCustomMenuTooltip(tooltip, index)
+tooltip: Either a string shown as a simple tooltip or a callback function to let you do everything.
+Signature:
+[highlight="Lua"]local function func(control, inside)
+end[/highlight]
+control: the menu entry control.
+inside: The function is called on mouse enter with inside=true and on mouse exit with inside=false.
+
+index: Optional. Index of the menu entry, the tooltip is for. By default the index of the last added item is used. => You call AddCustomMenuItem and then AddCustomMenuTooltip.
+
+For sub-menus a new key "tooltip" can be used. Again it is either a string or the callback function with the signature from above.
+
+example:
+[highlight="Lua"]
+    local myState = true
+    local entries = {
+      {
+        label = "Test 1",
+        callback = function(state) myState = state df("Test 1: %s", tostring(myState)) end,
+        checked = function() return myState end,
+        itemType = MENU_ADD_OPTION_CHECKBOX,
+        tooltip = "This is Test 1",
+      },
+      {
+        label = "Test 1b",
+        callback = function() d("Test 1b") end,
+        itemType = MENU_ADD_OPTION_LABEL,
+        tooltip = "This is Test 1b",
+      },
+      {
+        label = "-",
+      },
+      {
+        label = "Test 2",
+        callback = function() d("Test 2") end,
+        disabled = function(rootMenu, childControl) return true end,
+      }
+    }
+    ClearMenu()
+    AddCustomSubMenuItem("Sub Menu", entries)
+    AddCustomMenuTooltip("A sub-menu")
+    AddCustomMenuItem("-", function() d("soso") end)
+    AddCustomMenuItem("Button", function() d("jojo") end)
+    AddCustomMenuTooltip(function(control, inside) if inside then d("A great button") end end)
+    AddCustomMenuItem("CheckBox", function() d("soso") end, MENU_ADD_OPTION_CHECKBOX)
+    ShowMenu()[/highlight]
+[COLOR="DarkOrange"][SIZE="2"]How to use Checkbox at top level[/SIZE][/COLOR]
+[highlight="Lua"]local index = AddCustomMenuItem("CheckBox", function() <your callback> end, MENU_ADD_OPTION_CHECKBOX)
+if needToCheckIt then
+    ZO_CheckButton_SetChecked(ZO_Menu.items[index].checkbox)
+end[/highlight]
+
+[COLOR="DarkOrange"][SIZE="3"]API 6.9[/SIZE][/COLOR]
+lib:EnableSpecialKeyContextMenu(key)
+key: KEY_CTRL or KEY_ALT or KEY_SHIFT or KEY_COMMAND
+Show an alternative context menu, if the special key is pressed while right-clicking the inventory item.
+
+lib:RegisterSpecialKeyContextMenu(func)
+Register a callback for the alternative context menu. You, the addon author, have to check which menu items you want to add for the given combination of special keys. (See signature below)
+You have to enable all the keys you want to handle. See lib:EnableSpecialKeyContextMenu(key). There is no DisableSpecialKeyContextMenu, because you don't know who else had enabled them.
+If one of the enabled keys is pressed, the custom entries come from the callbacks registered with RegisterSpecialKeyContextMenu instead of the ones registered with RegisterContextMenu.
+
+Signature:
+[highlight="Lua"]local function func(inventorySlot, slotActions, ctrl, alt, shift, command)
+end[/highlight]
+
+example:
+[highlight="Lua"]local menu = LibCustomMenu
+menu:EnableSpecialKeyContextMenu(KEY_SHIFT)
+menu:RegisterSpecialKeyContextMenu(function(inventorySlot, slotActions, ctrl, alt, shift, command)
+  if not shift then return end
+  slotActions:AddCustomSlotAction(SI_BINDING_NAME_SHOW_POPUP, function() d("Shift + right click") end, "")
+end)[/highlight]
+
+[COLOR="DarkOrange"][SIZE="3"]API 6.92[/SIZE][/COLOR]
+lib:RegisterPlayerContextMenu(func, category)
+Register to the context menu of the chat player link mouse right click,
+
+func: callback function to be called.
+Signature:
+[code]
+local function func(playerName, rawName)
+end
+[/code]
+
+Category: See API 6.2 description for the available categories.
+
+[COLOR="DarkOrange"][SIZE="3"]API 7.0[/SIZE][/COLOR]
+In addition to API 6.x:
+New menu item type [FONT="Courier New"]MENU_ADD_OPTION_HEADER[/FONT]. A header is a non-clickable caption in a bigger font, with a divider line below. It can be used at the top level and as [FONT="Courier New"]itemType[/FONT] of a sub item. The default font is [FONT="Courier New"]LibCustomMenu.headerFont[/FONT] ("ZoFontWinH3").
+The callback of a sub menu item may return [B]true[/B] to keep the sub menu open (otherwise the whole menu is closed after the click). Use this to refresh other items of the sub menu.
+The properties [FONT="Courier New"]myfont[/FONT], [FONT="Courier New"]normalColor[/FONT] and [FONT="Courier New"]highlightColor[/FONT] can also be set per sub item, either as value or as function(rootMenu, childControl). They override the values given to AddCustomSubMenuItem.
+
+example:
+[highlight="Lua"]ClearMenu()
+AddCustomMenuItem("My Header", nil, MENU_ADD_OPTION_HEADER)
+AddCustomSubMenuItem("Sub Menu", {
+  { label = "Section", itemType = MENU_ADD_OPTION_HEADER },
+  { label = "Test 1", callback = function() d("Test 1") end },
+})
+ShowMenu()[/highlight]
+
+[COLOR="DarkOrange"][SIZE="3"]API 7.1[/SIZE][/COLOR]
+lib:RegisterGuildRosterContextMenu(func, category)
+Register to the context menu of the guild roster member mouse right click.
+
+func: callback function to be called.
+Signature:
+[code]
+local function func(rowData)
+end
+[/code]
+
+[COLOR="DarkOrange"][SIZE="3"]API 7.2[/SIZE][/COLOR]
+lib:RegisterFriendsListContextMenu(func, category)
+Register to the context menu of the friends list mouse right click.
+
+lib:RegisterGroupListContextMenu(func, category)
+Register to the context menu of the group list mouse right click.
+
+Both analog to RegisterGuildRosterContextMenu. See above.
+
+[COLOR="DarkOrange"][SIZE="3"]API 7.3[/SIZE][/COLOR]
+lib:RegisterIgnoreListContextMenu(func, category)
+Register to the context menu of the ignore list mouse right click.
+Analog to RegisterGuildRosterContextMenu. See above.
+
+[COLOR="DarkOrange"][SIZE="2"]Example[/SIZE][/COLOR]
+[highlight="Lua"]local function AddItem(data)
+  AddCustomMenuItem("Example", function() d(data.displayName) end)
+end
+
+local menu = LibCustomMenu
+menu:RegisterFriendsListContextMenu(AddItem, menu.CATEGORY_EARLY)
+menu:RegisterFriendsListContextMenu(AddItem, menu.CATEGORY_LATE)[/highlight]
+
+[SIZE="3"][COLOR="DarkOrange"]For other libraries[/COLOR][/SIZE]
+Since version 7.2.2 [FONT="Courier New"]LibCustomMenu.AddMenuItem[/FONT] and [FONT="Courier New"]LibCustomMenu.AddSubMenuItem[/FONT] are available as hook-points for LibScrollableMenu.
+
+[SIZE="3"][COLOR="DarkOrange"]Credits[/COLOR][/SIZE]
+sirinsidiator (sub menus), Beartram (dividers), merlight (custom slot actions), circonian and baertram.
