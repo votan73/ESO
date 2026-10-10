@@ -237,14 +237,16 @@ function Dialog:Initialize(control, sv)
 	self.predefinedNameEdit = GetControl(content, "PredefinedName")
 	self.iconChooser = GetControl(content, "Icon")
 	self.deleteButton = GetControl(content, "PredefinedDelete")
+
 	local iconPickerControl = GetControl(self.iconChooser, "Picker")
 	self.scrollList = ZO_GridScrollList_Keyboard:New(iconPickerControl)
-	local function iconPickerEntrySetup(control, item)
-		local function OnClick()
-			self.scrollList.list.selectedData = item
+
+		local function OnClick(checkButton)
+			self.scrollList.list.selectedData = checkButton.item
 			self.scrollList:RefreshGridList()
 		end
 
+	local function iconPickerEntrySetup(control, item)
 		local iconContainer = control:GetNamedChild("IconContainer")
 		local checkButton = iconContainer:GetNamedChild("Frame")
 
@@ -254,6 +256,7 @@ function Dialog:Initialize(control, sv)
 		iconContainer:GetNamedChild("Icon"):SetTexture(item.filename)
 		ZO_CheckButton_SetCheckState(checkButton, isSelected)
 		ZO_CheckButton_SetToggleFunction(checkButton, OnClick)
+		checkButton.item = item
 	end
 	self.scrollList:AddEntryTemplate("ZO_GuildRank_RankIconPickerIcon_Keyboard_Control", 60, 60, iconPickerEntrySetup, nil, nil, 0, 0)
 
@@ -268,6 +271,7 @@ function Dialog:Initialize(control, sv)
 		local ANIMATE_INSTANTLY = true
 		self:ScrollDataToCenter(data, NO_CALLBACK, ANIMATE_INSTANTLY)
 	end
+
 	--self:RebuildPredefined()
 
 	self.deleteButton:SetHandler(
