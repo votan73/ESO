@@ -25,6 +25,37 @@ local craftingTypeIcons = {
 	[CRAFTING_TYPE_WOODWORKING] = "|t113%:113%:/EsoUI/Art/Inventory/inventory_tabIcon_Craftbag_woodworking_up.dds:inheritcolor|t"
 }
 
+local nonBreakingSpace = "\194\160"
+local fullwidthColon = "\239\188\154"
+
+local function GetUpperRawName(rawName)
+	if type(rawName) ~= "string" or rawName == "" then
+		return ""
+	end
+	local upperName = zo_strformat("<<Z!a:1>>", rawName)
+	upperName = upperName:gsub(nonBreakingSpace, " ")
+	upperName = upperName:gsub("%^%a+:?%a*", "")
+	return upperName
+end
+
+local function GetSurveyTypeName(rawName)
+	local upperName = GetUpperRawName(rawName)
+	local asciiColonIndex = upperName:find(":", 1, true)
+	local fullwidthColonIndex = upperName:find(fullwidthColon, 1, true)
+	local splitIndex = asciiColonIndex
+	if fullwidthColonIndex and (not splitIndex or fullwidthColonIndex < splitIndex) then
+		splitIndex = fullwidthColonIndex
+	end
+	if not splitIndex then
+		return nil
+	end
+	local surveyTypeName = upperName:sub(1, splitIndex - 1):gsub("%s+$", "")
+	if surveyTypeName == "" then
+		return nil
+	end
+	return surveyTypeName
+end
+
 addon.nameToType = {}
 do
 	local list = {
@@ -37,8 +68,10 @@ do
 	}
 	local nameToType = addon.nameToType
 	local function add(itemLink, craftingType)
-		local name = zo_strformat("<<Z:1>>", GetItemLinkName(itemLink)):gsub("\194\160", " "):match("(.*)%s*:")
-		nameToType[name] = craftingType
+		local surveyTypeName = GetSurveyTypeName(GetItemLinkName(itemLink))
+		if surveyTypeName then
+			nameToType[surveyTypeName] = craftingType
+		end
 	end
 	for itemLink, craftingType in pairs(list) do
 		add(itemLink, craftingType)
@@ -111,8 +144,7 @@ do
 	addon.infoFromName = infoFromName
 	local function CreateInfoFromName(rawName)
 		local zo_plainstrfind = zo_plainstrfind
-		-- &nbsp; -> space
-		local location = zo_strformat("<<Z:1>>", rawName):gsub("\194\160", " ")
+		local location = GetUpperRawName(rawName)
 		-- Remove roman numbers at the end
 		for i = 20, 1, -1 do
 			location = location:gsub(ZO_CachedStrFormat(" <<R:1>>$", i), "")
