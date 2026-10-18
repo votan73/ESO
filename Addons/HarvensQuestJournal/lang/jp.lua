@@ -35,7 +35,12 @@ local strings = {
 	["HARVEN_QUEST_JOURNAL_SAVED_COMPLETED_DAILIES"] = "デイリークエストの保存",
 	["HARVEN_QUEST_JOURNAL_COMPLETED_REPEATABLE"] = "繰り返しクエストの保存",
 	["HARVEN_QUEST_JOURNAL_PLAY_EMOTE"] = "開いている間のエモート",
-	["HARVEN_QUEST_JOURNAL_SHOW_MAIN_MENU"] = "メインメニューで開く"
+	["HARVEN_QUEST_JOURNAL_SHOW_MAIN_MENU"] = "メインメニューで開く",
+	["HARVEN_QUEST_JOURNAL_ACTIVE_RUMORS_TITLE"] = "進行中の噂",
+	["HARVEN_QUEST_JOURNAL_COMPLETED_RUMORS_TITLE"] = "完了した噂",
+	["HARVEN_QUEST_JOURNAL_RUMOR_HINTS"] = "発見したヒント:",
+	["HARVEN_QUEST_JOURNAL_RUMOR_STARTER_HINT"] = "最初のヒント:",
+	["HARVEN_QUEST_JOURNAL_RUMORS_KEYBIND"] = "噂"
 }
 local ZO_CreateStringId = ZO_CreateStringId
 for id, text in pairs(strings) do

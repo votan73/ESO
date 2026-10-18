@@ -11,7 +11,7 @@
 	["HARVEN_QUEST_JOURNAL_COMPLETED_QUESTS_TITLE"] = "Quêtes accomplies",
 	["HARVEN_QUEST_JOURNAL_CURRENT_QUESTS_KEYBIND"] = "En cours",
 	["HARVEN_QUEST_JOURNAL_COMPLETED_QUESTS_KEYBIND"] = "Accomplies",
-	["HARVEN_QUEST_JOURNAL_SORT_BY"] = "Trier par:",
+	["HARVEN_QUEST_JOURNAL_SORT_BY"] = "Trier par :",
 	["HARVEN_QUEST_JOURNAL_SORT_ALPHABETICALLY"] = "Ordre alphabétique",
 	["HARVEN_QUEST_JOURNAL_SORT_TIMEOFCOMPLETION"] = "Date de complétion",
 	["HARVEN_QUEST_JOURNAL_SORT_TIMEOFSTART"] = "Date d'acceptation",
@@ -34,7 +34,12 @@
 	["HARVEN_QUEST_JOURNAL_SAVED_COMPLETED_DAILIES"] = "Enregistrer les journalières accomplies",
 	["HARVEN_QUEST_JOURNAL_COMPLETED_REPEATABLE"] = "Enregistrer les répétables accomplies",
 	["HARVEN_QUEST_JOURNAL_PLAY_EMOTE"] = "Jouer l'émote à l'ouverture du journal",
-	["HARVEN_QUEST_JOURNAL_SHOW_MAIN_MENU"] = "Afficher dans le menu principal"
+	["HARVEN_QUEST_JOURNAL_SHOW_MAIN_MENU"] = "Afficher dans le menu principal",
+	["HARVEN_QUEST_JOURNAL_ACTIVE_RUMORS_TITLE"] = "Rumeurs actives",
+	["HARVEN_QUEST_JOURNAL_COMPLETED_RUMORS_TITLE"] = "Rumeurs accomplies",
+	["HARVEN_QUEST_JOURNAL_RUMOR_HINTS"] = "Indices découverts :",
+	["HARVEN_QUEST_JOURNAL_RUMOR_STARTER_HINT"] = "Indice de départ :",
+	["HARVEN_QUEST_JOURNAL_RUMORS_KEYBIND"] = "Rumeurs"
 }
 local SafeAddString = SafeAddString
 for id, text in pairs(strings) do

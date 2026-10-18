@@ -34,7 +34,13 @@
 	["HARVEN_QUEST_JOURNAL_SAVED_COMPLETED_DAILIES"] = "Tägliche Quests speichern",
 	["HARVEN_QUEST_JOURNAL_COMPLETED_REPEATABLE"] = "Wiederholbare Quests speichern",
 	["HARVEN_QUEST_JOURNAL_PLAY_EMOTE"] = "Beim Öffnen Emote abspielen",
-	["HARVEN_QUEST_JOURNAL_SHOW_MAIN_MENU"] = "Im Hauptmenü anzeigen"
+	["HARVEN_QUEST_JOURNAL_SHOW_MAIN_MENU"] = "Im Hauptmenü anzeigen",
+	["HARVEN_QUEST_JOURNAL_ACTIVE_RUMORS_TITLE"] = "Aktuelle Gerüchte",
+	["HARVEN_QUEST_JOURNAL_ACTIVE_RUMORS_KEYBIND"] = "Gerüchte",
+	["HARVEN_QUEST_JOURNAL_COMPLETED_RUMORS_TITLE"] = "Abgeschlossene Gerüchte",
+	["HARVEN_QUEST_JOURNAL_RUMOR_HINTS"] = "Entdeckte Hinweise:",
+	["HARVEN_QUEST_JOURNAL_RUMOR_STARTER_HINT"] = "Start-Hinweis:",
+	["HARVEN_QUEST_JOURNAL_RUMORS_KEYBIND"] = "Gerüchte"
 }
 local SafeAddString = SafeAddString
 for id, text in pairs(strings) do
