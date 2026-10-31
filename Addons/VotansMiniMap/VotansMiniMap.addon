@@ -1,7 +1,7 @@
 ## Title: Votan's Minimap
 ## Author: votan
-## APIVersion: 101050 101051
-## Version: 2.2.2
+## APIVersion: 101051 101052
+## Version: 2.3.0
 ## DependsOn: LibHarvensAddonSettings>=20106 LibAsync>=30001
 ## OptionalDependsOn: LibGPS>=73 TweakIt TrueExploration LibDebugLogger
 ## SavedVariables: VotansMiniMap_Data
@@ -11,7 +11,6 @@
 lang/strings.lua
 lang/$(language).lua
 
-## Controls.xml
 Main.lua
 Settings.lua
 PinLevels.lua

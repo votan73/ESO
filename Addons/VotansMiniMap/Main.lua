@@ -331,6 +331,9 @@ function addon:InitTweaks()
 	DeferRefresh("ZO_WorldMap_RefreshWayshrines", "MAP_RefreshWayshrines", 10)
 	DeferRefresh("ZO_WorldMap_RefreshForwardCamps", "MAP_RefreshForwardCamps", 70)
 	DeferRefresh("ZO_WorldMap_RefreshAccessibleAvAGraveyards", "MAP_RefreshAccessibleAvAGraveyards", 80)
+	if ZO_WorldMap_RefreshKeepNetwork then
+		DeferRefresh("ZO_WorldMap_RefreshKeepNetwork", "MAP_RefreshKeepNetwork", 90)
+	end
 
 	do
 		local task = async:Create("VOTANS_MAP_CUSTOM_PIN_UPDATE")
@@ -414,15 +417,15 @@ function addon:InitTweaks()
 			asyncTask:For(pairs(pinControls)):Do(updateLocationAndSize):For(pairs(pins.customPins)):Do(callResizeCallback)
 		end
 		local function updatePlayerPinLevel()
-			local control = addon.pinManager.playerPin:GetControl()
-			local labelControl = control:GetNamedChild("Label")
-			local overlayControl = control:GetNamedChild("Background")
-			local highlightControl = control:GetNamedChild("Highlight")
+			local pin = addon.pinManager.playerPin
+			local control = pin:GetControl()
 			local pinLevel = zo_max(ZO_MapPin.PIN_DATA[MAP_PIN_TYPE_PLAYER].level, 1)
 			control:SetDrawLevel(pinLevel)
-			overlayControl:SetDrawLevel(pinLevel)
-			highlightControl:SetDrawLevel(pinLevel - 1)
-			labelControl:SetDrawLevel(pinLevel + 1)
+			pin.backgroundControl:SetDrawLevel(pinLevel)
+			pin.highlightControl:SetDrawLevel(pinLevel - 1)
+			if pin.labelControl then
+				pin.labelControl:SetDrawLevel(pinLevel + 1)
+			end
 		end
 		function ZO_WorldMapPins_Manager:UpdatePinsForMapSizeChange()
 			w, h = ZO_WorldMapContainer:GetDimensions()
