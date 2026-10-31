@@ -56,12 +56,22 @@ local iconFriend = "EsoUI/Art/MapPins/UI-WorldMapGroupPip.dds"
 addon.IconLeaderSimple = function(pin) GetUnitTag(pin) return iconLeader end
 addon.IconMemberSimple = function(pin) GetUnitTag(pin) return iconMember end
 
+local function createLabelControl(pin)
+	local labelControl = WINDOW_MANAGER:CreateControl("$(parent)Label", pin:GetControl(), CT_LABEL)
+	labelControl:SetFont("ZoFontGameSmall")
+	labelControl:SetColor(1, 1, 1, 1)
+	labelControl:SetDrawLayer(DL_OVERLAY)
+	labelControl:SetHidden(true)
+	pin.labelControl = labelControl
+end	
+
 local function AddOverlayIcon(pin, unitTag)
-	local labelControl = pin.m_Control:GetNamedChild("Label")
 	local isLeader = addon.account.showLeaderCrown and IsUnitGroupLeader(unitTag)
 	local isFriend = addon.account.showFriendMarker and IsUnitFriend(unitTag)
 
+	local labelControl = pin.labelControl
 	if isLeader or isFriend then
+		labelControl = labelControl or createLabelControl(pin)
 		if labelControl:IsHidden() then
 			labelControl:ClearAnchors()
 			labelControl:SetAnchor(TOP, nil, TOP, 0, -3)
@@ -73,7 +83,8 @@ local function AddOverlayIcon(pin, unitTag)
 		else
 			labelControl:SetText(addon:GetColoredFriendIcon(pin))
 		end
-	else
+	elseif labelControl then
+		labelControl:ClearAnchors()
 		labelControl:SetPixelRoundingEnabled(false)
 		labelControl:SetHidden(true)
 	end
@@ -385,6 +396,13 @@ function addon:Initialize()
 
 	ZO_MapPin.PIN_DATA[MAP_PIN_TYPE_PLAYER].texture = "VotansGroupPins/art/Pointer1.dds"
 
+	SecurePostHook(ZO_MapPin, "SetData", function(pin, pinTypeAndTag)
+		if pin.labelControl then
+			local unitTag = pin:GetUnitTag()
+			AddOverlayIcon(pin, unitTag)
+		end
+	end)
+
 	CALLBACK_MANAGER:RegisterCallback("OnWorldMapChanged", function(navigateIn) self:ApplySettings() end)
 	EVENT_MANAGER:RegisterForEvent(addon.name, EVENT_GROUP_UPDATE, GroupUpdate)
 	EVENT_MANAGER:RegisterForEvent(self.name, EVENT_PLAYER_ACTIVATED, self.PlayerActivated)
@@ -392,13 +410,13 @@ function addon:Initialize()
 end
 
 function addon:InitSettings()
-	local LibHarvensAddonSettings = LibHarvensAddonSettings or LibStub("LibHarvensAddonSettings-1.0")
+	local LibHarvensAddonSettings = LibHarvensAddonSettings
 	if not LibHarvensAddonSettings then return end
 
 	local settings = LibHarvensAddonSettings:AddAddon("Votan's Group Pins")
 	if not settings then return end
 	addon.settingsControls = settings
-	settings.version = "1.2.19"
+	settings.version = "1.3.0"
 	settings.website = "http://www.esoui.com/downloads/info1619-VotansGroupPins.html"
 
 	local SI_TOOLTIP_ITEM_NAME = GetString(SI_TOOLTIP_ITEM_NAME)
