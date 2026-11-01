@@ -387,7 +387,7 @@ function HarvensQuestJournal:ShowText(text)
 	self.leftPage.body:ClearAnchors()
 
 	self.bodyFontHeight = self.leftPage.body:GetFontHeight()
-	self.pageHeight = mathFloor(DEFAULT_PAGE_HEIGHT / self.bodyFontHeight) * self.bodyFontHeight
+	self.pageHeight = mathFloor(self.renderablePageHeight / self.bodyFontHeight) * self.bodyFontHeight
 
 	self.leftPage:SetHeight(self.pageHeight)
 	self.rightPage:SetHeight(self.pageHeight)
@@ -687,6 +687,13 @@ do
 		local fontTitle = ZO_CreateFontString(titleFontName, titleFontSize, titleFontStyle)
 		local fontBody = ZO_CreateFontString(bodyFontName, bodyFontSize, bodyFontStyle)
 
+        self.leftPage:ClearAnchors()
+        self.rightPage:ClearAnchors()
+		self.leftPage.body:ClearAnchors()
+		self.rightPage.body:ClearAnchors()
+		self.leftPage:SetVerticalScroll(0)
+		self.rightPage:SetVerticalScroll(0)
+
 		self.background:SetTexture(bg)
 		self.leftPage.body:SetFont(fontBody)
 		self.rightPage.body:SetFont(fontBody)
@@ -695,10 +702,26 @@ do
 
 		self.title:SetColor(r, g, b, a)
 		self.title:SetStyleColor(styleR, styleG, styleB, styleA)
+        self.leftPage:SetHeight(pageHeight)
 		self.leftPage.body:SetColor(r, g, b, a)
 		self.leftPage.body:SetStyleColor(styleR, styleG, styleB, styleA)
+		self.rightPage:SetHeight(pageHeight)
 		self.rightPage.body:SetColor(r, g, b, a)
 		self.rightPage.body:SetStyleColor(styleR, styleG, styleB, styleA)
+
+		self.leftPage:SetWidth(pageWidth)
+        self.rightPage:SetWidth(pageWidth)
+		self.title:SetWidth(pageWidth)
+        self.leftPage.container:SetWidth(pageWidth)
+        self.rightPage.container:SetWidth(pageWidth)
+        self.leftPage.body:SetWidth(pageWidth)
+        self.rightPage.body:SetWidth(pageWidth)
+		self.leftPage:SetAnchor(LEFT, nil, LEFT, leftPageXOffset, pageYOffset)
+		self.rightPage:SetAnchor(RIGHT, nil, RIGHT, rightPageXOffset, pageYOffset)
+		self.leftPage:SetHorizontalScroll(0)
+		self.rightPage:SetHorizontalScroll(0)
+		self.leftPage.body:SetAnchor(TOPLEFT, nil, TOPLEFT)
+		self.rightPage.body:SetAnchor(TOPLEFT, nil, TOPLEFT)
 
 		self.leftPage.body:SetText("TEST")
 		self.bodyFontHeight = self.leftPage.body:GetFontHeight()
@@ -711,6 +734,7 @@ do
 		self.textColor = ZO_ColorDef:New((self.sv.layout.fontR + d) / 2, (self.sv.layout.fontG + d) / 2, (self.sv.layout.fontB + d) / 2, self.sv.layout.fontA)
 		self.questColor = ZO_ColorDef:New((self.sv.layout.questR + d) / 2, (self.sv.layout.questG + d) / 2, (self.sv.layout.questB + d) / 2, self.sv.layout.questA)
 		self.npcColor = ZO_ColorDef:New((self.sv.layout.npcR + d) / 2, (self.sv.layout.npcG + d) / 2, (self.sv.layout.npcB + d) / 2, self.sv.layout.npcA)
+		self.renderablePageHeight = pageHeight
 	end
 end
 
@@ -851,13 +875,7 @@ function HarvensQuestJournal:InitJournal(control)
 	self.leftPage = GetControl(self.journal, "LeftPage")
 	self.leftPage.container = GetControl(self.leftPage, "Container")
 	self.title = GetControl(self.leftPage.container, "Title")
-	--self.title:SetFont(self.sv.layout.titleFont)
-	--self.title:SetColor(self.sv.layout.fontR, self.sv.layout.fontG, self.sv.layout.fontB, self.sv.layout.fontA)
-	--self.title:SetStyleColor(0, 0, 0, 1)
 	self.leftPage.body = GetControl(self.leftPage.container, "Body")
-	--self.leftPage.body:SetFont(self.sv.layout.bodyFont)
-	--self.leftPage.body:SetColor(self.sv.layout.fontR, self.sv.layout.fontG, self.sv.layout.fontB, self.sv.layout.fontA)
-	--self.leftPage.body:SetStyleColor(0, 0, 0, 1)
 	self.leftPage.body:SetMouseEnabled(true)
 	self.leftPage.body:SetHandler(
 		"OnLinkClicked",
@@ -875,7 +893,6 @@ function HarvensQuestJournal:InitJournal(control)
 	self.rightPage = GetControl(self.journal, "RightPage")
 	self.rightPage.container = GetControl(self.rightPage, "Container")
 	self.rightPage.body = GetControl(self.rightPage.container, "Body")
-	--self.rightPage.body:SetFont(self.sv.layout.bodyFont)
 	self.rightPage.body:SetColor(self.sv.layout.fontR, self.sv.layout.fontG, self.sv.layout.fontB, self.sv.layout.fontA)
 	self.rightPage.body:SetStyleColor(0, 0, 0, 1)
 	self.rightPage.body:SetMouseEnabled(true)
@@ -1414,7 +1431,8 @@ end
 
 function HarvensQuestJournal:SetupOptions()
 	local settings = LibHarvensAddonSettings:AddAddon("Harven's Quest Journal")
-	settings.version = "3.0.0"
+	settings.version = "3.0.1"
+	settings.allowDefaults = true
 
 	local skin = {
 		type = LibHarvensAddonSettings.ST_DROPDOWN,
@@ -1431,35 +1449,9 @@ function HarvensQuestJournal:SetupOptions()
 		setFunction = function(combobox, name)
 			self.sv.layout.skin = name
 			self:ApplySkin(name)
-		end
+		end,
+		default = self.defaults.layout.skin
 	}
-
-	-- local bodyFont = {
-	-- 	type = LibHarvensAddonSettings.ST_EDIT,
-	-- 	label = GetString(HARVEN_QUEST_JOURNAL_BODY_FONT),
-	-- 	getFunction = function()
-	-- 		return self.sv.layout.bodyFont
-	-- 	end,
-	-- 	setFunction = function(newValue)
-	-- 		self.sv.layout.bodyFont = newValue
-	-- 		--self.leftPage.body:SetFont(self.sv.layout.bodyFont)
-	-- 		--self.rightPage.body:SetFont(self.sv.layout.bodyFont)
-	-- 		self.leftPage.body:SetText("TEST")
-	-- 		self.bodyFontHeight = self.leftPage.body:GetFontHeight()
-	-- 	end
-	-- }
-
-	-- local titleFont = {
-	-- 	type = LibHarvensAddonSettings.ST_EDIT,
-	-- 	label = GetString(HARVEN_QUEST_JOURNAL_TITLE_FONT),
-	-- 	getFunction = function()
-	-- 		return self.sv.layout.titleFont
-	-- 	end,
-	-- 	setFunction = function(newValue)
-	-- 		self.sv.layout.titleFont = newValue
-	-- 		--self.title:SetFont(self.sv.layout.titleFont)
-	-- 	end
-	-- }
 
 	local fontColor = {
 		type = LibHarvensAddonSettings.ST_COLOR,
@@ -1472,7 +1464,8 @@ function HarvensQuestJournal:SetupOptions()
 			self.title:SetColor(...)
 			self.rightPage.body:SetColor(...)
 			self.leftPage.body:SetColor(...)
-		end
+		end,
+		default = {self.defaults.layout.fontR, self.defaults.layout.fontG, self.defaults.layout.fontB, self.defaults.layout.fontA}
 	}
 
 	local questColor = {
@@ -1483,7 +1476,8 @@ function HarvensQuestJournal:SetupOptions()
 		end,
 		setFunction = function(...)
 			self.sv.layout.questR, self.sv.layout.questG, self.sv.layout.questB, self.sv.layout.questA = ...
-		end
+		end,
+		default = {self.defaults.layout.questR, self.defaults.layout.questG, self.defaults.layout.questB, self.defaults.layout.questA}
 	}
 
 	local npcNamesColor = {
@@ -1494,7 +1488,8 @@ function HarvensQuestJournal:SetupOptions()
 		end,
 		setFunction = function(...)
 			self.sv.layout.npcR, self.sv.layout.npcG, self.sv.layout.npcB, self.sv.layout.npcA = ...
-		end
+		end,
+		default = {self.defaults.layout.npcR, self.defaults.layout.npcG, self.defaults.layout.npcB, self.defaults.layout.npcA}
 	}
 
 	local showCompletedByCategory = {
@@ -1506,7 +1501,8 @@ function HarvensQuestJournal:SetupOptions()
 		end,
 		setFunction = function(state)
 			self.sv.showCompletedByCategory = state
-		end
+		end,
+		default = self.defaults.showCompletedByCategory
 	}
 
 	local openAtTracked = {
@@ -1517,7 +1513,8 @@ function HarvensQuestJournal:SetupOptions()
 		end,
 		setFunction = function(state)
 			self.sv.openAtTracked = state
-		end
+		end,
+		default = self.defaults.openAtTracked
 	}
 
 	local saveDailyQuests = {
@@ -1528,7 +1525,8 @@ function HarvensQuestJournal:SetupOptions()
 		end,
 		setFunction = function(state)
 			self.sv.saveDaily = state
-		end
+		end,
+		default = self.defaults.saveDaily
 	}
 
 	local saveRepeatableQuests = {
@@ -1539,7 +1537,8 @@ function HarvensQuestJournal:SetupOptions()
 		end,
 		setFunction = function(state)
 			self.sv.saveRepeatable = state
-		end
+		end,
+		default = self.defaults.saveRepeatable
 	}
 
 	local playEmote = {
@@ -1550,7 +1549,8 @@ function HarvensQuestJournal:SetupOptions()
 		end,
 		setFunction = function(state)
 			self.sv.playEmote = state
-		end
+		end,
+		default = self.defaults.playEmote
 	}
 
 	settings:AddSettings({openAtTracked, skin, fontColor, questColor, npcNamesColor, showCompletedByCategory, saveDailyQuests, saveRepeatableQuests, playEmote})
@@ -1563,7 +1563,8 @@ function HarvensQuestJournal:SetupOptions()
 			end,
 			setFunction = function(state)
 				self.sv.showInMainMenu = state
-			end
+			end,
+			default = self.defaults.showInMainMenu
 		}
 	end
 end
@@ -1641,27 +1642,24 @@ end
 function HarvensQuestJournal:Initialize()
 	self.control = HarvensQuestJournalTopLevel
 
-	local re, gr, bl = GetInterfaceColor(INTERFACE_COLOR_TYPE_BOOK_MEDIUM, BOOK_MEDIUM_YELLOWED_PAPER)
 	local defaults = {
 		zonesFixed = false,
 		linksConverted = false,
 		layout = {
 			openAtTracked = false,
 			skin = "Paper",
-			bodyFont = "ZoFontBookPaper",
-			titleFont = "ZoFontBookPaperTitle",
-			fontR = re,
-			fontG = gr,
-			fontB = bl,
-			fontA = 0.8,
-			questR = 0.34,
-			questG = 0.05,
-			questB = 0.05,
-			questA = 0.8,
-			npcR = 0.05,
-			npcG = 0.37,
-			npcB = 0.06,
-			npcA = 0.8
+			fontR = 0.16,
+			fontG = 0.16,
+			fontB = 0.5,
+			fontA = 1,
+			questR = 0.5,
+			questG = 0.16,
+			questB = 0.16,
+			questA = 1,
+			npcR = 0.16,
+			npcG = 0.5,
+			npcB = 0.16,
+			npcA = 1
 		},
 		saveDaily = true,
 		saveRepeatable = true,
@@ -1673,10 +1671,7 @@ function HarvensQuestJournal:Initialize()
 		rumors = {},
 		completedRumors = {}
 	}
-	-- if ZO_IsConsoleOrGameCoreUI() then
-	-- 	defaults.layout.bodyFont = "ZoFontGamepadBookPaper"
-	-- 	defaults.layout.titleFont = "ZoFontGamepadBookPaperTitle"
-	-- end
+	self.defaults = defaults
 
 	self.sv = ZO_SavedVars:New("HarvensQuestJournal_SavedVariables", 1, nil, defaults)
 
@@ -2140,7 +2135,6 @@ function HarvensQuestJournal:Initialize()
 				EVENT_RUMOR_STARTED,
 				function(eventType, rumorId)
 					HarvensQuestJournal:AddRumor(rumorId)
-					HarvensQuestJournal:UpdateJournal(true)
 				end
 			)
 
@@ -2149,7 +2143,6 @@ function HarvensQuestJournal:Initialize()
 				EVENT_RUMOR_UPDATED,
 				function(eventType, rumorId)
 					HarvensQuestJournal:AddRumor(rumorId)
-					HarvensQuestJournal:UpdateJournal(true)
 				end
 			)
 
@@ -2166,7 +2159,6 @@ function HarvensQuestJournal:Initialize()
 							rumorId = GetNextPendingRumorId(rumorId)
 						end
 					end
-					HarvensQuestJournal:UpdateJournal(true)
 				end
 			)
 
@@ -2175,7 +2167,6 @@ function HarvensQuestJournal:Initialize()
 				EVENT_RUMOR_COMPLETED,
 				function(eventType, rumorId)
 					HarvensQuestJournal:CompleteRumor(rumorId)
-					HarvensQuestJournal:UpdateJournal(true)
 				end
 			)
 
