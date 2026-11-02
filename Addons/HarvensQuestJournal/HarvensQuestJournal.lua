@@ -687,8 +687,8 @@ do
 		local fontTitle = ZO_CreateFontString(titleFontName, titleFontSize, titleFontStyle)
 		local fontBody = ZO_CreateFontString(bodyFontName, bodyFontSize, bodyFontStyle)
 
-        self.leftPage:ClearAnchors()
-        self.rightPage:ClearAnchors()
+		self.leftPage:ClearAnchors()
+		self.rightPage:ClearAnchors()
 		self.leftPage.body:ClearAnchors()
 		self.rightPage.body:ClearAnchors()
 		self.leftPage:SetVerticalScroll(0)
@@ -702,7 +702,7 @@ do
 
 		self.title:SetColor(r, g, b, a)
 		self.title:SetStyleColor(styleR, styleG, styleB, styleA)
-        self.leftPage:SetHeight(pageHeight)
+		self.leftPage:SetHeight(pageHeight)
 		self.leftPage.body:SetColor(r, g, b, a)
 		self.leftPage.body:SetStyleColor(styleR, styleG, styleB, styleA)
 		self.rightPage:SetHeight(pageHeight)
@@ -710,12 +710,12 @@ do
 		self.rightPage.body:SetStyleColor(styleR, styleG, styleB, styleA)
 
 		self.leftPage:SetWidth(pageWidth)
-        self.rightPage:SetWidth(pageWidth)
+		self.rightPage:SetWidth(pageWidth)
 		self.title:SetWidth(pageWidth)
-        self.leftPage.container:SetWidth(pageWidth)
-        self.rightPage.container:SetWidth(pageWidth)
-        self.leftPage.body:SetWidth(pageWidth)
-        self.rightPage.body:SetWidth(pageWidth)
+		self.leftPage.container:SetWidth(pageWidth)
+		self.rightPage.container:SetWidth(pageWidth)
+		self.leftPage.body:SetWidth(pageWidth)
+		self.rightPage.body:SetWidth(pageWidth)
 		self.leftPage:SetAnchor(LEFT, nil, LEFT, leftPageXOffset, pageYOffset)
 		self.rightPage:SetAnchor(RIGHT, nil, RIGHT, rightPageXOffset, pageYOffset)
 		self.leftPage:SetHorizontalScroll(0)
@@ -1434,15 +1434,19 @@ function HarvensQuestJournal:SetupOptions()
 	settings.version = "3.0.1"
 	settings.allowDefaults = true
 
+	local skinItems = {
+		{name = "Paper"},
+		{name = "Skin"},
+		{name = "Rubbing"},
+		{name = "Metal"}
+	}
+	for i = 1, #skinItems do
+		skinItems[i].data = skinItems[i].name
+	end
 	local skin = {
 		type = LibHarvensAddonSettings.ST_DROPDOWN,
 		label = GetString(HARVEN_QUEST_JOURNAL_BOOK_SKIN),
-		items = {
-			{name = "Paper"},
-			{name = "Skin"},
-			{name = "Rubbing"},
-			{name = "Metal"}
-		},
+		items = skinItems,
 		getFunction = function()
 			return self.sv.layout.skin
 		end,
@@ -1703,12 +1707,6 @@ function HarvensQuestJournal:Initialize()
 	self.currentPage = 1
 	self.currentSection = JS_CURRENT
 	self.currentQuest = ""
-	self.skinsToTextures = {
-		["Paper"] = "EsoUI/Art/LoreLibrary/loreLibrary_paperBook.dds",
-		["Skin"] = "EsoUI/Art/LoreLibrary/loreLibrary_skinBook.dds",
-		["Rubbing"] = "EsoUI/Art/LoreLibrary/loreLibrary_rubbingBook.dds",
-		["Metal"] = "EsoUI/Art/LoreLibrary/loreLibrary_dwemerBook.dds"
-	}
 	self.skinsToMediumId = {
 		["Paper"] = 1,
 		["Skin"] = 2,
