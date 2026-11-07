@@ -2,7 +2,7 @@
 ## Author: votan
 ## Description: Export / Import for Fisherman.
 ## Version: 1.0.6
-## APIVersion: 101044 101045
+## APIVersion: 101051 101052
 ## DependsOn: VotansFisherman
 ## SavedVariables: VotansFisherman_Export_Data
 

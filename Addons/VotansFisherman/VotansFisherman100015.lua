@@ -1467,18 +1467,21 @@ local function AddFilter()
 	end
 	if WORLD_MAP_FILTERS then
 		local function AddCheckBox(panel, filter)
+            if not panel then return end
 			panelToFilter[panel] = filter
 			panel:AddPinFilterCheckBox(data.pinTypeId, FilterCallback)
 		end
 		local self = WORLD_MAP_FILTERS
 		AddCheckBox(self.pvePanel, "pve")
 		AddCheckBox(self.pvpPanel, "pvp")
+        AddCheckBox(self.jerallPvPPanel, "jerallPvP")
 		AddCheckBox(self.imperialPvPPanel, "imperialPvP")
 		AddCheckBox(self.battlegroundPanel, "battleground")
 		AddCheckBox(self.globalPanel, "global")
 	end
 	if GAMEPAD_WORLD_MAP_FILTERS then
 		local function AddCheckBox(panel, filter)
+            if not panel then return end
 			panelToFilter[panel] = filter
 			local orgBuild = panel.PostBuildControls
 			function panel.PostBuildControls(panel)
@@ -1489,6 +1492,7 @@ local function AddFilter()
 		local self = GAMEPAD_WORLD_MAP_FILTERS
 		AddCheckBox(self.pvePanel, "pve")
 		AddCheckBox(self.pvpPanel, "pvp")
+        AddCheckBox(self.jerallPvPPanel, "jerallPvP")
 		AddCheckBox(self.imperialPvPPanel, "imperialPvP")
 		AddCheckBox(self.battlegroundPanel, "battleground")
 		AddCheckBox(self.globalPanel, "global")
@@ -2606,7 +2610,7 @@ if ZO_IsConsoleOrGameCoreUI() then
 		end
 
 		settings.author = "votan"
-		settings.version = "1.16.3"
+		settings.version = "1.16.4"
 		settings.website = "http://www.esoui.com/downloads/info918-VotansFisherman.html"
 
 		local optionsTable = {
@@ -3017,7 +3021,7 @@ else
 			name = data.title,
 			displayName = data.title,
 			author = "votan",
-			version = "1.16.3",
+			version = "1.16.4",
 			-- slashCommand = "",
 			-- registerForRefresh = true,
 			registerForDefaults = true,
