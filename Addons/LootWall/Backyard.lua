@@ -79,7 +79,7 @@ local function InitScrollList()
 		button:SetEnabled(rule ~= 0)
 		local itemLink = rowData.itemLink
 		nameLabel:SetText(zo_strformat(SI_TOOLTIP_ITEM_NAME, rowData.name))
-		nameLabel:SetColor(GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, GetItemLinkQuality(itemLink)))
+		nameLabel:SetColor(GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, GetItemLinkFunctionalQuality(itemLink)))
 
 		local ruleText
 		if rule == 0 then

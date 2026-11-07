@@ -89,12 +89,11 @@ local LootWall = LootWall
 
 -- LootWall.currentWidnowID = 0 --nope
 LootWall.name = "LootWall"
-LootWall.version = "0.7.17"
+LootWall.version = "0.7.18"
 LootWall.savedVarsVersion = 5
 LootWall.Window = {}
 LootWall.Buffer = {}
 LootWall.LAM = LibAddonMenu2
--- LootWall.NfR = LibStub("LibNeed4Research")
 LootWall.gameCameraInactive = false
 LootWall.ignoreLoot = false
 -------------------------------------------------------------------------------
@@ -158,16 +157,16 @@ local LW_PRESET_ACTION_STRING = {
 }
 
 local LW_CONF_TRANSLATE_QUALITY = {
-	[ITEM_QUALITY_ARCANE] = GetItemQualityColor(ITEM_QUALITY_ARCANE):Colorize("Arcane"),
-	[ITEM_QUALITY_ARTIFACT] = GetItemQualityColor(ITEM_QUALITY_ARTIFACT):Colorize("Artifact"),
-	[ITEM_QUALITY_MAGIC] = GetItemQualityColor(ITEM_QUALITY_MAGIC):Colorize("Magic"),
-	[ITEM_QUALITY_LEGENDARY] = GetItemQualityColor(ITEM_QUALITY_LEGENDARY):Colorize("Legendary"),
-	[ITEM_QUALITY_NORMAL] = GetItemQualityColor(ITEM_QUALITY_NORMAL):Colorize("Normal"),
-	[ITEM_QUALITY_TRASH] = GetItemQualityColor(ITEM_QUALITY_TRASH):Colorize("Trash")
+	[ITEM_FUNCTIONAL_QUALITY_ARCANE] = GetItemQualityColor(ITEM_FUNCTIONAL_QUALITY_ARCANE):Colorize("Arcane"),
+	[ITEM_FUNCTIONAL_QUALITY_ARTIFACT] = GetItemQualityColor(ITEM_FUNCTIONAL_QUALITY_ARTIFACT):Colorize("Artifact"),
+	[ITEM_FUNCTIONAL_QUALITY_MAGIC] = GetItemQualityColor(ITEM_FUNCTIONAL_QUALITY_MAGIC):Colorize("Magic"),
+	[ITEM_FUNCTIONAL_QUALITY_LEGENDARY] = GetItemQualityColor(ITEM_FUNCTIONAL_QUALITY_LEGENDARY):Colorize("Legendary"),
+	[ITEM_FUNCTIONAL_QUALITY_NORMAL] = GetItemQualityColor(ITEM_FUNCTIONAL_QUALITY_NORMAL):Colorize("Normal"),
+	[ITEM_FUNCTIONAL_QUALITY_TRASH] = GetItemQualityColor(ITEM_FUNCTIONAL_QUALITY_TRASH):Colorize("Trash")
 }
 
 local LW_CONF_DEFAULTS = {
-	[LW_CONF_QUALITY_THRESHOLD] = ITEM_QUALITY_ARCANE,
+	[LW_CONF_QUALITY_THRESHOLD] = ITEM_FUNCTIONAL_QUALITY_ARCANE,
 	[LW_CONF_KEEPORNATE] = LW_PRESET_ACTION_PROMPT,
 	[LW_CONF_KEEPNIRN] = LW_PRESET_ACTION_KEEP,
 	[LW_CONF_KEEPINSP] = LW_PRESET_ACTION_PROMPT,
@@ -412,7 +411,7 @@ function LootWall:Initialize()
 			type = "dropdown",
 			name = GetString(LWS_QUALITY_THRESHOLD),
 			tooltip = GetString(LWS_QUALITY_THRESHOLD_TOOLTIP),
-			choices = {LW_CONF_TRANSLATE_QUALITY[ITEM_QUALITY_TRASH], LW_CONF_TRANSLATE_QUALITY[ITEM_QUALITY_NORMAL], LW_CONF_TRANSLATE_QUALITY[ITEM_QUALITY_MAGIC], LW_CONF_TRANSLATE_QUALITY[ITEM_QUALITY_ARCANE], LW_CONF_TRANSLATE_QUALITY[ITEM_QUALITY_ARTIFACT], LW_CONF_TRANSLATE_QUALITY[ITEM_QUALITY_LEGENDARY]},
+			choices = {LW_CONF_TRANSLATE_QUALITY[ITEM_FUNCTIONAL_QUALITY_TRASH], LW_CONF_TRANSLATE_QUALITY[ITEM_FUNCTIONAL_QUALITY_NORMAL], LW_CONF_TRANSLATE_QUALITY[ITEM_FUNCTIONAL_QUALITY_MAGIC], LW_CONF_TRANSLATE_QUALITY[ITEM_FUNCTIONAL_QUALITY_ARCANE], LW_CONF_TRANSLATE_QUALITY[ITEM_FUNCTIONAL_QUALITY_ARTIFACT], LW_CONF_TRANSLATE_QUALITY[ITEM_FUNCTIONAL_QUALITY_LEGENDARY]},
 			getFunc = function()
 				return self:GetConfValueForKey(LW_CONF_QUALITY_THRESHOLD)
 			end,
@@ -847,7 +846,7 @@ function LootWall:MakeItemStringId(itemLink)
 		itemValue = 0
 	end
 	if itemType ~= ITEMTYPE_TRASH then
-		itemQuality = GetItemLinkQuality(itemLink)
+		itemQuality = GetItemLinkFunctionalQuality(itemLink)
 		itemLevel = GetItemLinkRequiredLevel(itemLink) + GetItemLinkRequiredChampionPoints(itemLink)
 	else
 		itemQuality = 0
@@ -880,7 +879,7 @@ function LootWall:PresetToAction(preset)
 end
 -------------------------------------------------------------------------------
 function LootWall:DefaultActionForLink(itemLink)
-	local itemQuality = GetItemLinkQuality(itemLink)
+	local itemQuality = GetItemLinkFunctionalQuality(itemLink)
 	if tonumber(itemQuality) >= tonumber(self.savedVariables.conf[LW_CONF_QUALITY_THRESHOLD]) then
 		return LW_ACTION_KEEP_ALWAYS
 	end
@@ -944,7 +943,7 @@ function LootWall:DefaultActionForLink(itemLink)
 	-- 	end
 	-- end
 
-	if (itemQuality == ITEM_QUALITY_TRASH) and (self.savedVariables.conf[LW_CONF_KEEPTRASH] > LW_PRESET_ACTION_PROMPT) then
+	if (itemQuality == ITEM_FUNCTIONAL_QUALITY_TRASH) and (self.savedVariables.conf[LW_CONF_KEEPTRASH] > LW_PRESET_ACTION_PROMPT) then
 		return self:PresetToAction(self.savedVariables.conf[LW_CONF_KEEPTRASH])
 	end
 
@@ -1326,7 +1325,7 @@ local function HookSetItemIsJunk()
 		local itemLink = GetItemLink(bagId, slotId)
 		local identifier = LootWall:MakeItemStringId(itemLink)
 		if isJunk then
-			local itemQuality = GetItemLinkQuality(itemLink)
+			local itemQuality = GetItemLinkFunctionalQuality(itemLink)
 			if itemQuality >= tonumber(LootWall.savedVariables.conf[LW_CONF_QUALITY_THRESHOLD]) then
 				local droppedItem = LWDroppedItem:new(itemLink, bagId, slotId)
 				droppedItem.mode = LW_PRESET_ACTION_JUNK
@@ -1346,7 +1345,7 @@ local function HookSetItemIsJunk()
 	function ZO_InventorySlot_InitiateDestroyItem(...)
 		local bagId, slotId = ZO_Inventory_GetBagAndIndex(...)
 		local itemLink = GetItemLink(bagId, slotId)
-		local itemQuality = GetItemLinkQuality(itemLink)
+		local itemQuality = GetItemLinkFunctionalQuality(itemLink)
 		if itemQuality >= tonumber(LootWall.savedVariables.conf[LW_CONF_QUALITY_THRESHOLD]) then
 			local droppedItem = LWDroppedItem:new(itemLink, bagId, slotId)
 			droppedItem.mode = LW_PRESET_ACTION_DESTROY
@@ -1404,10 +1403,6 @@ function LootWall:OnInventoryUpdate(eventCode, bagId, slotId, isNewItem, itemSou
 	if defaultAction ~= LW_ACTION_UNDEFINED then
 		self:ApplyRuleToItem(defaultAction, bagId, slotId, itemLink)
 	else
-		-- 	end
-		-- 	if self:ItemHasRule(itemLink, itemIdentifier) then
-		-- 		self:ApplyRuleToItem(self.savedVariables.itemList[itemIdentifier], bagId, slotId, itemLink)
-		-- 	else
 		local droppedItem = LWDroppedItem:new(itemLink, bagId, slotId)
 		table.insert(self.Buffer, 1, droppedItem)
 	end
@@ -1477,7 +1472,7 @@ function LootWall:StoreOpened()
 	local sellJunk = self.savedVariables.conf[LW_CONF_SELLJUNK] or false
 	if (sellJunk) and (HasAnyJunk(BAG_BACKPACK)) then
 		SellAllJunk()
-		d("|cFF0000[LootWall]|cFFFFFFSold all junk.|r")
+		CHAT_ROUTER:AddSystemMessage("|cFF0000[LootWall]|cFFFFFFSold all junk.|r")
 	end
 end
 -------------------------------------------------------------------------------
