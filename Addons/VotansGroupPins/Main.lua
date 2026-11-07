@@ -306,71 +306,6 @@ local function GroupUpdate()
 	addon:InitDelayedUpdate()
 end
 
--- local function HookGroupManager()
--- em:UnregisterForEvent("ZO_GroupList_Manager", EVENT_UNIT_CREATED)
--- em:UnregisterForEvent("ZO_GroupList_Manager", EVENT_UNIT_DESTROYED)
--- em:UnregisterForEvent("ZO_GroupList_Manager", EVENT_GROUP_MEMBER_JOINED)
--- em:UnregisterForEvent("ZO_GroupList_Manager", EVENT_GROUP_MEMBER_LEFT)
--- em:UnregisterForEvent("ZO_GroupList_Manager", EVENT_LEVEL_UPDATE)
--- em:UnregisterForEvent("ZO_GroupList_Manager", EVENT_CHAMPION_POINT_UPDATE)
--- em:UnregisterForEvent("ZO_GroupList_Manager", EVENT_ZONE_UPDATE)
--- em:UnregisterForEvent("ZO_GroupList_Manager", EVENT_GROUP_MEMBER_ROLES_CHANGED)
--- em:UnregisterForEvent("ZO_GroupList_Manager", EVENT_GROUP_MEMBER_CONNECTED_STATUS)
--- em:UnregisterForEvent("ZO_GroupList_Manager", EVENT_LEADER_UPDATE)
--- em:UnregisterForEvent("ZO_GroupList_Manager", EVENT_GROUP_UPDATE)
--- em:UnregisterForEvent("ZO_GroupList_Manager", EVENT_PLAYER_ACTIVATED)
--- em:UnregisterForEvent("ZO_GroupList_Manager", EVENT_GROUP_MEMBER_ACCOUNT_NAME_UPDATED)
-
--- function ZO_GroupList_Manager:RegisterForEvents()
--- 	local identifier = "ZO_GroupList_Manager_Refresh"
-
--- 	--  During group invitation, we can receive a lot of event spam at once on a single invite when the
--- 	-- involved players are at the same location. Add a delay so we only refresh once in cases like this.
--- 	local function DelayedRefreshData()
--- 		em:UnregisterForUpdate(identifier)
--- 		self:RefreshData()
--- 	end
-
--- 	local function RegisterDelayedRefresh()
--- 		em:UnregisterForUpdate(identifier)
--- 		em:RegisterForUpdate(identifier, 100, DelayedRefreshData)
--- 	end
-
--- 	local function RegisterDelayedRefreshOnUnitEvent(eventCode, unitTag)
--- 		if IsPlayerInGroup() and ZO_Group_IsGroupUnitTag(unitTag) then
--- 			RegisterDelayedRefresh()
--- 		end
--- 	end
-
--- 	local function OnGroupMemberLeft(eventCode, characterName, reason, wasLocalPlayer, amLeader)
--- 		if (wasLocalPlayer or amLeader) then
--- 			RegisterDelayedRefresh()
--- 		end
--- 	end
-
--- 	local function OnGroupMemberJoined()
--- 		-- EVENT_UNIT_CREATED will handle the major logic, this is just for the sound
--- 		PlaySound(SOUNDS.GROUP_JOIN)
--- 	end
-
--- 	em:RegisterForEvent("ZO_GroupList_Manager", EVENT_UNIT_CREATED, RegisterDelayedRefreshOnUnitEvent)
--- 	em:RegisterForEvent("ZO_GroupList_Manager", EVENT_UNIT_DESTROYED, RegisterDelayedRefreshOnUnitEvent)
--- 	em:RegisterForEvent("ZO_GroupList_Manager", EVENT_GROUP_MEMBER_JOINED, OnGroupMemberJoined)
--- 	em:RegisterForEvent("ZO_GroupList_Manager", EVENT_GROUP_MEMBER_LEFT, OnGroupMemberLeft)
--- 	em:RegisterForEvent("ZO_GroupList_Manager", EVENT_LEVEL_UPDATE, RegisterDelayedRefreshOnUnitEvent)
--- 	em:RegisterForEvent("ZO_GroupList_Manager", EVENT_CHAMPION_POINT_UPDATE, RegisterDelayedRefreshOnUnitEvent)
--- 	em:RegisterForEvent("ZO_GroupList_Manager", EVENT_ZONE_UPDATE, RegisterDelayedRefreshOnUnitEvent)
--- 	em:RegisterForEvent("ZO_GroupList_Manager", EVENT_GROUP_MEMBER_ROLES_CHANGED, RegisterDelayedRefreshOnUnitEvent)
--- 	em:RegisterForEvent("ZO_GroupList_Manager", EVENT_GROUP_MEMBER_CONNECTED_STATUS, RegisterDelayedRefreshOnUnitEvent)
--- 	em:RegisterForEvent("ZO_GroupList_Manager", EVENT_LEADER_UPDATE, RegisterDelayedRefresh)
--- 	em:RegisterForEvent("ZO_GroupList_Manager", EVENT_GROUP_UPDATE, RegisterDelayedRefresh)
--- 	em:RegisterForEvent("ZO_GroupList_Manager", EVENT_PLAYER_ACTIVATED, RegisterDelayedRefresh)
--- 	em:RegisterForEvent("ZO_GroupList_Manager", EVENT_GROUP_MEMBER_ACCOUNT_NAME_UPDATED, RegisterDelayedRefresh)
--- end
--- GROUP_LIST_MANAGER:RegisterForEvents()
--- end
-
-
 function addon:Initialize()
 	local function GetColor(c)
 		local r = ZO_ColorDef:New(c)
@@ -392,21 +327,19 @@ function addon:Initialize()
 	self.roleHeal = GetColor(self.account.roleHeal)
 	self.roleDps = GetColor(self.account.roleDps)
 
-	-- HookGroupManager()
-
 	ZO_MapPin.PIN_DATA[MAP_PIN_TYPE_PLAYER].texture = "VotansGroupPins/art/Pointer1.dds"
 
-	SecurePostHook(ZO_MapPin, "SetData", function(pin, pinTypeAndTag)
-		if pin.labelControl then
+	SecurePostHook(ZO_MapPin, "SetData", function(pin)
+		if pin.labelControl and pin:IsUnit() then
 			local unitTag = pin:GetUnitTag()
 			AddOverlayIcon(pin, unitTag)
 		end
 	end)
 
 	CALLBACK_MANAGER:RegisterCallback("OnWorldMapChanged", function(navigateIn) self:ApplySettings() end)
-	EVENT_MANAGER:RegisterForEvent(addon.name, EVENT_GROUP_UPDATE, GroupUpdate)
-	EVENT_MANAGER:RegisterForEvent(self.name, EVENT_PLAYER_ACTIVATED, self.PlayerActivated)
-	EVENT_MANAGER:RegisterForEvent(self.name, EVENT_PLAYER_DEACTIVATED, self.PlayerDeactivated)
+	em:RegisterForEvent(addon.name, EVENT_GROUP_UPDATE, GroupUpdate)
+	em:RegisterForEvent(self.name, EVENT_PLAYER_ACTIVATED, self.PlayerActivated)
+	em:RegisterForEvent(self.name, EVENT_PLAYER_DEACTIVATED, self.PlayerDeactivated)
 end
 
 function addon:InitSettings()
@@ -415,7 +348,7 @@ function addon:InitSettings()
 
 	local settings = LibHarvensAddonSettings:AddAddon("Votan's Group Pins")
 	if not settings then return end
-	addon.settingsControls = settings
+	self.settingsControls = settings
 	settings.version = "1.3.0"
 	settings.website = "http://www.esoui.com/downloads/info1619-VotansGroupPins.html"
 
@@ -454,8 +387,8 @@ function addon:InitSettings()
 			return addon.simplePlayerColor:UnpackRGB()
 		end,
 		setFunction = function(newR, newG, newB, newA)
-			addon.simplePlayerColor = ZO_ColorDef:New(newR, newG, newB, 1)
-			addon.account.simplePlayerColor = addon.simplePlayerColor:ToHex()
+			self.simplePlayerColor = ZO_ColorDef:New(newR, newG, newB, 1)
+			self.account.simplePlayerColor = self.simplePlayerColor:ToHex()
 			self:InitDelayedUpdate()
 		end,
 	}
@@ -466,9 +399,9 @@ function addon:InitSettings()
 			return addon.simpleFriendColor:UnpackRGB()
 		end,
 		setFunction = function(newR, newG, newB, newA)
-			addon.simpleFriendColor = ZO_ColorDef:New(newR, newG, newB, 1)
-			addon.account.simpleFriendColor = addon.simpleFriendColor:ToHex()
-			addon:ClearSizeCache()
+			self.simpleFriendColor = ZO_ColorDef:New(newR, newG, newB, 1)
+			self.account.simpleFriendColor = self.simpleFriendColor:ToHex()
+			self:ClearSizeCache()
 			self:InitDelayedUpdate()
 		end,
 	}
@@ -547,12 +480,12 @@ function addon:InitSettings()
 		type = LibHarvensAddonSettings.ST_COLOR,
 		label = GetString(SI_VOTANS_GROUPPINS_MODE_COLOR_LEADER),
 		getFunction = function()
-			return addon.simpleLeaderColor:UnpackRGB()
+			return self.simpleLeaderColor:UnpackRGB()
 		end,
 		setFunction = function(newR, newG, newB, newA)
-			addon.simpleLeaderColor = ZO_ColorDef:New(newR, newG, newB, 1)
-			addon.account.simpleLeaderColor = addon.simpleLeaderColor:ToHex()
-			addon:ClearSizeCache()
+			self.simpleLeaderColor = ZO_ColorDef:New(newR, newG, newB, 1)
+			self.account.simpleLeaderColor = self.simpleLeaderColor:ToHex()
+			self:ClearSizeCache()
 			self:InitDelayedUpdate()
 		end,
 	}
@@ -560,11 +493,11 @@ function addon:InitSettings()
 		type = LibHarvensAddonSettings.ST_COLOR,
 		label = GetString(SI_VOTANS_GROUPPINS_MODE_COLOR_MEMBER),
 		getFunction = function()
-			return addon.simpleMemberColor:UnpackRGB()
+			return self.simpleMemberColor:UnpackRGB()
 		end,
 		setFunction = function(newR, newG, newB, newA)
-			addon.simpleMemberColor = ZO_ColorDef:New(newR, newG, newB, 1)
-			addon.account.simpleMemberColor = addon.simpleMemberColor:ToHex()
+			self.simpleMemberColor = ZO_ColorDef:New(newR, newG, newB, 1)
+			self.account.simpleMemberColor = self.simpleMemberColor:ToHex()
 			self:InitDelayedUpdate()
 		end,
 	}
@@ -576,11 +509,11 @@ function addon:InitSettings()
 		type = LibHarvensAddonSettings.ST_COLOR,
 		label = GetString(SI_VOTANS_GROUPPINS_MODE_HEALTHY),
 		getFunction = function()
-			return addon.healthGood:UnpackRGB()
+			return self.healthGood:UnpackRGB()
 		end,
 		setFunction = function(newR, newG, newB, newA)
-			addon.healthGood = ZO_ColorDef:New(newR, newG, newB, 1)
-			addon.account.healthGood = addon.healthGood:ToHex()
+			self.healthGood = ZO_ColorDef:New(newR, newG, newB, 1)
+			self.account.healthGood = self.healthGood:ToHex()
 			self:InitDelayedUpdate()
 		end,
 	}
@@ -588,11 +521,11 @@ function addon:InitSettings()
 		type = LibHarvensAddonSettings.ST_COLOR,
 		label = GetString(SI_VOTANS_GROUPPINS_MODE_TROUBLE),
 		getFunction = function()
-			return addon.healthWarn:UnpackRGB()
+			return self.healthWarn:UnpackRGB()
 		end,
 		setFunction = function(newR, newG, newB, newA)
-			addon.healthWarn = ZO_ColorDef:New(newR, newG, newB, 1)
-			addon.account.healthWarn = addon.healthWarn:ToHex()
+			self.healthWarn = ZO_ColorDef:New(newR, newG, newB, 1)
+			self.account.healthWarn = self.healthWarn:ToHex()
 			self:InitDelayedUpdate()
 		end,
 	}
@@ -600,11 +533,11 @@ function addon:InitSettings()
 		type = LibHarvensAddonSettings.ST_COLOR,
 		label = GetString(SI_VOTANS_GROUPPINS_MODE_WOUNDED),
 		getFunction = function()
-			return addon.healthBad:UnpackRGB()
+			return self.healthBad:UnpackRGB()
 		end,
 		setFunction = function(newR, newG, newB, newA)
-			addon.healthBad = ZO_ColorDef:New(newR, newG, newB, 1)
-			addon.account.healthBad = addon.healthBad:ToHex()
+			self.healthBad = ZO_ColorDef:New(newR, newG, newB, 1)
+			self.account.healthBad = self.healthBad:ToHex()
 			self:InitDelayedUpdate()
 		end,
 	}
@@ -612,7 +545,7 @@ function addon:InitSettings()
 		type = LibHarvensAddonSettings.ST_COLOR,
 		label = GetString(SI_VOTANS_GROUPPINS_MODE_DEAD),
 		getFunction = function()
-			return addon.healthDead:UnpackRGB()
+			return self.healthDead:UnpackRGB()
 		end,
 		setFunction = function(newR, newG, newB, newA)
 			self.healthDead = ZO_ColorDef:New(newR, newG, newB, 1)
@@ -628,11 +561,11 @@ function addon:InitSettings()
 		type = LibHarvensAddonSettings.ST_COLOR,
 		label = GetString(SI_VOTANS_GROUPPINS_MODE_TANK),
 		getFunction = function()
-			return addon.roleTank:UnpackRGB()
+			return self.roleTank:UnpackRGB()
 		end,
 		setFunction = function(newR, newG, newB, newA)
-			addon.roleTank = ZO_ColorDef:New(newR, newG, newB, 1)
-			addon.account.roleTank = addon.roleTank:ToHex()
+			self.roleTank = ZO_ColorDef:New(newR, newG, newB, 1)
+			self.account.roleTank = self.roleTank:ToHex()
 			self:InitDelayedUpdate()
 		end,
 	}
@@ -640,11 +573,11 @@ function addon:InitSettings()
 		type = LibHarvensAddonSettings.ST_COLOR,
 		label = GetString(SI_VOTANS_GROUPPINS_MODE_HEAL),
 		getFunction = function()
-			return addon.roleHeal:UnpackRGB()
+			return self.roleHeal:UnpackRGB()
 		end,
 		setFunction = function(newR, newG, newB, newA)
-			addon.roleHeal = ZO_ColorDef:New(newR, newG, newB, 1)
-			addon.account.roleHeal = addon.roleHeal:ToHex()
+			self.roleHeal = ZO_ColorDef:New(newR, newG, newB, 1)
+			self.account.roleHeal = self.roleHeal:ToHex()
 			self:InitDelayedUpdate()
 		end,
 	}
@@ -652,36 +585,15 @@ function addon:InitSettings()
 		type = LibHarvensAddonSettings.ST_COLOR,
 		label = GetString(SI_VOTANS_GROUPPINS_MODE_DAMAGE),
 		getFunction = function()
-			return addon.roleDps:UnpackRGB()
+			return self.roleDps:UnpackRGB()
 		end,
 		setFunction = function(newR, newG, newB, newA)
-			addon.roleDps = ZO_ColorDef:New(newR, newG, newB, 1)
-			addon.account.roleDps = addon.roleDps:ToHex()
+			self.roleDps = ZO_ColorDef:New(newR, newG, newB, 1)
+			self.account.roleDps = self.roleDps:ToHex()
 			self:InitDelayedUpdate()
 		end,
 	}
 end
-
-
--- do
--- local function UpdateControls()
--- 	if addon.settingsControls.selected then
--- 		addon.settingsControls:UpdateControls()
--- 	end
--- end
--- function addon.ToggleShowHUD()
--- 	local self = addon
--- 	self.account.showHUD = not self.account.showHUD
--- 	self:UpdateVisibility()
--- 	UpdateControls()
--- end
--- function addon.ToggleShowCombat()
--- 	local self = addon
--- 	self.account.showCombat = not self.account.showCombat
--- 	self:UpdateVisibility()
--- 	UpdateControls()
--- end
--- end
 
 local function OnAddonLoaded(event, name)
 	if name ~= addon.name then return end
