@@ -16,6 +16,9 @@ SafeAddString(SI_INVENTORY_SORT_TYPE_PRICE, "|t20:20:/esoui/art/currency/currenc
 SafeAddString(SI_STEALTH_HIDDEN, "", 2)
 SafeAddString(SI_INVENTORY_MODE_CRAFT_BAG, "Handwerksbeutel", 0)
 
+SafeAddString(SI_TAMRIEL_TOMES_SEASON_END_DIALOG_GOLD_ROLL_OVER, "<<1>> <<1[wurde/wurden]>> in <<2>>g umgewandelt.", 1)
+SafeAddString(SI_TAMRIEL_TOMES_SEASON_END_DIALOG_TOME_POINT_ROLL_OVER, "<<1>> <<1[wurde/wurden]>> für den Folianten der nächsten Saison übernommen.", 2)
+
 ItemTooltip:SetDimensionConstraints(532, 0, 532, 1440)
 PopupTooltip:SetDimensionConstraints(532, 0, 532, 1440)
 ComparativeTooltip1:SetDimensionConstraints(600, 0, 600, 8192)
@@ -645,7 +648,7 @@ do
 		lastAllowActionTime = GetGameTimeMilliseconds()
 		lastAllowedAction = 0
 		currentBar = GetActiveWeaponPairInfo()
-		df("lightattack start. Interval: %ims", lastAllowActionTime - lastAutoAttack)
+		--df("lightattack start. Interval: %ims", lastAllowActionTime - lastAutoAttack)
 		lastAutoAttack = lastAllowActionTime --GetGameTimeMilliseconds()
 		local max
 		playerStamina, max = GetUnitPower(unitTagPlayer, POWERTYPE_STAMINA)
@@ -726,7 +729,7 @@ do
 		if CooldownRunning(193398, 4500) then
 			return false
 		end
-		if CooldownRunning(63046, 1800) then
+		if CooldownRunning(63046, 4000) then
 			return false
 		end
 		if CooldownRunning(40414, 4500) then
@@ -829,7 +832,7 @@ do
 						ClearCooldown(63046)
 					elseif abilityId and abilityId > 0 and clearCooldownResults[result] then
 						cooldown[abilityId] = nil
-						df("Clear Cooldown2 %i %s (%s)", abilityId, GetAbilityName(abilityId), sourceName or "?")
+						--df("Clear Cooldown2 %i %s (%s)", abilityId, GetAbilityName(abilityId), sourceName or "?")
 						recast[abilityId] = GetGameTimeMilliseconds()
 						if lastAllowedAction == abilityId then
 							lastAllowedAction = 0
@@ -843,13 +846,13 @@ do
 		function effect(eventCode, changeType, effectSlot, effectName, unitTag, beginTime, endTime, stackCount, iconName, buffType, effectType, abilityType, statusEffectType, unitName, unitId, abilityId, sourceType)
 			abilityId = CheckCraftedAbility(abilityId)
 			if abilityId and abilityId > 0 and stackCount <= 1 and changeType == EFFECT_RESULT_GAINED then
-				df("start cooldown %i=%s", abilityId, GetAbilityName(abilityId))
+				--df("start cooldown %i=%s", abilityId, GetAbilityName(abilityId))
 				cooldown[abilityId] = GetGameTimeMilliseconds()
 			elseif abilityId and abilityId > 0 and stackCount <= 0 and sourceType == COMBAT_UNIT_TYPE_PLAYER and (changeType == EFFECT_RESULT_FADED or changeType == EFFECT_RESULT_TRANSFER) then
 				if changeType == EFFECT_RESULT_FADED and stackCount == 0 then
 					if cooldown[abilityId] then
 						cooldown[abilityId] = nil
-						df("Clear Cooldown1 %i %s (%s)", abilityId, GetAbilityName(abilityId), unitName or "?")
+						--df("Clear Cooldown1 %i %s (%s)", abilityId, GetAbilityName(abilityId), unitName or "?")
 						recast[abilityId] = GetGameTimeMilliseconds()
 					end
 				end
@@ -979,6 +982,14 @@ do
 			-- Dunkels Abkommen
 			return PlayerHealthPercent() <= 0.75
 		end,
+		[24639] = function()
+			--Zwielichtmatriarchin
+			return not IsAutoAttack() or not CooldownRunning(24639, 30000) and StartCooldown(24639) and RegisterRecast(24639, 12000)
+		end,
+		[77369] = function()
+			-- Zwielichtmatriarchin Heal
+			return PlayerHealthPercent() <= 0.75
+		end,
 		[26797] = function()
 			-- Durchschlagender Schwung
 			if HasTarget() then
@@ -995,6 +1006,14 @@ do
 			--lodernder Speer
 			return not IsAutoAttack() or (RegisterRecast(26869, 3000) and not CooldownRunning(26869, 30000) and StartCooldown(26869)) and RegisterRecast(26869, 12000)
 		end,
+		[22006] = function()
+			--lebende Verfinsterung
+			return not IsAutoAttack() or (RegisterRecast(22006, 3000) and not CooldownRunning(22006, 12000) and StartCooldown(22006)) and RegisterRecast(22006, 12000)
+		end,
+		[38956] = function()
+			--arterielles Platzen
+			return HasTarget() and TargetHealth() > 100000 and not CooldownRunning(38956, 12000) and StartCooldown(38956) and RegisterRecast(38956, 12000)
+		end,
 		[29338] = function()
 			--neutralisierende Magie
 			return not IsAbilityCasted(29338) and not IsDummy()
@@ -1003,12 +1022,21 @@ do
 			--Pfeilfächer
 			return isInCombat
 		end,
+		[35414] = function()
+			--Schimäre
+			return not IsAutoAttack() or (RegisterRecast(35414, 3000) and not CooldownRunning(35414, 30000) and StartCooldown(35414)) and RegisterRecast(35414, 12000)
+		end,
 		[35750] = function()
 			--Bestienfalle
 			return HasTarget() and TargetHealth() > 100000 and not CooldownRunning(35750, 12000) and StartCooldown(35750) and RegisterRecast(35750, 12000)
 		end,
 		[35762] = function()
 			-- Meisterjäger
+			return false
+		end,
+		[40195] = function()
+			-- getarnter Jäger
+			needBarSwap = ACTIVE_WEAPON_PAIR_MAIN
 			return false
 		end,
 		[35713] = function()
@@ -1055,6 +1083,10 @@ do
 		[38689] = function()
 			--endloser Hagel
 			return isInCombat
+		end,
+		[34838] = function()
+			--Lebensfluss
+			return not (CooldownRunning(34838, 10000) or CooldownRunning(34838, 10000))
 		end,
 		[38701] = function()
 			local current = PlayerStamina()
@@ -1137,6 +1169,10 @@ do
 		[40317] = function()
 			--erholende Seelenfalle
 			return HasTarget() and not IsTargetBuffedWithAbility(126897) --and not CooldownRunning(40317, 8550) and StartCooldown(40317)
+		end,
+		[216813] = function()
+			--heilende Seelenfalle
+			return HasTarget() and not CooldownRunning(216813, 10000) and StartCooldown(216813) and RegisterRecast(216813, 10000)
 		end,
 		[40328] = function()
 			--trennende Seelenfalle
@@ -1311,7 +1347,7 @@ do
 		end,
 		[103706] = function()
 			--Beschleunigung
-			return not CooldownRunning(103706, 36000) and StartCooldown(103706) and RegisterRecast(103706, 36000)
+			return not CooldownRunning(61746, 20000) and StartCooldown(61746) and RegisterRecast(103706, 20000)
 		end,
 		[117805] = function()
 			--aufreibender Friedhof
@@ -1396,7 +1432,7 @@ do
 		end,
 		[26792] = function()
 			--harsche Hiebe
-			if CooldownRunning(63046, 2000) or not TargetInMeleeRange() then
+			if CooldownRunning(63046, 4000) or not TargetInMeleeRange() then
 				return false
 			end
 			if HasTarget() then
@@ -1425,6 +1461,18 @@ do
 			--Ritual der Vergeltung
 			return (isInCombat or HasTarget()) and not CooldownRunning(22259, 6000) and CooldownRunning(26869, 8000) and StartCooldown(22259) and RegisterRecast(22259, 12000)
 		end,
+		[20323] = function()
+			--explosive Rüstung
+			return (isInCombat or HasTarget()) and not CooldownRunning(20323, 20000) and StartCooldown(20323) and RegisterRecast(20323, 20000)
+		end,
+		[20245] = function()
+			--dunkle Krallen
+			return (isInCombat or HasTarget()) and not CooldownRunning(20245, 20000) and StartCooldown(20245) and RegisterRecast(20245, 20000)
+		end,
+		[20252] = function()
+			--brennende Krallen
+			return (isInCombat or HasTarget()) and not CooldownRunning(20252, 20000) and StartCooldown(20252) and RegisterRecast(20252, 20000)
+		end,
 		[20919] = function()
 			--Trennen
 			return (isInCombat or HasTarget()) and not CooldownRunning(20919, 6000) and StartCooldown(20919) and RegisterRecast(20919, 12000)
@@ -1437,8 +1485,16 @@ do
 			--sicherer Stand
 			return HasTarget() and TargetHealth() > 2000000 and not CooldownRunning(29552, 6000) and StartCooldown(29552) and RegisterRecast(29552, 20000)
 		end,
+		[29059] = function()
+			--Herdfeuer
+			return (isInCombat or PlayerHealthPercent() <= 0.5) and not CooldownRunning(29059, 15000) and StartCooldown(29059) and RegisterRecast(29059, 15000)
+		end,
+		[20779] = function()
+			--Feuerwahrer
+			return (isInCombat or PlayerHealthPercent() <= 0.5) and not CooldownRunning(20779, 15000) and StartCooldown(20779) and RegisterRecast(20779, 15000)
+		end,
 		[28304] = function()
-			--niederer Schnit
+			--niederer Schnitt
 			return HasTarget() and not CooldownRunning(28304, 12000) and StartCooldown(28304) and RegisterRecast(28304, 12000)
 		end,
 		[29556] = function()
@@ -1516,6 +1572,10 @@ do
 		[40489] = function()
 			--Eiskomet
 			return HasTarget() and PlayerUltimate() >= 190 and TargetHealth() > 300000 and currentBar == ACTIVE_WEAPON_PAIR_MAIN and TargetIsInRange()
+		end,
+		[32719] = function()
+			--Abheben
+			return HasTarget() and PlayerUltimate() >= 125 and TargetHealth() > 300000 and currentBar == ACTIVE_WEAPON_PAIR_MAIN and TargetIsInRange()
 		end,
 		[40493] = function()
 			--Sternschnuppe
@@ -1641,6 +1701,14 @@ do
 			--ewig starrendes Auge
 			return (not IsAutoAttack() or PlayerUltimate() >= 175) and TargetHealth() > 300000
 		end,
+		[198563] = function()
+			--Chakrenschilde
+			return (isInCombat or HasTarget()) and not CooldownRunning(198563, 6000) and StartCooldown(198563) and RegisterRecast(198563, 6000)
+		end,
+		[198564] = function()
+			--Chakra der Bestimmung
+			return (isInCombat or HasTarget()) and not CooldownRunning(198564, 6000) and StartCooldown(198564) and RegisterRecast(198564, 6000)
+		end,
 		[189837] = function()
 			--Blick des Gezeitenkönigs
 			return (not IsAutoAttack() or PlayerUltimate() >= 175) and TargetHealth() > 300000
@@ -1734,6 +1802,10 @@ do
 			--blutiges Zerschmettern
 			return isInCombat and not IsBlockActive() and RegisterRecast(217178, 20000) and HasTarget() and not CooldownRunning(217178, 20000) and StartCooldown(217178)
 		end,
+		[219780] = function()
+			--blutige Seele
+			return isInCombat and not IsBlockActive() and RegisterRecast(219780, 10000) and HasTarget() and not CooldownRunning(219780, 10000) and StartCooldown(219780)
+		end,
 		[219972] = function()
 			--benebelndes Zerschmettern
 			return isInCombat and not IsBlockActive() and RegisterRecast(219972, 10000) and HasTarget() and not CooldownRunning(219972, 10000) and StartCooldown(219972)
@@ -1746,9 +1818,17 @@ do
 			--eisige Explosion
 			return isInCombat and not IsBlockActive() and not CooldownRunning(217228, 6000) and RegisterRecast(217228, 10000) and StartCooldown(217228)
 		end,
+		[217528] = function()
+			--schockierender Ausweichplan Magisches Banner
+			return not IsAutoAttack() or (isInCombat and HasTarget() and not CooldownRunning(217528, 30000) and StartCooldown(217528) and RegisterRecast(217528, 6000))
+		end,
+		[217699] = function()
+			--Magisches Banner
+			return not IsAutoAttack() or (isInCombat and HasTarget() and not CooldownRunning(217699, 30000) and StartCooldown(217699) and RegisterRecast(217699, 6000))
+		end,
 		[103503] = function()
 			--Beschleunigen
-			return isInCombat and not IsBlockActive() and not CooldownRunning(103503, 4000) and RegisterRecast(103503, 5000) and StartCooldown(103503)
+			return isInCombat and not IsBlockActive() and not CooldownRunning(61746, 20000) and RegisterRecast(61746, 20000) and StartCooldown(61746)
 		end,
 		[183555] = function()
 			--Domäne des Arkanisten
@@ -1837,7 +1917,7 @@ do
 				end
 				wasAllowed[actionButton] = allow
 				if allow then
-					df("button %i %s", actionButton, GetAbilityName(lastAllowedAction))
+					--df("button %i %s", actionButton, GetAbilityName(lastAllowedAction))
 					--df("button %s keydown %s auto %s %ims", GetAbilityName(lastAllowedAction), tostring(isKeyDown), tostring(IsAutoAttack()), delay)
 					return orgZO_ActionBar_CanUseActionSlots(...)
 				else
@@ -2006,7 +2086,7 @@ do
 			local actionId = GetSlotBoundId(actionButton)
 			actionId = CheckCraftedAbility(actionId)
 			cooldown[actionId] = GetGameTimeMilliseconds()
-			df("start cooldown %i=%s", actionId, GetAbilityName(actionId))
+			--df("start cooldown %i=%s", actionId, GetAbilityName(actionId))
 		end
 	)
 	local handlers = ZO_AlertText_GetHandlers()
@@ -2233,28 +2313,30 @@ do
 	local function OnActivityUpdated(index)
 		local activity = TIMED_ACTIVITIES_MANAGER:GetActivityDataByIndex(index)
 		if not activity:IsCompleted() then -- the completed announcement is done built-in
-			ShowAnnouncement(index, string.format("|t28:28:%s|t%s %i/%i", GetCurrencyKeyboardIcon(CURT_ENDEAVOR_SEALS), activity:GetName(), activity:GetProgress(), activity:GetMaxProgress()))
+			if activity:GetProgress() > 0 then
+				ShowAnnouncement(index, string.format("|t28:28:%s|t%s %i/%i", GetCurrencyKeyboardIcon(CURT_ENDEAVOR_SEALS), activity:GetName(), activity:GetProgress(), activity:GetMaxProgress()))
+			end
 		end
 	end
 	TIMED_ACTIVITIES_MANAGER:RegisterCallback("OnActivityUpdated", OnActivityUpdated)
 end
 
-EVENT_MANAGER:RegisterForEvent(
-	"Votan_GroupFinder_Search",
-	EVENT_GROUP_FINDER_SEARCH_COOLDOWN_UPDATE,
-	function(_, cooldownTimeMs)
-		df("cooldownTimeMs %i", cooldownTimeMs)
-	end
-)
-local searching = false
-EVENT_MANAGER:RegisterForEvent(
-	"Votan_GroupFinder_Search",
-	EVENT_GROUP_FINDER_SEARCH_COMPLETE,
-	function(_, result, searchId)
-		df("Completed: %i", searchId)
-		searching = false
-	end
-)
+-- EVENT_MANAGER:RegisterForEvent(
+-- 	"Votan_GroupFinder_Search",
+-- 	EVENT_GROUP_FINDER_SEARCH_COOLDOWN_UPDATE,
+-- 	function(_, cooldownTimeMs)
+-- 		df("cooldownTimeMs %i", cooldownTimeMs)
+-- 	end
+-- )
+-- local searching = false
+-- EVENT_MANAGER:RegisterForEvent(
+-- 	"Votan_GroupFinder_Search",
+-- 	EVENT_GROUP_FINDER_SEARCH_COMPLETE,
+-- 	function(_, result, searchId)
+-- 		df("Completed: %i", searchId)
+-- 		searching = false
+-- 	end
+-- )
 
 -- local orgRequestGroupFinderSearch = RequestGroupFinderSearch
 -- function RequestGroupFinderSearch(...)
@@ -2280,3 +2362,71 @@ EVENT_MANAGER:RegisterForEvent(
 -- 	d("GetCurrentGroupFinderUserType", GetCurrentGroupFinderUserType())
 -- 	return orgRequestGroupFinderSearch(...)
 -- end
+
+do
+	local INFINITE_ARCHIVE_NODE_ID = 550
+
+	local function OnKeybindPressed()
+		FastTravelToNode(INFINITE_ARCHIVE_NODE_ID)
+	end
+
+	local keybindGroup = {
+		{
+			name = "IA",
+			keybind = "a",
+			callback = OnKeybindPressed,
+			visible = function()
+				return GetInteractionType() == INTERACTION_FAST_TRAVEL
+			end,
+			alignment = KEYBIND_STRIP_ALIGN_CENTER
+		}
+	}
+
+	WORLD_MAP_SCENE:RegisterCallback(
+		"StateChange",
+		function(oldState, newState)
+			if newState == SCENE_SHOWING then
+				KEYBIND_STRIP:AddKeybindButtonGroup(keybindGroup)
+			elseif newState == SCENE_HIDING then
+				KEYBIND_STRIP:RemoveKeybindButtonGroup(keybindGroup)
+			end
+		end
+	)
+end
+
+-- local itemUsed = false
+-- EVENT_MANAGER:RegisterForEvent(
+-- 	addon.name,
+-- 	EVENT_INVENTORY_ITEM_USED,
+-- 	function()
+-- 		itemUsed = true
+-- 		d("First")
+-- 	end
+-- )
+
+-- SHARED_INVENTORY:RegisterCallback(
+-- 	"SingleSlotInventoryUpdate",
+-- 	function(bagId, slotIndex, previousSlotData, isLastUpdateForMessage)
+-- 		if itemUsed then
+-- 			--Event due to item used
+-- 			d("Second")
+-- 			itemUsed = false
+-- 		end
+-- 	end
+-- )
+
+SLASH_COMMANDS["/votan"] = function()
+	-- local id = GetSkyshardId(1)
+	-- local snx, sny = GetNormalizedPositionForSkyshardId(id)
+	-- local zoneId, swx, swz, swy = GetWorldPositionForSkyshardId(id)
+
+	-- local pnx, pny = GetMapPlayerPosition("player")
+	-- local zoneId, pwx, pwz, pwy = GetUnitWorldPosition("player")
+
+	-- local dx, dy = (swx - pwx) / (snx - pnx), (swy - pwy) / (sny - pny)
+	-- local d = math.sqrt(dx * dx + dy * dy)
+	-- df("dist: %f", d)
+
+	d(zo_strformat(SI_TAMRIEL_TOMES_SEASON_END_DIALOG_GOLD_ROLL_OVER, 5, 50))
+	d(zo_strformat(SI_TAMRIEL_TOMES_SEASON_END_DIALOG_TOME_POINT_ROLL_OVER, 5, 50))
+end
