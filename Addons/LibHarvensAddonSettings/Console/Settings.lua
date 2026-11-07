@@ -965,7 +965,16 @@ function LibHarvensAddonSettings:CreateControlPools()
 		control:SetColor(color:UnpackRGBA())
 	end
 	local function equalityFunctionDropDown(leftData, rightData)
-		return leftData == rightData.name or rightData == leftData.name or leftData.data == rightData.data
+		if type(leftData) == "table" and type(rightData) == "table" then
+			if leftData.data ~= nil or rightData.data ~= nil then
+				return leftData.data == rightData.data
+			end
+			return leftData.name == rightData.name
+		end
+		if type(rightData) == "table" then
+			return leftData == rightData.name
+		end
+		return type(leftData) == "table" and rightData == leftData.name
 	end
 	AddPool(
 		self.ST_DROPDOWN,

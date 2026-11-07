@@ -5,9 +5,9 @@
 
 ## Title: LibHarvensAddonSettings
 ## Author: Harven, Votan
-## AddOnVersion: 20200
-## Version: 2.2.0
-## APIVersion: 101050 101051
+## AddOnVersion: 20201
+## Version: 2.2.1
+## APIVersion: 101051 101052
 ## IsLibrary: true
 ## Description: With this addon you can create and add your addon settings to the common settings page. The settings page can be found in Settings->Addons menu.
 
