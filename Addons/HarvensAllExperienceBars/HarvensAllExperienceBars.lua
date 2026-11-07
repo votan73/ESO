@@ -5,13 +5,13 @@ local HarvensAllExperienceBars = {}
 local HarvensExperienceBar = ZO_Object:Subclass()
 
 function HarvensExperienceBar:Initialize()
-	self.FONT_SKILL_NAME_INSIDE = "$(MEDIUM_FONT)|14|thick-outline"
+	self.FONT_SKILL_NAME_INSIDE = "$(MEDIUM_FONT)|16|thick-outline"
 	self.FONT_SKILL_NAME_OUTSIDE = "ZoFontGameLargeBoldShadow"
-	self.FONT_RANK_INSIDE = "$(MEDIUM_FONT)|14|thick-outline"
+	self.FONT_RANK_INSIDE = "$(MEDIUM_FONT)|16|thick-outline"
 	self.FONT_RANK_OUTSIDE = "ZoFontGameLargeBoldShadow"
 	self.FONT_RANK_SIDE = "ZoFontAnnounceLarge"
 	self.FONT_EXPERIENCE_GAIN = "ZoFontAnnounceMedium"
-	self.FONT_SKILL_PROGRESS = "$(MEDIUM_FONT)|12|thick-outline"
+	self.FONT_SKILL_PROGRESS = "$(MEDIUM_FONT)|14|thick-outline"
 
 	self.queuedXP = {}
 	local function factory(bar)
@@ -206,6 +206,10 @@ function HarvensExperienceBar:ToggleRank()
 	self.showRank = not self.showRank
 	self:setupNameLabel()
 	self.barSettings.showRank = self.showRank
+	if self.showRank then
+		self.rankLabel.lastRank = -1
+		self:UpdateRank()
+	end
 end
 
 function HarvensExperienceBar:ToggleRankPosition()
@@ -592,20 +596,20 @@ function HarvensExperienceBar:setupNameLabel()
 
 	if self.isLabelInside then
 		if self.showRank and self.rankNextToName then
-			self.nameLabel:SetAnchor(align, self.rankLabel, notAlign, 5 * sign, 0)
+			self.nameLabel:SetAnchor(align, self.rankLabel, notAlign, 5 * sign, 2)
 		else
-			self.nameLabel:SetAnchor(align, self.bar, align, 2 * sign, 0)
+			self.nameLabel:SetAnchor(align, self.bar, align, 2 * sign, 2)
 		end
 		self.nameLabel:SetFont(self.FONT_SKILL_NAME_INSIDE)
-		self.skillProgressLabel:SetAnchor(align, self.nameLabel, notAlign, 5 * sign, 0)
+		self.skillProgressLabel:SetAnchor(align, self.nameLabel, notAlign, 5 * sign, 1)
 	else
 		if self.showRank and self.rankNextToName then
-			self.nameLabel:SetAnchor(align, self.rankLabel, notAlign, 6 * sign, 0)
+			self.nameLabel:SetAnchor(align, self.rankLabel, notAlign, 6 * sign, 2)
 		else
 			self.nameLabel:SetAnchor(align, self.bar, align, 5 * sign, -24)
 		end
 		self.nameLabel:SetFont(self.FONT_SKILL_NAME_OUTSIDE)
-		self.skillProgressLabel:SetAnchor(align, self.bar, align, 5 * sign, 0)
+		self.skillProgressLabel:SetAnchor(align, self.bar, align, 5 * sign, 3)
 	end
 	self:UpdateRank()
 	self.nameLabel:SetText(ZO_CachedStrFormat(SI_SKILLS_ENTRY_LINE_NAME_FORMAT, self.skillName))
@@ -906,7 +910,7 @@ function HarvensAllExperienceBars:SetupOptions()
 	if not settings then
 		return
 	end
-	settings.version = "2.8.4"
+	settings.version = "2.8.5"
 
 	local autoHide = {
 		type = LibHarvensAddonSettings.ST_CHECKBOX,

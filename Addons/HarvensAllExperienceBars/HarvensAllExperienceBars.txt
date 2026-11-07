@@ -4,9 +4,9 @@
 ; States and/or other countries. All rights reserved.
 
 ## Title: Harven's All Experience Bars
-## Version: 2.8.4
+## Version: 2.8.5
 ## Author: Harven & votan
-## APIVersion: 101036 101037
+## APIVersion: 101051 101052
 ## DependsOn: LibHarvensAddonSettings>=10800 LibCustomMenu>=700
 ## SavedVariables: HarvensAllExperienceBars_SavedVariables
 ## Description: This addon can display any skill/ability experience bars in your in game hud. You start with one experience bar (racial skill) which then you can move around and when you right-click on it you can add more bars from a popup menu.
