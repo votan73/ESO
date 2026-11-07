@@ -561,7 +561,7 @@ end
 function HarvensCustomMapPins:SetupOptions()
 	local LibHarvensAddonSettings = LibHarvensAddonSettings
 	local settings = LibHarvensAddonSettings:AddAddon("Harven's Custom Map Pins")
-	settings.version = "3.4.2"
+	settings.version = "3.4.3"
 
 	local pinSize = {
 		type = LibHarvensAddonSettings.ST_SLIDER,
@@ -971,6 +971,7 @@ do
 			panel:SetPinFilter(id, self.sv.showPredefined[name] ~= false)
 		end
 		local function AddCheckBox(panel)
+            if not panel then return end
 			panel:AddPinFilterCheckBox(pinTypeId, FilterCallback)
 			panel:SetPinFilter(pinTypeId, self.sv.showPins)
 			if self.sv.allowSubFilter then
@@ -995,6 +996,7 @@ do
 				local self = WORLD_MAP_FILTERS
 				AddCheckBox(self.pvePanel, "pve")
 				AddCheckBox(self.pvpPanel, "pvp")
+                AddCheckBox(self.jerallPvPPanel, "jerallPvP")
 				AddCheckBox(self.imperialPvPPanel, "imperialPvP")
 				AddCheckBox(self.battlegroundPanel, "battleground")
 			end
@@ -1011,6 +1013,7 @@ do
 				local self = GAMEPAD_WORLD_MAP_FILTERS
 				AddCheckBox(self.pvePanel, "pve")
 				AddCheckBox(self.pvpPanel, "pvp")
+                AddCheckBox(self.jerallPvPPanel, "jerallPvP")
 				AddCheckBox(self.imperialPvPPanel, "imperialPvP")
 				AddCheckBox(self.battlegroundPanel, "battleground")
 			end
